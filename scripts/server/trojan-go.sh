@@ -291,6 +291,12 @@ server {
     root /var/www/html;
     index index.html index.htm index.nginx-debian.html;
 
+    # 允许访问订阅文件
+    location /sub {
+        try_files \$uri =404;
+        default_type text/plain;
+    }
+
     location / {
         access_log off;
         try_files \$uri \$uri/ =404;

@@ -12,7 +12,8 @@ WireGuard 是一种现代、高性能的 VPN 协议，具有以下优点：
 
 ### 1. 下载客户端
 
-访问 WireGuard 官网下载 Windows 版本：
+推荐使用 **Clash Verge Rev** 或 **v2rayN**，它们均支持通过订阅链接导入 WireGuard 节点。
+如果你只需要单纯的 VPN 连接，可以访问 WireGuard 官网下载 Windows 版本：
 - 下载地址：https://www.wireguard.com/install/
 - 选择 Windows 安装包
 
@@ -20,20 +21,21 @@ WireGuard 是一种现代、高性能的 VPN 协议，具有以下优点：
 
 1. 运行下载的安装程序
 2. 按照提示完成安装
-3. 启动 WireGuard 应用
+3. 启动应用
 
 ### 3. 导入配置
 
-**方法一：通过配置文件导入**
+**方法一：通过节点订阅链接（强烈推荐）**
+如果你使用的是 Clash Verge Rev 等通用代理客户端，直接将部署成功后生成的 `https://your-domain/sub` 订阅链接粘贴到客户端的订阅/配置选项中即可一键导入包含 WireGuard 在内的所有节点。
+
+**方法二：通过 `wg://` 链接导入**
+复制部署成功后终端打印出的 `wg://...` 开头的链接，在支持该协议的客户端（如 v2rayN）中直接从剪贴板导入。
+
+**方法三：通过配置文件导入 (官方客户端)**
 1. 从服务器获取客户端配置文件（`client1.conf`）
 2. 在 WireGuard 应用中点击「Add Tunnel」
 3. 选择「Import from file...」
 4. 选择你的配置文件
-
-**方法二：通过二维码导入**
-1. 在 WireGuard 应用中点击「Add Tunnel」
-2. 选择「Scan from QR code...」
-3. 扫描服务器上生成的二维码
 
 ### 4. 连接
 
@@ -131,10 +133,16 @@ sudo wg show
 
 ### 2. 导入配置
 
-1. 打开 WireGuard 应用
+**方法一：使用节点订阅链接（推荐）**
+如果你使用的是 Shadowrocket、Clash Meta 等支持订阅的客户端，直接导入生成的 `/sub` 订阅链接即可。
+
+**方法二：扫描二维码**
+打开客户端的扫码功能，扫描终端输出的二维码（二维码内容为标准的 `wg://` 协议链接）。
+
+**方法三：导入配置文件**
+1. 打开官方 WireGuard 应用
 2. 点击右下角「+」按钮
-3. 选择「Create from QR code」扫描二维码
-4. 或选择「Import from file or archive」导入配置文件
+3. 选择「Import from file or archive」导入保存的 `.conf` 配置文件
 
 ### 3. 连接
 
@@ -152,10 +160,16 @@ sudo wg show
 
 ### 2. 导入配置
 
-1. 打开 WireGuard 应用
+**方法一：使用节点订阅链接（强烈推荐）**
+如果你使用的是 **Shadowrocket**，直接添加类型为 `Subscribe` 的订阅链接（例如 `https://your-domain/sub`）即可。这是最简单的配置方式。
+
+**方法二：扫描二维码**
+打开 Shadowrocket 或其他兼容客户端，扫描终端生成的二维码。此时二维码包含的是通用的 `wg://` 标准链接。
+
+**方法三：导入配置文件**
+1. 打开官方 WireGuard 应用
 2. 点击右上角「+」
-3. 选择「Create from QR code」扫描二维码
-4. 或选择「Import from file」导入配置文件
+3. 选择「Import from file」导入 `.conf` 配置文件
 
 ### 3. 连接
 

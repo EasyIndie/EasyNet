@@ -64,12 +64,15 @@
 - 下载地址：https://github.com/clash-verge-rev/clash-verge-rev/releases
 - 根据你的 Mac 芯片选择 `aarch64` (M1/M2/M3) 或 `x64` (Intel) 版本。
 
-### 2. 配置
+### 2. 导入节点订阅（推荐）
+
+现在 EasyNet 支持自动生成订阅链接，导入极其简单：
 
 1. 下载并安装 Clash Verge Rev
 2. 打开应用
 3. 点击左侧「订阅」或「配置」→「导入」
-4. 粘贴部署生成的链接，或手动添加配置
+4. 将部署完成后终端输出的 **节点订阅链接**（例如：`https://your-domain.com/sub`）粘贴进去。
+5. 点击「下载」或「更新」，所有的节点（Trojan, V2Ray, Shadowsocks, Xray）将一次性全部导入成功。
 
 ### 3. 启动
 

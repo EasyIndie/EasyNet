@@ -186,18 +186,22 @@ main() {
         case $choice in
             1)
                 deploy_trojan
+                bash "$SCRIPT_DIR/generate_subscription.sh"
                 ;;
             2)
                 deploy_v2ray
+                bash "$SCRIPT_DIR/generate_subscription.sh"
                 ;;
             3)
                 deploy_shadowsocks
+                bash "$SCRIPT_DIR/generate_subscription.sh"
                 ;;
             4)
                 deploy_wireguard
                 ;;
             5)
                 deploy_xray
+                bash "$SCRIPT_DIR/generate_subscription.sh"
                 ;;
             6)
                 deploy_trojan
@@ -205,6 +209,7 @@ main() {
                 deploy_shadowsocks
                 deploy_wireguard
                 deploy_xray
+                bash "$SCRIPT_DIR/generate_subscription.sh"
                 ;;
             7)
                 log_info "退出安装"

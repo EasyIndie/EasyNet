@@ -11,6 +11,7 @@
 - ⚡ 性能优化：BBR 拥塞控制加速
 - 🔄 自动化运维：服务自动更新、配置防丢恢复、系统日志截断防爆盘
 - 🤖 无交互部署：支持注入环境变量进行一键 CI/CD 批量安装
+- 🔗 节点订阅：自动生成跨平台通用的节点订阅链接，告别繁琐的手动扫码
 - 📱 全平台客户端支持（Windows/macOS/Linux/Android/iOS）
 - 💰 成本可控（$5-$10/月）
 - 🛡️ 安全稳定，自带单元测试保护核心逻辑
@@ -45,6 +46,7 @@ EasyNet/
 │   ├── test_json_manipulation.bash
 │   ├── test_path_generation.bash
 │   ├── test_vmess_generation.bash
+│   ├── test_wireguard_generation.bash
 │   └── run_all_tests.bash
 ├── docs/                   # 文档目录
 │   ├── server-deployment.md
@@ -77,7 +79,7 @@ EasyNet/
 ```bash
 git clone https://github.com/your-repo/EasyNet.git
 cd EasyNet/scripts
-chmod +x deploy.sh server/*.sh
+chmod +x deploy.sh server/*.sh generate_subscription.sh
 ./deploy.sh
 ```
 
@@ -89,6 +91,8 @@ chmod +x deploy.sh server/*.sh
 5. 部署 Xray+Reality
 6. 全部部署
 7. 退出
+
+部署完成后，脚本会自动生成一个通用的**节点订阅链接**（例如：`https://your-domain.com/sub`）。你只需要将这个链接复制到你的代理客户端（如 Clash Verge, Shadowrocket, V2RayN 等）中，即可一键导入所有节点，无需再一个个手动扫码配置！
 
 ### 自动化无交互部署（适合 CI/CD）
 

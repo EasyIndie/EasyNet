@@ -43,7 +43,7 @@ ssh root@your-server-ip
 ```bash
 git clone https://github.com/your-repo/EasyNet.git
 cd EasyNet/scripts
-chmod +x deploy.sh server/*.sh
+chmod +x deploy.sh server/*.sh generate_subscription.sh
 ```
 
 ### 3. 运行部署脚本

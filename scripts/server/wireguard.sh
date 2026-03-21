@@ -165,10 +165,48 @@ show_config() {
     echo ""
     echo "配置内容如下 (可复制保存为 .conf 文件):"
     cat "$CLIENT_CONFIG_DIR/$client_name.conf"
+    # URL encode function for WireGuard standard URI
+    urlencode() {
+        local string="${1}"
+        local strlen=${#string}
+        local encoded=""
+        local pos c o
+        for (( pos=0 ; pos<strlen ; pos++ )); do
+            c=${string:$pos:1}
+            case "$c" in
+                [-_.~a-zA-Z0-9/] ) o="${c}" ;;
+                * )               printf -v o '%%%02X' "'$c" ;;
+            esac
+            encoded+="${o}"
+        done
+        echo "${encoded}"
+    }
+
+    local wg_conf="$CLIENT_CONFIG_DIR/$client_name.conf"
+    local wg_priv_key=$(grep "PrivateKey" "$wg_conf" | sed 's/^[^=]*=[[:space:]]*//' | xargs)
+    local wg_addr=$(grep "Address" "$wg_conf" | sed 's/^[^=]*=[[:space:]]*//' | xargs)
+    local wg_dns=$(grep "DNS" "$wg_conf" | sed 's/^[^=]*=[[:space:]]*//' | xargs)
+    local wg_pub_key=$(grep "PublicKey" "$wg_conf" | sed 's/^[^=]*=[[:space:]]*//' | xargs)
+    local wg_psk=$(grep "PresharedKey" "$wg_conf" | sed 's/^[^=]*=[[:space:]]*//' | xargs)
+    local wg_endpoint=$(grep "Endpoint" "$wg_conf" | sed 's/^[^=]*=[[:space:]]*//' | xargs)
+    local wg_mtu=$(grep "MTU" "$wg_conf" | sed 's/^[^=]*=[[:space:]]*//' | xargs)
+
+    local enc_priv=$(urlencode "$wg_priv_key")
+    local enc_pub=$(urlencode "$wg_pub_key")
+    local enc_psk=$(urlencode "$wg_psk")
+    local enc_dns=$(urlencode "$wg_dns")
+    local ip_only=$(echo "$wg_addr" | cut -d'/' -f1)
+
+    local wg_uri="wg://${wg_endpoint}?publicKey=${enc_pub}&privateKey=${enc_priv}&presharedKey=${enc_psk}&ip=${ip_only}&mtu=${wg_mtu}&dns=${enc_dns}&udp=1#EasyNet-WG"
+
     echo ""
-    echo "配置二维码 (请使用 WireGuard 或 Shadowrocket 扫码):"
+    echo -e "${YELLOW}WireGuard 客户端链接 (推荐复制此链接导入):${NC}"
+    echo "$wg_uri"
+
+    echo ""
+    echo -e "${YELLOW}配置二维码 (请使用 Shadowrocket 或 Clash 扫码):${NC}"
     if command -v qrencode &> /dev/null; then
-        qrencode -t utf8 < "$CLIENT_CONFIG_DIR/$client_name.conf"
+        echo "$wg_uri" | qrencode -t utf8
     else
         echo "未安装 qrencode，无法显示二维码。"
     fi
