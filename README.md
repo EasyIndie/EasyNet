@@ -23,6 +23,7 @@
 了解不同协议在对抗 GFW 深度包检测（DPI）、主动探测以及黑客端口扫描时的具体表现，选择最适合你当前网络环境的翻墙协议。
 
 简要对比：
+
 | 协议 | 优点 | 缺点 | 防探测等级 |
 |------|------|------|----------|
 | **Xray+Reality** | 无需域名，超强隐蔽，反代名站 | 客户端要求较高 | 🥇 极高 (推荐) |
@@ -90,6 +91,7 @@ chmod +x deploy.sh server/*.sh generate_subscription.sh
 ```
 
 部署菜单选项：
+
 1. 部署 Trojan-Go (推荐)
 2. 部署 V2Ray
 3. 部署 Shadowsocks-libev
@@ -112,11 +114,13 @@ EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=proxy.example.com ./deploy.sh
 ## 文档
 
 ### 服务器文档
+
 - [快速入门指南](QUICKSTART.md)
 - [服务器部署指南](docs/server-deployment.md)
 - [Cloudflare CDN 配置](docs/cloudflare-setup.md)
 
 ### 客户端文档
+
 - [Windows 客户端配置](docs/clients/windows.md)
 - [macOS 客户端配置](docs/clients/macos.md)
 - [Android 客户端配置](docs/clients/android.md)
