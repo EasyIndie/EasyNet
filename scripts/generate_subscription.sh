@@ -31,7 +31,32 @@ get_public_ip() {
 
 PUBLIC_IP=$(get_public_ip)
 
-# 1. Extract Trojan-Go link
+# Extract links in order of security/obfuscation ranking (Highest to Lowest):
+# 1. Xray+Reality
+# 2. Trojan-Go
+# 3. V2Ray
+# 4. Shadowsocks
+# 5. WireGuard
+
+# 1. Extract Xray+Reality link (Rank 1: Ultimate Obfuscation)
+if [ -f "/usr/local/etc/xray/config.json" ]; then
+    log_info "提取 Xray+Reality 配置..."
+    X_UUID=$(jq -r '.inbounds[0].settings.clients[0].id // empty' /usr/local/etc/xray/config.json)
+    X_PORT=$(jq -r '.inbounds[0].port // empty' /usr/local/etc/xray/config.json)
+    X_SNI=$(jq -r '.inbounds[0].streamSettings.realitySettings.serverNames[0] // empty' /usr/local/etc/xray/config.json)
+    X_SID=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[0] // empty' /usr/local/etc/xray/config.json)
+    
+    # Public key was saved during deployment
+    if [ -f "/usr/local/etc/xray/public.key" ]; then
+        X_PBK=$(cat /usr/local/etc/xray/public.key)
+        
+        if [ -n "$X_UUID" ] && [ -n "$X_PORT" ] && [ -n "$X_SNI" ] && [ -n "$X_PBK" ]; then
+            echo "vless://$X_UUID@$PUBLIC_IP:$X_PORT?encryption=none&security=reality&sni=$X_SNI&fp=chrome&pbk=$X_PBK&sid=$X_SID&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality" >> "$LINKS_FILE"
+        fi
+    fi
+fi
+
+# 2. Extract Trojan-Go link (Rank 2: Standard HTTPS Obfuscation)
 if [ -f "/etc/trojan-go/config.json" ]; then
     log_info "提取 Trojan-Go 配置..."
     DOMAIN=$(jq -r '.ssl.sni // empty' /etc/trojan-go/config.json)
@@ -43,7 +68,7 @@ if [ -f "/etc/trojan-go/config.json" ]; then
     fi
 fi
 
-# 2. Extract V2Ray link
+# 3. Extract V2Ray link (Rank 3: TLS Encapsulation)
 if [ -f "/usr/local/etc/v2ray/config.json" ]; then
     log_info "提取 V2Ray 配置..."
     UUID=$(jq -r '.inbounds[0].settings.clients[0].id // empty' /usr/local/etc/v2ray/config.json)
@@ -74,7 +99,7 @@ if [ -f "/usr/local/etc/v2ray/config.json" ]; then
     fi
 fi
 
-# 3. Extract Shadowsocks link
+# 4. Extract Shadowsocks link (Rank 4: Traditional AEAD Encryption)
 if [ -f "/etc/shadowsocks-libev/config.json" ]; then
     log_info "提取 Shadowsocks 配置..."
     SS_PORT=$(jq -r '.server_port // empty' /etc/shadowsocks-libev/config.json)
@@ -84,24 +109,6 @@ if [ -f "/etc/shadowsocks-libev/config.json" ]; then
     if [ -n "$SS_PORT" ] && [ -n "$SS_PASS" ] && [ -n "$SS_METHOD" ]; then
         userinfo=$(echo -n "${SS_METHOD}:${SS_PASS}" | base64 -w 0)
         echo "ss://${userinfo}@${PUBLIC_IP}:${SS_PORT}#EasyNet-SS" >> "$LINKS_FILE"
-    fi
-fi
-
-# 4. Extract Xray+Reality link
-if [ -f "/usr/local/etc/xray/config.json" ]; then
-    log_info "提取 Xray+Reality 配置..."
-    X_UUID=$(jq -r '.inbounds[0].settings.clients[0].id // empty' /usr/local/etc/xray/config.json)
-    X_PORT=$(jq -r '.inbounds[0].port // empty' /usr/local/etc/xray/config.json)
-    X_SNI=$(jq -r '.inbounds[0].streamSettings.realitySettings.serverNames[0] // empty' /usr/local/etc/xray/config.json)
-    X_SID=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[0] // empty' /usr/local/etc/xray/config.json)
-    
-    # Public key was saved during deployment
-    if [ -f "/usr/local/etc/xray/public.key" ]; then
-        X_PBK=$(cat /usr/local/etc/xray/public.key)
-        
-        if [ -n "$X_UUID" ] && [ -n "$X_PORT" ] && [ -n "$X_SNI" ] && [ -n "$X_PBK" ]; then
-            echo "vless://$X_UUID@$PUBLIC_IP:$X_PORT?encryption=none&security=reality&sni=$X_SNI&fp=chrome&pbk=$X_PBK&sid=$X_SID&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality" >> "$LINKS_FILE"
-        fi
     fi
 fi
 
