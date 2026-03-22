@@ -108,7 +108,7 @@ chmod +x deploy.sh server/*.sh generate_subscription.sh
 
 ```bash
 # 例如：全量部署 (6) 并且设置域名为 proxy.example.com
-EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=proxy.example.com ./deploy.sh
+EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 ```
 
 ## 文档
