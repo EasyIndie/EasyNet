@@ -1,0 +1,35 @@
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Backup & Archives
+*.tar.gz
+*.bak
+*.zip
+*.7z
+*.rar
+
+# Logs & Temporary files
+*.log
+*.tmp
+/sub
+/sub_full
+
+# Python cache (from tools/generate-qrcode.py)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS & Editor files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+.project
+.settings/
