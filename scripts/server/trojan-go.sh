@@ -292,7 +292,13 @@ server {
     index index.html index.htm index.nginx-debian.html;
 
     # 允许访问订阅文件
-    location /sub {
+    location = /sub {
+        try_files \$uri =404;
+        default_type text/plain;
+    }
+    
+    # 允许访问完整订阅文件
+    location = /sub_full {
         try_files \$uri =404;
         default_type text/plain;
     }
