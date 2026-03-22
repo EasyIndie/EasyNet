@@ -20,10 +20,13 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 WEB_ROOT="/var/www/html"
 SUB_FILE="${WEB_ROOT}/sub"
-LINKS_FILE="/tmp/easynet_links.txt"
+SUB_FILE_ALL="${WEB_ROOT}/sub_full"
+LINKS_FILE_SAFE="/tmp/easynet_links_safe.txt"
+LINKS_FILE_ALL="/tmp/easynet_links_all.txt"
 
 # Clear previous links
-> "$LINKS_FILE"
+> "$LINKS_FILE_SAFE"
+> "$LINKS_FILE_ALL"
 
 get_public_ip() {
     curl -s ipinfo.io/ip || curl -s ifconfig.me || curl -s api.ipify.org
@@ -51,7 +54,9 @@ if [ -f "/usr/local/etc/xray/config.json" ]; then
         X_PBK=$(cat /usr/local/etc/xray/public.key)
         
         if [ -n "$X_UUID" ] && [ -n "$X_PORT" ] && [ -n "$X_SNI" ] && [ -n "$X_PBK" ]; then
-            echo "vless://$X_UUID@$PUBLIC_IP:$X_PORT?encryption=none&security=reality&sni=$X_SNI&fp=chrome&pbk=$X_PBK&sid=$X_SID&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality" >> "$LINKS_FILE"
+            X_LINK="vless://$X_UUID@$PUBLIC_IP:$X_PORT?encryption=none&security=reality&sni=$X_SNI&fp=chrome&pbk=$X_PBK&sid=$X_SID&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
+            echo "$X_LINK" >> "$LINKS_FILE_SAFE"
+            echo "$X_LINK" >> "$LINKS_FILE_ALL"
         fi
     fi
 fi
@@ -64,7 +69,9 @@ if [ -f "/etc/trojan-go/config.json" ]; then
     TROJAN_PATH=$(jq -r '.websocket.path // empty' /etc/trojan-go/config.json)
     
     if [ -n "$DOMAIN" ] && [ -n "$PASSWORD" ] && [ -n "$TROJAN_PATH" ]; then
-        echo "trojan://${PASSWORD}@${DOMAIN}:443?security=tls&type=ws&path=${TROJAN_PATH}#EasyNet-Trojan" >> "$LINKS_FILE"
+        T_LINK="trojan://${PASSWORD}@${DOMAIN}:443?security=tls&type=ws&path=${TROJAN_PATH}#EasyNet-Trojan"
+        echo "$T_LINK" >> "$LINKS_FILE_SAFE"
+        echo "$T_LINK" >> "$LINKS_FILE_ALL"
     fi
 fi
 
@@ -95,7 +102,9 @@ if [ -f "/usr/local/etc/v2ray/config.json" ]; then
         EXTERNAL_PORT=443
         vmess_json="{\"v\":\"2\",\"ps\":\"EasyNet-V2Ray\",\"add\":\"$DOMAIN\",\"port\":$EXTERNAL_PORT,\"id\":\"$UUID\",\"aid\":0,\"net\":\"ws\",\"type\":\"none\",\"host\":\"$DOMAIN\",\"path\":\"$WS_PATH\",\"tls\":\"tls\",\"sni\":\"$DOMAIN\"}"
         vmess_b64=$(echo -n "$vmess_json" | base64 -w 0)
-        echo "vmess://$vmess_b64" >> "$LINKS_FILE"
+        V_LINK="vmess://$vmess_b64"
+        echo "$V_LINK" >> "$LINKS_FILE_SAFE"
+        echo "$V_LINK" >> "$LINKS_FILE_ALL"
     fi
 fi
 
@@ -108,7 +117,7 @@ if [ -f "/etc/shadowsocks-libev/config.json" ]; then
     
     if [ -n "$SS_PORT" ] && [ -n "$SS_PASS" ] && [ -n "$SS_METHOD" ]; then
         userinfo=$(echo -n "${SS_METHOD}:${SS_PASS}" | base64 -w 0)
-        echo "ss://${userinfo}@${PUBLIC_IP}:${SS_PORT}#EasyNet-SS" >> "$LINKS_FILE"
+        echo "ss://${userinfo}@${PUBLIC_IP}:${SS_PORT}#EasyNet-SS" >> "$LINKS_FILE_ALL"
     fi
 fi
 
@@ -158,12 +167,12 @@ if [ -f "/etc/wireguard/clients/client1.conf" ]; then
         # Build the standard wg:// URI
         # Format: wg://[EndpointIP]:[Port]?publicKey=...&privateKey=...&presharedKey=...&ip=...&mtu=...&dns=...&udp=1
         WG_URI="wg://${WG_ENDPOINT}?publicKey=${ENC_PUB}&privateKey=${ENC_PRIV}&presharedKey=${ENC_PSK}&ip=${IP_ONLY}&mtu=${WG_MTU}&dns=${ENC_DNS}&udp=1#EasyNet-WG"
-        echo "$WG_URI" >> "$LINKS_FILE"
+        echo "$WG_URI" >> "$LINKS_FILE_ALL"
     fi
 fi
 
 # Check if we have any links
-if [ ! -s "$LINKS_FILE" ]; then
+if [ ! -s "$LINKS_FILE_ALL" ]; then
     log_warn "没有找到任何有效的节点配置。"
     exit 0
 fi
@@ -171,9 +180,17 @@ fi
 # Generate Subscription file
 log_info "生成订阅文件..."
 mkdir -p "$WEB_ROOT"
-cat "$LINKS_FILE" | base64 -w 0 > "$SUB_FILE"
-chmod 644 "$SUB_FILE"
-rm -f "$LINKS_FILE"
+if [ -s "$LINKS_FILE_SAFE" ]; then
+    cat "$LINKS_FILE_SAFE" | base64 -w 0 > "$SUB_FILE"
+    chmod 644 "$SUB_FILE"
+fi
+
+if [ -s "$LINKS_FILE_ALL" ]; then
+    cat "$LINKS_FILE_ALL" | base64 -w 0 > "$SUB_FILE_ALL"
+    chmod 644 "$SUB_FILE_ALL"
+fi
+
+rm -f "$LINKS_FILE_SAFE" "$LINKS_FILE_ALL"
 
 # Provide subscription URL
 if [ -f "/etc/trojan-go/config.json" ]; then
@@ -183,11 +200,15 @@ if [ -f "/etc/trojan-go/config.json" ]; then
         echo "========================================"
         echo "  节点订阅链接生成成功！"
         echo "========================================"
-        echo "您可以直接复制以下链接到客户端 (如 Clash Verge, V2RayN, Shadowrocket 等) 中进行订阅："
+        echo "【推荐】安全订阅链接 (仅包含防封锁能力强的协议：Xray/Trojan/V2Ray)："
+        echo "您可以直接复制以下链接到客户端中进行订阅："
+        echo -e "${GREEN}https://${SUB_DOMAIN}/sub${NC}"
         echo ""
-        echo -e "${YELLOW}https://${SUB_DOMAIN}/sub${NC}"
+        echo "【警告】完整订阅链接 (包含所有协议，包括易被探测的 Shadowsocks/WireGuard)："
+        echo "请注意：如果该链接泄漏且不安全的协议被频繁使用，VPS 可能会有被 GFW 封锁的风险！"
+        echo -e "${YELLOW}https://${SUB_DOMAIN}/sub_full${NC}"
         echo ""
-        echo "订阅成功后，所有部署的协议节点都会自动导入到客户端中，无需再手动扫码！"
+        echo "订阅成功后，节点会自动导入到客户端中，无需再手动扫码！"
         echo "========================================"
     fi
 fi
