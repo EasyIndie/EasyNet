@@ -20,6 +20,14 @@ log_error() {
 }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Load environment variables from .env if it exists
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    log_info "发现 .env 文件，加载环境变量..."
+    # 使用 export 确保子脚本也能继承这些变量，并忽略以 # 开头的注释行
+    export $(grep -v '^#' "$PROJECT_ROOT/.env" | xargs)
+fi
 
 check_root() {
     if [[ $EUID -ne 0 ]]; then
