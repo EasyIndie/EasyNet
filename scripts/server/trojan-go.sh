@@ -110,14 +110,6 @@ configure_trojan() {
         TROJAN_PATH=$(jq -r '.websocket.path' "$CONFIG_DIR/config.json")
         PUBLIC_IP=$(get_public_ip)
         
-        # 兼容处理：如果提取到的依然是旧版默认的 /trojan，则强制重新生成一个随机路径，提高安全性
-        if [ "$TROJAN_PATH" == "/trojan" ]; then
-            TROJAN_PATH="/$(openssl rand -hex 4)"
-            # 更新配置文件中的路径
-            jq --arg path "$TROJAN_PATH" '.websocket.path = $path' "$CONFIG_DIR/config.json" > "${CONFIG_DIR}/config.json.tmp" && mv "${CONFIG_DIR}/config.json.tmp" "$CONFIG_DIR/config.json"
-            log_info "已将默认的 /trojan 路径升级为随机路径: $TROJAN_PATH"
-        fi
-        
         # 将读取到（或新生成）的 TROJAN_PATH 保存到文件，以防文件丢失导致两边不一致
         echo "$TROJAN_PATH" > /etc/trojan-go/trojan_path.txt
         
@@ -187,24 +179,6 @@ configure_trojan() {
 EOF
     fi
 
-    # 如果检测到 V2Ray 已经安装且占用了 443 端口（即它是独立部署的），我们需要把它降级为 Trojan 的后端
-    if [ -f "/usr/local/etc/v2ray/config.json" ] && grep -q '"port": 443' "/usr/local/etc/v2ray/config.json"; then
-        log_info "检测到 V2Ray 已作为独立服务运行在 443 端口。"
-        log_info "正在将 V2Ray 降级为 Trojan 的后端 (监听 4443 端口并关闭自带 TLS)..."
-        
-        # 使用 jq 安全地更新 V2Ray 配置文件
-        jq --arg new_path "$V2RAY_PATH" '
-            .inbounds[0].port = 4443 |
-            .inbounds[0].listen = "127.0.0.1" |
-            .inbounds[0].streamSettings.wsSettings.path = $new_path |
-            del(.inbounds[0].streamSettings.security) |
-            del(.inbounds[0].streamSettings.tlsSettings)
-        ' /usr/local/etc/v2ray/config.json > /usr/local/etc/v2ray/config.json.tmp && mv /usr/local/etc/v2ray/config.json.tmp /usr/local/etc/v2ray/config.json
-        
-        systemctl restart v2ray
-        log_info "V2Ray 降级完成，现已接入 Trojan 流量复用。"
-    fi
-    
     log_info "配置文件已创建"
 }
 
@@ -327,17 +301,6 @@ EOF
     # 启用配置
     ln -sf /etc/nginx/sites-available/easynet-proxy /etc/nginx/sites-enabled/
     
-    # 移除可能冲突的默认配置（如果它是刚刚安装的初始状态或被我们之前版本覆盖过的状态，则安全移除，如果用户改过则保留）
-    if [ -f /etc/nginx/sites-enabled/default ]; then
-        # 检查是否是我们之前脚本写入的配置（包含 /v2ray 或 try_files $uri $uri/ =404）
-        if grep -q "try_files \$uri \$uri/ =404;" /etc/nginx/sites-available/default; then
-            log_info "检测到旧版 EasyNet 或 Nginx 默认配置，正在移除以避免冲突..."
-            rm -f /etc/nginx/sites-enabled/default
-        else
-            log_warn "检测到 Nginx default 配置可能被用户自定义过，已跳过移除。如有端口冲突请手动检查。"
-        fi
-    fi
-
     systemctl enable nginx
     systemctl restart nginx
 }
