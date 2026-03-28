@@ -203,10 +203,20 @@ if [ -f "/etc/trojan-go/config.json" ]; then
         echo "【推荐】安全订阅链接 (仅包含防封锁能力强的协议：Xray/Trojan/V2Ray)："
         echo "您可以直接复制以下链接到客户端中进行订阅："
         echo -e "${GREEN}https://${SUB_DOMAIN}/sub${NC}"
+        if command -v qrencode &> /dev/null; then
+            echo ""
+            echo "订阅二维码："
+            qrencode -t utf8 "https://${SUB_DOMAIN}/sub"
+        fi
         echo ""
         echo "【警告】完整订阅链接 (包含所有协议，包括易被探测的 Shadowsocks/WireGuard)："
         echo "请注意：如果该链接泄漏且不安全的协议被频繁使用，VPS 可能会有被 GFW 封锁的风险！"
         echo -e "${YELLOW}https://${SUB_DOMAIN}/sub_full${NC}"
+        if command -v qrencode &> /dev/null; then
+            echo ""
+            echo "完整订阅二维码："
+            qrencode -t utf8 "https://${SUB_DOMAIN}/sub_full"
+        fi
         echo ""
         echo "订阅成功后，节点会自动导入到客户端中，无需再手动扫码！"
         echo "========================================"
