@@ -100,7 +100,7 @@ def main():
     parser.add_argument("--password", help="密码 (SS/Trojan)")
     parser.add_argument("--uuid", help="UUID (VMess/VLESS)")
     parser.add_argument("--method", default="chacha20-ietf-poly1305", help="加密方式 (SS)")
-    parser.add_argument("--path", default="/trojan", help="WebSocket路径")
+    parser.add_argument("--path", default=None, help="WebSocket路径，VMess 默认 /v2ray，Trojan 默认 /trojan")
     parser.add_argument("--name", default="EasyNet", help="节点名称")
     parser.add_argument("--output", default="qrcode.png", help="输出文件")
     
@@ -119,6 +119,12 @@ def main():
     args = parser.parse_args()
 
     link_or_config = ""
+    path = args.path
+    if args.type == "vmess" and path is None:
+        path = "/v2ray"
+    if args.type == "trojan" and path is None:
+        path = "/trojan"
+
     if args.type == "ss":
         if not args.password:
             print("错误: SS 需要 --password 参数")
@@ -128,12 +134,12 @@ def main():
         if not args.uuid:
             print("错误: VMess 需要 --uuid 参数")
             sys.exit(1)
-        link_or_config = generate_vmess_link(args.ip, args.port, args.uuid, path=args.path, name=args.name)
+        link_or_config = generate_vmess_link(args.ip, args.port, args.uuid, path=path, name=args.name)
     elif args.type == "trojan":
         if not args.password:
             print("错误: Trojan 需要 --password 参数")
             sys.exit(1)
-        link_or_config = generate_trojan_link(args.ip, args.port, args.password, args.path, args.name)
+        link_or_config = generate_trojan_link(args.ip, args.port, args.password, path, args.name)
     elif args.type == "vless":
         if not args.uuid or not args.public_key or not args.short_id:
             print("错误: VLESS 需要 --uuid, --public-key, --short-id 参数")

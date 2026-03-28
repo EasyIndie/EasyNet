@@ -1,5 +1,25 @@
 # Cloudflare CDN 配置指南
 
+## 重要说明（与 EasyNet 当前实现强相关）
+
+EasyNet 当前实现包含多种协议，但并非都能被 Cloudflare 橙云代理。
+
+### 可以走 Cloudflare 橙云（Proxied）
+
+- Trojan-Go：脚本使用 WebSocket + TLS（443，随机路径），属于标准 HTTPS/WebSocket 形态
+- V2Ray：通过 Nginx 将 WebSocket 反代到本机 127.0.0.1:4443，对外仍是 HTTPS/WebSocket
+- 订阅链接：`/sub` 与 `/sub_full` 由 Trojan-Go 回落到本机 Nginx 返回
+
+### 不应指望 Cloudflare 橙云隐藏源站 IP
+
+- Xray Reality：TCP 形态，不是标准 HTTPS
+- Shadowsocks：非 HTTP(S) 协议
+- WireGuard：UDP 协议
+
+### 证书申请阶段必须 DNS Only（灰云）
+
+脚本使用 acme.sh standalone 申请证书，需要公网直连服务器 80 端口完成校验。首次部署阶段请先设置 DNS Only，签发完成后再按需切换橙云。
+
 ## 为什么使用 Cloudflare
 
 - 免费 CDN 加速
@@ -45,7 +65,9 @@ DNS 更改可能需要最多 24 小时生效。
 3. 选择「A」类型
 4. Name 填写：`@`（代表根域名）或 `www`
 5. IPv4 address 填写你的 VPS 服务器 IP
-6. Proxy status 选择：「Proxied」（橙色云朵）
+6. Proxy status：
+   - 首次部署与证书签发阶段：请选择「DNS only」（灰色云朵）
+   - 仅在使用 Trojan/V2Ray/订阅链接时再切换为「Proxied」（橙色云朵）
 7. 点击「Save」
 
 如果你想使用子域名（如 proxy.example.com）：
@@ -132,7 +154,8 @@ Cloudflare 只代理以下端口：
 - HTTP: 80, 8080, 8880, 2052, 2082, 2086, 2095
 - HTTPS: 443, 2053, 2083, 2087, 2096, 8443
 
-我们使用 443 端口，这个是支持的。
+我们使用 443 端口，这个是支持的（Trojan/V2Ray/订阅访问）。
+即便 8443 在列表中，Xray Reality 也不是标准 HTTPS 流量，Cloudflare 橙云无法代理该协议本身。
 
 ### WebSocket 支持
 

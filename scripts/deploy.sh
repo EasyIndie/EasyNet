@@ -206,6 +206,7 @@ main() {
                 ;;
             4)
                 deploy_wireguard
+                bash "$SCRIPT_DIR/generate_subscription.sh"
                 ;;
             5)
                 deploy_xray

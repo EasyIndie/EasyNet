@@ -29,6 +29,10 @@
 - 需要一个域名用于申请 SSL 证书
 - 推荐使用 Cloudflare 免费 CDN
 - 配置 DNS A 记录指向 VPS IP
+ 
+注意事项：
+- 脚本使用 acme.sh standalone 申请证书，需要公网直连服务器 80 端口完成校验。首次部署请先设置 DNS Only（灰云），签发完成后再按需切换橙云。
+- 订阅链接 `https://你的域名/sub` 与 `https://你的域名/sub_full` 由 Trojan-Go 回落到本机 Nginx 提供。仅部署其他协议时不保证有可访问的订阅链接。
 
 ## 部署步骤
 

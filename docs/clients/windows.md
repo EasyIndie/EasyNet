@@ -9,6 +9,15 @@
 
 ### 2. 安装并配置
 
+**方法一：使用订阅链接（推荐）**
+1. 打开 NekoBox
+2. 点击「订阅」或「配置」→「从 URL 导入」
+3. 粘贴部署完成后终端输出的订阅链接：
+   - 安全订阅：`https://your-domain.com/sub`（Xray/Trojan/V2Ray）
+   - 完整订阅：`https://your-domain.com/sub_full`（额外包含 Shadowsocks/WireGuard）
+4. 点击更新，节点会自动导入
+
+**方法二：手动配置单节点**
 1. 下载并解压 NekoBox
 2. 运行 `nekoray.exe`
 3. 点击「服务器」→「新建服务器」→「Trojan」

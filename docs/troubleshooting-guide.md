@@ -44,13 +44,14 @@
 
 ### 1. 客户端扫码后提示 "无效的配置 URL"
 * **现象**：Shadowrocket 扫描二维码后无法识别，或解析出的密码带有特殊字符。
-* **原因**：最初密码使用 Base64 生成（包含 `+`, `/`, `=`），在拼接成 `trojan://` 或 `ss://` URI 时，这些特殊字符破坏了 URL 结构。
-* **修复**：将随机密码生成方式改为十六进制：`openssl rand -hex 16`，纯字母数字组合完美兼容所有客户端。
+* **原因**：旧版本脚本曾使用 Base64 生成密码（包含 `+`, `/`, `=`），在拼接成 `trojan://` 或 `ss://` URI 时会破坏 URL 结构。
+* **现状**：当前脚本已统一使用十六进制密码生成（`openssl rand -hex 16`），新部署不再出现该问题。
 
 ### 2. 终端生成的二维码过大，无法完整扫描
 * **现象**：终端生成的二维码超出屏幕，需要滚动才能看完，手机无法扫描。
-* **原因**：`qrencode` 默认或使用 `ansiutf8` 格式时，生成的区块过大。
-* **修复**：统一将二维码生成命令修改为 `qrencode -t utf8`，使用半块字符，大幅缩小二维码体积。
+* **原因**：`qrencode` 使用 `ansiutf8` 或默认格式时，二维码区块过大。
+* **现状**：脚本已统一使用 `qrencode -t utf8` 输出，正常情况下可直接扫描。
+* **修复**：如仍过大，请确认没有手动使用 `ansiutf8`，并优先使用订阅二维码导入。
 
 ### 3. Trojan-Go 启动失败 (unknown proxy type)
 * **现象**：`systemctl status trojan-go` 显示失败，日志中出现 `unknown proxy type`。
@@ -63,9 +64,12 @@
 * **修复**：停用并禁用系统默认服务 `systemctl disable --now shadowsocks-libev`，并在启动命令中明确指定监听所有网卡 `-s 0.0.0.0`。
 
 ### 5. Trojan-Go 开启复用时 V2Ray 等后端服务连通性正常但无法上网
-* **现象**：将 V2Ray 作为 Trojan-Go 的后端（路径为 `/v2ray`），客户端测试连通性通过，但无法访问网页。查看 `journalctl -u trojan-go` 发现日志提示 `not a valid websocket handshake request` 并且重定向到了默认的 80 端口（Nginx）。
-* **原因**：由于我们在 Trojan-Go 中启用了自身的 `websocket` 支持（路径 `/trojan`），Trojan-Go 的底层 WebSocket 监听器会拦截**所有** HTTP 请求。当它发现请求路径是 `/v2ray` 而不是自己的 `/trojan` 时，会直接将其视为无效请求，并立刻将连接强制回落到全局的 `remote_port`（即 80 端口），**这导致流量根本无法到达 Trojan-Go 配置的 `fallback_endpoints` 分流逻辑**。而 Nginx 正常返回了 200 OK，使得 V2Ray 客户端误以为代理已通。之前尝试移除 Trojan-Go 的 `host` 和 `path` 限制是方向性错误，不仅没解决问题，反而降低了伪装安全性。
-* **修复**：顺应 Trojan-Go 的底层架构限制，彻底废弃 `fallback_endpoints`。恢复 Trojan-Go 严格的 `"host": "你的域名"` 验证以提升安全性。直接利用 Nginx 作为流量分发中心：Trojan-Go 将非自身路径的流量回落到 80 端口，我们在 Nginx 的配置中增加 `location /v2ray` 块，由 Nginx 将 WebSocket 流量反向代理到本地 4443 端口的 V2Ray。这样不仅完美解决了冲突，还提高了 Web 服务器的伪装真实性。
+* **现象**：将 V2Ray 作为 Trojan-Go 的后端（路径为随机值），客户端测试连通性通过，但无法访问网页。查看 `journalctl -u trojan-go` 发现日志提示 `not a valid websocket handshake request` 并且回落到了 80 端口（Nginx）。
+* **原因**：Trojan-Go 只接受自身的 WebSocket 路径。若请求路径不是当前 Trojan 路径，就会触发回落到 Nginx。此时若 V2Ray 的请求路径与 Nginx 的反代路径不一致，流量无法进入 V2Ray 后端。
+* **修复**：以 Nginx 为分发中心：Trojan-Go 将非自身路径的流量回落到 80 端口，Nginx 按实际 V2Ray 路径反向代理到 `127.0.0.1:4443`。确保 V2Ray 路径与 Nginx 配置一致。
+* **提示**：路径由脚本随机生成并落盘：
+  - Trojan 路径：`/etc/trojan-go/trojan_path.txt`
+  - V2Ray 路径：`/etc/trojan-go/v2ray_path.txt`
 
 ### 6. Xray/V2Ray 等协议恢复部署后客户端变量为空或服务启动失败
 * **现象**：在使用同一台机器重新部署（恢复模式）时，终端输出的客户端配置中 UUID、Short ID 或路径为空，或者服务启动直接报错。
@@ -101,6 +105,11 @@ WireGuard (WG) 基于 UDP 且是无状态的，排查难度最高。
 * **结论**：**这是正常现象**。只要浏览器能打开网页，或者服务端 `wg show` 显示 `transfer` 数据在增长，就说明代理运行完美。可以使用 Speedtest 或本地 Ping 工具进行实际延迟测试。
 
 ---
+
+### 4. 订阅二维码与单节点二维码混淆
+* **现象**：扫描二维码后只导入一个节点，或者订阅没有出现。
+* **原因**：终端输出既有单节点二维码（`trojan://`、`vmess://`、`wg://`），也有订阅二维码（`https://your-domain/sub`、`https://your-domain/sub_full`），两者用途不同。
+* **修复**：批量导入优先扫描订阅二维码；只需单节点时再扫描协议二维码。
 
 > **总结：**
 > 部署代理服务是一个涉及 **进程管理 -> 网络监听 -> 密码学握手 -> 防火墙放行 -> 流量路由转发** 的全链路工程。任何一个环节断裂都会导致“连不上”。掌握 `systemctl status`、`journalctl`、`netstat` 和 `wg show` 这四大法宝，就能精准定位 99% 的问题！

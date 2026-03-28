@@ -67,8 +67,10 @@
 1. 下载并安装
 2. 打开应用
 3. 点击「配置」→「新配置」→「URL 导入」
-4. 在 URL 栏中，粘贴终端部署完成后输出的 **节点订阅链接**（例如：`https://your-domain.com/sub`）。
-5. 命名并保存，点击更新。所有节点会自动下载并分组。
+4. 在 URL 栏中，粘贴终端部署完成后输出的 **节点订阅链接**：
+   - 安全订阅：`https://your-domain.com/sub`（Xray/Trojan/V2Ray）
+   - 完整订阅：`https://your-domain.com/sub_full`（额外包含 Shadowsocks/WireGuard）
+5. 命名并保存，点击更新。节点会自动下载并分组。
 
 ### 3. 启动
 

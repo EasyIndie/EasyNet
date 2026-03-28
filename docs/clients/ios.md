@@ -15,7 +15,9 @@ Shadowrocket 是 iOS 上最强大的代理客户端之一：
 
 **方法一：使用订阅链接（强烈推荐）**
 这是最简单的配置方式：
-1. 复制终端部署完成后输出的**节点订阅链接**（例如：`https://your-domain.com/sub`）。
+1. 复制终端部署完成后输出的**节点订阅链接**：
+   - 安全订阅：`https://your-domain.com/sub`（Xray/Trojan/V2Ray）
+   - 完整订阅：`https://your-domain.com/sub_full`（额外包含 Shadowsocks/WireGuard）
 2. 打开 Shadowrocket，点击右上角的「+」号。
 3. 在「类型」中选择 **Subscribe (订阅)**。
 4. 在「URL」中粘贴刚刚复制的链接。
