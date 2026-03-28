@@ -79,9 +79,9 @@ ssh root@your-server-ip
 ```bash
 apt update && apt install -y git
 git clone https://github.com/your-repo/EasyNet.git
-cd EasyNet/scripts
-chmod +x deploy.sh server/*.sh
-./deploy.sh
+cd EasyNet
+chmod +x scripts/deploy.sh scripts/server/*.sh
+./scripts/deploy.sh
 ```
 
 ### 按提示操作

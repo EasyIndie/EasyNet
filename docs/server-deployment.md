@@ -42,14 +42,14 @@ ssh root@your-server-ip
 
 ```bash
 git clone https://github.com/your-repo/EasyNet.git
-cd EasyNet/scripts
-chmod +x deploy.sh server/*.sh generate_subscription.sh
+cd EasyNet
+chmod +x scripts/deploy.sh scripts/server/*.sh scripts/generate_subscription.sh
 ```
 
 ### 3. 运行部署脚本
 
 ```bash
-./deploy.sh
+./scripts/deploy.sh
 ```
 
 选择要部署的协议（推荐选择 Trojan-Go）。
@@ -58,7 +58,7 @@ chmod +x deploy.sh server/*.sh generate_subscription.sh
 
 对于熟悉命令行的进阶用户，支持通过环境变量静默部署，无需手动选择：
 ```bash
-EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=your-domain.com ./deploy.sh
+EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=your-domain.com ./scripts/deploy.sh
 ```
 
 ### 5. 记录配置信息
@@ -77,7 +77,7 @@ EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=your-domain.com ./deploy.sh
 ```bash
 systemctl status trojan-go
 systemctl status v2ray
-systemctl status shadowsocks-libev
+systemctl status shadowsocks-libev-server
 systemctl status wg-quick@wg0
 systemctl status xray
 ```
@@ -90,12 +90,10 @@ journalctl -u trojan-go -f -n 50
 journalctl -u v2ray -f -n 50
 ```
 
-配置备份与还原：
+配置备份：
 当需要迁移服务器时，可使用自带的脚本打包配置：
 ```bash
 ./scripts/backup.sh
-# 将生成的压缩包传输到新机器后执行
-./scripts/restore.sh /path/to/backup.tar.gz
 ```
 
 ## 性能优化

@@ -44,7 +44,6 @@ EasyNet/
 │   │   ├── wireguard.sh
 │   │   └── xray-reality.sh
 │   ├── backup.sh         # 配置备份脚本
-│   ├── restore.sh        # 配置还原脚本
 │   └── deploy.sh         # 一键部署脚本
 ├── tests/                  # 单元测试目录
 │   ├── test_helper.bash
@@ -85,9 +84,9 @@ EasyNet/
 
 ```bash
 git clone https://github.com/your-repo/EasyNet.git
-cd EasyNet/scripts
-chmod +x deploy.sh server/*.sh generate_subscription.sh
-./deploy.sh
+cd EasyNet
+chmod +x scripts/deploy.sh scripts/server/*.sh scripts/generate_subscription.sh
+./scripts/deploy.sh
 ```
 
 部署菜单选项：
