@@ -5,9 +5,11 @@
 | 平台 | 推荐客户端 | 说明 |
 |------|------------|------|
 | Windows / macOS | Clash Verge Rev | 适合日常使用，优先导入订阅 |
+| Linux | Clash Verge Rev | 适合桌面 Linux 日常使用，优先导入订阅 |
 | Android | Clash Meta for Android | 适合订阅导入和规则分流 |
 | iOS | Shadowrocket | 适合订阅导入与手动补充 |
 | Windows / Android | v2rayN / v2rayNG | 适合手动调试 Reality、VMess、Trojan 单节点 |
+| Linux | Xray / sing-box | 适合进阶用户手动调试 Reality 或命令行使用 |
 
 ## 优先使用订阅导入
 
@@ -21,7 +23,7 @@
 
 ## 各平台最短导入步骤
 
-### Windows / macOS
+### Windows / macOS / Linux
 
 - 客户端：Clash Verge Rev
 - 地址：https://github.com/clash-verge-rev/clash-verge-rev/releases
@@ -46,6 +48,7 @@
 
 - Windows / macOS / iOS：https://www.wireguard.com/install/
 - Android：https://github.com/WireGuard/wireguard-android/releases
+- Linux：使用系统包管理器安装 `wireguard` / `wireguard-tools`
 
 ### 导入步骤
 
@@ -73,6 +76,11 @@
 - Windows：`v2rayN`
 - Android：`v2rayNG`
 - iOS：`Shadowrocket`
+- Linux：`xray` 或 `sing-box`
+
+Linux 常用方式：
+- GUI：`Clash Verge Rev` 导入订阅
+- CLI：使用 `xray` 或 `sing-box` 手动填写 Reality 参数
 
 ## 验证连接
 

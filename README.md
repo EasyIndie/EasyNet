@@ -64,7 +64,7 @@ EasyNet/
 
 - 环境：`Ubuntu 22.04+` / `Debian 11+`，`1C1G` 起步，开放 `80/443`
 - 推荐协议：日常优先 `Xray+Reality` 或 `Trojan-Go`
-- 客户端：Windows/macOS 用 `Clash Verge Rev`，Android 用 `Clash Meta for Android`，iOS 用 `Shadowrocket`
+- 客户端：Windows/macOS/Linux 用 `Clash Verge Rev`，Android 用 `Clash Meta for Android`，iOS 用 `Shadowrocket`
 
 ### 3 步完成部署
 
