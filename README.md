@@ -12,15 +12,15 @@
 - 🔄 自动化运维：服务自动更新、配置防丢恢复、系统日志截断防爆盘
 - 🤖 无交互部署：支持注入环境变量进行一键 CI/CD 批量安装
 - 🔗 节点订阅：自动生成跨平台通用的节点订阅链接，告别繁琐的手动扫码
-- 📱 全平台客户端支持（Windows/macOS/Linux/Android/iOS）
+- 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket）
 - 💰 成本可控（$5-$10/月）
 - 🛡️ 安全稳定，自带单元测试保护核心逻辑
 
 ## 协议对比与防探测等级
 
-👉 **强烈建议阅读：[《EasyNet 安全性与防探测分析指南》](docs/security-analysis.md)**
+👉 **协议选择、Cloudflare 使用限制和部署关键点已合并到：[《EasyNet 部署说明》](docs/deployment.md)**
 
-了解不同协议在对抗 GFW 深度包检测（DPI）、主动探测以及黑客端口扫描时的具体表现，选择最适合你当前网络环境的翻墙协议。
+如果你只想快速决策：日常优先 `Xray+Reality` 或 `Trojan-Go`，兼容性补充用 `V2Ray`，`Shadowsocks` 和 `WireGuard` 仅建议在特定场景使用。
 
 简要对比：
 
@@ -53,34 +53,20 @@ EasyNet/
 │   ├── test_vmess_generation.bash
 │   ├── test_wireguard_generation.bash
 │   └── run_all_tests.bash
-├── docs/                   # 文档目录
-│   ├── server-deployment.md
-│   ├── cloudflare-setup.md
-│   ├── troubleshooting-guide.md
-│   ├── security-analysis.md # 安全性与防探测分析
-│   └── clients/          # 客户端配置指南
-│       ├── windows.md
-│       ├── macos.md
-│       ├── android.md
-│       ├── ios.md
-│       ├── wireguard.md
-│       └── xray-reality.md
-├── README.md
-└── QUICKSTART.md
+├── docs/                   # 精简文档目录
+│   ├── deployment.md       # 部署、协议选择、Cloudflare 说明
+│   ├── clients.md          # 全平台客户端说明
+│   └── troubleshooting-guide.md
+└── README.md
 ```
 
 ## 快速开始
 
-### 服务器要求
+- 环境：`Ubuntu 22.04+` / `Debian 11+`，`1C1G` 起步，开放 `80/443`
+- 推荐协议：日常优先 `Xray+Reality` 或 `Trojan-Go`
+- 客户端：Windows/macOS 用 `Clash Verge Rev`，Android 用 `Clash Meta for Android`，iOS 用 `Shadowrocket`
 
-- CPU: 1核
-- 内存: 1GB+
-- 存储: 20GB SSD
-- 系统: Ubuntu 22.04+ / Debian 11+
-- 位置: 香港、日本、新加坡等亚洲节点
-- 预算: $5-$10/月
-
-### 一键部署
+### 3 步完成部署
 
 ```bash
 git clone https://github.com/your-repo/EasyNet.git
@@ -89,59 +75,24 @@ chmod +x scripts/deploy.sh scripts/server/*.sh scripts/generate_subscription.sh
 ./scripts/deploy.sh
 ```
 
-部署菜单选项：
+最短流程：
+1. 运行脚本并按提示选择协议
+2. 保存部署输出的密码、UUID、Reality 参数和订阅链接
+3. 在客户端中优先导入订阅链接，日常使用推荐 `https://your-domain.com/sub`
 
-1. 部署 Trojan-Go (推荐)
-2. 部署 V2Ray
-3. 部署 Shadowsocks-libev
-4. 部署 WireGuard
-5. 部署 Xray+Reality
-6. 全部部署
-7. 退出
+如果你需要 `.env` 自动化部署、Cloudflare 设置限制、协议差异或完整验证步骤，请直接看 [部署说明](docs/deployment.md)。
 
-部署完成后，脚本会自动生成一个通用的**节点订阅链接**（例如：`https://your-domain.com/sub`）。你只需要将这个链接复制到你的代理客户端（如 Clash Verge, Shadowrocket, V2RayN 等）中，即可一键导入所有节点，无需再一个个手动扫码配置！
-
-### 自动化无交互部署（适合 CI/CD）
-
-通过设置环境变量，可以跳过所有 `read -p` 手动输入提示，实现全自动化安装。我们提供了环境变量模板来降低部署时的手动输入成本。
-
-#### 方式一：使用 `.env` 文件固化配置（推荐）
-
-1. 复制模板文件：
-   ```bash
-   cp .env.example .env
-   ```
-2. 编辑 `.env` 文件，根据你的需求修改配置（例如部署选择、域名等）。
-3. 直接运行部署脚本，脚本会自动读取并应用 `.env` 中的配置：
-   ```bash
-   ./scripts/deploy.sh
-   ```
-
-#### 方式二：命令行注入环境变量
-
-也可以在执行命令时直接传递：
+### 自动化示例
 
 ```bash
-# 例如：全量部署 (6) 并且设置域名为 proxy.example.com
 EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 ```
 
 ## 文档
 
-### 服务器文档
-
-- [快速入门指南](QUICKSTART.md)
-- [服务器部署指南](docs/server-deployment.md)
-- [Cloudflare CDN 配置](docs/cloudflare-setup.md)
-
-### 客户端文档
-
-- [Windows 客户端配置](docs/clients/windows.md)
-- [macOS 客户端配置](docs/clients/macos.md)
-- [Android 客户端配置](docs/clients/android.md)
-- [iOS 客户端配置](docs/clients/ios.md)
-- [WireGuard 客户端配置](docs/clients/wireguard.md)
-- [Xray+Reality 客户端配置](docs/clients/xray-reality.md)
+- [部署说明](docs/deployment.md)
+- [客户端说明](docs/clients.md)
+- [故障排查指南](docs/troubleshooting-guide.md)
 
 ## 许可证
 
