@@ -76,6 +76,15 @@
 - 批量导入使用订阅二维码或订阅链接
 - 单独调试才使用 `trojan://`、`vmess://`、`vless://`、`wg://`
 
+### Clash Verge Rev 无法导入订阅
+
+原因：
+- 导入了 URI 订阅 `sub`，而不是 Clash/Mihomo 订阅 `clash`
+
+处理：
+- Clash Verge Rev 使用 `https://your-domain.com/clash`
+- 需要 Shadowsocks/WireGuard 时使用 `https://your-domain.com/clash_full`
+
 ## 快速判断是否是客户端问题
 
 - 换一个客户端再次导入

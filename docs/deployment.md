@@ -75,7 +75,7 @@ EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - 证书签发完成后，可将 Trojan-Go / V2Ray / 订阅链接切到橙云
 - `Xray+Reality`、`Shadowsocks`、`WireGuard` 不能依赖 Cloudflare 橙云代理协议本身
 - Cloudflare SSL 模式建议使用 `Full` 或 `Full (strict)`
-- 订阅链接 `/sub` 与 `/sub_full` 依赖 Trojan-Go + Nginx 回落链路提供
+- 订阅链接 `/sub`、`/sub_full`、`/clash`、`/clash_full` 依赖 Trojan-Go + Nginx 回落链路提供
 
 ## 部署完成后要保存的信息
 
@@ -84,7 +84,7 @@ EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - 端口
 - 密码 / UUID / PublicKey / ShortID
 - WebSocket 路径
-- 订阅链接：`/sub`、`/sub_full`
+- 订阅链接：`/sub`、`/sub_full`、`/clash`、`/clash_full`
 
 ## 验证部署
 
@@ -100,8 +100,10 @@ systemctl status xray
 
 ### 订阅链接
 
-- 安全订阅：`https://your-domain.com/sub`
-- 完整订阅：`https://your-domain.com/sub_full`
+- Shadowrocket / v2rayN / v2rayNG：`https://your-domain.com/sub`
+- Shadowrocket / v2rayN / v2rayNG 完整订阅：`https://your-domain.com/sub_full`
+- Clash Verge Rev / Mihomo：`https://your-domain.com/clash`
+- Clash Verge Rev / Mihomo 完整订阅：`https://your-domain.com/clash_full`
 
 ### 其他检查
 

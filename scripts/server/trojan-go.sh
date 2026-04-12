@@ -277,6 +277,18 @@ server {
         default_type text/plain;
     }
 
+    # 允许访问 Clash/Mihomo 订阅文件
+    location = /clash {
+        try_files \$uri =404;
+        default_type application/x-yaml;
+    }
+
+    # 允许访问 Clash/Mihomo 完整订阅文件
+    location = /clash_full {
+        try_files \$uri =404;
+        default_type application/x-yaml;
+    }
+
     location / {
         access_log off;
         try_files \$uri \$uri/ =404;

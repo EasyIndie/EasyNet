@@ -78,7 +78,7 @@ chmod +x scripts/deploy.sh scripts/server/*.sh scripts/generate_subscription.sh
 最短流程：
 1. 运行脚本并按提示选择协议
 2. 保存部署输出的密码、UUID、Reality 参数和订阅链接
-3. 在客户端中优先导入订阅链接，日常使用推荐 `https://your-domain.com/sub`
+3. 在客户端中按类型导入订阅：`Clash Verge Rev` 使用 `https://your-domain.com/clash`，`Shadowrocket` 使用 `https://your-domain.com/sub`
 
 如果你需要 `.env` 自动化部署、Cloudflare 设置限制、协议差异或完整验证步骤，请直接看 [部署说明](docs/deployment.md)。
 
