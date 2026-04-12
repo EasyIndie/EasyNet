@@ -406,6 +406,14 @@ if [ -f "/etc/trojan-go/config.json" ]; then
         echo "【URI 订阅】适用于 Shadowrocket / v2rayN / v2rayNG："
         echo -e "${GREEN}https://${SUB_DOMAIN}/sub${NC}"
         echo -e "${YELLOW}https://${SUB_DOMAIN}/sub_full${NC}"
+        if command -v qrencode &> /dev/null; then
+            echo ""
+            echo "URI 安全订阅二维码："
+            qrencode -t utf8 "https://${SUB_DOMAIN}/sub"
+            echo ""
+            echo "URI 完整订阅二维码："
+            qrencode -t utf8 "https://${SUB_DOMAIN}/sub_full"
+        fi
         echo ""
         echo "【Clash/Mihomo 订阅】适用于 Clash Verge Rev / Mihomo："
         echo -e "${GREEN}https://${SUB_DOMAIN}/clash${NC}"
@@ -414,6 +422,9 @@ if [ -f "/etc/trojan-go/config.json" ]; then
             echo ""
             echo "Clash/Mihomo 安全订阅二维码："
             qrencode -t utf8 "https://${SUB_DOMAIN}/clash"
+            echo ""
+            echo "Clash/Mihomo 完整订阅二维码："
+            qrencode -t utf8 "https://${SUB_DOMAIN}/clash_full"
         fi
         echo ""
         echo "说明："
