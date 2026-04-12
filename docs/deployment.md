@@ -14,15 +14,16 @@
 
 ## 协议选择
 
-| 协议 | 推荐度 | 适用场景 |
-|------|--------|----------|
-| Xray+Reality | 高 | 抗封锁优先，允许使用支持 Reality 的客户端 |
-| Trojan-Go | 高 | 日常主力方案，兼容性和隐蔽性平衡 |
-| V2Ray | 中 | 作为 Trojan-Go 的兼容补充 |
-| Shadowsocks | 低 | 仅在特定客户端或测试场景使用 |
-| WireGuard | 低 | 适合中转、低延迟、独立 VPN 场景 |
+| 协议           | 推荐度 | 适用场景                      |
+| ------------ | --- | ------------------------- |
+| Xray+Reality | 高   | 抗封锁优先，允许使用支持 Reality 的客户端 |
+| Trojan-Go    | 高   | 日常主力方案，兼容性和隐蔽性平衡          |
+| V2Ray        | 中   | 作为 Trojan-Go 的兼容补充        |
+| Shadowsocks  | 低   | 仅在特定客户端或测试场景使用            |
+| WireGuard    | 低   | 适合中转、低延迟、独立 VPN 场景        |
 
 结论：
+
 - 日常优先：`Xray+Reality` 或 `Trojan-Go`
 - 兼容性补充：`V2Ray`
 - 特定用途：`WireGuard`
@@ -41,7 +42,6 @@ ssh root@your-server-ip
 apt update && apt install -y git
 git clone https://github.com/your-repo/EasyNet.git
 cd EasyNet
-chmod +x scripts/deploy.sh scripts/server/*.sh scripts/generate_subscription.sh
 ```
 
 ### 3. 执行部署
@@ -51,6 +51,7 @@ chmod +x scripts/deploy.sh scripts/server/*.sh scripts/generate_subscription.sh
 ```
 
 推荐：
+
 - 单协议优先选 `Trojan-Go`
 - 想一次部署全部协议可选 `6`
 
@@ -76,15 +77,6 @@ EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - `Xray+Reality`、`Shadowsocks`、`WireGuard` 不能依赖 Cloudflare 橙云代理协议本身
 - Cloudflare SSL 模式建议使用 `Full` 或 `Full (strict)`
 - 订阅链接 `/sub`、`/sub_full`、`/clash`、`/clash_full` 依赖 Trojan-Go + Nginx 回落链路提供
-
-## 部署完成后要保存的信息
-
-- 服务器 IP
-- 域名
-- 端口
-- 密码 / UUID / PublicKey / ShortID
-- WebSocket 路径
-- 订阅链接：`/sub`、`/sub_full`、`/clash`、`/clash_full`
 
 ## 验证部署
 
@@ -114,5 +106,6 @@ sysctl net.ipv4.tcp_congestion_control
 
 ## 需要时再看
 
-- 客户端导入与平台差异：`docs/clients.md`
-- 出现故障时：`docs/troubleshooting-guide.md`
+- 客户端导入与平台差异：[客户端说明](./clients.md)
+- 出现故障时：[故障排查指南](./troubleshooting-guide.md)
+
