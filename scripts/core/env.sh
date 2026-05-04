@@ -31,3 +31,7 @@ easynet_nginx_state_dir() {
 easynet_subscription_state_dir() {
     easynet_exposure_state_dir "subscription"
 }
+
+easynet_edge_state_dir() {
+    easynet_exposure_state_dir "edge"
+}

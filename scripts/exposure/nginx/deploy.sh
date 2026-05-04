@@ -69,17 +69,7 @@ server {
         default_type text/plain;
     }
 
-    location = /sub_full {
-        try_files \$uri =404;
-        default_type text/plain;
-    }
-
     location = /clash {
-        try_files \$uri =404;
-        default_type application/x-yaml;
-    }
-
-    location = /clash_full {
         try_files \$uri =404;
         default_type application/x-yaml;
     }

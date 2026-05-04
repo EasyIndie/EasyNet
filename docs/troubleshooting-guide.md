@@ -83,7 +83,6 @@
 
 处理：
 - Clash Verge Rev 使用 `https://your-domain.com/clash`
-- 需要 Shadowsocks/WireGuard 时使用 `https://your-domain.com/clash_full`
 
 ## 快速判断是否是客户端问题
 

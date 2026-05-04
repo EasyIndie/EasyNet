@@ -26,24 +26,31 @@ export_trojan_go_metadata() {
         return 1
     fi
 
-    local domain password path port public_ip uri metadata_json
+    local domain password path listen local_port public_port public_ip uri metadata_json firewall_json
     domain=$(jq -r '.ssl.sni // empty' "$config_file")
     password=$(jq -r '.password[0] // empty' "$config_file")
     path=$(jq -r '.websocket.path // empty' "$config_file")
-    port=$(jq -r '.local_port // 443' "$config_file")
+    listen=$(jq -r '.local_addr // "0.0.0.0"' "$config_file")
+    local_port=$(jq -r '.local_port // 443' "$config_file")
+    public_port="${EASYNET_TROJAN_PUBLIC_PORT:-$local_port}"
     public_ip=$(get_public_ip)
 
-    if [ -z "$domain" ] || [ -z "$password" ] || [ -z "$path" ] || [ -z "$port" ]; then
+    if [ -z "$domain" ] || [ -z "$password" ] || [ -z "$path" ] || [ -z "$local_port" ] || [ -z "$public_port" ]; then
         echo "Trojan-Go metadata is incomplete" >&2
         return 1
     fi
 
-    uri="trojan://${password}@${domain}:${port}?security=tls&type=ws&path=${path}#EasyNet-Trojan"
+    uri="trojan://${password}@${domain}:${public_port}?security=tls&type=ws&path=${path}#EasyNet-Trojan"
+    if [ "$listen" = "127.0.0.1" ] || [ "$listen" = "localhost" ]; then
+        firewall_json="[]"
+    else
+        firewall_json=$(jq -cn --argjson port "$local_port" '[{ port: $port, proto: "tcp" }]')
+    fi
 
     metadata_json=$(jq -n \
         --arg module_name "$MODULE_NAME" \
         --arg protocol "trojan" \
-        --arg listen "0.0.0.0" \
+        --arg listen "$listen" \
         --arg transport "ws" \
         --arg security "tls" \
         --arg server "$domain" \
@@ -51,14 +58,17 @@ export_trojan_go_metadata() {
         --arg sni "$domain" \
         --arg path "$path" \
         --arg uri "$uri" \
-        --argjson port "$port" \
+        --argjson local_port "$local_port" \
+        --argjson public_port "$public_port" \
+        --argjson firewall "$firewall_json" \
         '{
             schemaVersion: 1,
             "module": $module_name,
             enabled: true,
             protocol: $protocol,
             listen: $listen,
-            port: $port,
+            port: $local_port,
+            publicPort: $public_port,
             transport: $transport,
             security: $security,
             client: {
@@ -67,7 +77,7 @@ export_trojan_go_metadata() {
                     name: "EasyNet-Trojan",
                     type: "trojan",
                     server: $server,
-                    port: $port,
+                    port: $public_port,
                     password: $password,
                     udp: true,
                     sni: $sni,
@@ -80,9 +90,7 @@ export_trojan_go_metadata() {
                     }
                 }
             },
-            firewall: [
-                { port: $port, proto: "tcp" }
-            ],
+            firewall: $firewall,
             systemd: {
                 services: ["trojan-go"]
             }

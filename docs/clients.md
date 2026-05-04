@@ -12,10 +12,8 @@
 ## 优先使用订阅导入
 
 部署完成后，终端会打印两组订阅链接：
-- URI 安全订阅：`https://your-domain.com/sub`
-- URI 完整订阅：`https://your-domain.com/sub_full`
-- Clash 安全订阅：`https://your-domain.com/clash`
-- Clash 完整订阅：`https://your-domain.com/clash_full`
+- URI 订阅：`https://your-domain.com/sub`
+- Clash 订阅：`https://your-domain.com/clash`
 
 使用建议：
 - `Clash Verge Rev` / `Mihomo` 使用 `clash`
@@ -58,4 +56,4 @@
 
 ### 完整节点没有出现
 
-- 你导入的是安全订阅，不是完整订阅：`sub_full` 或 `clash_full`
+- 确认使用的是当前订阅入口：`/sub` 或 `/clash`

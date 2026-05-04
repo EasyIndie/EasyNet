@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # EasyNet Subscription Generator
-# - /sub, /sub_full: base64 encoded URI subscriptions for Shadowrocket / v2rayN / v2rayNG
-# - /clash, /clash_full: Mihomo YAML subscriptions for Clash Verge Rev / Mihomo
+# - /sub: base64 encoded URI subscription for Shadowrocket / v2rayN / v2rayNG
+# - /clash: Mihomo YAML subscription for Clash Verge Rev / Mihomo
 
 set -e
 
@@ -22,9 +22,9 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 WEB_ROOT="${EASYNET_WEB_ROOT:-/var/www/html}"
 SUB_FILE="${WEB_ROOT}/sub"
-SUB_FILE_ALL="${WEB_ROOT}/sub_full"
 CLASH_FILE="${WEB_ROOT}/clash"
-CLASH_FILE_ALL="${WEB_ROOT}/clash_full"
+LEGACY_SUB_FILE_ALL="${WEB_ROOT}/sub_full"
+LEGACY_CLASH_FILE_ALL="${WEB_ROOT}/clash_full"
 
 SUBSCRIPTION_TMP_DIR="$(mktemp -d /tmp/easynet-subscription.XXXXXX)"
 cleanup_subscription_tmp() {
@@ -33,16 +33,13 @@ cleanup_subscription_tmp() {
 trap cleanup_subscription_tmp EXIT
 
 LINKS_FILE_SAFE="$SUBSCRIPTION_TMP_DIR/links_safe.txt"
-LINKS_FILE_ALL="$SUBSCRIPTION_TMP_DIR/links_all.txt"
 CLASH_PROXIES_SAFE="$SUBSCRIPTION_TMP_DIR/clash_proxies_safe.yaml"
-CLASH_PROXIES_ALL="$SUBSCRIPTION_TMP_DIR/clash_proxies_all.yaml"
 CLASH_NAMES_SAFE="$SUBSCRIPTION_TMP_DIR/clash_names_safe.txt"
-CLASH_NAMES_ALL="$SUBSCRIPTION_TMP_DIR/clash_names_all.txt"
 
 for file in \
-    "$LINKS_FILE_SAFE" "$LINKS_FILE_ALL" \
-    "$CLASH_PROXIES_SAFE" "$CLASH_PROXIES_ALL" \
-    "$CLASH_NAMES_SAFE" "$CLASH_NAMES_ALL"; do
+    "$LINKS_FILE_SAFE" \
+    "$CLASH_PROXIES_SAFE" \
+    "$CLASH_NAMES_SAFE"; do
     > "$file"
 done
 
@@ -295,12 +292,9 @@ load_metadata_nodes() {
 
         log_info "从 metadata 提取节点: $module"
         echo "$uri" >> "$LINKS_FILE_SAFE"
-        echo "$uri" >> "$LINKS_FILE_ALL"
 
         if append_metadata_clash_proxy "$metadata_file" "$CLASH_PROXIES_SAFE"; then
-            append_metadata_clash_proxy "$metadata_file" "$CLASH_PROXIES_ALL"
             append_proxy_name "$CLASH_NAMES_SAFE" "$name"
-            append_proxy_name "$CLASH_NAMES_ALL" "$name"
         fi
 
     done < <(metadata_list_files)
@@ -313,6 +307,12 @@ subscription_domain() {
     fi
 
     local subscription_domain_file
+    subscription_domain_file="$(easynet_edge_state_dir)/domain.txt"
+    if [ -f "$subscription_domain_file" ]; then
+        cat "$subscription_domain_file"
+        return
+    fi
+
     subscription_domain_file="$(easynet_subscription_state_dir)/domain.txt"
     if [ -f "$subscription_domain_file" ]; then
         cat "$subscription_domain_file"
@@ -340,6 +340,12 @@ subscription_scheme() {
     fi
 
     local subscription_scheme_file
+    subscription_scheme_file="$(easynet_edge_state_dir)/scheme.txt"
+    if [ -f "$subscription_scheme_file" ]; then
+        cat "$subscription_scheme_file"
+        return
+    fi
+
     subscription_scheme_file="$(easynet_subscription_state_dir)/scheme.txt"
     if [ -f "$subscription_scheme_file" ]; then
         cat "$subscription_scheme_file"
@@ -349,9 +355,43 @@ subscription_scheme() {
     echo "https"
 }
 
+subscription_port() {
+    if [ -n "$EASYNET_SUBSCRIPTION_URL_PORT" ]; then
+        echo "$EASYNET_SUBSCRIPTION_URL_PORT"
+        return
+    fi
+
+    local subscription_port_file
+    subscription_port_file="$(easynet_edge_state_dir)/port.txt"
+    if [ -f "$subscription_port_file" ]; then
+        cat "$subscription_port_file"
+        return
+    fi
+
+    subscription_port_file="$(easynet_subscription_state_dir)/port.txt"
+    if [ -f "$subscription_port_file" ]; then
+        cat "$subscription_port_file"
+        return
+    fi
+}
+
+subscription_origin() {
+    local domain="$1"
+    local scheme="$2"
+    local port="$3"
+
+    if [ -n "$port" ] && { [ "$scheme" != "https" ] || [ "$port" != "443" ]; } && { [ "$scheme" != "http" ] || [ "$port" != "80" ]; }; then
+        echo "${scheme}://${domain}:${port}"
+    else
+        echo "${scheme}://${domain}"
+    fi
+}
+
 show_subscription_links() {
     local sub_domain="$1"
     local sub_scheme="$2"
+    local sub_port="$3"
+    local origin
     if [ -z "$sub_domain" ]; then
         echo ""
         log_warn "订阅文件已生成，但没有可公开访问的订阅域名，因此不打印订阅链接和订阅二维码。"
@@ -361,62 +401,50 @@ show_subscription_links() {
         return 0
     fi
 
+    origin=$(subscription_origin "$sub_domain" "$sub_scheme" "$sub_port")
+
     echo ""
     echo "========================================"
     echo "  节点订阅链接生成成功！"
     echo "========================================"
     echo "【URI 订阅】适用于 Shadowrocket / v2rayN / v2rayNG："
-    echo -e "${GREEN}${sub_scheme}://${sub_domain}/sub${NC}"
-    echo -e "${YELLOW}${sub_scheme}://${sub_domain}/sub_full${NC}"
+    echo -e "${GREEN}${origin}/sub${NC}"
     if command -v qrencode &> /dev/null; then
         echo ""
-        echo "URI 安全订阅二维码："
-        qrencode -t utf8 "${sub_scheme}://${sub_domain}/sub"
-        echo ""
-        echo "URI 完整订阅二维码："
-        qrencode -t utf8 "${sub_scheme}://${sub_domain}/sub_full"
+        echo "URI 订阅二维码："
+        qrencode -t utf8 "${origin}/sub"
     fi
     echo ""
     echo "【Clash/Mihomo 订阅】适用于 Clash Verge Rev / Mihomo："
-    echo -e "${GREEN}${sub_scheme}://${sub_domain}/clash${NC}"
-    echo -e "${YELLOW}${sub_scheme}://${sub_domain}/clash_full${NC}"
+    echo -e "${GREEN}${origin}/clash${NC}"
     if command -v qrencode &> /dev/null; then
         echo ""
-        echo "Clash/Mihomo 安全订阅二维码："
-        qrencode -t utf8 "${sub_scheme}://${sub_domain}/clash"
-        echo ""
-        echo "Clash/Mihomo 完整订阅二维码："
-        qrencode -t utf8 "${sub_scheme}://${sub_domain}/clash_full"
+        echo "Clash/Mihomo 订阅二维码："
+        qrencode -t utf8 "${origin}/clash"
     fi
     echo ""
     echo "说明："
-    echo "- /sub 与 /sub_full 为 URI 聚合订阅"
-    echo "- /clash 与 /clash_full 为 Mihomo YAML 订阅"
-    echo "- 完整订阅包含 Shadowsocks/WireGuard，请按需使用"
+    echo "- /sub 为 URI 聚合订阅"
+    echo "- /clash 为 Mihomo YAML 订阅"
     echo "========================================"
 }
 
 load_metadata_nodes
 
-if [ ! -s "$LINKS_FILE_ALL" ] && [ ! -s "$CLASH_NAMES_ALL" ]; then
+if [ ! -s "$LINKS_FILE_SAFE" ] && [ ! -s "$CLASH_NAMES_SAFE" ]; then
     log_warn "没有找到任何有效的节点配置。"
     exit 0
 fi
 
 log_info "生成订阅文件..."
 mkdir -p "$WEB_ROOT"
+rm -f "$LEGACY_SUB_FILE_ALL" "$LEGACY_CLASH_FILE_ALL"
 
 if [ -s "$LINKS_FILE_SAFE" ]; then
     base64 -w 0 < "$LINKS_FILE_SAFE" > "$SUB_FILE"
     chmod 644 "$SUB_FILE"
 fi
 
-if [ -s "$LINKS_FILE_ALL" ]; then
-    base64 -w 0 < "$LINKS_FILE_ALL" > "$SUB_FILE_ALL"
-    chmod 644 "$SUB_FILE_ALL"
-fi
-
 generate_clash_config "$CLASH_FILE" "$CLASH_PROXIES_SAFE" "$CLASH_NAMES_SAFE"
-generate_clash_config "$CLASH_FILE_ALL" "$CLASH_PROXIES_ALL" "$CLASH_NAMES_ALL"
 
-show_subscription_links "$(subscription_domain)" "$(subscription_scheme)"
+show_subscription_links "$(subscription_domain)" "$(subscription_scheme)" "$(subscription_port)"

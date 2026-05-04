@@ -95,7 +95,8 @@ assert_equals "true" "$printed_explicit_domain" "Explicit subscription domain pr
 
 mkdir -p "$STATE_DIR/exposure/subscription"
 echo "subcarrier.example.com" > "$STATE_DIR/exposure/subscription/domain.txt"
-echo "http" > "$STATE_DIR/exposure/subscription/scheme.txt"
+echo "https" > "$STATE_DIR/exposure/subscription/scheme.txt"
+echo "9443" > "$STATE_DIR/exposure/subscription/port.txt"
 
 output_with_subscription_exposure=$(
     EASYNET_STATE_DIR="$STATE_DIR" \
@@ -103,12 +104,19 @@ output_with_subscription_exposure=$(
         bash "$PROJECT_ROOT/scripts/generate_subscription.sh"
 )
 
-if printf '%s\n' "$output_with_subscription_exposure" | rg -q "http://subcarrier.example.com/sub"; then
+if printf '%s\n' "$output_with_subscription_exposure" | rg -q "https://subcarrier.example.com:9443/sub"; then
     printed_subscription_exposure_domain="true"
 else
     printed_subscription_exposure_domain="false"
 fi
 assert_equals "true" "$printed_subscription_exposure_domain" "Independent subscription exposure domain prints subscription links"
+
+if printf '%s\n' "$output_with_subscription_exposure" | rg -q "sub_full|clash_full|完整订阅二维码"; then
+    printed_full_subscription_links="true"
+else
+    printed_full_subscription_links="false"
+fi
+assert_equals "false" "$printed_full_subscription_links" "Subscription output omits full subscription links and QR codes"
 
 rm -rf "$STATE_DIR/exposure/subscription"
 mkdir -p "$STATE_DIR/exposure/nginx"
@@ -165,5 +173,29 @@ else
     printed_trojan_domain="false"
 fi
 assert_equals "true" "$printed_trojan_domain" "Trojan-Go metadata domain prints subscription links"
+
+if [ -f "$WEB_ROOT/sub_full" ] || [ -f "$WEB_ROOT/clash_full" ]; then
+    full_subscription_files_present="true"
+else
+    full_subscription_files_present="false"
+fi
+assert_equals "false" "$full_subscription_files_present" "Subscription generator removes legacy full subscription files"
+
+mkdir -p "$STATE_DIR/exposure/edge"
+echo "edge.example.com" > "$STATE_DIR/exposure/edge/domain.txt"
+echo "https" > "$STATE_DIR/exposure/edge/scheme.txt"
+echo "443" > "$STATE_DIR/exposure/edge/port.txt"
+
+output_with_edge_domain=$(
+    EASYNET_STATE_DIR="$STATE_DIR" \
+    EASYNET_WEB_ROOT="$WEB_ROOT" \
+        bash "$PROJECT_ROOT/scripts/generate_subscription.sh"
+)
+if printf '%s\n' "$output_with_edge_domain" | rg -q "https://edge.example.com/sub" && ! printf '%s\n' "$output_with_edge_domain" | rg -q "edge.example.com:443"; then
+    printed_edge_domain="true"
+else
+    printed_edge_domain="false"
+fi
+assert_equals "true" "$printed_edge_domain" "Edge domain prints standard HTTPS subscription links without explicit port"
 
 test_end

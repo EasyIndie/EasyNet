@@ -202,6 +202,39 @@ assert_equals "trojan" "$(jq -r '.client.clash.type' "$TROJAN_METADATA_FILE")" "
 assert_equals "443" "$(jq -r '.firewall[0].port' "$TROJAN_METADATA_FILE")" "Trojan-Go metadata declares firewall port"
 assert_equals "trojan-go" "$(jq -r '.systemd.services[0]' "$TROJAN_METADATA_FILE")" "Trojan-Go metadata declares service"
 
+cat > "$TROJAN_FIXTURE_DIR/config.json" <<'JSON'
+{
+  "run_type": "server",
+  "local_addr": "127.0.0.1",
+  "local_port": 4444,
+  "remote_addr": "127.0.0.1",
+  "remote_port": 80,
+  "password": ["trojan-password-fixture"],
+  "ssl": {
+    "cert": "/etc/ssl/easynet-edge/fullchain.crt",
+    "key": "/etc/ssl/easynet-edge/private.key",
+    "sni": "proxy.example.com",
+    "fallback_port": 80
+  },
+  "websocket": {
+    "enabled": true,
+    "path": "/edgepath",
+    "host": "proxy.example.com"
+  }
+}
+JSON
+
+EASYNET_STATE_DIR="$STATE_DIR" \
+EASYNET_PUBLIC_IP="203.0.113.10" \
+EASYNET_TROJAN_PUBLIC_PORT="443" \
+TROJAN_CONFIG_DIR="$TROJAN_FIXTURE_DIR" \
+    bash "$PROJECT_ROOT/scripts/protocols/trojan-go/export.sh"
+
+assert_equals "4444" "$(jq -r '.port' "$TROJAN_METADATA_FILE")" "Trojan-Go backend metadata records private listener port"
+assert_equals "443" "$(jq -r '.publicPort' "$TROJAN_METADATA_FILE")" "Trojan-Go backend metadata records public Edge port"
+assert_equals "443" "$(jq -r '.client.clash.port' "$TROJAN_METADATA_FILE")" "Trojan-Go backend Clash metadata uses public Edge port"
+assert_equals "0" "$(jq -r '.firewall | length' "$TROJAN_METADATA_FILE")" "Trojan-Go backend does not expose private port through firewall metadata"
+
 if rg -q "v2ray_path|/usr/local/etc/v2ray|/usr/local/bin/v2ray" "$PROJECT_ROOT/scripts/protocols/trojan-go"; then
     trojan_protocol_isolated="false"
 else

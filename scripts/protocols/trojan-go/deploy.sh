@@ -5,10 +5,21 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
+source "$CORE_DIR/env.sh"
 
 TROJAN_VERSION="${TROJAN_VERSION:-0.10.6}"
 CONFIG_DIR="${TROJAN_CONFIG_DIR:-/etc/trojan-go}"
 DATA_DIR="${TROJAN_DATA_DIR:-/var/lib/trojan-go}"
+MODE="${EASYNET_TROJAN_MODE:-standalone}"
+PUBLIC_PORT="${EASYNET_TROJAN_PUBLIC_PORT:-443}"
+CERT_DIR="${EASYNET_TROJAN_CERT_DIR:-/etc/ssl/trojan-go}"
+if [ "$MODE" = "backend" ]; then
+    LISTEN="${EASYNET_TROJAN_LISTEN:-127.0.0.1}"
+    PORT="${EASYNET_TROJAN_PORT:-4444}"
+else
+    LISTEN="${EASYNET_TROJAN_LISTEN:-0.0.0.0}"
+    PORT="${EASYNET_TROJAN_PORT:-443}"
+fi
 
 generate_password() {
     openssl rand -hex 16
@@ -87,10 +98,10 @@ issue_certificate() {
 
 install_certificate() {
     log_info "安装 SSL 证书..."
-    mkdir -p /etc/ssl/trojan-go
-    ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" \
-        --key-file /etc/ssl/trojan-go/private.key \
-        --fullchain-file /etc/ssl/trojan-go/fullchain.crt
+    mkdir -p "$CERT_DIR"
+    ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" --ecc \
+        --key-file "$CERT_DIR/private.key" \
+        --fullchain-file "$CERT_DIR/fullchain.crt"
 
     log_info "重新启动 nginx..."
     if systemctl is-enabled --quiet nginx 2>/dev/null; then
@@ -117,30 +128,35 @@ configure_trojan() {
     mkdir -p "$CONFIG_DIR" "$DATA_DIR"
 
     if [ -f "$CONFIG_DIR/config.json" ] && grep -q "password" "$CONFIG_DIR/config.json"; then
-        log_info "检测到已有的 Trojan-Go 配置，跳过生成新密码，直接使用现有配置。"
+        log_info "检测到已有的 Trojan-Go 配置，保留密码并按当前模式重写监听配置。"
         PASSWORD=$(jq -r '.password[0]' "$CONFIG_DIR/config.json")
-        DOMAIN=$(jq -r '.ssl.sni' "$CONFIG_DIR/config.json")
-        TROJAN_PATH=$(jq -r '.websocket.path' "$CONFIG_DIR/config.json")
-        PUBLIC_IP=$(get_public_ip)
-        echo "$TROJAN_PATH" > "$CONFIG_DIR/trojan_path.txt"
+        if [ -z "$DOMAIN" ] || [ "$DOMAIN" = "null" ]; then
+            DOMAIN=$(jq -r '.ssl.sni // empty' "$CONFIG_DIR/config.json")
+        fi
+        existing_path=$(jq -r '.websocket.path // empty' "$CONFIG_DIR/config.json")
+        if [ -n "$existing_path" ] && [ "$existing_path" != "null" ] && [ -z "$EASYNET_TROJAN_WS_PATH" ]; then
+            echo "$existing_path" > "$CONFIG_DIR/trojan_path.txt"
+        fi
     else
         PASSWORD=$(generate_password)
-        PUBLIC_IP=$(get_public_ip)
-        TROJAN_PATH=$(ensure_trojan_path)
+    fi
 
-        cat > "$CONFIG_DIR/config.json" << EOF
+    PUBLIC_IP=$(get_public_ip)
+    TROJAN_PATH=$(ensure_trojan_path)
+
+    cat > "$CONFIG_DIR/config.json" << EOF
 {
     "run_type": "server",
-    "local_addr": "0.0.0.0",
-    "local_port": 443,
+    "local_addr": "$LISTEN",
+    "local_port": $PORT,
     "remote_addr": "127.0.0.1",
     "remote_port": 80,
     "password": [
         "$PASSWORD"
     ],
     "ssl": {
-        "cert": "/etc/ssl/trojan-go/fullchain.crt",
-        "key": "/etc/ssl/trojan-go/private.key",
+        "cert": "$CERT_DIR/fullchain.crt",
+        "key": "$CERT_DIR/private.key",
         "sni": "$DOMAIN",
         "fallback_port": 80
     },
@@ -171,7 +187,6 @@ configure_trojan() {
     }
 }
 EOF
-    fi
 
     log_info "配置文件已创建"
 }
@@ -199,16 +214,18 @@ EOF
     systemctl enable trojan-go
     systemctl start trojan-go
 
-    log_info "配置证书自动续期重启钩子..."
-    ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" \
-        --key-file /etc/ssl/trojan-go/private.key \
-        --fullchain-file /etc/ssl/trojan-go/fullchain.crt \
-        --reloadcmd "systemctl restart trojan-go"
+    if [ "$MODE" != "backend" ]; then
+        log_info "配置证书自动续期重启钩子..."
+        ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" --ecc \
+            --key-file "$CERT_DIR/private.key" \
+            --fullchain-file "$CERT_DIR/fullchain.crt" \
+            --reloadcmd "systemctl restart trojan-go"
+    fi
 }
 
 show_config() {
     local config_url
-    config_url="trojan://${PASSWORD}@${DOMAIN}:443?security=tls&type=ws&path=${TROJAN_PATH}#EasyNet-Trojan"
+    config_url="trojan://${PASSWORD}@${DOMAIN}:${PUBLIC_PORT}?security=tls&type=ws&path=${TROJAN_PATH}#EasyNet-Trojan"
 
     echo ""
     echo "========================================"
@@ -216,7 +233,9 @@ show_config() {
     echo "========================================"
     echo "服务器 IP: $PUBLIC_IP"
     echo "域名: $DOMAIN"
-    echo "端口: 443"
+    echo "监听地址: $LISTEN"
+    echo "监听端口: $PORT"
+    echo "公开端口: $PUBLIC_PORT"
     echo "密码: $PASSWORD"
     echo "WebSocket 路径: $TROJAN_PATH"
     echo ""
@@ -234,9 +253,17 @@ show_config() {
 
 main() {
     get_domain
-    install_acme
-    issue_certificate
-    install_certificate
+    if [ "$MODE" = "backend" ]; then
+        CERT_DIR="${EASYNET_TROJAN_CERT_DIR:-${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}}"
+        if [ ! -f "$CERT_DIR/fullchain.crt" ] || [ ! -f "$CERT_DIR/private.key" ]; then
+            log_error "Trojan-Go backend 需要 Edge TLS 证书，请先部署 Edge Gateway。"
+            exit 1
+        fi
+    else
+        install_acme
+        issue_certificate
+        install_certificate
+    fi
     download_trojan
     configure_trojan
     create_systemd_service
