@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-source "$SCRIPT_DIR/metadata.sh"
+EASYNET_CORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+source "$EASYNET_CORE_DIR/metadata.sh"
 
 firewall_base_rules() {
     printf '%s\n' "22/tcp" "80/tcp" "443/tcp"

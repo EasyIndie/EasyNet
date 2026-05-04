@@ -70,4 +70,8 @@ else
 fi
 assert_equals "true" "$invalid_profile_ok" "Unknown profile fails resolution"
 
+SCRIPT_DIR="protocol-dir-sentinel"
+source "$PROJECT_ROOT/scripts/core/metadata.sh"
+assert_equals "protocol-dir-sentinel" "$SCRIPT_DIR" "Core metadata source does not clobber caller SCRIPT_DIR"
+
 test_end

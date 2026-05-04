@@ -1,10 +1,10 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-source "$SCRIPT_DIR/logging.sh"
-source "$SCRIPT_DIR/metadata.sh"
-source "$SCRIPT_DIR/firewall.sh"
-source "$SCRIPT_DIR/cron.sh"
+EASYNET_CORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+source "$EASYNET_CORE_DIR/logging.sh"
+source "$EASYNET_CORE_DIR/metadata.sh"
+source "$EASYNET_CORE_DIR/firewall.sh"
+source "$EASYNET_CORE_DIR/cron.sh"
 
 uninstall_keep_config() {
     [ "${EASYNET_UNINSTALL_KEEP_CONFIG:-false}" = "true" ]
