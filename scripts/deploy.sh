@@ -24,7 +24,6 @@ source "$PROJECT_ROOT/scripts/core/cron.sh"
 source "$PROJECT_ROOT/scripts/core/env.sh"
 
 ALL_MODULES=(xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard)
-STRICT_MODULES=(xray-reality)
 BALANCED_MODULES=(xray-reality hysteria2)
 COMPAT_MODULES=("${ALL_MODULES[@]}")
 DEPLOY_SELECTION_MODULES=()
@@ -186,6 +185,10 @@ module_display_name() {
     esac
 }
 
+subscription_carrier_enabled() {
+    [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ] || [ -n "$EASYNET_DOMAIN" ]
+}
+
 module_entrypoint() {
     local protocol_entrypoint="$DEPLOY_SCRIPT_DIR/protocols/$1/deploy.sh"
     if [ -x "$protocol_entrypoint" ]; then
@@ -208,6 +211,10 @@ deployment_includes_module() {
 
 deploy_nginx_exposure() {
     bash "$DEPLOY_SCRIPT_DIR/exposure/nginx/deploy.sh"
+}
+
+deploy_subscription_exposure() {
+    bash "$DEPLOY_SCRIPT_DIR/exposure/subscription/deploy.sh"
 }
 
 export_route_env_for_module() {
@@ -262,7 +269,7 @@ prepare_module_dependencies() {
 
 resolve_profile_modules() {
     case "$1" in
-        strict) printf '%s\n' "${STRICT_MODULES[@]}" ;;
+        strict) echo "xray-reality" ;;
         balanced) printf '%s\n' "${BALANCED_MODULES[@]}" ;;
         compat) printf '%s\n' "${COMPAT_MODULES[@]}" ;;
         *) return 1 ;;
@@ -312,6 +319,9 @@ deploy_modules() {
     for module in "$@"; do
         deploy_module "$module"
     done
+    if subscription_carrier_enabled; then
+        deploy_subscription_exposure
+    fi
     bash "$DEPLOY_SCRIPT_DIR/generate_subscription.sh"
     setup_firewall
     setup_cron_jobs

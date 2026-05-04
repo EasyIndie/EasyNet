@@ -26,12 +26,18 @@ SUB_FILE_ALL="${WEB_ROOT}/sub_full"
 CLASH_FILE="${WEB_ROOT}/clash"
 CLASH_FILE_ALL="${WEB_ROOT}/clash_full"
 
-LINKS_FILE_SAFE="/tmp/easynet_links_safe.txt"
-LINKS_FILE_ALL="/tmp/easynet_links_all.txt"
-CLASH_PROXIES_SAFE="/tmp/easynet_clash_proxies_safe.yaml"
-CLASH_PROXIES_ALL="/tmp/easynet_clash_proxies_all.yaml"
-CLASH_NAMES_SAFE="/tmp/easynet_clash_names_safe.txt"
-CLASH_NAMES_ALL="/tmp/easynet_clash_names_all.txt"
+SUBSCRIPTION_TMP_DIR="$(mktemp -d /tmp/easynet-subscription.XXXXXX)"
+cleanup_subscription_tmp() {
+    rm -rf "$SUBSCRIPTION_TMP_DIR"
+}
+trap cleanup_subscription_tmp EXIT
+
+LINKS_FILE_SAFE="$SUBSCRIPTION_TMP_DIR/links_safe.txt"
+LINKS_FILE_ALL="$SUBSCRIPTION_TMP_DIR/links_all.txt"
+CLASH_PROXIES_SAFE="$SUBSCRIPTION_TMP_DIR/clash_proxies_safe.yaml"
+CLASH_PROXIES_ALL="$SUBSCRIPTION_TMP_DIR/clash_proxies_all.yaml"
+CLASH_NAMES_SAFE="$SUBSCRIPTION_TMP_DIR/clash_names_safe.txt"
+CLASH_NAMES_ALL="$SUBSCRIPTION_TMP_DIR/clash_names_all.txt"
 
 for file in \
     "$LINKS_FILE_SAFE" "$LINKS_FILE_ALL" \
@@ -306,43 +312,81 @@ subscription_domain() {
         return
     fi
 
+    local subscription_domain_file
+    subscription_domain_file="$(easynet_subscription_state_dir)/domain.txt"
+    if [ -f "$subscription_domain_file" ]; then
+        cat "$subscription_domain_file"
+        return
+    fi
+
     local nginx_domain_file
     nginx_domain_file="$(easynet_nginx_state_dir)/domain.txt"
     if [ -f "$nginx_domain_file" ]; then
         cat "$nginx_domain_file"
+        return
     fi
+
+    local trojan_metadata_file
+    trojan_metadata_file="$(easynet_module_metadata_path trojan-go)"
+    if [ -f "$trojan_metadata_file" ] && metadata_validate_file "$trojan_metadata_file"; then
+        jq -r '.client.clash.server // empty' "$trojan_metadata_file"
+    fi
+}
+
+subscription_scheme() {
+    if [ -n "$EASYNET_SUBSCRIPTION_SCHEME" ]; then
+        echo "$EASYNET_SUBSCRIPTION_SCHEME"
+        return
+    fi
+
+    local subscription_scheme_file
+    subscription_scheme_file="$(easynet_subscription_state_dir)/scheme.txt"
+    if [ -f "$subscription_scheme_file" ]; then
+        cat "$subscription_scheme_file"
+        return
+    fi
+
+    echo "https"
 }
 
 show_subscription_links() {
     local sub_domain="$1"
-    [ -z "$sub_domain" ] && return 0
+    local sub_scheme="$2"
+    if [ -z "$sub_domain" ]; then
+        echo ""
+        log_warn "订阅文件已生成，但没有可公开访问的订阅域名，因此不打印订阅链接和订阅二维码。"
+        echo "说明："
+        echo "- 配置 EASYNET_DOMAIN 或 EASYNET_SUBSCRIPTION_DOMAIN 后，部署流程会自动启用独立订阅承载。"
+        echo "- 如果订阅文件由外部 Web 服务托管，可显式设置 EASYNET_SUBSCRIPTION_DOMAIN。"
+        return 0
+    fi
 
     echo ""
     echo "========================================"
     echo "  节点订阅链接生成成功！"
     echo "========================================"
     echo "【URI 订阅】适用于 Shadowrocket / v2rayN / v2rayNG："
-    echo -e "${GREEN}https://${sub_domain}/sub${NC}"
-    echo -e "${YELLOW}https://${sub_domain}/sub_full${NC}"
+    echo -e "${GREEN}${sub_scheme}://${sub_domain}/sub${NC}"
+    echo -e "${YELLOW}${sub_scheme}://${sub_domain}/sub_full${NC}"
     if command -v qrencode &> /dev/null; then
         echo ""
         echo "URI 安全订阅二维码："
-        qrencode -t utf8 "https://${sub_domain}/sub"
+        qrencode -t utf8 "${sub_scheme}://${sub_domain}/sub"
         echo ""
         echo "URI 完整订阅二维码："
-        qrencode -t utf8 "https://${sub_domain}/sub_full"
+        qrencode -t utf8 "${sub_scheme}://${sub_domain}/sub_full"
     fi
     echo ""
     echo "【Clash/Mihomo 订阅】适用于 Clash Verge Rev / Mihomo："
-    echo -e "${GREEN}https://${sub_domain}/clash${NC}"
-    echo -e "${YELLOW}https://${sub_domain}/clash_full${NC}"
+    echo -e "${GREEN}${sub_scheme}://${sub_domain}/clash${NC}"
+    echo -e "${YELLOW}${sub_scheme}://${sub_domain}/clash_full${NC}"
     if command -v qrencode &> /dev/null; then
         echo ""
         echo "Clash/Mihomo 安全订阅二维码："
-        qrencode -t utf8 "https://${sub_domain}/clash"
+        qrencode -t utf8 "${sub_scheme}://${sub_domain}/clash"
         echo ""
         echo "Clash/Mihomo 完整订阅二维码："
-        qrencode -t utf8 "https://${sub_domain}/clash_full"
+        qrencode -t utf8 "${sub_scheme}://${sub_domain}/clash_full"
     fi
     echo ""
     echo "说明："
@@ -375,9 +419,4 @@ fi
 generate_clash_config "$CLASH_FILE" "$CLASH_PROXIES_SAFE" "$CLASH_NAMES_SAFE"
 generate_clash_config "$CLASH_FILE_ALL" "$CLASH_PROXIES_ALL" "$CLASH_NAMES_ALL"
 
-rm -f \
-    "$LINKS_FILE_SAFE" "$LINKS_FILE_ALL" \
-    "$CLASH_PROXIES_SAFE" "$CLASH_PROXIES_ALL" \
-    "$CLASH_NAMES_SAFE" "$CLASH_NAMES_ALL"
-
-show_subscription_links "$(subscription_domain)"
+show_subscription_links "$(subscription_domain)" "$(subscription_scheme)"

@@ -18,6 +18,33 @@ assert_equals "xray-reality" "$(resolve_modules profile:strict)" "Strict profile
 assert_equals "xray-reality hysteria2" "$(resolve_modules profile:balanced | xargs)" "Balanced profile resolves to Reality and Hysteria2"
 assert_equals "__exit__" "$(resolve_modules 7)" "Menu 7 resolves to exit sentinel"
 
+unset EASYNET_DOMAIN
+unset EASYNET_SUBSCRIPTION_DOMAIN
+if subscription_carrier_enabled; then
+    carrier_without_domain="true"
+else
+    carrier_without_domain="false"
+fi
+assert_equals "false" "$carrier_without_domain" "Subscription carrier is disabled when no domain is configured"
+
+EASYNET_DOMAIN="proxy.example.com"
+if subscription_carrier_enabled; then
+    carrier_with_domain="true"
+else
+    carrier_with_domain="false"
+fi
+assert_equals "true" "$carrier_with_domain" "Subscription carrier auto-enables when EASYNET_DOMAIN is configured"
+unset EASYNET_DOMAIN
+
+EASYNET_SUBSCRIPTION_DOMAIN="sub.example.com"
+if subscription_carrier_enabled; then
+    carrier_with_subscription_domain="true"
+else
+    carrier_with_subscription_domain="false"
+fi
+assert_equals "true" "$carrier_with_subscription_domain" "Subscription carrier auto-enables when EASYNET_SUBSCRIPTION_DOMAIN is configured"
+unset EASYNET_SUBSCRIPTION_DOMAIN
+
 all_modules="$(resolve_modules 0 | xargs)"
 assert_equals "xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard" "$all_modules" "Menu 0 resolves to all modules in security order"
 
@@ -26,6 +53,20 @@ assert_equals "xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard" "$c
 
 assert_equals "$PROJECT_ROOT/scripts/protocols/trojan-go/deploy.sh" "$(module_entrypoint trojan-go)" "Trojan-Go deploys through protocol module"
 assert_equals "$PROJECT_ROOT/scripts/protocols/v2ray/deploy.sh" "$(module_entrypoint v2ray)" "V2Ray deploys through protocol module"
+
+if awk '/subscription_carrier_enabled|deploy_subscription_exposure/ { print }' "$PROJECT_ROOT/scripts/deploy.sh" | rg -q "trojan-go"; then
+    subscription_carrier_adds_trojan="true"
+else
+    subscription_carrier_adds_trojan="false"
+fi
+assert_equals "false" "$subscription_carrier_adds_trojan" "Subscription carrier is decoupled from Trojan-Go protocol selection"
+
+if rg -q "exposure/subscription/deploy.sh" "$PROJECT_ROOT/scripts/deploy.sh"; then
+    deploy_has_subscription_exposure="true"
+else
+    deploy_has_subscription_exposure="false"
+fi
+assert_equals "true" "$deploy_has_subscription_exposure" "Deploy can invoke independent subscription exposure"
 
 if rg -q "scripts/server|/server/" "$PROJECT_ROOT/scripts/deploy.sh"; then
     deploy_references_legacy_server="true"

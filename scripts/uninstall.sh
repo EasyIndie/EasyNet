@@ -56,6 +56,7 @@ module_display_name() {
         xray-reality) echo "Xray+Reality" ;;
         hysteria2) echo "Hysteria2" ;;
         nginx-exposure) echo "Nginx 暴露层" ;;
+        subscription-exposure) echo "独立订阅承载" ;;
         *) echo "$1" ;;
     esac
 }
@@ -92,7 +93,8 @@ show_menu() {
     echo "5. 卸载 Shadowsocks-libev"
     echo "6. 卸载 WireGuard"
     echo "7. 仅清理 EasyNet Nginx 暴露层与订阅文件"
-    echo "8. 退出"
+    echo "8. 仅清理独立订阅承载与订阅文件"
+    echo "9. 退出"
     echo "========================================"
     echo -e "${YELLOW}提示: 默认会删除 EasyNet 生成的配置、服务文件、metadata 与订阅文件；包卸载需显式设置 EASYNET_UNINSTALL_PURGE_PACKAGES=true。${NC}"
     read -p "请选择要卸载的服务: " choice
@@ -102,7 +104,7 @@ resolve_uninstall_modules() {
     local selection="$1"
 
     case "$selection" in
-        0) printf '%s\n' "${ALL_MODULES[@]}"; echo "nginx-exposure" ;;
+        0) printf '%s\n' "${ALL_MODULES[@]}"; echo "nginx-exposure"; echo "subscription-exposure" ;;
         1) echo "xray-reality" ;;
         2) echo "hysteria2" ;;
         3) echo "trojan-go" ;;
@@ -110,8 +112,10 @@ resolve_uninstall_modules() {
         5) echo "shadowsocks" ;;
         6) echo "wireguard" ;;
         7) echo "nginx-exposure" ;;
-        8) echo "__exit__" ;;
+        8) echo "subscription-exposure" ;;
+        9) echo "__exit__" ;;
         nginx-exposure) echo "nginx-exposure" ;;
+        subscription-exposure) echo "subscription-exposure" ;;
         *)
             if module_is_known "$selection"; then
                 echo "$selection"
@@ -126,11 +130,11 @@ uninstall_entrypoint() {
     local module="$1"
     local entrypoint
 
-    if [ "$module" = "nginx-exposure" ]; then
-        entrypoint="$UNINSTALL_SCRIPT_DIR/exposure/nginx/uninstall.sh"
-    else
-        entrypoint="$UNINSTALL_SCRIPT_DIR/protocols/$module/uninstall.sh"
-    fi
+    case "$module" in
+        nginx-exposure) entrypoint="$UNINSTALL_SCRIPT_DIR/exposure/nginx/uninstall.sh" ;;
+        subscription-exposure) entrypoint="$UNINSTALL_SCRIPT_DIR/exposure/subscription/uninstall.sh" ;;
+        *) entrypoint="$UNINSTALL_SCRIPT_DIR/protocols/$module/uninstall.sh" ;;
+    esac
 
     if [ -x "$entrypoint" ]; then
         echo "$entrypoint"

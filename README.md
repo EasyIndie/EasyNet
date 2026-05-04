@@ -20,7 +20,8 @@
 
 如果你只想快速决策：
 
-- 日常优先 `Xray+Reality`，UDP/QUIC 补充用 `Hysteria2`，兼容性补充用 `V2Ray`
+- 日常优先 `Xray+Reality`；需要 UDP/QUIC 补充时用 `balanced`
+- 订阅承载与协议部署解耦；配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 后会自动生成订阅链接和订阅二维码
 - `Shadowsocks` 和 `WireGuard` 仅建议在特定场景使用
 
 简要对比：
@@ -72,7 +73,7 @@ EasyNet/
   - 系统：`Ubuntu 22.04+` / `Debian 11+`
   - CPU及内存：`1C1G` 起步
   - 端口：开放 `80/443`
-- 推荐协议：日常优先 `Xray+Reality`，需要 UDP/QUIC 补充时加 `Hysteria2`
+- 推荐协议：日常优先 `Xray+Reality`；需要 UDP/QUIC 补充时使用 `balanced`
 - 客户端：
   - Windows/macOS/Linux 用 `Clash Verge Rev`
   - Android 用 `Clash Meta for Android`

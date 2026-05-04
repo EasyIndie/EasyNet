@@ -35,4 +35,18 @@ else
 fi
 assert_equals "true" "$trojan_accepts_external_route" "Trojan-Go protocol accepts route path from exposure layer"
 
+if rg -q "/etc/trojan-go|/usr/local/etc/v2ray|/usr/local/etc/xray" "$PROJECT_ROOT/scripts/exposure/subscription"; then
+    subscription_exposure_uses_protocol_state="true"
+else
+    subscription_exposure_uses_protocol_state="false"
+fi
+assert_equals "false" "$subscription_exposure_uses_protocol_state" "Subscription exposure does not depend on protocol config directories"
+
+if rg -q "trojan-go|EASYNET_TROJAN_WS_PATH" "$PROJECT_ROOT/scripts/exposure/subscription/deploy.sh"; then
+    subscription_exposure_depends_on_trojan="true"
+else
+    subscription_exposure_depends_on_trojan="false"
+fi
+assert_equals "false" "$subscription_exposure_depends_on_trojan" "Subscription exposure is decoupled from Trojan-Go"
+
 test_end

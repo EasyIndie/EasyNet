@@ -93,6 +93,24 @@ else
 fi
 assert_equals "true" "$printed_explicit_domain" "Explicit subscription domain prints subscription links"
 
+mkdir -p "$STATE_DIR/exposure/subscription"
+echo "subcarrier.example.com" > "$STATE_DIR/exposure/subscription/domain.txt"
+echo "http" > "$STATE_DIR/exposure/subscription/scheme.txt"
+
+output_with_subscription_exposure=$(
+    EASYNET_STATE_DIR="$STATE_DIR" \
+    EASYNET_WEB_ROOT="$WEB_ROOT" \
+        bash "$PROJECT_ROOT/scripts/generate_subscription.sh"
+)
+
+if printf '%s\n' "$output_with_subscription_exposure" | rg -q "http://subcarrier.example.com/sub"; then
+    printed_subscription_exposure_domain="true"
+else
+    printed_subscription_exposure_domain="false"
+fi
+assert_equals "true" "$printed_subscription_exposure_domain" "Independent subscription exposure domain prints subscription links"
+
+rm -rf "$STATE_DIR/exposure/subscription"
 mkdir -p "$STATE_DIR/exposure/nginx"
 echo "nginx.example.com" > "$STATE_DIR/exposure/nginx/domain.txt"
 
@@ -108,5 +126,44 @@ else
     printed_exposure_domain="false"
 fi
 assert_equals "true" "$printed_exposure_domain" "Nginx exposure domain prints subscription links"
+
+mkdir -p "$STATE_DIR/modules/trojan-go"
+cat > "$STATE_DIR/modules/trojan-go/metadata.json" <<'JSON'
+{
+  "schemaVersion": 1,
+  "module": "trojan-go",
+  "enabled": true,
+  "protocol": "trojan",
+  "client": {
+    "uri": "trojan://secret@trojan.example.com:443?security=tls&type=ws&path=/safe#EasyNet-Trojan",
+    "clash": {
+      "name": "EasyNet-Trojan",
+      "type": "trojan",
+      "server": "trojan.example.com",
+      "port": 443,
+      "password": "secret"
+    }
+  },
+  "firewall": [
+    {"port": 443, "proto": "tcp"}
+  ],
+  "systemd": {
+    "services": ["trojan-go"]
+  }
+}
+JSON
+
+rm -f "$STATE_DIR/exposure/nginx/domain.txt"
+output_with_trojan_metadata=$(
+    EASYNET_STATE_DIR="$STATE_DIR" \
+    EASYNET_WEB_ROOT="$WEB_ROOT" \
+        bash "$PROJECT_ROOT/scripts/generate_subscription.sh"
+)
+if printf '%s\n' "$output_with_trojan_metadata" | rg -q "https://trojan.example.com/sub"; then
+    printed_trojan_domain="true"
+else
+    printed_trojan_domain="false"
+fi
+assert_equals "true" "$printed_trojan_domain" "Trojan-Go metadata domain prints subscription links"
 
 test_end

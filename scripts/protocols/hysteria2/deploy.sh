@@ -122,6 +122,10 @@ show_config() {
     else
         echo "未安装 qrencode，无法显示二维码。"
     fi
+    echo ""
+    echo "连通性提示:"
+    echo "- Hysteria2 使用 UDP/$port，请确认云厂商安全组和服务器防火墙均已放行 UDP/$port"
+    echo "- 如果域名托管在 Cloudflare，请保持 DNS Only；橙云代理不转发 Hysteria2 UDP 流量"
     echo "========================================"
 }
 

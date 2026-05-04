@@ -26,6 +26,7 @@
 结论：
 
 - 日常优先：`Xray+Reality`，需要 UDP/QUIC 补充时加 `Hysteria2`
+- 订阅承载与协议部署解耦；配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 后会自动启用独立订阅承载并打印订阅链接和二维码
 - 兼容性补充：`V2Ray`
 - 特定用途：`WireGuard`
 
@@ -57,7 +58,7 @@ cd EasyNet
 - 想一次部署全部协议可选 `0`
 - 部署编号 `1` 到 `6` 按安全性和抗 DPI 能力从高到低排序
 
-说明：各协议模块部署后会导出标准 metadata，订阅生成器只读取 metadata。旧入口和旧配置导入器已移除，新部署统一走 `scripts/protocols/*` 与 `scripts/exposure/*`。订阅链接只在存在 Nginx 暴露层域名或显式设置 `EASYNET_SUBSCRIPTION_DOMAIN` 时打印。
+说明：各协议模块部署后会导出标准 metadata，订阅生成器只读取 metadata。旧入口和旧配置导入器已移除，新部署统一走 `scripts/protocols/*` 与 `scripts/exposure/*`。订阅链接只在存在独立订阅承载域名、Nginx 暴露层域名、Trojan-Go metadata 域名，或显式设置 `EASYNET_SUBSCRIPTION_DOMAIN` 时打印。
 
 ### 4. 自动化部署
 
@@ -89,6 +90,7 @@ EASYNET_MODULE=hysteria2 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 
 ```bash
 EASYNET_PROFILE=strict ./scripts/deploy.sh
+EASYNET_PROFILE=strict EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 EASYNET_PROFILE=balanced ./scripts/deploy.sh
 EASYNET_PROFILE=compat EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 ```
@@ -98,6 +100,12 @@ EASYNET_PROFILE=compat EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - `strict`：只部署 `xray-reality`
 - `balanced`：部署 `xray-reality` + `hysteria2`
 - `compat`：部署当前全部兼容模块
+
+订阅承载：
+
+- 配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 会额外部署独立订阅承载层，不改变协议组合
+- 独立订阅承载默认使用 Nginx 在 `http://域名/sub`、`http://域名/clash` 发布订阅
+- 如果前面有外部 TLS/CDN，可设置 `EASYNET_SUBSCRIPTION_SCHEME=https`，让终端输出 HTTPS 订阅链接和二维码；该变量是高级选项，默认不需要配置
 
 交互部署编号：
 
@@ -164,8 +172,9 @@ EASYNET_UNINSTALL_MODULE=nginx-exposure ./scripts/uninstall.sh
 - 首次签发证书时必须使用 `DNS Only`，不要开橙云
 - 证书签发完成后，可将 Trojan-Go / V2Ray / 订阅链接切到橙云
 - `Xray+Reality`、`Shadowsocks`、`WireGuard` 不能依赖 Cloudflare 橙云代理协议本身
+- `Hysteria2` 使用 UDP/443，不能走 Cloudflare 橙云代理；域名需要 DNS Only，并确认服务器安全组和 UFW 都放行 UDP/443
 - Cloudflare SSL 模式建议使用 `Full` 或 `Full (strict)`
-- 订阅链接 `/sub`、`/sub_full`、`/clash`、`/clash_full` 依赖 Trojan-Go + Nginx 回落链路提供
+- 订阅链接 `/sub`、`/sub_full`、`/clash`、`/clash_full` 推荐由独立订阅承载层提供；Trojan-Go + Nginx 回落链路仍可兼容旧部署
 
 ## 验证部署
 
