@@ -110,6 +110,55 @@ EASYNET_PROFILE=compat EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - `6`：`wireguard`
 - `7`：退出
 
+## 卸载部署
+
+新架构下卸载也按模块边界执行：顶层入口只负责选择和编排，每个协议通过自己的 `scripts/protocols/<module>/uninstall.sh` 清理私有配置、服务文件和 metadata，公共层根据 metadata 更新定时重启任务和防火墙规则。
+
+交互卸载：
+
+```bash
+./scripts/uninstall.sh
+```
+
+自动化卸载全部协议与 EasyNet Nginx 暴露层：
+
+```bash
+EASYNET_UNINSTALL_CHOICE=0 ./scripts/uninstall.sh
+```
+
+按单个模块卸载：
+
+```bash
+EASYNET_UNINSTALL_MODULE=xray-reality ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=hysteria2 ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=trojan-go ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=v2ray ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=shadowsocks ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=wireguard ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=nginx-exposure ./scripts/uninstall.sh
+```
+
+卸载编号：
+
+- `0`：卸载全部协议与 EasyNet Nginx 暴露层
+- `1`：`xray-reality`
+- `2`：`hysteria2`
+- `3`：`trojan-go`
+- `4`：`v2ray`
+- `5`：`shadowsocks`
+- `6`：`wireguard`
+- `7`：仅清理 EasyNet Nginx 暴露层与订阅文件
+- `8`：退出
+
+默认行为：
+
+- 删除 EasyNet 生成的配置、systemd unit、metadata、订阅文件和协议私有证书目录
+- 停止并禁用 metadata 中声明的 systemd 服务
+- 移除仅由被卸载模块使用、且不是基础端口的 UFW 规则
+- 重建订阅文件并刷新 EasyNet 管理的定时重启任务
+- 不默认卸载 apt 包；确认依赖只被 EasyNet 使用时，可设置 `EASYNET_UNINSTALL_PURGE_PACKAGES=true`
+- 如需保留配置用于迁移或排障，可设置 `EASYNET_UNINSTALL_KEEP_CONFIG=true`
+
 ## Cloudflare 关键说明
 
 - 首次签发证书时必须使用 `DNS Only`，不要开橙云

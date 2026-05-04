@@ -30,6 +30,17 @@ cron_restart_command() {
 
 cron_install_restart_job() {
     local command
-    command=$(cron_restart_command) || return 0
+    command=$(cron_restart_command) || {
+        cron_remove_restart_job
+        return 0
+    }
     (crontab -l 2>/dev/null | grep -v "EASYNET_MANAGED_RESTART"; echo "0 4 * * * $command # EASYNET_MANAGED_RESTART") | crontab -
+}
+
+cron_remove_restart_job() {
+    if ! command -v crontab &>/dev/null; then
+        return 0
+    fi
+
+    crontab -l 2>/dev/null | grep -v "EASYNET_MANAGED_RESTART" | crontab - 2>/dev/null || true
 }

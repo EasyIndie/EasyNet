@@ -48,7 +48,8 @@ EasyNet/
 │   │   ├── shadowsocks/
 │   │   ├── wireguard/
 │   │   └── hysteria2/
-│   └── deploy.sh         # 一键部署脚本
+│   ├── deploy.sh         # 一键部署脚本
+│   └── uninstall.sh      # 模块化卸载脚本
 ├── tests/                # 单元测试目录
 │   ├── test_helper.bash
 │   ├── test_env_vars.bash
@@ -97,6 +98,19 @@ cd EasyNet
 
 ```bash
 EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
+```
+
+### 卸载部署
+
+```bash
+EASYNET_UNINSTALL_CHOICE=0 ./scripts/uninstall.sh
+```
+
+也可以按模块卸载：
+
+```bash
+EASYNET_UNINSTALL_MODULE=xray-reality ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=nginx-exposure ./scripts/uninstall.sh
 ```
 
 ## 文档
