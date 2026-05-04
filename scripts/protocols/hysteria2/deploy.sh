@@ -97,7 +97,7 @@ restart_hysteria2() {
 }
 
 show_config() {
-    local domain port
+    local domain port config_url
 
     # shellcheck disable=SC1090
     source "$HYSTERIA2_ENV_FILE"
@@ -113,7 +113,15 @@ show_config() {
     echo "混淆: salamander"
     echo "客户端配置:"
     "$SCRIPT_DIR/export.sh"
-    jq -r '.client.uri' "$(easynet_module_metadata_path hysteria2)"
+    config_url=$(jq -r '.client.uri' "$(easynet_module_metadata_path hysteria2)")
+    echo "$config_url"
+    echo ""
+    echo "配置二维码:"
+    if command -v qrencode &>/dev/null; then
+        qrencode -t utf8 "$config_url"
+    else
+        echo "未安装 qrencode，无法显示二维码。"
+    fi
     echo "========================================"
 }
 

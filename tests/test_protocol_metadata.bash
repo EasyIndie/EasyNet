@@ -297,6 +297,13 @@ else
 fi
 assert_equals "true" "$hysteria2_protocol_isolated" "Hysteria2 protocol module is isolated from legacy state paths"
 
+if rg -q "配置二维码" "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh" && rg -q 'qrencode -t utf8 "\$config_url"' "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"; then
+    hysteria2_qr_output="true"
+else
+    hysteria2_qr_output="false"
+fi
+assert_equals "true" "$hysteria2_qr_output" "Hysteria2 deploy prints QR code for client URI"
+
 WEB_ROOT="$TMP_DIR/web"
 EASYNET_STATE_DIR="$STATE_DIR" \
 EASYNET_WEB_ROOT="$WEB_ROOT" \
