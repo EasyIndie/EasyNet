@@ -113,6 +113,12 @@ assert_equals "backend" "$EASYNET_V2RAY_MODE" "V2Ray uses Edge backend when subs
 assert_equals "127.0.0.1" "$EASYNET_V2RAY_LISTEN" "V2Ray Edge backend listens on loopback"
 assert_equals "443" "$EASYNET_V2RAY_PUBLIC_PORT" "V2Ray Edge backend keeps public port 443"
 assert_not_empty "$EASYNET_V2RAY_WS_PATH" "V2Ray Edge backend receives route path"
+if [[ "$EASYNET_V2RAY_WS_PATH" =~ ^/[0-9a-f]{32}$ ]]; then
+    edge_v2ray_path_entropy_ok="true"
+else
+    edge_v2ray_path_entropy_ok="false"
+fi
+assert_equals "true" "$edge_v2ray_path_entropy_ok" "V2Ray Edge route path uses 128-bit random value"
 if rg -q "deny all" "$EASYNET_STATE_DIR/exposure/edge/routes/v2ray.conf"; then
     edge_v2ray_route_blocks_public_clients="true"
 else
@@ -143,6 +149,12 @@ assert_equals "127.0.0.1" "$EASYNET_TROJAN_LISTEN" "Trojan-Go Edge backend liste
 assert_equals "4444" "$EASYNET_TROJAN_PORT" "Trojan-Go Edge backend uses private backend port"
 assert_equals "443" "$EASYNET_TROJAN_PUBLIC_PORT" "Trojan-Go Edge backend keeps public port 443"
 assert_not_empty "$EASYNET_TROJAN_WS_PATH" "Trojan-Go Edge backend receives route path"
+if [[ "$EASYNET_TROJAN_WS_PATH" =~ ^/[0-9a-f]{32}$ ]]; then
+    edge_trojan_path_entropy_ok="true"
+else
+    edge_trojan_path_entropy_ok="false"
+fi
+assert_equals "true" "$edge_trojan_path_entropy_ok" "Trojan-Go Edge route path uses 128-bit random value"
 if rg -q "proxy_pass https://127.0.0.1:4444" "$EASYNET_STATE_DIR/exposure/edge/routes/trojan-go.conf"; then
     edge_trojan_route_proxies_tls_backend="true"
 else

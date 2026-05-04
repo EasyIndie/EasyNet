@@ -185,17 +185,73 @@ mkdir -p "$STATE_DIR/exposure/edge"
 echo "edge.example.com" > "$STATE_DIR/exposure/edge/domain.txt"
 echo "https" > "$STATE_DIR/exposure/edge/scheme.txt"
 echo "443" > "$STATE_DIR/exposure/edge/port.txt"
+echo "/s/0123456789abcdef0123456789abcdef" > "$STATE_DIR/exposure/edge/subscription_path_prefix.txt"
 
 output_with_edge_domain=$(
     EASYNET_STATE_DIR="$STATE_DIR" \
     EASYNET_WEB_ROOT="$WEB_ROOT" \
         bash "$PROJECT_ROOT/scripts/generate_subscription.sh"
 )
-if printf '%s\n' "$output_with_edge_domain" | rg -q "https://edge.example.com/sub" && ! printf '%s\n' "$output_with_edge_domain" | rg -q "edge.example.com:443"; then
+if printf '%s\n' "$output_with_edge_domain" | rg -q "https://edge.example.com/s/0123456789abcdef0123456789abcdef/sub" && ! printf '%s\n' "$output_with_edge_domain" | rg -q "edge.example.com:443|https://edge.example.com/sub"; then
     printed_edge_domain="true"
 else
     printed_edge_domain="false"
 fi
-assert_equals "true" "$printed_edge_domain" "Edge domain prints standard HTTPS subscription links without explicit port"
+assert_equals "true" "$printed_edge_domain" "Edge domain prints stable random subscription path without explicit port"
+
+show_subscription_output=$(
+    EASYNET_STATE_DIR="$STATE_DIR" \
+        bash "$PROJECT_ROOT/scripts/show_subscription.sh"
+)
+if printf '%s\n' "$show_subscription_output" | rg -q "https://edge.example.com/s/0123456789abcdef0123456789abcdef/clash"; then
+    show_subscription_uses_edge_path="true"
+else
+    show_subscription_uses_edge_path="false"
+fi
+assert_equals "true" "$show_subscription_uses_edge_path" "Show subscription command reprints stable Edge subscription links"
+
+if rg -q "qrencode -t utf8.*sub_url|qrencode -t utf8.*clash_url|无法显示 URI 订阅二维码|无法显示 Clash/Mihomo 订阅二维码" "$PROJECT_ROOT/scripts/show_subscription.sh"; then
+    show_subscription_qr_behavior="true"
+else
+    show_subscription_qr_behavior="false"
+fi
+assert_equals "true" "$show_subscription_qr_behavior" "Show subscription command prints QR codes or explicit QR fallback messages"
+
+rotation_output=$(
+    EASYNET_STATE_DIR="$STATE_DIR" \
+    EASYNET_WEB_ROOT="$WEB_ROOT" \
+    EASYNET_SKIP_NGINX_RELOAD=true \
+        bash "$PROJECT_ROOT/scripts/rotate_subscription.sh"
+)
+rotated_prefix="$(cat "$STATE_DIR/exposure/edge/subscription_path_prefix.txt")"
+previous_prefix="$(cat "$STATE_DIR/exposure/edge/subscription_path_prefix.previous.txt")"
+assert_equals "/s/0123456789abcdef0123456789abcdef" "$previous_prefix" "Subscription rotation records previous path prefix"
+if [[ "$rotated_prefix" =~ ^/s/[0-9a-f]{32}$ ]] && [ "$rotated_prefix" != "$previous_prefix" ]; then
+    rotation_prefix_ok="true"
+else
+    rotation_prefix_ok="false"
+fi
+assert_equals "true" "$rotation_prefix_ok" "Subscription rotation writes a new stable random path"
+if printf '%s\n' "$rotation_output" | rg -q "https://edge.example.com${rotated_prefix}/sub" && rg -q "location = ${rotated_prefix}/clash" "$STATE_DIR/exposure/edge/routes/subscription.conf" && ! rg -q "$previous_prefix" "$STATE_DIR/exposure/edge/routes/subscription.conf"; then
+    rotation_updates_routes="true"
+else
+    rotation_updates_routes="false"
+fi
+assert_equals "true" "$rotation_updates_routes" "Subscription rotation updates Edge routes and prints new links"
+
+grace_output=$(
+    EASYNET_STATE_DIR="$STATE_DIR" \
+    EASYNET_WEB_ROOT="$WEB_ROOT" \
+    EASYNET_SKIP_NGINX_RELOAD=true \
+        bash "$PROJECT_ROOT/scripts/rotate_subscription.sh" --grace
+)
+grace_new_prefix="$(cat "$STATE_DIR/exposure/edge/subscription_path_prefix.txt")"
+grace_previous_prefix="$(cat "$STATE_DIR/exposure/edge/subscription_path_prefix.previous.txt")"
+if printf '%s\n' "$grace_output" | rg -q "https://edge.example.com${grace_new_prefix}/clash" && rg -q "location = ${grace_new_prefix}/sub" "$STATE_DIR/exposure/edge/routes/subscription.conf" && rg -q "location = ${grace_previous_prefix}/sub" "$STATE_DIR/exposure/edge/routes/subscription.conf"; then
+    rotation_grace_keeps_previous="true"
+else
+    rotation_grace_keeps_previous="false"
+fi
+assert_equals "true" "$rotation_grace_keeps_previous" "Subscription rotation grace keeps previous links active"
 
 test_end

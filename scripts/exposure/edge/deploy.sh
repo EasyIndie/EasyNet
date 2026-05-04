@@ -14,6 +14,7 @@ EDGE_DOMAIN="${EASYNET_SUBSCRIPTION_DOMAIN:-${EASYNET_DOMAIN:-}}"
 EDGE_HTTP_PORT="${EASYNET_EDGE_HTTP_PORT:-80}"
 EDGE_HTTPS_PORT="${EASYNET_EDGE_HTTPS_PORT:-443}"
 EDGE_CERT_DIR="${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}"
+EDGE_SUBSCRIPTION_PATH_PREFIX=""
 EDGE_SERVER_NAMES="$EDGE_DOMAIN"
 if [ -n "$EASYNET_DOMAIN" ] && [ "$EASYNET_DOMAIN" != "$EDGE_DOMAIN" ]; then
     EDGE_SERVER_NAMES="$EDGE_SERVER_NAMES $EASYNET_DOMAIN"
@@ -24,6 +25,25 @@ edge_acme_domain_args() {
     if [ -n "$EASYNET_DOMAIN" ] && [ "$EASYNET_DOMAIN" != "$EDGE_DOMAIN" ]; then
         printf '%s\n' "-d" "$EASYNET_DOMAIN"
     fi
+}
+
+ensure_edge_subscription_path_prefix() {
+    local path_file path_prefix
+
+    path_file="$EDGE_STATE_DIR/subscription_path_prefix.txt"
+    if [ -n "$EASYNET_SUBSCRIPTION_PATH_PREFIX" ]; then
+        path_prefix="/${EASYNET_SUBSCRIPTION_PATH_PREFIX#/}"
+        path_prefix="${path_prefix%/}"
+    elif [ -f "$path_file" ]; then
+        path_prefix=$(cat "$path_file")
+    else
+        path_prefix="/s/$(openssl rand -hex 16)"
+    fi
+
+    path_prefix="/${path_prefix#/}"
+    path_prefix="${path_prefix%/}"
+    echo "$path_prefix" > "$path_file"
+    EDGE_SUBSCRIPTION_PATH_PREFIX="$path_prefix"
 }
 
 require_edge_domain() {
@@ -40,7 +60,22 @@ write_edge_state() {
     echo "$EDGE_DOMAIN" > "$EDGE_STATE_DIR/domain.txt"
     echo "https" > "$EDGE_STATE_DIR/scheme.txt"
     echo "$EDGE_HTTPS_PORT" > "$EDGE_STATE_DIR/port.txt"
+    ensure_edge_subscription_path_prefix
     echo "# EasyNet Edge route placeholder" > "$EDGE_ROUTES_DIR/00-placeholder.conf"
+}
+
+write_edge_subscription_routes() {
+    cat > "$EDGE_ROUTES_DIR/subscription.conf" << EOF
+location = ${EDGE_SUBSCRIPTION_PATH_PREFIX}/sub {
+    alias ${WEB_ROOT}/sub;
+    default_type text/plain;
+}
+
+location = ${EDGE_SUBSCRIPTION_PATH_PREFIX}/clash {
+    alias ${WEB_ROOT}/clash;
+    default_type application/x-yaml;
+}
+EOF
 }
 
 write_edge_http_site() {
@@ -90,16 +125,6 @@ server {
 
     root $WEB_ROOT;
     index index.html;
-
-    location = /sub {
-        try_files \$uri =404;
-        default_type text/plain;
-    }
-
-    location = /clash {
-        try_files \$uri =404;
-        default_type application/x-yaml;
-    }
 
     include ${EDGE_ROUTES_DIR}/*.conf;
 
@@ -165,6 +190,7 @@ HTML
     systemctl restart nginx
 
     issue_edge_certificate
+    write_edge_subscription_routes
     write_edge_https_site
     systemctl restart nginx
 

@@ -104,13 +104,15 @@ EASYNET_PROFILE=compat EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 订阅承载：
 
 - 配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 会额外部署独立订阅承载层，不改变协议组合
-- Edge Gateway 默认独占公网 `443/tcp`，使用 Nginx 在 `https://域名/sub`、`https://域名/clash` 发布订阅
+- Edge Gateway 默认独占公网 `443/tcp`，首次部署时生成稳定随机订阅前缀，并使用 Nginx 在 `https://域名/s/<随机值>/sub`、`https://域名/s/<随机值>/clash` 发布订阅
+- 随机订阅前缀会持久化保存，重启、重部署、证书续期和重新生成订阅都不会改变；可运行 `./scripts/show_subscription.sh` 重新显示链接和二维码
+- 如怀疑订阅链接泄露，可运行 `./scripts/rotate_subscription.sh` 主动轮换订阅入口；如需给多设备迁移留出时间，可使用 `./scripts/rotate_subscription.sh --grace` 暂时保留旧入口
 - 需要走 `443/tcp` 的 HTTP/WebSocket 协议应作为 Edge backend 监听本机回环地址，避免协议模块直接抢占公网 443
 - `V2Ray` 与 `Trojan-Go` 在 Edge 启用时会自动切到 backend 模式，由 Edge 统一处理公网 `443/tcp`
 - 如同时配置 `EASYNET_DOMAIN` 与 `EASYNET_SUBSCRIPTION_DOMAIN`，两者都需要解析到当前服务器，Edge 证书会同时覆盖这两个域名
 - 如需单独部署协议并由协议自身直占 `443/tcp`，可设置 `EASYNET_EDGE_ENABLED=false` 临时关闭 Edge
 - 如确需调整 Edge 端口，可使用高级变量 `EASYNET_EDGE_HTTPS_PORT`
-- 当前订阅输出只保留 `/sub` 和 `/clash`，不再生成 `/sub_full`、`/clash_full` 及其二维码
+- 当前订阅输出只保留 URI 与 Clash 两类入口，不再生成 `/sub_full`、`/clash_full` 及其二维码
 
 交互部署编号：
 
@@ -179,7 +181,7 @@ EASYNET_UNINSTALL_MODULE=nginx-exposure ./scripts/uninstall.sh
 - `Xray+Reality`、`Shadowsocks`、`WireGuard` 不能依赖 Cloudflare 橙云代理协议本身
 - `Hysteria2` 使用 UDP/443，不能走 Cloudflare 橙云代理；域名需要 DNS Only，并确认服务器安全组和 UFW 都放行 UDP/443
 - Cloudflare SSL 模式建议使用 `Full` 或 `Full (strict)`
-- 订阅链接 `/sub`、`/clash` 推荐由 Edge Gateway 提供；旧版 Nginx/订阅承载状态仍可兼容读取
+- 订阅链接推荐由 Edge Gateway 提供；旧版 Nginx/订阅承载状态仍可兼容读取
 
 ## 验证部署
 
@@ -196,8 +198,8 @@ systemctl status hysteria-server.service
 
 ### 订阅链接
 
-- Shadowrocket / v2rayN / v2rayNG：`https://your-domain.com/sub`
-- Clash Verge Rev / Mihomo：`https://your-domain.com/clash`
+- Shadowrocket / v2rayN / v2rayNG：以部署输出或 `./scripts/show_subscription.sh` 显示的 URI 订阅为准
+- Clash Verge Rev / Mihomo：以部署输出或 `./scripts/show_subscription.sh` 显示的 Clash 订阅为准
 
 ### 其他检查
 

@@ -287,7 +287,7 @@ else
 fi
 assert_equals "true" "$v2ray_metadata_valid" "V2Ray metadata satisfies core contract"
 assert_equals "vmess" "$(jq -r '.client.clash.type' "$V2RAY_METADATA_FILE")" "V2Ray metadata exposes Clash type"
-assert_equals "4443" "$(jq -r '.firewall[0].port' "$V2RAY_METADATA_FILE")" "V2Ray metadata declares backend firewall port"
+assert_equals "0" "$(jq -r '.firewall | length' "$V2RAY_METADATA_FILE")" "V2Ray backend does not expose private port through firewall metadata"
 assert_equals "v2ray" "$(jq -r '.systemd.services[0]' "$V2RAY_METADATA_FILE")" "V2Ray metadata declares service"
 
 if rg -q "/etc/trojan-go|trojan_path|v2ray_path" "$PROJECT_ROOT/scripts/protocols/v2ray"; then

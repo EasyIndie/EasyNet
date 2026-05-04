@@ -10,6 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 source "$PROJECT_ROOT/scripts/core/metadata.sh"
 source "$PROJECT_ROOT/scripts/core/env.sh"
+source "$PROJECT_ROOT/scripts/core/subscription.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -300,98 +301,11 @@ load_metadata_nodes() {
     done < <(metadata_list_files)
 }
 
-subscription_domain() {
-    if [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ]; then
-        echo "$EASYNET_SUBSCRIPTION_DOMAIN"
-        return
-    fi
-
-    local subscription_domain_file
-    subscription_domain_file="$(easynet_edge_state_dir)/domain.txt"
-    if [ -f "$subscription_domain_file" ]; then
-        cat "$subscription_domain_file"
-        return
-    fi
-
-    subscription_domain_file="$(easynet_subscription_state_dir)/domain.txt"
-    if [ -f "$subscription_domain_file" ]; then
-        cat "$subscription_domain_file"
-        return
-    fi
-
-    local nginx_domain_file
-    nginx_domain_file="$(easynet_nginx_state_dir)/domain.txt"
-    if [ -f "$nginx_domain_file" ]; then
-        cat "$nginx_domain_file"
-        return
-    fi
-
-    local trojan_metadata_file
-    trojan_metadata_file="$(easynet_module_metadata_path trojan-go)"
-    if [ -f "$trojan_metadata_file" ] && metadata_validate_file "$trojan_metadata_file"; then
-        jq -r '.client.clash.server // empty' "$trojan_metadata_file"
-    fi
-}
-
-subscription_scheme() {
-    if [ -n "$EASYNET_SUBSCRIPTION_SCHEME" ]; then
-        echo "$EASYNET_SUBSCRIPTION_SCHEME"
-        return
-    fi
-
-    local subscription_scheme_file
-    subscription_scheme_file="$(easynet_edge_state_dir)/scheme.txt"
-    if [ -f "$subscription_scheme_file" ]; then
-        cat "$subscription_scheme_file"
-        return
-    fi
-
-    subscription_scheme_file="$(easynet_subscription_state_dir)/scheme.txt"
-    if [ -f "$subscription_scheme_file" ]; then
-        cat "$subscription_scheme_file"
-        return
-    fi
-
-    echo "https"
-}
-
-subscription_port() {
-    if [ -n "$EASYNET_SUBSCRIPTION_URL_PORT" ]; then
-        echo "$EASYNET_SUBSCRIPTION_URL_PORT"
-        return
-    fi
-
-    local subscription_port_file
-    subscription_port_file="$(easynet_edge_state_dir)/port.txt"
-    if [ -f "$subscription_port_file" ]; then
-        cat "$subscription_port_file"
-        return
-    fi
-
-    subscription_port_file="$(easynet_subscription_state_dir)/port.txt"
-    if [ -f "$subscription_port_file" ]; then
-        cat "$subscription_port_file"
-        return
-    fi
-}
-
-subscription_origin() {
-    local domain="$1"
-    local scheme="$2"
-    local port="$3"
-
-    if [ -n "$port" ] && { [ "$scheme" != "https" ] || [ "$port" != "443" ]; } && { [ "$scheme" != "http" ] || [ "$port" != "80" ]; }; then
-        echo "${scheme}://${domain}:${port}"
-    else
-        echo "${scheme}://${domain}"
-    fi
-}
-
 show_subscription_links() {
     local sub_domain="$1"
     local sub_scheme="$2"
     local sub_port="$3"
-    local origin
+    local origin sub_path clash_path sub_url clash_url
     if [ -z "$sub_domain" ]; then
         echo ""
         log_warn "订阅文件已生成，但没有可公开访问的订阅域名，因此不打印订阅链接和订阅二维码。"
@@ -401,31 +315,35 @@ show_subscription_links() {
         return 0
     fi
 
-    origin=$(subscription_origin "$sub_domain" "$sub_scheme" "$sub_port")
+    origin=$(easynet_subscription_origin "$sub_domain" "$sub_scheme" "$sub_port")
+    sub_path="$(easynet_subscription_endpoint "sub")"
+    clash_path="$(easynet_subscription_endpoint "clash")"
+    sub_url="${origin}${sub_path}"
+    clash_url="${origin}${clash_path}"
 
     echo ""
     echo "========================================"
     echo "  节点订阅链接生成成功！"
     echo "========================================"
     echo "【URI 订阅】适用于 Shadowrocket / v2rayN / v2rayNG："
-    echo -e "${GREEN}${origin}/sub${NC}"
+    echo -e "${GREEN}${sub_url}${NC}"
     if command -v qrencode &> /dev/null; then
         echo ""
         echo "URI 订阅二维码："
-        qrencode -t utf8 "${origin}/sub"
+        qrencode -t utf8 "$sub_url"
     fi
     echo ""
     echo "【Clash/Mihomo 订阅】适用于 Clash Verge Rev / Mihomo："
-    echo -e "${GREEN}${origin}/clash${NC}"
+    echo -e "${GREEN}${clash_url}${NC}"
     if command -v qrencode &> /dev/null; then
         echo ""
         echo "Clash/Mihomo 订阅二维码："
-        qrencode -t utf8 "${origin}/clash"
+        qrencode -t utf8 "$clash_url"
     fi
     echo ""
     echo "说明："
-    echo "- /sub 为 URI 聚合订阅"
-    echo "- /clash 为 Mihomo YAML 订阅"
+    echo "- ${sub_path} 为 URI 聚合订阅"
+    echo "- ${clash_path} 为 Mihomo YAML 订阅"
     echo "========================================"
 }
 
@@ -447,4 +365,4 @@ fi
 
 generate_clash_config "$CLASH_FILE" "$CLASH_PROXIES_SAFE" "$CLASH_NAMES_SAFE"
 
-show_subscription_links "$(subscription_domain)" "$(subscription_scheme)" "$(subscription_port)"
+show_subscription_links "$(easynet_subscription_domain)" "$(easynet_subscription_scheme)" "$(easynet_subscription_port)"

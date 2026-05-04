@@ -30,10 +30,11 @@ export_v2ray_metadata() {
         return 1
     fi
 
-    local uuid ws_path inbound_port domain public_port uri vmess_json vmess_b64 metadata_json
+    local uuid ws_path inbound_port listen domain public_port uri vmess_json vmess_b64 metadata_json firewall_json
     uuid=$(jq -r '.inbounds[0].settings.clients[0].id // empty' "$config_file")
     ws_path=$(jq -r '.inbounds[0].streamSettings.wsSettings.path // empty' "$config_file")
     inbound_port=$(jq -r '.inbounds[0].port // empty' "$config_file")
+    listen=$(jq -r '.inbounds[0].listen // "0.0.0.0"' "$config_file")
     domain=$(resolve_domain)
     public_port="${EASYNET_V2RAY_PUBLIC_PORT:-443}"
 
@@ -63,11 +64,16 @@ export_v2ray_metadata() {
         }')
     vmess_b64=$(printf '%s' "$vmess_json" | base64 | tr -d '\n')
     uri="vmess://$vmess_b64"
+    if [ "$listen" = "127.0.0.1" ] || [ "$listen" = "localhost" ]; then
+        firewall_json="[]"
+    else
+        firewall_json=$(jq -cn --argjson port "$inbound_port" '[{ port: $port, proto: "tcp" }]')
+    fi
 
     metadata_json=$(jq -n \
         --arg module_name "$MODULE_NAME" \
         --arg protocol "vmess" \
-        --arg listen "$(jq -r '.inbounds[0].listen // "0.0.0.0"' "$config_file")" \
+        --arg listen "$listen" \
         --arg transport "ws" \
         --arg security "tls" \
         --arg server "$domain" \
@@ -76,6 +82,7 @@ export_v2ray_metadata() {
         --arg uri "$uri" \
         --argjson port "$public_port" \
         --argjson inbound_port "$inbound_port" \
+        --argjson firewall "$firewall_json" \
         '{
             schemaVersion: 1,
             "module": $module_name,
@@ -108,9 +115,7 @@ export_v2ray_metadata() {
                     }
                 }
             },
-            firewall: [
-                { port: $inbound_port, proto: "tcp" }
-            ],
+            firewall: $firewall,
             systemd: {
                 services: ["v2ray"]
             }

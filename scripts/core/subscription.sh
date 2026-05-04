@@ -1,0 +1,138 @@
+#!/bin/bash
+
+EASYNET_SUBSCRIPTION_CORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+source "$EASYNET_SUBSCRIPTION_CORE_DIR/env.sh"
+source "$EASYNET_SUBSCRIPTION_CORE_DIR/metadata.sh"
+
+easynet_subscription_domain() {
+    if [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ]; then
+        echo "$EASYNET_SUBSCRIPTION_DOMAIN"
+        return
+    fi
+
+    local subscription_domain_file
+    subscription_domain_file="$(easynet_edge_state_dir)/domain.txt"
+    if [ -f "$subscription_domain_file" ]; then
+        cat "$subscription_domain_file"
+        return
+    fi
+
+    subscription_domain_file="$(easynet_subscription_state_dir)/domain.txt"
+    if [ -f "$subscription_domain_file" ]; then
+        cat "$subscription_domain_file"
+        return
+    fi
+
+    local nginx_domain_file
+    nginx_domain_file="$(easynet_nginx_state_dir)/domain.txt"
+    if [ -f "$nginx_domain_file" ]; then
+        cat "$nginx_domain_file"
+        return
+    fi
+
+    local trojan_metadata_file
+    trojan_metadata_file="$(easynet_module_metadata_path trojan-go)"
+    if [ -f "$trojan_metadata_file" ] && metadata_validate_file "$trojan_metadata_file"; then
+        jq -r '.client.clash.server // empty' "$trojan_metadata_file"
+    fi
+}
+
+easynet_subscription_scheme() {
+    if [ -n "$EASYNET_SUBSCRIPTION_SCHEME" ]; then
+        echo "$EASYNET_SUBSCRIPTION_SCHEME"
+        return
+    fi
+
+    local subscription_scheme_file
+    subscription_scheme_file="$(easynet_edge_state_dir)/scheme.txt"
+    if [ -f "$subscription_scheme_file" ]; then
+        cat "$subscription_scheme_file"
+        return
+    fi
+
+    subscription_scheme_file="$(easynet_subscription_state_dir)/scheme.txt"
+    if [ -f "$subscription_scheme_file" ]; then
+        cat "$subscription_scheme_file"
+        return
+    fi
+
+    echo "https"
+}
+
+easynet_subscription_port() {
+    if [ -n "$EASYNET_SUBSCRIPTION_URL_PORT" ]; then
+        echo "$EASYNET_SUBSCRIPTION_URL_PORT"
+        return
+    fi
+
+    local subscription_port_file
+    subscription_port_file="$(easynet_edge_state_dir)/port.txt"
+    if [ -f "$subscription_port_file" ]; then
+        cat "$subscription_port_file"
+        return
+    fi
+
+    subscription_port_file="$(easynet_subscription_state_dir)/port.txt"
+    if [ -f "$subscription_port_file" ]; then
+        cat "$subscription_port_file"
+        return
+    fi
+}
+
+easynet_subscription_origin() {
+    local domain="$1"
+    local scheme="$2"
+    local port="$3"
+
+    if [ -n "$port" ] && { [ "$scheme" != "https" ] || [ "$port" != "443" ]; } && { [ "$scheme" != "http" ] || [ "$port" != "80" ]; }; then
+        echo "${scheme}://${domain}:${port}"
+    else
+        echo "${scheme}://${domain}"
+    fi
+}
+
+easynet_normalize_path_prefix() {
+    local path_prefix="$1"
+    [ -z "$path_prefix" ] && return 0
+    path_prefix="/${path_prefix#/}"
+    path_prefix="${path_prefix%/}"
+    echo "$path_prefix"
+}
+
+easynet_subscription_path_prefix() {
+    if [ -n "$EASYNET_SUBSCRIPTION_PATH_PREFIX" ]; then
+        easynet_normalize_path_prefix "$EASYNET_SUBSCRIPTION_PATH_PREFIX"
+        return
+    fi
+
+    local path_file
+    path_file="$(easynet_edge_state_dir)/subscription_path_prefix.txt"
+    if [ -f "$path_file" ]; then
+        easynet_normalize_path_prefix "$(cat "$path_file")"
+        return
+    fi
+}
+
+easynet_subscription_endpoint() {
+    local endpoint="$1"
+    local path_prefix
+    path_prefix="$(easynet_subscription_path_prefix)"
+
+    if [ -n "$path_prefix" ]; then
+        echo "${path_prefix}/${endpoint#/}"
+    else
+        echo "/${endpoint#/}"
+    fi
+}
+
+easynet_subscription_url() {
+    local endpoint="$1"
+    local domain scheme port origin
+    domain="$(easynet_subscription_domain)"
+    [ -z "$domain" ] && return 1
+
+    scheme="$(easynet_subscription_scheme)"
+    port="$(easynet_subscription_port)"
+    origin="$(easynet_subscription_origin "$domain" "$scheme" "$port")"
+    echo "${origin}$(easynet_subscription_endpoint "$endpoint")"
+}

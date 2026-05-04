@@ -63,6 +63,27 @@ else
 fi
 assert_equals "true" "$edge_owns_tcp443" "Edge Gateway owns TCP 443 and includes independent routes"
 
+if rg -q 'location = /sub|location = /clash' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"; then
+    edge_exposes_fixed_subscription_paths="true"
+else
+    edge_exposes_fixed_subscription_paths="false"
+fi
+assert_equals "false" "$edge_exposes_fixed_subscription_paths" "Edge Gateway does not expose fixed subscription paths"
+
+if rg -q 'subscription_path_prefix.txt|openssl rand -hex 16|write_edge_subscription_routes|EDGE_ROUTES_DIR/subscription.conf' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"; then
+    edge_uses_stable_random_subscription_path="true"
+else
+    edge_uses_stable_random_subscription_path="false"
+fi
+assert_equals "true" "$edge_uses_stable_random_subscription_path" "Edge Gateway uses stable random subscription path prefix"
+
+if rg -q 'subscription_path_prefix.previous.txt|--grace|EASYNET_SUBSCRIPTION_ROTATION_GRACE|generate_subscription.sh|show_subscription.sh' "$PROJECT_ROOT/scripts/rotate_subscription.sh"; then
+    rotation_script_supports_migration="true"
+else
+    rotation_script_supports_migration="false"
+fi
+assert_equals "true" "$rotation_script_supports_migration" "Subscription rotation supports stable path replacement and grace migration"
+
 if rg -q "/etc/trojan-go|/usr/local/etc/v2ray|/usr/local/etc/xray" "$PROJECT_ROOT/scripts/exposure/edge"; then
     edge_uses_protocol_state="true"
 else

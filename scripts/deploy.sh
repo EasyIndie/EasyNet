@@ -280,7 +280,7 @@ ensure_edge_trojan_route() {
     elif [ -f "$edge_state_dir/trojan_path.txt" ]; then
         route_path=$(cat "$edge_state_dir/trojan_path.txt")
     else
-        route_path="/$(openssl rand -hex 4)"
+        route_path="/$(openssl rand -hex 16)"
         echo "$route_path" > "$edge_state_dir/trojan_path.txt"
     fi
 
@@ -323,7 +323,7 @@ ensure_edge_v2ray_route() {
     elif [ -f "$edge_state_dir/v2ray_path.txt" ]; then
         route_path=$(cat "$edge_state_dir/v2ray_path.txt")
     else
-        route_path="/$(openssl rand -hex 4)"
+        route_path="/$(openssl rand -hex 16)"
         echo "$route_path" > "$edge_state_dir/v2ray_path.txt"
     fi
 

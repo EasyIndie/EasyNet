@@ -82,7 +82,7 @@
 - 导入了 URI 订阅 `sub`，而不是 Clash/Mihomo 订阅 `clash`
 
 处理：
-- Clash Verge Rev 使用 `https://your-domain.com/clash`
+- Clash Verge Rev 使用部署输出或 `./scripts/show_subscription.sh` 显示的 Clash/Mihomo 订阅
 
 ## 快速判断是否是客户端问题
 

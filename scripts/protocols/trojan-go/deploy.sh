@@ -59,7 +59,7 @@ ensure_trojan_path() {
     fi
 
     if [ -z "$trojan_path" ] || [ "$trojan_path" = "/trojan" ]; then
-        trojan_path="/$(openssl rand -hex 4)"
+        trojan_path="/$(openssl rand -hex 16)"
         mkdir -p "$CONFIG_DIR"
         echo "$trojan_path" > "$path_file"
     fi

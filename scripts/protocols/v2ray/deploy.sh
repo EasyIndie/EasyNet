@@ -82,7 +82,7 @@ configure_v2ray() {
     fi
 
     UUID=$(generate_uuid)
-    WS_PATH="${EASYNET_V2RAY_WS_PATH:-/$(openssl rand -hex 4)}"
+    WS_PATH="${EASYNET_V2RAY_WS_PATH:-/$(openssl rand -hex 16)}"
 
     if [ "$MODE" = "backend" ]; then
         PORT="${EASYNET_V2RAY_PORT:-4443}"
