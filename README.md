@@ -9,7 +9,7 @@
 - 🚀 支持 5 种代理协议（Shadowsocks、V2Ray、Trojan、WireGuard、Xray+Reality）
 - 🔒 强安全架构：TLS 加密、WebSocket 随机路径、Nginx 本地回环隐蔽分发
 - ⚡ 性能优化：BBR 拥塞控制加速
-- 🔄 自动化运维：服务自动更新、配置防丢恢复、系统日志截断防爆盘
+- 🔄 自动化运维：服务自动更新、系统日志截断防爆盘
 - 🤖 无交互部署：支持注入环境变量进行一键 CI/CD 批量安装
 - 🔗 节点订阅：自动生成跨平台通用的节点订阅链接，告别繁琐的手动扫码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket）
@@ -44,7 +44,6 @@ EasyNet/
 │   │   ├── shadowsocks.sh
 │   │   ├── wireguard.sh
 │   │   └── xray-reality.sh
-│   ├── backup.sh         # 配置备份脚本
 │   └── deploy.sh         # 一键部署脚本
 ├── tests/                # 单元测试目录
 │   ├── test_helper.bash
@@ -100,4 +99,3 @@ EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - [部署说明](./docs/deployment.md)
 - [客户端说明](./docs/clients.md)
 - [故障排查指南](./docs/troubleshooting-guide.md)
-

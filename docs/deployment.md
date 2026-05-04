@@ -101,11 +101,9 @@ systemctl status xray
 
 ```bash
 sysctl net.ipv4.tcp_congestion_control
-./scripts/backup.sh
 ```
 
 ## 需要时再看
 
 - 客户端导入与平台差异：[客户端说明](./clients.md)
 - 出现故障时：[故障排查指南](./troubleshooting-guide.md)
-
