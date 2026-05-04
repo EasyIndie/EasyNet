@@ -3,20 +3,12 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
+source "$CORE_DIR/logging.sh"
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
-
-TROJAN_VERSION="0.10.6"
-CONFIG_DIR="/etc/trojan-go"
-DATA_DIR="/var/lib/trojan-go"
+TROJAN_VERSION="${TROJAN_VERSION:-0.10.6}"
+CONFIG_DIR="${TROJAN_CONFIG_DIR:-/etc/trojan-go}"
+DATA_DIR="${TROJAN_DATA_DIR:-/var/lib/trojan-go}"
 
 generate_password() {
     openssl rand -hex 16
@@ -39,9 +31,36 @@ get_public_ip() {
     curl -s ipinfo.io/ip || curl -s ifconfig.me || curl -s api.ipify.org
 }
 
+ensure_trojan_path() {
+    local path_file="$CONFIG_DIR/trojan_path.txt"
+    local trojan_path
+
+    if [ -n "$EASYNET_TROJAN_WS_PATH" ]; then
+        trojan_path="$EASYNET_TROJAN_WS_PATH"
+        mkdir -p "$CONFIG_DIR"
+        echo "$trojan_path" > "$path_file"
+        echo "$trojan_path"
+        return
+    fi
+
+    if [ -f "$path_file" ]; then
+        trojan_path=$(cat "$path_file")
+    fi
+
+    if [ -z "$trojan_path" ] || [ "$trojan_path" = "/trojan" ]; then
+        trojan_path="/$(openssl rand -hex 4)"
+        mkdir -p "$CONFIG_DIR"
+        echo "$trojan_path" > "$path_file"
+    fi
+
+    echo "$trojan_path"
+}
+
 install_acme() {
     log_info "安装 ACME.sh 用于申请 SSL 证书..."
-    curl https://get.acme.sh | sh
+    if [ ! -d "$HOME/.acme.sh" ]; then
+        curl https://get.acme.sh | sh
+    fi
     export PATH="$HOME/.acme.sh:$PATH"
 }
 
@@ -52,16 +71,14 @@ issue_certificate() {
         systemctl stop nginx
     fi
     ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-    
-    # 允许申请命令失败（比如证书已存在跳过时会返回 2）
-    # 使用 --pre-hook 和 --post-hook 确保自动续期时也能正确停启 Nginx
+
     set +e
     ~/.acme.sh/acme.sh --issue -d "$DOMAIN" --standalone -k ec-256 \
         --pre-hook "systemctl stop nginx" \
         --post-hook "systemctl start nginx"
     local acme_status=$?
     set -e
-    
+
     if [ $acme_status -ne 0 ] && [ $acme_status -ne 2 ]; then
         log_error "SSL 证书申请失败，请检查域名解析是否正确"
         exit 1
@@ -71,11 +88,10 @@ issue_certificate() {
 install_certificate() {
     log_info "安装 SSL 证书..."
     mkdir -p /etc/ssl/trojan-go
-    # 去掉 --reloadcmd，因为 trojan-go 还没安装，等后面配置好了一起启动
     ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" \
         --key-file /etc/ssl/trojan-go/private.key \
         --fullchain-file /etc/ssl/trojan-go/fullchain.crt
-    
+
     log_info "重新启动 nginx..."
     if systemctl is-enabled --quiet nginx 2>/dev/null; then
         systemctl start nginx
@@ -100,39 +116,17 @@ configure_trojan() {
     log_info "配置 Trojan-Go..."
     mkdir -p "$CONFIG_DIR" "$DATA_DIR"
 
-    # 检查是否是恢复模式（配置已存在）
     if [ -f "$CONFIG_DIR/config.json" ] && grep -q "password" "$CONFIG_DIR/config.json"; then
         log_info "检测到已有的 Trojan-Go 配置，跳过生成新密码，直接使用现有配置。"
         PASSWORD=$(jq -r '.password[0]' "$CONFIG_DIR/config.json")
-        
-        # 提取域名和路径供后续使用
         DOMAIN=$(jq -r '.ssl.sni' "$CONFIG_DIR/config.json")
         TROJAN_PATH=$(jq -r '.websocket.path' "$CONFIG_DIR/config.json")
         PUBLIC_IP=$(get_public_ip)
-        
-        # 将读取到（或新生成）的 TROJAN_PATH 保存到文件，以防文件丢失导致两边不一致
-        echo "$TROJAN_PATH" > /etc/trojan-go/trojan_path.txt
-        
-        # 尝试从之前保存的文件中读取 V2Ray 路径，如果没有则重新生成一个以保证 Nginx 配置正确
-        if [ -f /etc/trojan-go/v2ray_path.txt ]; then
-            V2RAY_PATH=$(cat /etc/trojan-go/v2ray_path.txt)
-        else
-            V2RAY_PATH="/$(openssl rand -hex 4)"
-            echo "$V2RAY_PATH" > /etc/trojan-go/v2ray_path.txt
-        fi
+        echo "$TROJAN_PATH" > "$CONFIG_DIR/trojan_path.txt"
     else
         PASSWORD=$(generate_password)
         PUBLIC_IP=$(get_public_ip)
-        
-        # 从前面 Nginx 阶段生成的文件中读取路径，而不是再次生成
-        TROJAN_PATH=$(cat /etc/trojan-go/trojan_path.txt)
-        V2RAY_PATH=$(cat /etc/trojan-go/v2ray_path.txt)
-        
-        # 兼容处理：如果由于某些原因没有读取到，做最后一次兜底
-        if [ -z "$TROJAN_PATH" ]; then
-            TROJAN_PATH="/$(openssl rand -hex 4)"
-            echo "$TROJAN_PATH" > /etc/trojan-go/trojan_path.txt
-        fi
+        TROJAN_PATH=$(ensure_trojan_path)
 
         cat > "$CONFIG_DIR/config.json" << EOF
 {
@@ -184,12 +178,7 @@ EOF
 
 create_systemd_service() {
     log_info "创建 systemd 服务..."
-    
-    # 如果 443 端口被其他服务（比如独立的 V2Ray 还没来得及释放）占用，稍微等一下或者强制停掉
-    if systemctl is-active --quiet v2ray 2>/dev/null; then
-        systemctl restart v2ray
-        sleep 2
-    fi
+
     cat > /etc/systemd/system/trojan-go.service << EOF
 [Unit]
 Description=Trojan-Go Server
@@ -210,7 +199,6 @@ EOF
     systemctl enable trojan-go
     systemctl start trojan-go
 
-    # 此时服务已启动，可以重新安装一次证书来添加自动重启钩子
     log_info "配置证书自动续期重启钩子..."
     ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" \
         --key-file /etc/ssl/trojan-go/private.key \
@@ -218,106 +206,10 @@ EOF
         --reloadcmd "systemctl restart trojan-go"
 }
 
-setup_nginx_fallback() {
-    log_info "配置 Nginx 作为伪装站点与流量分发..."
-    apt install -y nginx
-
-    # 获取或生成 V2Ray 路径
-    local v2ray_path="/v2ray"
-    if [ -f /etc/trojan-go/v2ray_path.txt ]; then
-        v2ray_path=$(cat /etc/trojan-go/v2ray_path.txt)
-    else
-        v2ray_path="/$(openssl rand -hex 4)"
-        mkdir -p /etc/trojan-go
-        echo "$v2ray_path" > /etc/trojan-go/v2ray_path.txt
-    fi
-    
-    # 获取或生成 Trojan 路径 (与下面 configure_trojan 保持一致)
-    local trojan_path="/trojan"
-    if [ -f /etc/trojan-go/trojan_path.txt ]; then
-        trojan_path=$(cat /etc/trojan-go/trojan_path.txt)
-    else
-        trojan_path="/$(openssl rand -hex 4)"
-        mkdir -p /etc/trojan-go
-        echo "$trojan_path" > /etc/trojan-go/trojan_path.txt
-    fi
-
-    cat > /var/www/html/index.html << 'HTML'
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Welcome</title>
-</head>
-<body>
-    <h1>Welcome to nginx!</h1>
-</body>
-</html>
-HTML
-
-    # 配置独立的 Nginx 站点配置，避免覆盖用户的默认配置或影响其他网站
-    # 注意：这里不能用 'EOF'（带单引号），否则 $v2ray_path 变量不会被解析
-    cat > /etc/nginx/sites-available/easynet-proxy << EOF
-server {
-    # 监听本地 80 端口，接收从 Trojan 回落的流量
-    listen 127.0.0.1:80;
-    server_name _;
-
-    root /var/www/html;
-    index index.html index.htm index.nginx-debian.html;
-
-    # 允许访问订阅文件
-    location = /sub {
-        try_files \$uri =404;
-        default_type text/plain;
-    }
-    
-    # 允许访问完整订阅文件
-    location = /sub_full {
-        try_files \$uri =404;
-        default_type text/plain;
-    }
-
-    # 允许访问 Clash/Mihomo 订阅文件
-    location = /clash {
-        try_files \$uri =404;
-        default_type application/x-yaml;
-    }
-
-    # 允许访问 Clash/Mihomo 完整订阅文件
-    location = /clash_full {
-        try_files \$uri =404;
-        default_type application/x-yaml;
-    }
-
-    location / {
-        access_log off;
-        try_files \$uri \$uri/ =404;
-    }
-
-    location $v2ray_path {
-        access_log off;
-        allow 127.0.0.1;
-        deny all;
-        proxy_redirect off;
-        proxy_pass http://127.0.0.1:4443;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-}
-EOF
-
-    # 启用配置
-    ln -sf /etc/nginx/sites-available/easynet-proxy /etc/nginx/sites-enabled/
-    
-    systemctl enable nginx
-    systemctl restart nginx
-}
-
 show_config() {
+    local config_url
+    config_url="trojan://${PASSWORD}@${DOMAIN}:443?security=tls&type=ws&path=${TROJAN_PATH}#EasyNet-Trojan"
+
     echo ""
     echo "========================================"
     echo "  Trojan-Go 部署成功"
@@ -329,12 +221,10 @@ show_config() {
     echo "WebSocket 路径: $TROJAN_PATH"
     echo ""
     echo "客户端配置 URL:"
-    local config_url="trojan://${PASSWORD}@${DOMAIN}:443?security=tls&type=ws&path=${TROJAN_PATH}#EasyNet-Trojan"
-    
     echo "$config_url"
     echo ""
     echo "配置二维码:"
-    if command -v qrencode &> /dev/null; then
+    if command -v qrencode &>/dev/null; then
         qrencode -t utf8 "$config_url"
     else
         echo "未安装 qrencode，无法显示二维码。"
@@ -344,13 +234,13 @@ show_config() {
 
 main() {
     get_domain
-    setup_nginx_fallback
     install_acme
     issue_certificate
     install_certificate
     download_trojan
     configure_trojan
     create_systemd_service
+    "$SCRIPT_DIR/export.sh"
     show_config
 }
 

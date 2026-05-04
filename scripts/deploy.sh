@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -19,15 +17,26 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+DEPLOY_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+PROJECT_ROOT="$(dirname "$DEPLOY_SCRIPT_DIR")"
+source "$PROJECT_ROOT/scripts/core/firewall.sh"
+source "$PROJECT_ROOT/scripts/core/cron.sh"
+source "$PROJECT_ROOT/scripts/core/env.sh"
 
-# Load environment variables from .env if it exists
-if [ -f "$PROJECT_ROOT/.env" ]; then
-    log_info "发现 .env 文件，加载环境变量..."
-    # 使用 export 确保子脚本也能继承这些变量，并忽略以 # 开头的注释行
-    export $(grep -v '^#' "$PROJECT_ROOT/.env" | xargs)
-fi
+ALL_MODULES=(xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard)
+STRICT_MODULES=(xray-reality)
+BALANCED_MODULES=(xray-reality hysteria2)
+COMPAT_MODULES=("${ALL_MODULES[@]}")
+DEPLOY_SELECTION_MODULES=()
+
+load_env_file() {
+    # Load environment variables from .env if it exists
+    if [ -f "$PROJECT_ROOT/.env" ]; then
+        log_info "发现 .env 文件，加载环境变量..."
+        # 使用 export 确保子脚本也能继承这些变量，并忽略以 # 开头的注释行
+        export $(grep -v '^#' "$PROJECT_ROOT/.env" | xargs)
+    fi
+}
 
 check_root() {
     if [[ $EUID -ne 0 ]]; then
@@ -84,29 +93,8 @@ EOF
 
 setup_firewall() {
     log_info "配置防火墙..."
-    
-    if command -v ufw &>/dev/null; then
-        # 移除 ufw --force reset 以防止清空之前添加的其他服务端口规则
-        ufw allow 22/tcp
-        ufw allow 80/tcp
-        ufw allow 443/tcp
-        ufw allow 8443/tcp
-        ufw allow 8388/tcp
-        ufw allow 51820/udp
-        
-        # 如果 ufw 尚未启用，则启用它
-        if ! ufw status | grep -q "Status: active"; then
-            ufw --force enable
-        fi
-        
-        # 恢复安全的默认 DROP 策略（如果之前被修改过）
-        if [[ -f /etc/default/ufw ]]; then
-            sed -i 's/DEFAULT_FORWARD_POLICY="ACCEPT"/DEFAULT_FORWARD_POLICY="DROP"/g' /etc/default/ufw
-            ufw reload &>/dev/null || true
-        fi
-        
-        log_info "UFW 防火墙已配置"
-    fi
+    firewall_apply_rules
+    log_info "UFW 防火墙已按基础端口与已启用模块配置"
 }
 
 setup_auto_update() {
@@ -128,57 +116,209 @@ setup_cron_jobs() {
         systemctl restart systemd-journald
     fi
 
-    # 每日凌晨4点重启核心服务以释放内存
-    (crontab -l 2>/dev/null | grep -v "systemctl restart"; echo "0 4 * * * /usr/bin/systemctl restart trojan-go v2ray xray shadowsocks-libev-server 2>/dev/null") | crontab -
+    # 每日凌晨4点按已启用模块重启服务以释放内存
+    cron_install_restart_job
 }
 
-show_menu() {
+select_from_env() {
+    if [ -n "$EASYNET_PROFILE" ]; then
+        choice="profile:$EASYNET_PROFILE"
+        log_info "从环境变量 EASYNET_PROFILE 读取部署策略: $EASYNET_PROFILE"
+        return 0
+    fi
+
+    if [ -n "$EASYNET_MODULE" ]; then
+        choice="$EASYNET_MODULE"
+        log_info "从环境变量 EASYNET_MODULE 读取部署模块: $EASYNET_MODULE"
+        return 0
+    fi
+
     if [ -n "$EASYNET_SERVICE_CHOICE" ]; then
         choice="$EASYNET_SERVICE_CHOICE"
         log_info "从环境变量 EASYNET_SERVICE_CHOICE 读取部署选择: $choice"
+        return 0
+    fi
+
+    return 1
+}
+
+show_menu() {
+    if select_from_env; then
         return
     fi
+
     echo "========================================"
     echo "  EasyNet 代理服务器部署"
     echo "========================================"
-    echo "1. 部署 Trojan-Go (推荐)"
-    echo "2. 部署 V2Ray"
-    echo "3. 部署 Shadowsocks-libev"
-    echo "4. 部署 WireGuard"
-    echo "5. 部署 Xray+Reality"
-    echo "6. 全部部署"
+    echo "0. 全部部署"
+    echo "1. 部署 Xray+Reality (最高安全/抗 DPI)"
+    echo "2. 部署 Hysteria2"
+    echo "3. 部署 Trojan-Go"
+    echo "4. 部署 V2Ray"
+    echo "5. 部署 Shadowsocks-libev"
+    echo "6. 部署 WireGuard"
     echo "7. 退出"
     echo "========================================"
-    echo -e "${YELLOW}提示: 如果您已完成所需服务的部署，请选择 7 退出。${NC}"
+    echo -e "${YELLOW}提示: 编号 1-6 按安全性和抗 DPI 能力从高到低排序。完成后请选择 7 退出。${NC}"
     read -p "请选择要部署的服务: " choice
 }
 
-deploy_trojan() {
-    log_info "开始部署 Trojan-Go..."
-    bash "$SCRIPT_DIR/server/trojan-go.sh"
+module_is_known() {
+    local module="$1"
+    local known
+    for known in "${ALL_MODULES[@]}"; do
+        if [ "$module" = "$known" ]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
-deploy_v2ray() {
-    log_info "开始部署 V2Ray..."
-    bash "$SCRIPT_DIR/server/v2ray.sh"
+module_display_name() {
+    case "$1" in
+        trojan-go) echo "Trojan-Go" ;;
+        v2ray) echo "V2Ray" ;;
+        shadowsocks) echo "Shadowsocks" ;;
+        wireguard) echo "WireGuard" ;;
+        xray-reality) echo "Xray+Reality" ;;
+        hysteria2) echo "Hysteria2" ;;
+        *) echo "$1" ;;
+    esac
 }
 
-deploy_shadowsocks() {
-    log_info "开始部署 Shadowsocks..."
-    bash "$SCRIPT_DIR/server/shadowsocks.sh"
+module_entrypoint() {
+    local protocol_entrypoint="$DEPLOY_SCRIPT_DIR/protocols/$1/deploy.sh"
+    if [ -x "$protocol_entrypoint" ]; then
+        echo "$protocol_entrypoint"
+    else
+        return 1
+    fi
 }
 
-deploy_wireguard() {
-    log_info "开始部署 WireGuard..."
-    bash "$SCRIPT_DIR/server/wireguard.sh"
+deployment_includes_module() {
+    local target="$1"
+    local module
+    for module in "${DEPLOY_SELECTION_MODULES[@]}"; do
+        if [ "$module" = "$target" ]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
-deploy_xray() {
-    log_info "开始部署 Xray+Reality..."
-    bash "$SCRIPT_DIR/server/xray-reality.sh"
+deploy_nginx_exposure() {
+    bash "$DEPLOY_SCRIPT_DIR/exposure/nginx/deploy.sh"
+}
+
+export_route_env_for_module() {
+    local module="$1"
+    local nginx_state_dir
+
+    nginx_state_dir="${EASYNET_NGINX_STATE_DIR:-$(easynet_nginx_state_dir)}"
+
+    case "$module" in
+        trojan-go)
+            if [ -f "$nginx_state_dir/trojan_path.txt" ]; then
+                export EASYNET_TROJAN_WS_PATH
+                EASYNET_TROJAN_WS_PATH=$(cat "$nginx_state_dir/trojan_path.txt")
+            fi
+            ;;
+        v2ray)
+            local use_exposure_backend="false"
+            if [ "$EASYNET_V2RAY_MODE" = "backend" ] || deployment_includes_module "trojan-go"; then
+                use_exposure_backend="true"
+            fi
+
+            if [ "$use_exposure_backend" != "true" ]; then
+                return
+            fi
+
+            if [ -z "$EASYNET_DOMAIN" ] && [ -f "$nginx_state_dir/domain.txt" ]; then
+                export EASYNET_DOMAIN
+                EASYNET_DOMAIN=$(cat "$nginx_state_dir/domain.txt")
+            fi
+
+            if [ -f "$nginx_state_dir/v2ray_path.txt" ]; then
+                export EASYNET_V2RAY_MODE="backend"
+                export EASYNET_V2RAY_PORT="${EASYNET_V2RAY_PORT:-4443}"
+                export EASYNET_V2RAY_LISTEN="${EASYNET_V2RAY_LISTEN:-127.0.0.1}"
+                export EASYNET_V2RAY_PUBLIC_PORT="${EASYNET_V2RAY_PUBLIC_PORT:-443}"
+                export EASYNET_V2RAY_WS_PATH
+                EASYNET_V2RAY_WS_PATH=$(cat "$nginx_state_dir/v2ray_path.txt")
+            fi
+            ;;
+    esac
+}
+
+prepare_module_dependencies() {
+    case "$1" in
+        trojan-go)
+            deploy_nginx_exposure
+            ;;
+    esac
+
+    export_route_env_for_module "$1"
+}
+
+resolve_profile_modules() {
+    case "$1" in
+        strict) printf '%s\n' "${STRICT_MODULES[@]}" ;;
+        balanced) printf '%s\n' "${BALANCED_MODULES[@]}" ;;
+        compat) printf '%s\n' "${COMPAT_MODULES[@]}" ;;
+        *) return 1 ;;
+    esac
+}
+
+resolve_modules() {
+    local selection="$1"
+
+    case "$selection" in
+        profile:*) resolve_profile_modules "${selection#profile:}" ;;
+        0) printf '%s\n' "${ALL_MODULES[@]}" ;;
+        1) echo "xray-reality" ;;
+        2) echo "hysteria2" ;;
+        3) echo "trojan-go" ;;
+        4) echo "v2ray" ;;
+        5) echo "shadowsocks" ;;
+        6) echo "wireguard" ;;
+        7) echo "__exit__" ;;
+        *)
+            if module_is_known "$selection"; then
+                echo "$selection"
+            else
+                return 1
+            fi
+            ;;
+    esac
+}
+
+deploy_module() {
+    local module="$1"
+    local entrypoint
+
+    entrypoint=$(module_entrypoint "$module") || {
+        log_error "未知模块: $module"
+        return 1
+    }
+
+    log_info "开始部署 $(module_display_name "$module")..."
+    prepare_module_dependencies "$module"
+    bash "$entrypoint"
+}
+
+deploy_modules() {
+    local module
+    DEPLOY_SELECTION_MODULES=("$@")
+    for module in "$@"; do
+        deploy_module "$module"
+    done
+    bash "$DEPLOY_SCRIPT_DIR/generate_subscription.sh"
+    setup_firewall
+    setup_cron_jobs
 }
 
 main() {
+    load_env_file
     check_root
     check_os
 
@@ -191,46 +331,20 @@ main() {
 
     while true; do
         show_menu
-        case $choice in
-            1)
-                deploy_trojan
-                bash "$SCRIPT_DIR/generate_subscription.sh"
-                ;;
-            2)
-                deploy_v2ray
-                bash "$SCRIPT_DIR/generate_subscription.sh"
-                ;;
-            3)
-                deploy_shadowsocks
-                bash "$SCRIPT_DIR/generate_subscription.sh"
-                ;;
-            4)
-                deploy_wireguard
-                bash "$SCRIPT_DIR/generate_subscription.sh"
-                ;;
-            5)
-                deploy_xray
-                bash "$SCRIPT_DIR/generate_subscription.sh"
-                ;;
-            6)
-                deploy_trojan
-                deploy_v2ray
-                deploy_shadowsocks
-                deploy_wireguard
-                deploy_xray
-                bash "$SCRIPT_DIR/generate_subscription.sh"
-                ;;
-            7)
-                log_info "退出安装"
-                exit 0
-                ;;
-            *)
-                log_error "无效选择"
-                ;;
-        esac
+        mapfile -t selected_modules < <(resolve_modules "$choice") || {
+            log_error "无效选择"
+            continue
+        }
+
+        if [ "${selected_modules[0]}" = "__exit__" ]; then
+            log_info "退出安装"
+            exit 0
+        fi
+
+        deploy_modules "${selected_modules[@]}"
         
         # 如果使用环境变量进行自动化部署，执行一次后自动退出，避免死循环
-        if [ -n "$EASYNET_SERVICE_CHOICE" ]; then
+        if [ -n "$EASYNET_SERVICE_CHOICE" ] || [ -n "$EASYNET_MODULE" ] || [ -n "$EASYNET_PROFILE" ]; then
             log_info "自动化部署完成，退出脚本。"
             exit 0
         fi
@@ -239,4 +353,7 @@ main() {
     done
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    set -e
+    main "$@"
+fi

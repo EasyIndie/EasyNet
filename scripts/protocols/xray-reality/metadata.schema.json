@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EasyNet protocol module metadata",
+  "type": "object",
+  "required": ["schemaVersion", "module", "enabled", "protocol", "listen", "port", "transport", "security", "client"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "module": { "type": "string" },
+    "enabled": { "type": "boolean" },
+    "protocol": { "type": "string" },
+    "listen": { "type": "string" },
+    "port": { "type": "integer" },
+    "transport": { "type": "string" },
+    "security": { "type": "string" },
+    "client": {
+      "type": "object",
+      "required": ["uri", "clash"],
+      "properties": {
+        "uri": { "type": "string" },
+        "clash": { "type": "object" }
+      }
+    },
+    "firewall": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["port", "proto"],
+        "properties": {
+          "port": { "type": "integer" },
+          "proto": { "enum": ["tcp", "udp"] }
+        }
+      }
+    }
+  }
+}

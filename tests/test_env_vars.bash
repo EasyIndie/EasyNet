@@ -2,34 +2,66 @@
 
 # Get directory of this script
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$(cd "$DIR/.." && pwd)"
 source "$DIR/test_helper.bash"
+source "$PROJECT_ROOT/scripts/deploy.sh"
 
 test_start "Environment Variables Automation Logic"
 
-# Test 1: Simulating show_menu from deploy.sh
-simulate_show_menu() {
-    local choice=""
-    if [ -n "$EASYNET_SERVICE_CHOICE" ]; then
-        choice="$EASYNET_SERVICE_CHOICE"
-        echo "$choice"
+# Test 1: environment selection branches from deploy.sh
+run_env_selection_for_test() {
+    choice=""
+    if ! select_from_env >/dev/null; then
+        echo "PROMPT"
         return
     fi
-    # If it falls through, it would prompt. We return "PROMPT" to signify this.
-    echo "PROMPT"
+    echo "$choice"
 }
 
 # Test 1.1: Without environment variable
 unset EASYNET_SERVICE_CHOICE
-result1=$(simulate_show_menu)
+unset EASYNET_MODULE
+unset EASYNET_PROFILE
+result1=$(run_env_selection_for_test)
 assert_equals "PROMPT" "$result1" "Without EASYNET_SERVICE_CHOICE, it should fall back to interactive prompt"
 
 # Test 1.2: With environment variable
-export EASYNET_SERVICE_CHOICE="6"
-result2=$(simulate_show_menu)
-assert_equals "6" "$result2" "With EASYNET_SERVICE_CHOICE=6, it should automatically select 6"
+export EASYNET_SERVICE_CHOICE="0"
+unset EASYNET_MODULE
+unset EASYNET_PROFILE
+result2=$(run_env_selection_for_test)
+assert_equals "0" "$result2" "With EASYNET_SERVICE_CHOICE=0, it should automatically select all modules"
+
+# Test 1.3: With module environment variable
+unset EASYNET_SERVICE_CHOICE
+unset EASYNET_PROFILE
+export EASYNET_MODULE="xray-reality"
+result_module=$(run_env_selection_for_test)
+assert_equals "xray-reality" "$result_module" "With EASYNET_MODULE=xray-reality, it should select Xray Reality"
+
+export EASYNET_MODULE="wireguard"
+result_wireguard_module=$(run_env_selection_for_test)
+assert_equals "wireguard" "$result_wireguard_module" "With EASYNET_MODULE=wireguard, it should select WireGuard"
+
+export EASYNET_MODULE="trojan-go"
+result_trojan_module=$(run_env_selection_for_test)
+assert_equals "trojan-go" "$result_trojan_module" "With EASYNET_MODULE=trojan-go, it should select Trojan-Go"
+
+export EASYNET_MODULE="v2ray"
+result_v2ray_module=$(run_env_selection_for_test)
+assert_equals "v2ray" "$result_v2ray_module" "With EASYNET_MODULE=v2ray, it should select V2Ray"
+
+export EASYNET_MODULE="hysteria2"
+result_hysteria2_module=$(run_env_selection_for_test)
+assert_equals "hysteria2" "$result_hysteria2_module" "With EASYNET_MODULE=hysteria2, it should select Hysteria2"
+
+unset EASYNET_MODULE
+export EASYNET_PROFILE="strict"
+result_profile=$(run_env_selection_for_test)
+assert_equals "profile:strict" "$result_profile" "With EASYNET_PROFILE=strict, it should select strict profile"
 
 
-# Test 2: Simulating get_domain from trojan-go.sh
+# Test 2: Simulating protocol domain selection from EASYNET_DOMAIN
 simulate_get_domain() {
     local DOMAIN=""
     if [ -n "$EASYNET_DOMAIN" ]; then

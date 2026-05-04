@@ -34,8 +34,8 @@
 - 连通性测试通过，但网页打不开
 
 处理：
-- 检查 Trojan 路径和 V2Ray 路径是否一致
 - 检查域名、SNI、WebSocket 路径是否为部署输出值
+- 检查 Nginx 暴露层状态目录 `/var/lib/easynet/exposure/nginx`
 - 查看 `journalctl -u trojan-go -n 50`
 
 ### Shadowsocks 连不上

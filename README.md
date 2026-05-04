@@ -2,11 +2,11 @@
 
 ## 项目概述
 
-一套完整的境外 VPS 部署方案，实现在受限网络环境下的稳定科学上网服务。支持 5 种主流协议，满足不同场景需求。
+一套完整的境外 VPS 部署方案，实现在受限网络环境下的稳定科学上网服务。支持 6 种主流协议，满足不同场景需求。
 
 ## 核心特性
 
-- 🚀 支持 5 种代理协议（Shadowsocks、V2Ray、Trojan、WireGuard、Xray+Reality）
+- 🚀 支持 6 种代理协议（Shadowsocks、V2Ray、Trojan、WireGuard、Xray+Reality、Hysteria2）
 - 🔒 强安全架构：TLS 加密、WebSocket 随机路径、Nginx 本地回环隐蔽分发
 - ⚡ 性能优化：BBR 拥塞控制加速
 - 🔄 自动化运维：服务自动更新、系统日志截断防爆盘
@@ -20,7 +20,7 @@
 
 如果你只想快速决策：
 
-- 日常优先 `Xray+Reality` 或 `Trojan-Go`，兼容性补充用 `V2Ray`
+- 日常优先 `Xray+Reality`，UDP/QUIC 补充用 `Hysteria2`，兼容性补充用 `V2Ray`
 - `Shadowsocks` 和 `WireGuard` 仅建议在特定场景使用
 
 简要对比：
@@ -28,6 +28,7 @@
 | 协议               | 优点             | 缺点          | 防探测等级       |
 | ---------------- | -------------- | ----------- | ----------- |
 | **Xray+Reality** | 无需域名，超强隐蔽，反代名站 | 客户端要求较高     | 🥇 极高 (推荐)  |
+| **Hysteria2**    | QUIC/UDP 性能好，支持 salamander 混淆 | 需要域名与 UDP 可达 | 🥇 高 (推荐补充) |
 | **Trojan-Go**    | 安全性高，标准HTTPS伪装 | 需要真实域名证书    | 🥈 高 (推荐)   |
 | **V2Ray**        | 配合TLS混淆，灵活性强   | 配置较复杂       | 🥈 较高       |
 | **Shadowsocks**  | 简单快速，0-RTT     | 全随机流量易被识别   | 🥉 中等/偏低    |
@@ -38,18 +39,22 @@
 ```
 EasyNet/
 ├── scripts/              # 部署脚本目录
-│   ├── server/           # 服务器端脚本
-│   │   ├── trojan-go.sh
-│   │   ├── v2ray.sh
-│   │   ├── shadowsocks.sh
-│   │   ├── wireguard.sh
-│   │   └── xray-reality.sh
+│   ├── core/             # 可复用核心函数与 metadata 契约
+│   ├── exposure/         # 入口暴露层（Nginx、订阅路径等）
+│   ├── protocols/        # 独立协议模块（新架构）
+│   │   ├── xray-reality/
+│   │   ├── trojan-go/
+│   │   ├── v2ray/
+│   │   ├── shadowsocks/
+│   │   ├── wireguard/
+│   │   └── hysteria2/
 │   └── deploy.sh         # 一键部署脚本
 ├── tests/                # 单元测试目录
 │   ├── test_helper.bash
 │   ├── test_env_vars.bash
 │   ├── test_json_manipulation.bash
 │   ├── test_path_generation.bash
+│   ├── test_protocol_metadata.bash
 │   ├── test_vmess_generation.bash
 │   ├── test_wireguard_generation.bash
 │   └── run_all_tests.bash
@@ -66,7 +71,7 @@ EasyNet/
   - 系统：`Ubuntu 22.04+` / `Debian 11+`
   - CPU及内存：`1C1G` 起步
   - 端口：开放 `80/443`
-- 推荐协议：日常优先 `Xray+Reality` 或 `Trojan-Go`
+- 推荐协议：日常优先 `Xray+Reality`，需要 UDP/QUIC 补充时加 `Hysteria2`
 - 客户端：
   - Windows/macOS/Linux 用 `Clash Verge Rev`
   - Android 用 `Clash Meta for Android`
@@ -91,7 +96,7 @@ cd EasyNet
 ### 自动部署
 
 ```bash
-EASYNET_SERVICE_CHOICE=6 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
+EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 ```
 
 ## 文档

@@ -6,7 +6,7 @@ source "$DIR/test_helper.bash"
 
 test_start "V2Ray VMess URL Generation Logic"
 
-# Simulate the V2Ray VMess generation logic from v2ray.sh
+# Simulate the V2Ray VMess generation logic from the V2Ray protocol module.
 generate_vmess_url() {
     local uuid="$1"
     local domain="$2"
