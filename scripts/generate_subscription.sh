@@ -24,8 +24,6 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 WEB_ROOT="${EASYNET_WEB_ROOT:-/var/www/html}"
 SUB_FILE="${WEB_ROOT}/sub"
 CLASH_FILE="${WEB_ROOT}/clash"
-LEGACY_SUB_FILE_ALL="${WEB_ROOT}/sub_full"
-LEGACY_CLASH_FILE_ALL="${WEB_ROOT}/clash_full"
 
 SUBSCRIPTION_TMP_DIR="$(mktemp -d /tmp/easynet-subscription.XXXXXX)"
 cleanup_subscription_tmp() {
@@ -66,6 +64,14 @@ generate_proxy_list() {
     done < "$names_file"
 }
 
+base64_no_wrap() {
+    if base64 --help 2>&1 | grep -q -- "-w"; then
+        base64 -w 0
+    else
+        base64 | tr -d '\n'
+    fi
+}
+
 generate_clash_config() {
     local output_file="$1"
     local proxies_file="$2"
@@ -101,7 +107,7 @@ EOF
     cat >> "$output_file" <<EOF
   - name: "Auto"
     type: url-test
-    url: "https://cp.cloudflare.com/generate_204"
+    url: "https://www.gstatic.com/generate_204"
     interval: 300
     tolerance: 50
     proxies:
@@ -277,15 +283,38 @@ EOF
     esac
 }
 
+metadata_security_rank() {
+    case "$1" in
+        xray-reality) echo 10 ;;
+        hysteria2) echo 20 ;;
+        trojan-go) echo 30 ;;
+        v2ray) echo 40 ;;
+        shadowsocks) echo 50 ;;
+        wireguard) echo 60 ;;
+        *) echo 99 ;;
+    esac
+}
+
+metadata_files_by_security() {
+    local metadata_file module rank
+
+    while IFS= read -r metadata_file; do
+        [ -z "$metadata_file" ] && continue
+        if ! metadata_validate_file "$metadata_file"; then
+            log_warn "跳过无效 metadata: $metadata_file" >&2
+            continue
+        fi
+        module=$(jq -r '.module' "$metadata_file")
+        rank=$(metadata_security_rank "$module")
+        printf '%s\t%s\n' "$rank" "$metadata_file"
+    done < <(metadata_list_files) | sort -n -k1,1 | cut -f2-
+}
+
 load_metadata_nodes() {
     local metadata_file module uri name
 
     while IFS= read -r metadata_file; do
         [ -z "$metadata_file" ] && continue
-        if ! metadata_validate_file "$metadata_file"; then
-            log_warn "跳过无效 metadata: $metadata_file"
-            continue
-        fi
 
         module=$(jq -r '.module' "$metadata_file")
         uri=$(jq -r '.client.uri' "$metadata_file")
@@ -298,7 +327,7 @@ load_metadata_nodes() {
             append_proxy_name "$CLASH_NAMES_SAFE" "$name"
         fi
 
-    done < <(metadata_list_files)
+    done < <(metadata_files_by_security)
 }
 
 show_subscription_links() {
@@ -356,10 +385,9 @@ fi
 
 log_info "生成订阅文件..."
 mkdir -p "$WEB_ROOT"
-rm -f "$LEGACY_SUB_FILE_ALL" "$LEGACY_CLASH_FILE_ALL"
 
 if [ -s "$LINKS_FILE_SAFE" ]; then
-    base64 -w 0 < "$LINKS_FILE_SAFE" > "$SUB_FILE"
+    base64_no_wrap < "$LINKS_FILE_SAFE" > "$SUB_FILE"
     chmod 644 "$SUB_FILE"
 fi
 

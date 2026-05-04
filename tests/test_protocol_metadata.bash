@@ -337,6 +337,13 @@ else
 fi
 assert_equals "true" "$hysteria2_qr_output" "Hysteria2 deploy prints QR code for client URI"
 
+if rg -q "tls:|cert:|key:" "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh" && ! rg -q "acme:|Cloudflare|橙云" "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"; then
+    hysteria2_uses_edge_cert="true"
+else
+    hysteria2_uses_edge_cert="false"
+fi
+assert_equals "true" "$hysteria2_uses_edge_cert" "Hysteria2 reuses Edge TLS certificate without standalone ACME or provider-specific guidance"
+
 WEB_ROOT="$TMP_DIR/web"
 EASYNET_STATE_DIR="$STATE_DIR" \
 EASYNET_WEB_ROOT="$WEB_ROOT" \

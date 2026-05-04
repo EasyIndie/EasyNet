@@ -8,7 +8,6 @@ source "$CORE_DIR/logging.sh"
 
 CONFIG_DIR="${V2RAY_CONFIG_DIR:-/usr/local/etc/v2ray}"
 DATA_DIR="${V2RAY_DATA_DIR:-/var/lib/v2ray}"
-MODE="${EASYNET_V2RAY_MODE:-standalone}"
 
 generate_uuid() {
     cat /proc/sys/kernel/random/uuid
@@ -38,70 +37,23 @@ install_v2ray() {
     bash <(curl -L https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh)
 }
 
-issue_standalone_certificate() {
-    log_info "为 V2Ray 申请独立 SSL 证书..."
-    if [ ! -d "$HOME/.acme.sh" ]; then
-        curl https://get.acme.sh | sh
-    fi
-    export PATH="$HOME/.acme.sh:$PATH"
-
-    if systemctl is-active --quiet nginx 2>/dev/null; then
-        systemctl stop nginx
-    fi
-
-    ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-    set +e
-    ~/.acme.sh/acme.sh --issue -d "$DOMAIN" --standalone -k ec-256 \
-        --pre-hook "systemctl stop nginx" \
-        --post-hook "systemctl start nginx"
-    local acme_status=$?
-    set -e
-
-    if [ $acme_status -ne 0 ] && [ $acme_status -ne 2 ]; then
-        log_error "SSL 证书申请失败，请检查域名解析是否正确"
-        exit 1
-    fi
-
-    mkdir -p /etc/ssl/v2ray
-    ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" \
-        --key-file /etc/ssl/v2ray/private.key \
-        --fullchain-file /etc/ssl/v2ray/fullchain.crt
-}
-
 configure_v2ray() {
     log_info "配置 V2Ray..."
     mkdir -p "$CONFIG_DIR" "$DATA_DIR"
 
     if [ -f "$CONFIG_DIR/config.json" ] && grep -q "clients" "$CONFIG_DIR/config.json"; then
-        log_info "检测到已有的 V2Ray 配置，跳过生成新 UUID，直接使用现有配置。"
+        log_info "检测到已有的 V2Ray 配置，保留 UUID 并按 Edge backend 模式重写监听配置。"
         UUID=$(jq -r '.inbounds[0].settings.clients[0].id // empty' "$CONFIG_DIR/config.json")
-        WS_PATH=$(jq -r '.inbounds[0].streamSettings.wsSettings.path // empty' "$CONFIG_DIR/config.json")
-        PORT=$(jq -r '.inbounds[0].port // empty' "$CONFIG_DIR/config.json")
-        LISTEN=$(jq -r '.inbounds[0].listen // "0.0.0.0"' "$CONFIG_DIR/config.json")
-        return
-    fi
-
-    UUID=$(generate_uuid)
-    WS_PATH="${EASYNET_V2RAY_WS_PATH:-/$(openssl rand -hex 16)}"
-
-    if [ "$MODE" = "backend" ]; then
-        PORT="${EASYNET_V2RAY_PORT:-4443}"
-        LISTEN="${EASYNET_V2RAY_LISTEN:-127.0.0.1}"
-        TLS_CONFIG=""
+        if [ -z "$EASYNET_V2RAY_WS_PATH" ]; then
+            WS_PATH=$(jq -r '.inbounds[0].streamSettings.wsSettings.path // empty' "$CONFIG_DIR/config.json")
+        fi
     else
-        PORT="${EASYNET_V2RAY_PORT:-443}"
-        LISTEN="${EASYNET_V2RAY_LISTEN:-0.0.0.0}"
-        issue_standalone_certificate
-        TLS_CONFIG='"security": "tls",
-            "tlsSettings": {
-              "certificates": [
-                {
-                  "certificateFile": "/etc/ssl/v2ray/fullchain.crt",
-                  "keyFile": "/etc/ssl/v2ray/private.key"
-                }
-              ]
-            },'
+        UUID=$(generate_uuid)
     fi
+
+    WS_PATH="${EASYNET_V2RAY_WS_PATH:-${WS_PATH:-/$(openssl rand -hex 16)}}"
+    PORT="${EASYNET_V2RAY_PORT:-4443}"
+    LISTEN="${EASYNET_V2RAY_LISTEN:-127.0.0.1}"
 
     cat > "$CONFIG_DIR/config.json" << EOF
 {
@@ -123,7 +75,6 @@ configure_v2ray() {
       },
       "streamSettings": {
         "network": "ws",
-        $TLS_CONFIG
         "wsSettings": {
           "path": "$WS_PATH"
         }
@@ -176,12 +127,6 @@ create_systemd_service() {
         exit 1
     fi
 
-    if [ "$MODE" != "backend" ]; then
-        ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" \
-            --key-file /etc/ssl/v2ray/private.key \
-            --fullchain-file /etc/ssl/v2ray/fullchain.crt \
-            --reloadcmd "systemctl restart v2ray"
-    fi
 }
 
 show_config() {

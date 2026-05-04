@@ -10,16 +10,10 @@ source "$CORE_DIR/env.sh"
 TROJAN_VERSION="${TROJAN_VERSION:-0.10.6}"
 CONFIG_DIR="${TROJAN_CONFIG_DIR:-/etc/trojan-go}"
 DATA_DIR="${TROJAN_DATA_DIR:-/var/lib/trojan-go}"
-MODE="${EASYNET_TROJAN_MODE:-standalone}"
 PUBLIC_PORT="${EASYNET_TROJAN_PUBLIC_PORT:-443}"
-CERT_DIR="${EASYNET_TROJAN_CERT_DIR:-/etc/ssl/trojan-go}"
-if [ "$MODE" = "backend" ]; then
-    LISTEN="${EASYNET_TROJAN_LISTEN:-127.0.0.1}"
-    PORT="${EASYNET_TROJAN_PORT:-4444}"
-else
-    LISTEN="${EASYNET_TROJAN_LISTEN:-0.0.0.0}"
-    PORT="${EASYNET_TROJAN_PORT:-443}"
-fi
+CERT_DIR="${EASYNET_TROJAN_CERT_DIR:-${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}}"
+LISTEN="${EASYNET_TROJAN_LISTEN:-127.0.0.1}"
+PORT="${EASYNET_TROJAN_PORT:-4444}"
 
 generate_password() {
     openssl rand -hex 16
@@ -65,48 +59,6 @@ ensure_trojan_path() {
     fi
 
     echo "$trojan_path"
-}
-
-install_acme() {
-    log_info "安装 ACME.sh 用于申请 SSL 证书..."
-    if [ ! -d "$HOME/.acme.sh" ]; then
-        curl https://get.acme.sh | sh
-    fi
-    export PATH="$HOME/.acme.sh:$PATH"
-}
-
-issue_certificate() {
-    log_info "申请 SSL 证书..."
-    if systemctl is-active --quiet nginx 2>/dev/null; then
-        log_info "临时停止 nginx 以释放 80 端口..."
-        systemctl stop nginx
-    fi
-    ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-
-    set +e
-    ~/.acme.sh/acme.sh --issue -d "$DOMAIN" --standalone -k ec-256 \
-        --pre-hook "systemctl stop nginx" \
-        --post-hook "systemctl start nginx"
-    local acme_status=$?
-    set -e
-
-    if [ $acme_status -ne 0 ] && [ $acme_status -ne 2 ]; then
-        log_error "SSL 证书申请失败，请检查域名解析是否正确"
-        exit 1
-    fi
-}
-
-install_certificate() {
-    log_info "安装 SSL 证书..."
-    mkdir -p "$CERT_DIR"
-    ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" --ecc \
-        --key-file "$CERT_DIR/private.key" \
-        --fullchain-file "$CERT_DIR/fullchain.crt"
-
-    log_info "重新启动 nginx..."
-    if systemctl is-enabled --quiet nginx 2>/dev/null; then
-        systemctl start nginx
-    fi
 }
 
 download_trojan() {
@@ -214,13 +166,6 @@ EOF
     systemctl enable trojan-go
     systemctl start trojan-go
 
-    if [ "$MODE" != "backend" ]; then
-        log_info "配置证书自动续期重启钩子..."
-        ~/.acme.sh/acme.sh --install-cert -d "$DOMAIN" --ecc \
-            --key-file "$CERT_DIR/private.key" \
-            --fullchain-file "$CERT_DIR/fullchain.crt" \
-            --reloadcmd "systemctl restart trojan-go"
-    fi
 }
 
 show_config() {
@@ -253,16 +198,9 @@ show_config() {
 
 main() {
     get_domain
-    if [ "$MODE" = "backend" ]; then
-        CERT_DIR="${EASYNET_TROJAN_CERT_DIR:-${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}}"
-        if [ ! -f "$CERT_DIR/fullchain.crt" ] || [ ! -f "$CERT_DIR/private.key" ]; then
-            log_error "Trojan-Go backend 需要 Edge TLS 证书，请先部署 Edge Gateway。"
-            exit 1
-        fi
-    else
-        install_acme
-        issue_certificate
-        install_certificate
+    if [ ! -f "$CERT_DIR/fullchain.crt" ] || [ ! -f "$CERT_DIR/private.key" ]; then
+        log_error "Trojan-Go 需要 Edge TLS 证书，请先部署 Edge Gateway。"
+        exit 1
     fi
     download_trojan
     configure_trojan

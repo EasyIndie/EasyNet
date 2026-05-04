@@ -25,7 +25,6 @@ source "$PROJECT_ROOT/scripts/core/env.sh"
 
 ALL_MODULES=(xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard)
 BALANCED_MODULES=(xray-reality hysteria2)
-COMPAT_MODULES=("${ALL_MODULES[@]}")
 DEPLOY_SELECTION_MODULES=()
 
 load_env_file() {
@@ -185,14 +184,6 @@ module_display_name() {
     esac
 }
 
-subscription_carrier_enabled() {
-    if [ "${EASYNET_EDGE_ENABLED:-auto}" = "false" ]; then
-        return 1
-    fi
-
-    [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ] || [ -n "$EASYNET_DOMAIN" ]
-}
-
 module_entrypoint() {
     local protocol_entrypoint="$DEPLOY_SCRIPT_DIR/protocols/$1/deploy.sh"
     if [ -x "$protocol_entrypoint" ]; then
@@ -213,51 +204,55 @@ deployment_includes_module() {
     return 1
 }
 
-deploy_nginx_exposure() {
-    bash "$DEPLOY_SCRIPT_DIR/exposure/nginx/deploy.sh"
-}
-
-deploy_subscription_exposure() {
+deploy_edge_gateway() {
     bash "$DEPLOY_SCRIPT_DIR/exposure/edge/deploy.sh"
 }
 
-module_requires_public_tcp443() {
+module_uses_edge_backend() {
     case "$1" in
-        trojan-go)
-            [ "${EASYNET_TROJAN_MODE:-standalone}" != "backend" ] && return 0
-            return 1
-            ;;
-        v2ray)
-            [ "${EASYNET_V2RAY_MODE:-standalone}" != "backend" ] && return 0
-            return 1
-            ;;
+        trojan-go|v2ray) return 0 ;;
         *) return 1 ;;
     esac
 }
 
-validate_edge_compatibility() {
+module_requires_edge() {
+    case "$1" in
+        hysteria2|trojan-go|v2ray) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+edge_gateway_enabled() {
     local module
 
-    if ! subscription_carrier_enabled; then
+    if [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ] || [ -n "$EASYNET_DOMAIN" ]; then
         return 0
     fi
 
-    for module in "$@"; do
-        case "$module" in
-            v2ray)
-                continue
-                ;;
-            trojan-go)
-                continue
-                ;;
-            *)
-                if module_requires_public_tcp443 "$module"; then
-                    log_error "模块 $(module_display_name "$module") 需要公网 TCP/443，无法与 Edge Gateway 同时部署。"
-                    return 1
-                fi
-                ;;
-        esac
+    for module in "${DEPLOY_SELECTION_MODULES[@]}"; do
+        if module_requires_edge "$module"; then
+            return 0
+        fi
     done
+
+    return 1
+}
+
+ensure_edge_domain() {
+    if ! edge_gateway_enabled; then
+        return 0
+    fi
+
+    if [ -n "$EASYNET_DOMAIN" ] || [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ]; then
+        return 0
+    fi
+
+    read -p "请输入 Edge Gateway 绑定域名: " EASYNET_DOMAIN
+    if [ -z "$EASYNET_DOMAIN" ]; then
+        log_error "Edge Gateway 域名不能为空"
+        return 1
+    fi
+    export EASYNET_DOMAIN
 }
 
 edge_public_domain() {
@@ -286,7 +281,6 @@ ensure_edge_trojan_route() {
 
     route_domain="$(protocol_public_domain)"
 
-    export EASYNET_TROJAN_MODE="backend"
     export EASYNET_TROJAN_PORT="${EASYNET_TROJAN_PORT:-4444}"
     export EASYNET_TROJAN_LISTEN="${EASYNET_TROJAN_LISTEN:-127.0.0.1}"
     export EASYNET_TROJAN_PUBLIC_PORT="${EASYNET_TROJAN_PUBLIC_PORT:-443}"
@@ -327,7 +321,6 @@ ensure_edge_v2ray_route() {
         echo "$route_path" > "$edge_state_dir/v2ray_path.txt"
     fi
 
-    export EASYNET_V2RAY_MODE="backend"
     export EASYNET_V2RAY_PORT="${EASYNET_V2RAY_PORT:-4443}"
     export EASYNET_V2RAY_LISTEN="${EASYNET_V2RAY_LISTEN:-127.0.0.1}"
     export EASYNET_V2RAY_PUBLIC_PORT="${EASYNET_V2RAY_PUBLIC_PORT:-443}"
@@ -350,63 +343,18 @@ EOF
 
 export_route_env_for_module() {
     local module="$1"
-    local nginx_state_dir
-
-    nginx_state_dir="${EASYNET_NGINX_STATE_DIR:-$(easynet_nginx_state_dir)}"
 
     case "$module" in
         trojan-go)
-            if subscription_carrier_enabled; then
-                ensure_edge_trojan_route
-                return
-            fi
-
-            if [ -f "$nginx_state_dir/trojan_path.txt" ]; then
-                export EASYNET_TROJAN_WS_PATH
-                EASYNET_TROJAN_WS_PATH=$(cat "$nginx_state_dir/trojan_path.txt")
-            fi
+            ensure_edge_trojan_route
             ;;
         v2ray)
-            local use_exposure_backend="false"
-            if [ "$EASYNET_V2RAY_MODE" = "backend" ] || deployment_includes_module "trojan-go" || subscription_carrier_enabled; then
-                use_exposure_backend="true"
-            fi
-
-            if [ "$use_exposure_backend" != "true" ]; then
-                return
-            fi
-
-            if subscription_carrier_enabled; then
-                ensure_edge_v2ray_route
-                return
-            fi
-
-            if [ -z "$EASYNET_DOMAIN" ] && [ -f "$nginx_state_dir/domain.txt" ]; then
-                export EASYNET_DOMAIN
-                EASYNET_DOMAIN=$(cat "$nginx_state_dir/domain.txt")
-            fi
-
-            if [ -f "$nginx_state_dir/v2ray_path.txt" ]; then
-                export EASYNET_V2RAY_MODE="backend"
-                export EASYNET_V2RAY_PORT="${EASYNET_V2RAY_PORT:-4443}"
-                export EASYNET_V2RAY_LISTEN="${EASYNET_V2RAY_LISTEN:-127.0.0.1}"
-                export EASYNET_V2RAY_PUBLIC_PORT="${EASYNET_V2RAY_PUBLIC_PORT:-443}"
-                export EASYNET_V2RAY_WS_PATH
-                EASYNET_V2RAY_WS_PATH=$(cat "$nginx_state_dir/v2ray_path.txt")
-            fi
+            ensure_edge_v2ray_route
             ;;
     esac
 }
 
 prepare_module_dependencies() {
-    case "$1" in
-        trojan-go)
-            if ! subscription_carrier_enabled; then
-                deploy_nginx_exposure
-            fi
-            ;;
-    esac
-
     export_route_env_for_module "$1"
 }
 
@@ -414,7 +362,7 @@ resolve_profile_modules() {
     case "$1" in
         strict) echo "xray-reality" ;;
         balanced) printf '%s\n' "${BALANCED_MODULES[@]}" ;;
-        compat) printf '%s\n' "${COMPAT_MODULES[@]}" ;;
+        compat) printf '%s\n' "${ALL_MODULES[@]}" ;;
         *) return 1 ;;
     esac
 }
@@ -459,14 +407,14 @@ deploy_module() {
 deploy_modules() {
     local module
     DEPLOY_SELECTION_MODULES=("$@")
-    validate_edge_compatibility "$@"
-    if subscription_carrier_enabled; then
-        deploy_subscription_exposure
+    ensure_edge_domain
+    if edge_gateway_enabled; then
+        deploy_edge_gateway
     fi
     for module in "$@"; do
         deploy_module "$module"
     done
-    if subscription_carrier_enabled; then
+    if edge_gateway_enabled; then
         systemctl restart nginx >/dev/null 2>&1 || true
     fi
     bash "$DEPLOY_SCRIPT_DIR/generate_subscription.sh"

@@ -13,13 +13,11 @@ assert_equals "trojan-go" "$(resolve_uninstall_modules 3)" "Uninstall menu 3 res
 assert_equals "v2ray" "$(resolve_uninstall_modules 4)" "Uninstall menu 4 resolves to V2Ray"
 assert_equals "shadowsocks" "$(resolve_uninstall_modules 5)" "Uninstall menu 5 resolves to Shadowsocks"
 assert_equals "wireguard" "$(resolve_uninstall_modules 6)" "Uninstall menu 6 resolves to WireGuard"
-assert_equals "nginx-exposure" "$(resolve_uninstall_modules 7)" "Uninstall menu 7 resolves to Nginx exposure"
-assert_equals "edge-exposure" "$(resolve_uninstall_modules 8)" "Uninstall menu 8 resolves to Edge Gateway"
-assert_equals "subscription-exposure" "$(resolve_uninstall_modules 9)" "Uninstall menu 9 resolves to legacy subscription exposure"
-assert_equals "__exit__" "$(resolve_uninstall_modules 10)" "Uninstall menu 10 resolves to exit sentinel"
+assert_equals "edge-exposure" "$(resolve_uninstall_modules 7)" "Uninstall menu 7 resolves to Edge Gateway"
+assert_equals "__exit__" "$(resolve_uninstall_modules 8)" "Uninstall menu 8 resolves to exit sentinel"
 
 all_uninstall_modules="$(resolve_uninstall_modules 0 | xargs)"
-assert_equals "xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard nginx-exposure edge-exposure subscription-exposure" "$all_uninstall_modules" "Uninstall menu 0 removes all protocol modules and exposure layers"
+assert_equals "xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard edge-exposure" "$all_uninstall_modules" "Uninstall menu 0 removes all protocol modules and Edge Gateway"
 
 assert_equals "$PROJECT_ROOT/scripts/protocols/xray-reality/uninstall.sh" "$(uninstall_entrypoint xray-reality)" "Xray Reality has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/protocols/hysteria2/uninstall.sh" "$(uninstall_entrypoint hysteria2)" "Hysteria2 has isolated uninstall entrypoint"
@@ -27,9 +25,7 @@ assert_equals "$PROJECT_ROOT/scripts/protocols/trojan-go/uninstall.sh" "$(uninst
 assert_equals "$PROJECT_ROOT/scripts/protocols/v2ray/uninstall.sh" "$(uninstall_entrypoint v2ray)" "V2Ray has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/protocols/shadowsocks/uninstall.sh" "$(uninstall_entrypoint shadowsocks)" "Shadowsocks has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/protocols/wireguard/uninstall.sh" "$(uninstall_entrypoint wireguard)" "WireGuard has isolated uninstall entrypoint"
-assert_equals "$PROJECT_ROOT/scripts/exposure/nginx/uninstall.sh" "$(uninstall_entrypoint nginx-exposure)" "Nginx exposure has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/exposure/edge/uninstall.sh" "$(uninstall_entrypoint edge-exposure)" "Edge Gateway has isolated uninstall entrypoint"
-assert_equals "$PROJECT_ROOT/scripts/exposure/subscription/uninstall.sh" "$(uninstall_entrypoint subscription-exposure)" "Subscription exposure has isolated uninstall entrypoint"
 
 if resolve_uninstall_modules unknown-module >/dev/null; then
     invalid_module_ok="false"
@@ -123,5 +119,12 @@ else
     uninstall_references_legacy_server="false"
 fi
 assert_equals "false" "$uninstall_references_legacy_server" "Uninstall flow does not reference legacy server wrappers"
+
+if rg -q "nginx-exposure|subscription-exposure|exposure/nginx|exposure/subscription" "$PROJECT_ROOT/scripts/uninstall.sh"; then
+    uninstall_references_old_exposure="true"
+else
+    uninstall_references_old_exposure="false"
+fi
+assert_equals "false" "$uninstall_references_old_exposure" "Uninstall flow does not reference old exposure implementations"
 
 test_end

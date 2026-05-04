@@ -6,11 +6,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/metadata.sh"
+source "$CORE_DIR/env.sh"
 
 HYSTERIA2_CONFIG_DIR="${HYSTERIA2_CONFIG_DIR:-/etc/hysteria}"
 HYSTERIA2_CONFIG_FILE="${HYSTERIA2_CONFIG_FILE:-$HYSTERIA2_CONFIG_DIR/config.yaml}"
 HYSTERIA2_ENV_FILE="${HYSTERIA2_ENV_FILE:-$HYSTERIA2_CONFIG_DIR/easynet.env}"
 HYSTERIA2_SERVICE="${HYSTERIA2_SERVICE:-hysteria-server.service}"
+HYSTERIA2_CERT_DIR="${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}"
+HYSTERIA2_CERT_FILE="${EASYNET_HYSTERIA2_CERT_FILE:-$HYSTERIA2_CERT_DIR/fullchain.crt}"
+HYSTERIA2_KEY_FILE="${EASYNET_HYSTERIA2_KEY_FILE:-$HYSTERIA2_CERT_DIR/private.key}"
 
 random_secret() {
     openssl rand -hex 16
@@ -34,10 +38,20 @@ require_domain() {
 
     read -p "请输入 Hysteria2 绑定域名: " domain
     if [ -z "$domain" ]; then
-        log_error "Hysteria2 需要可解析到本机的域名以签发 TLS 证书。"
+        log_error "Hysteria2 需要可解析到本机的域名。"
         exit 1
     fi
     echo "$domain"
+}
+
+require_tls_certificate() {
+    if [ -f "$HYSTERIA2_CERT_FILE" ] && [ -f "$HYSTERIA2_KEY_FILE" ]; then
+        return 0
+    fi
+
+    log_error "未找到 Hysteria2 TLS 证书：$HYSTERIA2_CERT_FILE / $HYSTERIA2_KEY_FILE"
+    log_error "请先部署 Edge Gateway 生成统一证书，或设置 EASYNET_HYSTERIA2_CERT_FILE 与 EASYNET_HYSTERIA2_KEY_FILE。"
+    exit 1
 }
 
 write_env_var() {
@@ -55,14 +69,14 @@ configure_hysteria2() {
 
     log_info "配置 Hysteria2..."
     mkdir -p "$HYSTERIA2_CONFIG_DIR"
+    require_tls_certificate
 
     cat > "$HYSTERIA2_CONFIG_FILE" <<EOF
 listen: :$port
 
 tls:
-  acme:
-    domains:
-      - $domain
+  cert: $HYSTERIA2_CERT_FILE
+  key: $HYSTERIA2_KEY_FILE
 
 auth:
   type: password
@@ -125,7 +139,6 @@ show_config() {
     echo ""
     echo "连通性提示:"
     echo "- Hysteria2 使用 UDP/$port，请确认云厂商安全组和服务器防火墙均已放行 UDP/$port"
-    echo "- 如果域名托管在 Cloudflare，请保持 DNS Only；橙云代理不转发 Hysteria2 UDP 流量"
     echo "========================================"
 }
 

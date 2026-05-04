@@ -11,22 +11,24 @@
 5. 查协议是否导入正确：订阅、单节点、WireGuard 配置文件不要混用
 
 常见服务名：
+- `xray`
+- `hysteria-server.service`
 - `trojan-go`
 - `v2ray`
 - `shadowsocks-libev-server`
 - `wg-quick@wg0`
-- `xray`
 
 ## 最常见问题
 
-### 证书申请失败
+### Edge 证书申请失败
 
 现象：
 - `acme.sh` 提示 80 端口被占用
 
 处理：
 - 先停掉占用 80 端口的服务
-- 证书签发阶段确保域名为 `DNS Only`
+- 确认域名 A 记录已经解析到当前服务器
+- 确认云厂商安全组和服务器防火墙放行 `80/tcp`
 
 ### Trojan-Go 或 V2Ray 能连通但打不开网页
 
@@ -34,9 +36,20 @@
 - 连通性测试通过，但网页打不开
 
 处理：
-- 检查域名、SNI、WebSocket 路径是否为部署输出值
-- 检查 Nginx 暴露层状态目录 `/var/lib/easynet/exposure/nginx`
+- 检查域名、SNI、WebSocket 路径是否为订阅或部署输出值
+- 检查 Edge Gateway 路由状态目录 `/var/lib/easynet/exposure/edge/routes`
 - 查看 `journalctl -u trojan-go -n 50`
+
+### Hysteria2 服务正常但无法代理流量
+
+现象：
+- `hysteria-server.service` 已启动，但客户端无法通过 Hysteria2 上网
+
+处理：
+- 确认云厂商安全组和服务器防火墙放行 `443/udp`
+- 确认客户端导入的是最新订阅或部署输出中的 Hysteria2 节点
+- 检查 Edge 证书文件 `/etc/ssl/easynet-edge/fullchain.crt` 与 `/etc/ssl/easynet-edge/private.key` 是否存在
+- 查看 `journalctl -u hysteria-server.service -n 50`
 
 ### Shadowsocks 连不上
 

@@ -6,8 +6,8 @@
 
 ## 核心特性
 
-- 🚀 支持 6 种代理协议（Shadowsocks、V2Ray、Trojan、WireGuard、Xray+Reality、Hysteria2）
-- 🔒 强安全架构：TLS 加密、WebSocket 随机路径、Nginx 本地回环隐蔽分发
+- 🚀 支持 6 种代理协议（Xray+Reality、Hysteria2、Trojan-Go、V2Ray、Shadowsocks、WireGuard）
+- 🔒 强安全架构：TLS 加密、WebSocket 随机路径、Edge Gateway 本地回环隐蔽分发
 - ⚡ 性能优化：BBR 拥塞控制加速
 - 🔄 自动化运维：服务自动更新、系统日志截断防爆盘
 - 🤖 无交互部署：支持注入环境变量进行一键 CI/CD 批量安装
@@ -41,14 +41,14 @@
 EasyNet/
 ├── scripts/              # 部署脚本目录
 │   ├── core/             # 可复用核心函数与 metadata 契约
-│   ├── exposure/         # 入口暴露层（Nginx、订阅路径等）
+│   ├── exposure/         # 入口暴露层（Edge Gateway、订阅路径等）
 │   ├── protocols/        # 独立协议模块（新架构）
 │   │   ├── xray-reality/
+│   │   ├── hysteria2/
 │   │   ├── trojan-go/
 │   │   ├── v2ray/
 │   │   ├── shadowsocks/
-│   │   ├── wireguard/
-│   │   └── hysteria2/
+│   │   └── wireguard/
 │   ├── deploy.sh         # 一键部署脚本
 │   └── uninstall.sh      # 模块化卸载脚本
 ├── tests/                # 单元测试目录
@@ -61,7 +61,7 @@ EasyNet/
 │   ├── test_wireguard_generation.bash
 │   └── run_all_tests.bash
 ├── docs/                   # 精简文档目录
-│   ├── deployment.md       # 部署、协议选择、Cloudflare 说明
+│   ├── deployment.md       # 部署、协议选择、订阅承载说明
 │   ├── clients.md          # 全平台客户端说明
 │   └── troubleshooting-guide.md
 └── README.md
@@ -113,7 +113,7 @@ EASYNET_UNINSTALL_CHOICE=0 ./scripts/uninstall.sh
 
 ```bash
 EASYNET_UNINSTALL_MODULE=xray-reality ./scripts/uninstall.sh
-EASYNET_UNINSTALL_MODULE=nginx-exposure ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=edge-exposure ./scripts/uninstall.sh
 ```
 
 ## 文档

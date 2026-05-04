@@ -24,14 +24,6 @@ easynet_exposure_state_dir() {
     echo "$(easynet_state_dir)/exposure/$exposure_name"
 }
 
-easynet_nginx_state_dir() {
-    easynet_exposure_state_dir "nginx"
-}
-
-easynet_subscription_state_dir() {
-    easynet_exposure_state_dir "subscription"
-}
-
 easynet_edge_state_dir() {
     easynet_exposure_state_dir "edge"
 }

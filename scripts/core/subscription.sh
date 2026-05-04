@@ -17,24 +17,7 @@ easynet_subscription_domain() {
         return
     fi
 
-    subscription_domain_file="$(easynet_subscription_state_dir)/domain.txt"
-    if [ -f "$subscription_domain_file" ]; then
-        cat "$subscription_domain_file"
-        return
-    fi
-
-    local nginx_domain_file
-    nginx_domain_file="$(easynet_nginx_state_dir)/domain.txt"
-    if [ -f "$nginx_domain_file" ]; then
-        cat "$nginx_domain_file"
-        return
-    fi
-
-    local trojan_metadata_file
-    trojan_metadata_file="$(easynet_module_metadata_path trojan-go)"
-    if [ -f "$trojan_metadata_file" ] && metadata_validate_file "$trojan_metadata_file"; then
-        jq -r '.client.clash.server // empty' "$trojan_metadata_file"
-    fi
+    return 1
 }
 
 easynet_subscription_scheme() {
@@ -45,12 +28,6 @@ easynet_subscription_scheme() {
 
     local subscription_scheme_file
     subscription_scheme_file="$(easynet_edge_state_dir)/scheme.txt"
-    if [ -f "$subscription_scheme_file" ]; then
-        cat "$subscription_scheme_file"
-        return
-    fi
-
-    subscription_scheme_file="$(easynet_subscription_state_dir)/scheme.txt"
     if [ -f "$subscription_scheme_file" ]; then
         cat "$subscription_scheme_file"
         return
@@ -72,11 +49,7 @@ easynet_subscription_port() {
         return
     fi
 
-    subscription_port_file="$(easynet_subscription_state_dir)/port.txt"
-    if [ -f "$subscription_port_file" ]; then
-        cat "$subscription_port_file"
-        return
-    fi
+    return 0
 }
 
 easynet_subscription_origin() {
