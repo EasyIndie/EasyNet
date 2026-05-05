@@ -6,7 +6,7 @@
 
 ## 部署前准备
 
-- VPS：1 核、1GB 内存、20GB SSD 起步
+- VPS：1 核、1GB 内存、20GB SSD 起步 👉 **[可选VPS提供商列表](./vps-providers.md)**
 - 系统：Ubuntu 22.04+ 或 Debian 11+
 - 位置：优先香港、日本、新加坡
 - 域名：Hysteria2 / Trojan-Go / V2Ray / 订阅链接需要域名
