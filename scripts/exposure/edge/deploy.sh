@@ -7,6 +7,7 @@ CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/env.sh"
 source "$CORE_DIR/download.sh"
+source "$CORE_DIR/maintenance.sh"
 
 EDGE_STATE_DIR="${EASYNET_EDGE_STATE_DIR:-$(easynet_edge_state_dir)}"
 EDGE_ROUTES_DIR="$EDGE_STATE_DIR/routes"
@@ -15,6 +16,7 @@ EDGE_DOMAIN="${EASYNET_SUBSCRIPTION_DOMAIN:-${EASYNET_DOMAIN:-}}"
 EDGE_HTTP_PORT="${EASYNET_EDGE_HTTP_PORT:-80}"
 EDGE_HTTPS_PORT="${EASYNET_EDGE_HTTPS_PORT:-443}"
 EDGE_CERT_DIR="${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}"
+EDGE_RENEW_HOOK="${EASYNET_EDGE_RENEW_HOOK:-$SCRIPT_DIR/cert_renew_hook.sh}"
 EDGE_SUBSCRIPTION_PATH_PREFIX=""
 EDGE_SERVER_NAMES="$EDGE_DOMAIN"
 if [ -n "$EASYNET_DOMAIN" ] && [ "$EASYNET_DOMAIN" != "$EDGE_DOMAIN" ]; then
@@ -165,7 +167,7 @@ issue_edge_certificate() {
     ~/.acme.sh/acme.sh --install-cert -d "$EDGE_DOMAIN" --ecc \
         --key-file "$EDGE_CERT_DIR/private.key" \
         --fullchain-file "$EDGE_CERT_DIR/fullchain.crt" \
-        --reloadcmd "systemctl restart nginx"
+        --reloadcmd "$EDGE_RENEW_HOOK"
 }
 
 setup_edge_nginx() {
@@ -191,6 +193,7 @@ HTML
     systemctl restart nginx
 
     issue_edge_certificate
+    maintenance_configure_nginx_logrotate
     write_edge_subscription_routes
     write_edge_https_site
     systemctl restart nginx

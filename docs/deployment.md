@@ -202,6 +202,19 @@ sysctl net.ipv4.tcp_congestion_control
 
 `smoke_test.sh` 会读取 metadata，快速检查服务状态、关键端口、防火墙规则和当前订阅入口，适合真实 VPS 部署后做第一轮回归验证。
 
+### 长期运行检查
+
+Edge TLS 证书由 `acme.sh` 自动续期。续期完成后会调用 `scripts/exposure/edge/cert_renew_hook.sh`，自动修复 Edge 证书权限并重启 `nginx`、`hysteria-server.service`、`trojan-go`。
+
+日志方面，部署脚本会限制 journald 使用量，并为 Nginx 写入 EasyNet 管理的 logrotate 配置。可定期检查：
+
+```bash
+journalctl --disk-usage
+du -sh /var/log/nginx
+~/.acme.sh/acme.sh --list
+openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
+```
+
 ## 需要时再看
 
 - 客户端导入与平台差异：[客户端说明](./clients.md)

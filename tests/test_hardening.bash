@@ -36,4 +36,21 @@ else
 fi
 assert_equals "true" "$smoke_test_executable" "Real deployment smoke test script is executable"
 
+if [ -x "$PROJECT_ROOT/scripts/exposure/edge/cert_renew_hook.sh" ] &&
+    rg -q "cert_renew_hook.sh|--reloadcmd.*EDGE_RENEW_HOOK" "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh" &&
+    rg -q "hysteria-server.service|trojan-go|fix_edge_cert_permissions|grant_cert_access_to_user" "$PROJECT_ROOT/scripts/exposure/edge/cert_renew_hook.sh"; then
+    cert_hook_ready="true"
+else
+    cert_hook_ready="false"
+fi
+assert_equals "true" "$cert_hook_ready" "Edge certificate renew hook fixes permissions and restarts dependent services"
+
+if rg -q "maintenance_configure_logs|maintenance_configure_nginx_logrotate" "$PROJECT_ROOT/scripts/deploy.sh" "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh" &&
+    rg -q "SystemMaxUse|/etc/logrotate.d/easynet-nginx|/var/log/nginx/\\*.log" "$PROJECT_ROOT/scripts/core/maintenance.sh"; then
+    log_maintenance_ready="true"
+else
+    log_maintenance_ready="false"
+fi
+assert_equals "true" "$log_maintenance_ready" "Long-running log limits are configured for journald and Nginx"
+
 test_end

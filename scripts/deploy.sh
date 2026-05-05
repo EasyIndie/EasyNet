@@ -23,6 +23,7 @@ source "$PROJECT_ROOT/scripts/core/firewall.sh"
 source "$PROJECT_ROOT/scripts/core/cron.sh"
 source "$PROJECT_ROOT/scripts/core/env.sh"
 source "$PROJECT_ROOT/scripts/core/env_file.sh"
+source "$PROJECT_ROOT/scripts/core/maintenance.sh"
 source "$PROJECT_ROOT/scripts/exposure/edge/routes.sh"
 
 ALL_MODULES=(xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard)
@@ -107,18 +108,7 @@ setup_auto_update() {
 
 setup_cron_jobs() {
     log_info "配置定时任务与系统日志限制..."
-    
-    # 限制 systemd journald 日志大小，防止磁盘爆满
-    if [ -f /etc/systemd/journald.conf ]; then
-        sed -i 's/.*SystemMaxUse=.*/SystemMaxUse=500M/' /etc/systemd/journald.conf
-        # 如果原来没有这一行，则追加
-        if ! grep -q "SystemMaxUse=500M" /etc/systemd/journald.conf; then
-            echo "SystemMaxUse=500M" >> /etc/systemd/journald.conf
-        fi
-        systemctl restart systemd-journald
-    fi
-
-    # 每日凌晨4点按已启用模块重启服务以释放内存
+    maintenance_configure_logs
     cron_install_restart_job
 }
 

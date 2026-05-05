@@ -31,6 +31,17 @@
 - 确认云安全组和服务器防火墙放行 `80/tcp`
 - 停掉占用 80 端口的服务后重新部署
 
+### Edge 证书续期后协议异常
+
+现象：
+- Edge 证书刚续期，Hysteria2 或 Trojan-Go 开始异常
+
+处理：
+- 手动执行续期 hook：`./scripts/exposure/edge/cert_renew_hook.sh`
+- 检查证书到期时间：`openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate`
+- 检查证书权限：`ls -l /etc/ssl/easynet-edge`
+- 查看日志：`journalctl -u hysteria-server.service -n 100 --no-pager -l`
+
 ### 订阅没出现或扫码后只有一个节点
 
 原因：
