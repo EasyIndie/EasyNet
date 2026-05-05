@@ -58,6 +58,45 @@ write_env_var() {
     printf '%s=%q\n' "$1" "$2" >> "$HYSTERIA2_ENV_FILE"
 }
 
+hysteria2_service_user() {
+    systemctl cat "$HYSTERIA2_SERVICE" 2>/dev/null |
+        awk -F= '/^[[:space:]]*User=/{ gsub(/[[:space:]]/, "", $2); print $2; exit }'
+}
+
+set_hysteria2_file_permissions() {
+    local service_user
+
+    service_user="$(hysteria2_service_user)"
+    service_user="${service_user:-root}"
+
+    if [ "$service_user" = "root" ]; then
+        chmod 600 "$HYSTERIA2_CONFIG_FILE" "$HYSTERIA2_ENV_FILE"
+        chmod 644 "$HYSTERIA2_CERT_FILE"
+        chmod 600 "$HYSTERIA2_KEY_FILE"
+        return
+    fi
+
+    if ! id "$service_user" >/dev/null 2>&1; then
+        log_warn "未找到 Hysteria2 systemd 用户 $service_user，暂时仅设置 root 可读权限。"
+        chmod 600 "$HYSTERIA2_CONFIG_FILE" "$HYSTERIA2_ENV_FILE" "$HYSTERIA2_KEY_FILE"
+        chmod 644 "$HYSTERIA2_CERT_FILE"
+        return
+    fi
+
+    chown root:"$service_user" \
+        "$HYSTERIA2_CONFIG_FILE" \
+        "$HYSTERIA2_ENV_FILE" \
+        "$HYSTERIA2_CERT_FILE" \
+        "$HYSTERIA2_KEY_FILE"
+    chmod 750 "$HYSTERIA2_CERT_DIR"
+    chown root:"$service_user" "$HYSTERIA2_CERT_DIR"
+    chmod 640 \
+        "$HYSTERIA2_CONFIG_FILE" \
+        "$HYSTERIA2_ENV_FILE" \
+        "$HYSTERIA2_CERT_FILE" \
+        "$HYSTERIA2_KEY_FILE"
+}
+
 configure_hysteria2() {
     local domain port password obfs_password masquerade_url
 
@@ -101,7 +140,7 @@ EOF
     write_env_var HYSTERIA2_OBFS_PASSWORD "$obfs_password"
     write_env_var HYSTERIA2_SNI "$domain"
 
-    chmod 600 "$HYSTERIA2_CONFIG_FILE" "$HYSTERIA2_ENV_FILE"
+    set_hysteria2_file_permissions
 }
 
 restart_hysteria2() {
