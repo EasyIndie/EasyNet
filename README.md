@@ -9,9 +9,9 @@
 - 🚀 支持 6 种代理协议（Xray+Reality、Hysteria2、Trojan-Go、V2Ray、Shadowsocks、WireGuard）
 - 🔒 强安全架构：TLS 加密、WebSocket 随机路径、Edge Gateway 本地回环隐蔽分发
 - ⚡ 性能优化：BBR 拥塞控制加速
-- 🔄 自动化运维：服务自动更新、系统日志截断防爆盘
-- 🤖 无交互部署：支持注入环境变量进行一键 CI/CD 批量安装
-- 🔗 节点订阅：自动生成跨平台通用的节点订阅链接，告别繁琐的手动扫码
+- 🔄 自动化运维：系统更新、证书续期 hook、日志限额与 logrotate
+- 🤖 无交互部署：支持 `.env` 或环境变量进行一键安装
+- 🔗 节点订阅：配置域名后自动生成 URI / Clash 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket）
 - 💰 成本可控（$5-$10/月）
 - 🛡️ 安全稳定，自带单元测试保护核心逻辑
@@ -41,7 +41,7 @@
 EasyNet/
 ├── scripts/              # 部署脚本目录
 │   ├── core/             # 可复用核心函数与 metadata 契约
-│   ├── exposure/         # 入口暴露层（Edge Gateway、订阅路径等）
+│   ├── exposure/edge/    # Edge Gateway、订阅路径、证书续期 hook
 │   ├── protocols/        # 独立协议模块（新架构）
 │   │   ├── xray-reality/
 │   │   ├── hysteria2/
@@ -50,16 +50,11 @@ EasyNet/
 │   │   ├── shadowsocks/
 │   │   └── wireguard/
 │   ├── deploy.sh         # 一键部署脚本
-│   └── uninstall.sh      # 模块化卸载脚本
-├── tests/                # 单元测试目录
-│   ├── test_helper.bash
-│   ├── test_env_vars.bash
-│   ├── test_json_manipulation.bash
-│   ├── test_path_generation.bash
-│   ├── test_protocol_metadata.bash
-│   ├── test_vmess_generation.bash
-│   ├── test_wireguard_generation.bash
-│   └── run_all_tests.bash
+│   ├── uninstall.sh      # 模块化卸载脚本
+│   ├── show_subscription.sh
+│   ├── rotate_subscription.sh
+│   └── smoke_test.sh     # 真实部署快速检查
+├── tests/                # 单元测试与架构约束测试
 ├── docs/                   # 精简文档目录
 │   ├── deployment.md       # 部署、协议选择、订阅承载说明
 │   ├── clients.md          # 全平台客户端说明
@@ -72,7 +67,7 @@ EasyNet/
 - 环境：
   - 系统：`Ubuntu 22.04+` / `Debian 11+`
   - CPU及内存：`1C1G` 起步
-  - 端口：开放 `80/443`
+  - 端口：至少开放 `80/tcp`、`443/tcp`；`balanced` 还需要 `8443/tcp` 和 `443/udp`
 - 推荐协议：日常优先 `Xray+Reality`；需要 UDP/QUIC 补充时使用 `balanced`
 - 客户端：
   - Windows/macOS/Linux 用 `Clash Verge Rev`
@@ -101,7 +96,7 @@ cd EasyNet
 ### 自动部署
 
 ```bash
-EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
+EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 ```
 
 ### 卸载部署

@@ -10,7 +10,7 @@
 - 系统：Ubuntu 22.04+ 或 Debian 11+
 - 位置：优先香港、日本、新加坡
 - 域名：Hysteria2 / Trojan-Go / V2Ray / 订阅链接需要域名
-- 端口：确保 `80/tcp`、`443/tcp` 可入站访问；部署 Hysteria2 时还需开放 `443/udp`
+- 端口：确保 `80/tcp`、`443/tcp` 可入站访问；按协议额外开放 `8443/tcp`、`443/udp`、`8388/tcp/udp`、`51820/udp`
 
 ## 协议选择
 
@@ -18,8 +18,8 @@
 | ------------ | --- | ------------------------- |
 | Xray+Reality | 高   | 抗封锁优先，允许使用支持 Reality 的客户端 |
 | Hysteria2    | 高   | UDP/QUIC 场景，适合与 Reality 组成双主力方案 |
-| Trojan-Go    | 高   | 日常主力方案，兼容性和隐蔽性平衡          |
-| V2Ray        | 中   | 作为 Trojan-Go 的兼容补充        |
+| Trojan-Go    | 高   | WebSocket + TLS 兼容方案，由 Edge 统一承载 |
+| V2Ray        | 中   | VMess WebSocket 兼容补充，由 Edge 统一承载 |
 | Shadowsocks  | 低   | 仅在特定客户端或测试场景使用            |
 | WireGuard    | 低   | 适合中转、低延迟、独立 VPN 场景        |
 
@@ -27,8 +27,8 @@
 
 - 日常优先：`Xray+Reality`，需要 UDP/QUIC 补充时加 `Hysteria2`
 - 订阅承载与协议部署解耦；配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 后会自动启用 Edge Gateway 并打印订阅链接和二维码
-- 兼容性补充：`V2Ray`
-- 特定用途：`WireGuard`
+- 兼容性补充：`Trojan-Go` / `V2Ray`
+- 特定用途：`Shadowsocks` / `WireGuard`
 
 ## 快速部署
 
@@ -80,7 +80,7 @@ EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 ```bash
 EASYNET_MODULE=xray-reality ./scripts/deploy.sh
 EASYNET_MODULE=hysteria2 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
-EASYNET_MODULE=trojan-go ./scripts/deploy.sh
+EASYNET_MODULE=trojan-go EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 EASYNET_MODULE=v2ray EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 EASYNET_MODULE=shadowsocks ./scripts/deploy.sh
 EASYNET_MODULE=wireguard ./scripts/deploy.sh
@@ -99,7 +99,7 @@ EASYNET_PROFILE=compat EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 
 - `strict`：只部署 `xray-reality`
 - `balanced`：部署 `xray-reality` + `hysteria2`
-- `compat`：部署当前全部兼容模块
+- `compat`：部署当前全部模块
 
 订阅承载：
 
@@ -114,6 +114,11 @@ EASYNET_PROFILE=compat EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - 如确需调整 Edge 端口，可使用高级变量 `EASYNET_EDGE_HTTPS_PORT`
 - 当前订阅输出保留 URI 与 Clash 两类入口
 - 订阅文件中的节点顺序按安全性和抗 DPI 能力从高到低输出：`Xray+Reality`、`Hysteria2`、`Trojan-Go`、`V2Ray`、`Shadowsocks`、`WireGuard`
+
+环境变量：
+
+- `.env` 只加载 `EASYNET_*` 变量，非 EasyNet 变量会被忽略
+- 远程安装脚本和发布包支持可选 SHA256 校验，变量见 `.env.example`
 
 交互部署编号：
 
