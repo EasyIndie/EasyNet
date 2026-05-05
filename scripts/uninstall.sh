@@ -20,14 +20,15 @@ log_error() {
 UNINSTALL_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 PROJECT_ROOT="$(dirname "$UNINSTALL_SCRIPT_DIR")"
 source "$PROJECT_ROOT/scripts/core/env.sh"
+source "$PROJECT_ROOT/scripts/core/env_file.sh"
 source "$PROJECT_ROOT/scripts/core/cron.sh"
 
 ALL_MODULES=(xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard)
 
 load_env_file() {
     if [ -f "$PROJECT_ROOT/.env" ]; then
-        log_info "发现 .env 文件，加载环境变量..."
-        export $(grep -v '^#' "$PROJECT_ROOT/.env" | xargs)
+        log_info "发现 .env 文件，加载 EASYNET_* 环境变量..."
+        load_easynet_env_file "$PROJECT_ROOT/.env"
     fi
 }
 

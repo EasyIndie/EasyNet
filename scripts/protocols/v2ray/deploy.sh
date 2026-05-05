@@ -5,6 +5,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
+source "$CORE_DIR/download.sh"
 
 CONFIG_DIR="${V2RAY_CONFIG_DIR:-/usr/local/etc/v2ray}"
 DATA_DIR="${V2RAY_DATA_DIR:-/var/lib/v2ray}"
@@ -34,7 +35,9 @@ get_public_ip() {
 
 install_v2ray() {
     log_info "安装 V2Ray..."
-    bash <(curl -L https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh)
+    run_downloaded_script \
+        "https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh" \
+        "${EASYNET_V2RAY_INSTALL_SHA256:-}"
 }
 
 configure_v2ray() {

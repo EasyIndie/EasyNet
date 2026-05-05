@@ -91,7 +91,8 @@ cd EasyNet
 
 1. 运行脚本并按提示选择协议
 2. 保存部署输出的密码、UUID、Reality 参数和订阅链接
-3. 在客户端中按类型导入订阅：
+3. 运行 `./scripts/smoke_test.sh` 快速检查服务、端口、防火墙和订阅入口
+4. 在客户端中按类型导入订阅：
    - `Clash Verge Rev` 使用部署输出中的 Clash 订阅
    - `Shadowrocket` 使用部署输出中的 URI 订阅
    - 忘记链接时运行 `./scripts/show_subscription.sh` 重新显示订阅链接和二维码

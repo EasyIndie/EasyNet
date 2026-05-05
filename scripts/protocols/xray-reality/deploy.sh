@@ -5,6 +5,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
+source "$CORE_DIR/download.sh"
 
 XRAY_DIR="${XRAY_DIR:-/usr/local/etc/xray}"
 XRAY_BIN="${XRAY_BIN:-/usr/local/bin/xray}"
@@ -19,7 +20,10 @@ get_public_ip() {
 
 install_xray() {
     log_info "安装 Xray..."
-    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
+    run_downloaded_script \
+        "https://github.com/XTLS/Xray-install/raw/main/install-release.sh" \
+        "${EASYNET_XRAY_INSTALL_SHA256:-}" \
+        install
 }
 
 configure_reality() {

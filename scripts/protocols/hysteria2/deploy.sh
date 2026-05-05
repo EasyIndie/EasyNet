@@ -7,6 +7,7 @@ CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/metadata.sh"
 source "$CORE_DIR/env.sh"
+source "$CORE_DIR/download.sh"
 
 HYSTERIA2_CONFIG_DIR="${HYSTERIA2_CONFIG_DIR:-/etc/hysteria}"
 HYSTERIA2_CONFIG_FILE="${HYSTERIA2_CONFIG_FILE:-$HYSTERIA2_CONFIG_DIR/config.yaml}"
@@ -27,7 +28,7 @@ install_hysteria2() {
     fi
 
     log_info "安装 Hysteria2..."
-    bash -c "$(curl -fsSL https://get.hy2.sh/)"
+    run_downloaded_script "https://get.hy2.sh/" "${EASYNET_HYSTERIA2_INSTALL_SHA256:-}"
 }
 
 require_domain() {

@@ -197,7 +197,10 @@ systemctl status wg-quick@wg0
 
 ```bash
 sysctl net.ipv4.tcp_congestion_control
+./scripts/smoke_test.sh
 ```
+
+`smoke_test.sh` 会读取 metadata，快速检查服务状态、关键端口、防火墙规则和当前订阅入口，适合真实 VPS 部署后做第一轮回归验证。
 
 ## 需要时再看
 

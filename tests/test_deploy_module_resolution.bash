@@ -70,12 +70,26 @@ else
 fi
 assert_equals "false" "$deploy_has_old_exposure_logic" "Deploy entrypoint has no old exposure compatibility logic"
 
+if rg -q "cat > .*trojan-go.conf|cat > .*v2ray.conf|proxy_pass https://127.0.0.1|proxy_pass http://127.0.0.1" "$PROJECT_ROOT/scripts/deploy.sh"; then
+    deploy_writes_edge_routes="true"
+else
+    deploy_writes_edge_routes="false"
+fi
+assert_equals "false" "$deploy_writes_edge_routes" "Deploy entrypoint delegates Edge route rendering"
+
 if rg -q "exposure/edge/deploy.sh" "$PROJECT_ROOT/scripts/deploy.sh"; then
     deploy_has_edge_exposure="true"
 else
     deploy_has_edge_exposure="false"
 fi
 assert_equals "true" "$deploy_has_edge_exposure" "Deploy invokes Edge Gateway"
+
+if rg -q "ensure_edge_trojan_route|ensure_edge_v2ray_route" "$PROJECT_ROOT/scripts/exposure/edge/routes.sh"; then
+    edge_routes_own_backend_routes="true"
+else
+    edge_routes_own_backend_routes="false"
+fi
+assert_equals "true" "$edge_routes_own_backend_routes" "Edge exposure layer owns backend route rendering"
 
 if rg -q "scripts/server|/server/" "$PROJECT_ROOT/scripts/deploy.sh"; then
     deploy_references_legacy_server="true"

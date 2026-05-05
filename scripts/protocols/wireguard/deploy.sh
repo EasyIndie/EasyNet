@@ -180,6 +180,8 @@ show_config() {
     else
         echo "未安装 qrencode，无法显示二维码。"
     fi
+    echo ""
+    echo -e "${YELLOW}安全提示: WireGuard UDP 特征明显，更适合中转、低延迟或管理场景，不建议作为最高抗 DPI 主力。${NC}"
     echo "========================================"
 }
 

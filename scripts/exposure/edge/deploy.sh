@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/env.sh"
+source "$CORE_DIR/download.sh"
 
 EDGE_STATE_DIR="${EASYNET_EDGE_STATE_DIR:-$(easynet_edge_state_dir)}"
 EDGE_ROUTES_DIR="$EDGE_STATE_DIR/routes"
@@ -139,7 +140,7 @@ EOF
 install_acme() {
     if [ ! -d "$HOME/.acme.sh" ]; then
         log_info "安装 acme.sh 用于 Edge TLS 证书..."
-        curl https://get.acme.sh | sh
+        run_downloaded_script "https://get.acme.sh" "${EASYNET_ACME_INSTALL_SHA256:-}"
     fi
     export PATH="$HOME/.acme.sh:$PATH"
 }

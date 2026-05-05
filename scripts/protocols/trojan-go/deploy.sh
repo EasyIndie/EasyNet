@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/env.sh"
+source "$CORE_DIR/download.sh"
 
 TROJAN_VERSION="${TROJAN_VERSION:-0.10.6}"
 CONFIG_DIR="${TROJAN_CONFIG_DIR:-/etc/trojan-go}"
@@ -69,7 +70,7 @@ download_trojan() {
     fi
 
     local url="https://github.com/p4gefau1t/trojan-go/releases/download/v${TROJAN_VERSION}/trojan-go-linux-${arch}.zip"
-    wget -O /tmp/trojan-go.zip "$url"
+    download_file "$url" /tmp/trojan-go.zip "${EASYNET_TROJAN_GO_SHA256:-}"
     unzip -o /tmp/trojan-go.zip -d /tmp/
     mv /tmp/trojan-go /usr/local/bin/trojan-go
     chmod +x /usr/local/bin/trojan-go

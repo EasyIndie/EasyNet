@@ -82,4 +82,28 @@ export EASYNET_DOMAIN="proxy.example.com"
 result4=$(simulate_get_domain)
 assert_equals "proxy.example.com" "$result4" "With EASYNET_DOMAIN set, it should automatically use the domain"
 
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf "$TMP_DIR"' EXIT
+ENV_FILE="$TMP_DIR/.env"
+cat > "$ENV_FILE" <<'ENV'
+# comment
+EASYNET_DOMAIN="proxy env.example.com"
+EASYNET_PROFILE=balanced
+UNSAFE_COMMAND=$(touch /tmp/easynet-should-not-exist)
+TROJAN_VERSION=0.0.0
+export EASYNET_SUBSCRIPTION_DOMAIN='sub.example.com'
+ENV
+
+unset EASYNET_DOMAIN
+unset EASYNET_PROFILE
+unset EASYNET_SUBSCRIPTION_DOMAIN
+unset TROJAN_VERSION
+load_env_file_path "$ENV_FILE"
+
+assert_equals "proxy env.example.com" "$EASYNET_DOMAIN" "Env parser preserves quoted EASYNET value with spaces"
+assert_equals "balanced" "$EASYNET_PROFILE" "Env parser loads plain EASYNET value"
+assert_equals "sub.example.com" "$EASYNET_SUBSCRIPTION_DOMAIN" "Env parser supports export prefix and single quotes"
+assert_equals "" "${TROJAN_VERSION:-}" "Env parser ignores non-EASYNET variables"
+assert_equals "false" "$([ -e /tmp/easynet-should-not-exist ] && echo true || echo false)" "Env parser does not execute command substitutions"
+
 test_end

@@ -344,6 +344,13 @@ else
 fi
 assert_equals "true" "$hysteria2_uses_edge_cert" "Hysteria2 reuses Edge TLS certificate without standalone ACME or provider-specific guidance"
 
+if rg -q "systemctl cat.*HYSTERIA2_SERVICE|chown root.*service_user|chmod 640|chmod 750" "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"; then
+    hysteria2_permissions_managed="true"
+else
+    hysteria2_permissions_managed="false"
+fi
+assert_equals "true" "$hysteria2_permissions_managed" "Hysteria2 deploy grants config and certificate access to the systemd service user"
+
 WEB_ROOT="$TMP_DIR/web"
 EASYNET_STATE_DIR="$STATE_DIR" \
 EASYNET_WEB_ROOT="$WEB_ROOT" \
