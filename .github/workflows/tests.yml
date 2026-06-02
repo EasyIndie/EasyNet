@@ -11,13 +11,16 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   automated-tests:
     name: Automated test suite
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install test dependencies
         run: |
@@ -56,7 +59,7 @@ jobs:
           - tests/test_wireguard_generation.bash
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install test dependencies
         run: |
