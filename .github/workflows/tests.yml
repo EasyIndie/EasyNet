@@ -1,0 +1,67 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  automated-tests:
+    name: Automated test suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq ripgrep
+
+      - name: Check shell syntax
+        run: |
+          while IFS= read -r file; do
+            bash -n "$file"
+          done < <(find scripts tests -type f \( -name "*.sh" -o -name "*.bash" \) | sort)
+
+      - name: Run all tests
+        run: bash tests/run_all_tests.bash
+
+  unit-tests:
+    name: Unit test (${{ matrix.test }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test:
+          - tests/test_cron_services.bash
+          - tests/test_deploy_module_resolution.bash
+          - tests/test_env_vars.bash
+          - tests/test_exposure_state.bash
+          - tests/test_firewall_rules.bash
+          - tests/test_hardening.bash
+          - tests/test_json_manipulation.bash
+          - tests/test_path_generation.bash
+          - tests/test_protocol_metadata.bash
+          - tests/test_singbox_client_installer.bash
+          - tests/test_subscription_isolation.bash
+          - tests/test_uninstall_architecture.bash
+          - tests/test_vmess_generation.bash
+          - tests/test_wireguard_generation.bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq ripgrep
+
+      - name: Run unit test
+        run: bash "${{ matrix.test }}"
