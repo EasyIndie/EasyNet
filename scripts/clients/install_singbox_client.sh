@@ -3,6 +3,8 @@
 set -euo pipefail
 
 CONFIG_URL=""
+ACTION="install"
+MODE="${EASYNET_SINGBOX_MODE:-mixed}"
 SINGBOX_URL="${EASYNET_SINGBOX_DOWNLOAD_URL:-}"
 INSTALL_DIR="${EASYNET_SINGBOX_INSTALL_DIR:-/usr/local/bin}"
 CONFIG_DIR="${EASYNET_SINGBOX_CONFIG_DIR:-/etc/sing-box}"
@@ -17,10 +19,13 @@ die() { printf '[ERROR] %s\n' "$*" >&2; exit 1; }
 
 usage() {
     cat <<EOF
-Usage: sudo bash $0 --config-url <EasyNet /singbox URL> [--sing-box-url <tar.gz URL>]
+Usage:
+  sudo bash $0 --config-url <EasyNet /singbox URL> [--mode mixed|tun] [--sing-box-url <tar.gz URL>]
+  sudo bash $0 start|stop|restart|status|update
 
 Options:
   --config-url      EasyNet sing-box config URL, usually https://domain/s/<random>/singbox
+  --mode            Client mode. mixed opens HTTP/SOCKS port only. tun enables local full-device proxy.
   --sing-box-url    Optional sing-box release tarball URL. Auto-detected when omitted.
   -h, --help        Show this help.
 EOF
@@ -31,6 +36,13 @@ require_root() {
 }
 
 parse_args() {
+    case "${1:-}" in
+        start|stop|restart|status|update)
+            ACTION="$1"
+            shift
+            ;;
+    esac
+
     while [ $# -gt 0 ]; do
         case "$1" in
             --config-url)
@@ -43,6 +55,11 @@ parse_args() {
                 SINGBOX_URL="$2"
                 shift 2
                 ;;
+            --mode)
+                [ $# -ge 2 ] || die "--mode 需要 mixed 或 tun"
+                MODE="$2"
+                shift 2
+                ;;
             -h|--help)
                 usage
                 exit 0
@@ -53,11 +70,18 @@ parse_args() {
         esac
     done
 
-    [ -n "$CONFIG_URL" ] || die "缺少 --config-url"
-    case "$CONFIG_URL" in
-        http://*|https://*) ;;
-        *) die "--config-url 必须是 http 或 https URL" ;;
+    case "$MODE" in
+        mixed|tun) ;;
+        *) die "--mode 只支持 mixed 或 tun" ;;
     esac
+
+    if [ "$ACTION" = "install" ]; then
+        [ -n "$CONFIG_URL" ] || die "缺少 --config-url"
+        case "$CONFIG_URL" in
+            http://*|https://*) ;;
+            *) die "--config-url 必须是 http 或 https URL" ;;
+        esac
+    fi
 }
 
 detect_asset_arch() {
@@ -73,14 +97,16 @@ detect_asset_arch() {
 install_packages() {
     if command -v apt-get >/dev/null 2>&1; then
         apt-get update
-        apt-get install -y ca-certificates curl tar
+        apt-get install -y ca-certificates curl jq tar
     elif command -v dnf >/dev/null 2>&1; then
-        dnf install -y ca-certificates curl tar
+        dnf install -y ca-certificates curl jq tar
     elif command -v yum >/dev/null 2>&1; then
-        yum install -y ca-certificates curl tar
+        yum install -y ca-certificates curl jq tar
     else
-        warn "未识别包管理器，请确认 ca-certificates、curl、tar 已安装。"
+        warn "未识别包管理器，请确认 ca-certificates、curl、jq、tar 已安装。"
     fi
+
+    command -v jq >/dev/null 2>&1 || die "缺少 jq，无法生成 mixed/tun 客户端配置。"
 }
 
 resolve_singbox_url() {
@@ -132,6 +158,7 @@ write_state() {
 SINGBOX_CONFIG_URL='$(quote_single "$CONFIG_URL")'
 SINGBOX_CONFIG_FILE='$CONFIG_DIR/config.json'
 SINGBOX_BIN='$INSTALL_DIR/sing-box'
+SINGBOX_MODE='$MODE'
 EOF
     chmod 600 "$STATE_DIR/singbox-client.env"
 }
@@ -147,12 +174,51 @@ ENV_FILE="/etc/easynet/singbox-client.env"
 source "$ENV_FILE"
 
 tmp_file="$(mktemp /tmp/easynet-singbox-config.XXXXXX)"
-cleanup() { rm -f "$tmp_file"; }
+mode_file="$(mktemp /tmp/easynet-singbox-mode.XXXXXX)"
+cleanup() { rm -f "$tmp_file" "$mode_file"; }
 trap cleanup EXIT
 
 curl -fL "$SINGBOX_CONFIG_URL" -o "$tmp_file"
-"$SINGBOX_BIN" check -c "$tmp_file"
-install -m 0644 "$tmp_file" "$SINGBOX_CONFIG_FILE"
+
+case "${SINGBOX_MODE:-mixed}" in
+    mixed)
+        jq '
+            .inbounds = [
+                {
+                    type: "mixed",
+                    tag: "mixed-in",
+                    listen: "0.0.0.0",
+                    listen_port: 7890
+                }
+            ]
+            | .route.rules = ([{ inbound: "mixed-in", action: "sniff" }] + ((.route.rules // []) | map(select(.action != "sniff"))))
+        ' "$tmp_file" > "$mode_file"
+        ;;
+    tun)
+        jq '
+            .inbounds = [
+                {
+                    type: "tun",
+                    tag: "tun-in",
+                    interface_name: "easynet0",
+                    address: ["172.19.0.1/30"],
+                    auto_route: true,
+                    strict_route: true,
+                    stack: "system",
+                    mtu: 1500
+                }
+            ]
+            | .route.rules = ([{ inbound: "tun-in", action: "sniff" }] + ((.route.rules // []) | map(select(.action != "sniff"))))
+        ' "$tmp_file" > "$mode_file"
+        ;;
+    *)
+        echo "Unsupported SINGBOX_MODE: ${SINGBOX_MODE}" >&2
+        exit 1
+        ;;
+esac
+
+"$SINGBOX_BIN" check -c "$mode_file"
+install -m 0644 "$mode_file" "$SINGBOX_CONFIG_FILE"
 EOF
     chmod 0755 "$INSTALL_DIR/easynet-singbox-update"
 }
@@ -202,9 +268,36 @@ local_lan_ip() {
     hostname -I 2>/dev/null | awk '{print $1}'
 }
 
+run_action() {
+    case "$ACTION" in
+        start)
+            systemctl start "${SERVICE_NAME}.service"
+            ;;
+        stop)
+            systemctl stop "${SERVICE_NAME}.service"
+            ;;
+        restart)
+            systemctl restart "${SERVICE_NAME}.service"
+            ;;
+        status)
+            systemctl status "${SERVICE_NAME}.service" --no-pager
+            ;;
+        update)
+            "$INSTALL_DIR/easynet-singbox-update"
+            systemctl restart "${SERVICE_NAME}.service"
+            ;;
+    esac
+}
+
 main() {
     require_root
     parse_args "$@"
+
+    if [ "$ACTION" != "install" ]; then
+        run_action
+        exit 0
+    fi
+
     install_packages
     install_singbox_binary
     write_state
@@ -218,9 +311,13 @@ main() {
     systemctl enable --now "${SERVICE_NAME}.service"
     systemctl enable --now "${UPDATE_NAME}.timer"
 
-    log "sing-box 客户端已启动。"
+    log "sing-box 客户端已启动，当前模式: $MODE"
     if lan_ip="$(local_lan_ip)" && [ -n "$lan_ip" ]; then
-        log "局域网代理地址: http://${lan_ip}:7890 或 socks5://${lan_ip}:7890"
+        if [ "$MODE" = "mixed" ]; then
+            log "局域网代理地址: http://${lan_ip}:7890 或 socks5://${lan_ip}:7890"
+        else
+            log "TUN 模式已启用，树莓派本机流量会由 sing-box 接管。"
+        fi
     fi
 }
 

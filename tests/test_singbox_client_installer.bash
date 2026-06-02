@@ -35,6 +35,18 @@ else
 fi
 assert_equals "true" "$installer_has_update_flow" "Installer creates checked daily config update flow"
 
+if rg -q -- "--mode" "$INSTALLER" \
+    && rg -q "SINGBOX_MODE" "$INSTALLER" \
+    && rg -q 'type: "mixed"' "$INSTALLER" \
+    && rg -q 'type: "tun"' "$INSTALLER" \
+    && rg -q 'auto_route: true' "$INSTALLER" \
+    && rg -q 'strict_route: true' "$INSTALLER"; then
+    installer_supports_modes="true"
+else
+    installer_supports_modes="false"
+fi
+assert_equals "true" "$installer_supports_modes" "Installer supports mixed and tun modes"
+
 if rg -q "easynet-singbox.service|SERVICE_NAME" "$INSTALLER" \
     && rg -q "ExecStart=.*sing-box run -c" "$INSTALLER" \
     && rg -q "systemctl enable --now" "$INSTALLER"; then
@@ -43,5 +55,15 @@ else
     installer_has_service_flow="false"
 fi
 assert_equals "true" "$installer_has_service_flow" "Installer creates and starts a dedicated systemd service"
+
+if rg -q 'start\|stop\|restart\|status\|update' "$INSTALLER" \
+    && rg -q 'systemctl start "\$\{SERVICE_NAME\}\.service"' "$INSTALLER" \
+    && rg -q 'systemctl stop "\$\{SERVICE_NAME\}\.service"' "$INSTALLER" \
+    && rg -q 'systemctl restart "\$\{SERVICE_NAME\}\.service"' "$INSTALLER"; then
+    installer_has_control_commands="true"
+else
+    installer_has_control_commands="false"
+fi
+assert_equals "true" "$installer_has_control_commands" "Installer supports service control commands"
 
 test_end

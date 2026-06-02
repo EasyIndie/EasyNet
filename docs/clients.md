@@ -96,15 +96,29 @@ curl -fsSL "https://example.com/s/<random>/singbox-client.sh" -o easynet-singbox
 sudo bash easynet-singbox-client.sh --config-url "https://example.com/s/<random>/singbox"
 ```
 
+默认是 `mixed` 模式，只开启 `7890` HTTP/SOCKS 代理端口。需要让树莓派本机流量自动走代理时，安装时指定 `tun` 模式：
+
+```bash
+sudo bash easynet-singbox-client.sh --config-url "https://example.com/s/<random>/singbox" --mode tun
+```
+
 安装脚本会自动完成：
 
 - 识别 `arm64` / `armv7` / `armv6` / `amd64` 架构
 - 下载或复用 sing-box
 - 拉取并校验 `/singbox` 配置
+- 按 `mixed` 或 `tun` 模式生成本机配置
 - 创建 `easynet-singbox.service`
 - 创建每日配置更新 timer
 - 启动并设置开机自启
 - 输出局域网代理地址
+
+模式说明：
+
+| 模式 | 行为 | 适用场景 |
+|------|------|----------|
+| `mixed` | 只监听 `0.0.0.0:7890`，不接管本机路由 | 树莓派作为局域网 HTTP/SOCKS 代理 |
+| `tun` | 创建 TUN 入站并启用 `auto_route`，接管树莓派本机流量 | 树莓派本机需要全局代理 |
 
 常用检查：
 
@@ -114,14 +128,22 @@ systemctl status easynet-singbox-update.timer --no-pager
 /usr/local/bin/sing-box check -c /etc/sing-box/config.json
 ```
 
+随时启动或停止：
+
+```bash
+sudo bash easynet-singbox-client.sh start
+sudo bash easynet-singbox-client.sh stop
+sudo bash easynet-singbox-client.sh restart
+sudo bash easynet-singbox-client.sh status
+```
+
 手动更新配置：
 
 ```bash
-/usr/local/bin/easynet-singbox-update
-systemctl restart easynet-singbox
+sudo bash easynet-singbox-client.sh update
 ```
 
-默认配置会监听 `7890` mixed 端口。如果树莓派只作为局域网代理网关，可在客户端设备上配置 HTTP/SOCKS 代理指向树莓派的 `7890` 端口。需要透明代理或 TUN 时，再额外配置系统路由和防火墙规则。
+默认 `mixed` 模式会监听 `7890` 端口。如果树莓派只作为局域网代理网关，可在客户端设备上配置 HTTP/SOCKS 代理指向树莓派的 `7890` 端口。`tun` 模式会接管树莓派本机流量，但不会自动把其它局域网设备透明转发到代理。
 
 ## 验证连接
 
