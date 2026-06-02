@@ -1,5 +1,7 @@
 # EasyNet - 境外 VPS 代理服务器部署方案
 
+[![Tests](https://github.com/EasyIndie/EasyNet/actions/workflows/tests.yml/badge.svg)](https://github.com/EasyIndie/EasyNet/actions/workflows/tests.yml)
+
 ## 项目概述
 
 一套完整的境外 VPS 部署方案，实现在受限网络环境下的稳定科学上网服务。支持 6 种主流协议，满足不同场景需求。
