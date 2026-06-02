@@ -131,7 +131,7 @@ resolve_singbox_url() {
 }
 
 install_singbox_binary() {
-    local tmp_dir tarball binary_path existing_binary
+    local tmp_dir="" tarball binary_path existing_binary
 
     if command -v sing-box >/dev/null 2>&1; then
         existing_binary="$(command -v sing-box)"
@@ -144,7 +144,7 @@ install_singbox_binary() {
 
     resolve_singbox_url
     tmp_dir="$(mktemp -d /tmp/easynet-singbox.XXXXXX)"
-    trap 'rm -rf "$tmp_dir"' EXIT
+    trap 'rm -rf "${tmp_dir:-}"' RETURN
     tarball="$tmp_dir/sing-box.tar.gz"
 
     log "下载 sing-box: $SINGBOX_URL"
@@ -154,6 +154,9 @@ install_singbox_binary() {
     [ -n "$binary_path" ] || die "下载包中未找到 sing-box 可执行文件"
 
     install -m 0755 "$binary_path" "$INSTALL_DIR/sing-box"
+    rm -rf "$tmp_dir"
+    tmp_dir=""
+    trap - RETURN
 }
 
 quote_single() {

@@ -25,6 +25,14 @@ else
 fi
 assert_equals "true" "$installer_detects_pi_arch" "Installer detects Raspberry Pi Linux architectures"
 
+if rg -q 'trap '\''rm -rf "\$\{tmp_dir:-\}"'\'' RETURN' "$INSTALLER" \
+    && ! rg -q 'trap '\''rm -rf "\$tmp_dir"'\'' EXIT' "$INSTALLER"; then
+    installer_cleans_temp_dir_safely="true"
+else
+    installer_cleans_temp_dir_safely="false"
+fi
+assert_equals "true" "$installer_cleans_temp_dir_safely" "Installer cleans temporary download directory without unbound local variables"
+
 if rg -q "easynet-singbox-update" "$INSTALLER" \
     && rg -q "sing-box check -c|\\$SINGBOX_BIN\" check -c" "$INSTALLER" \
     && rg -q "RandomizedDelaySec" "$INSTALLER" \
