@@ -197,7 +197,7 @@ systemctl status wg-quick@wg0
 
 - Shadowrocket / v2rayN / v2rayNG：以部署输出或 `./scripts/show_subscription.sh` 显示的 URI 订阅为准
 - Clash Verge Rev / Mihomo：以部署输出或 `./scripts/show_subscription.sh` 显示的 Clash 订阅为准
-- Raspberry Pi / 卡片机 / 无界面 Linux：以部署输出或 `./scripts/show_subscription.sh` 显示的 sing-box 配置为准
+- Raspberry Pi / 卡片机 / 无界面 Linux：以部署输出或 `./scripts/show_subscription.sh` 显示的 sing-box 配置为准，推荐 `sing-box 1.13+`
 
 ### 其他检查
 

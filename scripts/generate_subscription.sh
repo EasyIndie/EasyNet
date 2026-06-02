@@ -159,8 +159,7 @@ generate_singbox_config() {
                     type: "mixed",
                     tag: "mixed-in",
                     listen: "0.0.0.0",
-                    listen_port: 7890,
-                    sniff: true
+                    listen_port: 7890
                 }
             ],
             outbounds: (
@@ -187,6 +186,12 @@ generate_singbox_config() {
                 ]
             ),
             route: {
+                rules: [
+                    {
+                        inbound: "mixed-in",
+                        action: "sniff"
+                    }
+                ],
                 auto_detect_interface: true,
                 final: "Proxy"
             }

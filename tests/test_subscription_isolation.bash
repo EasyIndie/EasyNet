@@ -100,6 +100,8 @@ fi
 assert_equals "true" "$printed_edge_domain" "Edge domain prints stable random subscription paths without fixed or full links"
 
 if jq -e '.inbounds[] | select(.type == "mixed" and .listen_port == 7890)' "$WEB_ROOT/singbox" >/dev/null \
+    && ! jq -e '.inbounds[] | has("sniff")' "$WEB_ROOT/singbox" >/dev/null \
+    && jq -e '.route.rules[] | select(.inbound == "mixed-in" and .action == "sniff")' "$WEB_ROOT/singbox" >/dev/null \
     && jq -e '.outbounds[] | select(.type == "vless" and .tag == "Example")' "$WEB_ROOT/singbox" >/dev/null \
     && [ -f "$WEB_ROOT/easynet-singbox-client.sh" ]; then
     singbox_config_generated="true"
