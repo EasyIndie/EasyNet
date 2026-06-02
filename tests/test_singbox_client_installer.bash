@@ -50,12 +50,14 @@ assert_equals "true" "$installer_supports_modes" "Installer supports mixed and t
 if rg -q 'tag: "remote-dns"' "$INSTALLER" \
     && rg -q 'detour: "Proxy"' "$INSTALLER" \
     && rg -q "server_domains" "$INSTALLER" \
-    && rg -q 'action: "hijack-dns"' "$INSTALLER"; then
+    && rg -q 'action: "hijack-dns"' "$INSTALLER" \
+    && rg -q "default_domain_resolver" "$INSTALLER" \
+    && rg -q 'server: "local-dns"' "$INSTALLER"; then
     installer_tun_handles_dns="true"
 else
     installer_tun_handles_dns="false"
 fi
-assert_equals "true" "$installer_tun_handles_dns" "Installer configures DNS hijack for tun mode"
+assert_equals "true" "$installer_tun_handles_dns" "Installer configures DNS hijack and domain resolver for tun mode"
 
 if rg -q "easynet-singbox.service|SERVICE_NAME" "$INSTALLER" \
     && rg -q "ExecStart=.*sing-box run -c" "$INSTALLER" \

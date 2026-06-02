@@ -193,7 +193,8 @@ sudo bash easynet-singbox-client.sh doctor
 - 先确认 mixed 模式可用：`curl -x socks5h://127.0.0.1:7890 https://www.google.com -I`
 - 切换到 tun 并重新生成配置：`sudo bash easynet-singbox-client.sh switch-mode tun`
 - 运行自动诊断：`sudo bash easynet-singbox-client.sh doctor`
-- 如果诊断结论显示连通性失败，确认配置中存在 `tun-in`、`hijack-dns` 和 `dns.servers`
+- 如果诊断结论显示连通性失败，确认配置中存在 `tun-in`、`hijack-dns`、`dns.servers` 和 `route.default_domain_resolver`
+- 如看到 `missing route.default_domain_resolver`，先在服务端重新运行 `./scripts/generate_subscription.sh` 并重新下载客户端脚本
 - 再测试：`curl https://www.google.com -I`
 
 ### 完整节点没有出现

@@ -281,6 +281,10 @@ case "${SINGBOX_MODE:-mixed}" in
                 ]
                 + ((.route.rules // []) | map(select(.action != "sniff" and .action != "hijack-dns")))
             )
+            | .route.default_domain_resolver = {
+                server: "local-dns",
+                strategy: "ipv4_only"
+            }
         ' "$tmp_file" > "$mode_file"
         ;;
     *)
