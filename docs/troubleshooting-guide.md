@@ -52,6 +52,7 @@
 - 使用 `./scripts/show_subscription.sh` 重新显示订阅链接和二维码
 - 检查 `/var/lib/easynet/exposure/edge/subscription_path_prefix.txt`
 - Clash Verge Rev 使用 `clash` 订阅，Shadowrocket / v2rayN / v2rayNG 使用 `sub` 订阅
+- Raspberry Pi / 卡片机上的 sing-box 使用 `singbox` 配置
 
 ## 协议问题
 

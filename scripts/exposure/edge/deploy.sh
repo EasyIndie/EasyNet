@@ -8,6 +8,7 @@ source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/env.sh"
 source "$CORE_DIR/download.sh"
 source "$CORE_DIR/maintenance.sh"
+source "$CORE_DIR/subscription.sh"
 
 EDGE_STATE_DIR="${EASYNET_EDGE_STATE_DIR:-$(easynet_edge_state_dir)}"
 EDGE_ROUTES_DIR="$EDGE_STATE_DIR/routes"
@@ -68,17 +69,7 @@ write_edge_state() {
 }
 
 write_edge_subscription_routes() {
-    cat > "$EDGE_ROUTES_DIR/subscription.conf" << EOF
-location = ${EDGE_SUBSCRIPTION_PATH_PREFIX}/sub {
-    alias ${WEB_ROOT}/sub;
-    default_type text/plain;
-}
-
-location = ${EDGE_SUBSCRIPTION_PATH_PREFIX}/clash {
-    alias ${WEB_ROOT}/clash;
-    default_type application/x-yaml;
-}
-EOF
+    easynet_write_subscription_routes "$EDGE_ROUTES_DIR/subscription.conf" "$WEB_ROOT" "$EDGE_SUBSCRIPTION_PATH_PREFIX"
 }
 
 write_edge_http_site() {

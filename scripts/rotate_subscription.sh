@@ -40,32 +40,7 @@ write_subscription_routes() {
     local previous_prefix="${2:-}"
 
     mkdir -p "$EDGE_ROUTES_DIR"
-    cat > "$ROUTE_FILE" <<EOF
-location = ${current_prefix}/sub {
-    alias ${WEB_ROOT}/sub;
-    default_type text/plain;
-}
-
-location = ${current_prefix}/clash {
-    alias ${WEB_ROOT}/clash;
-    default_type application/x-yaml;
-}
-EOF
-
-    if [ -n "$previous_prefix" ]; then
-        cat >> "$ROUTE_FILE" <<EOF
-
-location = ${previous_prefix}/sub {
-    alias ${WEB_ROOT}/sub;
-    default_type text/plain;
-}
-
-location = ${previous_prefix}/clash {
-    alias ${WEB_ROOT}/clash;
-    default_type application/x-yaml;
-}
-EOF
-    fi
+    easynet_write_subscription_routes "$ROUTE_FILE" "$WEB_ROOT" "$current_prefix" "$previous_prefix"
 }
 
 reload_nginx() {

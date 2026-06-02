@@ -3,6 +3,7 @@
 # EasyNet Subscription Generator
 # - /sub: base64 encoded URI subscription for Shadowrocket / v2rayN / v2rayNG
 # - /clash: Mihomo YAML subscription for Clash Verge Rev / Mihomo
+# - /singbox: sing-box JSON config for low-resource headless clients
 
 set -e
 
@@ -24,6 +25,7 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 WEB_ROOT="${EASYNET_WEB_ROOT:-/var/www/html}"
 SUB_FILE="${WEB_ROOT}/sub"
 CLASH_FILE="${WEB_ROOT}/clash"
+SINGBOX_FILE="${WEB_ROOT}/singbox"
 
 SUBSCRIPTION_TMP_DIR="$(mktemp -d /tmp/easynet-subscription.XXXXXX)"
 cleanup_subscription_tmp() {
@@ -34,11 +36,17 @@ trap cleanup_subscription_tmp EXIT
 LINKS_FILE_SAFE="$SUBSCRIPTION_TMP_DIR/links_safe.txt"
 CLASH_PROXIES_SAFE="$SUBSCRIPTION_TMP_DIR/clash_proxies_safe.yaml"
 CLASH_NAMES_SAFE="$SUBSCRIPTION_TMP_DIR/clash_names_safe.txt"
+SINGBOX_OUTBOUNDS_SAFE="$SUBSCRIPTION_TMP_DIR/singbox_outbounds_safe.jsonl"
+SINGBOX_ENDPOINTS_SAFE="$SUBSCRIPTION_TMP_DIR/singbox_endpoints_safe.jsonl"
+SINGBOX_NAMES_SAFE="$SUBSCRIPTION_TMP_DIR/singbox_names_safe.txt"
 
 for file in \
     "$LINKS_FILE_SAFE" \
     "$CLASH_PROXIES_SAFE" \
-    "$CLASH_NAMES_SAFE"; do
+    "$CLASH_NAMES_SAFE" \
+    "$SINGBOX_OUTBOUNDS_SAFE" \
+    "$SINGBOX_ENDPOINTS_SAFE" \
+    "$SINGBOX_NAMES_SAFE"; do
     > "$file"
 done
 
@@ -121,6 +129,66 @@ rules:
   - GEOIP,CN,DIRECT
   - MATCH,Proxy
 EOF
+
+    chmod 644 "$output_file"
+}
+
+generate_singbox_config() {
+    local output_file="$1"
+    local outbounds_file="$2"
+    local endpoints_file="$3"
+    local names_file="$4"
+
+    [ ! -s "$names_file" ] && return 0
+
+    jq -n \
+        --slurpfile node_outbounds "$outbounds_file" \
+        --slurpfile node_endpoints "$endpoints_file" \
+        --rawfile names_raw "$names_file" \
+        '
+        ($names_raw | split("\n") | map(select(length > 0))) as $names
+        | ({
+            log: {
+                level: "info",
+                timestamp: true
+            },
+            inbounds: [
+                {
+                    type: "mixed",
+                    tag: "mixed-in",
+                    listen: "0.0.0.0",
+                    listen_port: 7890,
+                    sniff: true
+                }
+            ],
+            outbounds: (
+                [
+                    {
+                        type: "selector",
+                        tag: "Proxy",
+                        outbounds: (["Auto", "DIRECT"] + $names),
+                        default: "Auto"
+                    },
+                    {
+                        type: "urltest",
+                        tag: "Auto",
+                        outbounds: $names,
+                        url: "https://www.gstatic.com/generate_204",
+                        interval: "5m",
+                        tolerance: 50
+                    }
+                ]
+                + $node_outbounds
+                + [
+                    { type: "direct", tag: "DIRECT" },
+                    { type: "block", tag: "REJECT" }
+                ]
+            ),
+            route: {
+                auto_detect_interface: true,
+                final: "Proxy"
+            }
+        } + if ($node_endpoints | length) > 0 then { endpoints: $node_endpoints } else {} end)' > "$output_file"
 
     chmod 644 "$output_file"
 }
@@ -283,6 +351,141 @@ EOF
     esac
 }
 
+append_metadata_singbox_outbound() {
+    local metadata_file="$1"
+    local output_file="$2"
+    local endpoint_file="$3"
+    local target_file before_size after_size type
+
+    type=$(jq -r '.client.clash.type // empty' "$metadata_file")
+    if [ "$type" = "wireguard" ]; then
+        target_file="$endpoint_file"
+    else
+        target_file="$output_file"
+    fi
+
+    before_size=$(wc -c < "$target_file" | tr -d ' ')
+    jq -c '
+        .client.clash as $c
+        | ($c.name // .module) as $tag
+        | if $c.type == "vless" then
+            {
+                type: "vless",
+                tag: $tag,
+                server: $c.server,
+                server_port: $c.port,
+                uuid: $c.uuid,
+                flow: ($c.flow // ""),
+                network: ($c.network // "tcp"),
+                tls: {
+                    enabled: true,
+                    server_name: $c.servername,
+                    utls: {
+                        enabled: true,
+                        fingerprint: ($c["client-fingerprint"] // "chrome")
+                    },
+                    reality: {
+                        enabled: true,
+                        public_key: $c["reality-opts"]["public-key"],
+                        short_id: $c["reality-opts"]["short-id"]
+                    }
+                }
+            }
+        elif $c.type == "hysteria2" then
+            {
+                type: "hysteria2",
+                tag: $tag,
+                server: $c.server,
+                server_port: $c.port,
+                password: $c.password,
+                obfs: {
+                    type: ($c.obfs // "salamander"),
+                    password: $c["obfs-password"]
+                },
+                tls: {
+                    enabled: true,
+                    server_name: $c.sni,
+                    insecure: ($c["skip-cert-verify"] // false)
+                }
+            }
+        elif $c.type == "trojan" then
+            {
+                type: "trojan",
+                tag: $tag,
+                server: $c.server,
+                server_port: $c.port,
+                password: $c.password,
+                network: "tcp",
+                tls: {
+                    enabled: true,
+                    server_name: ($c.sni // $c.server),
+                    insecure: false
+                },
+                transport: {
+                    type: "ws",
+                    path: $c["ws-opts"].path,
+                    headers: {
+                        Host: ($c["ws-opts"].headers.Host // $c.server)
+                    }
+                }
+            }
+        elif $c.type == "vmess" then
+            {
+                type: "vmess",
+                tag: $tag,
+                server: $c.server,
+                server_port: $c.port,
+                uuid: $c.uuid,
+                security: ($c.cipher // "auto"),
+                alter_id: ($c.alterId // 0),
+                network: "tcp",
+                tls: {
+                    enabled: true,
+                    server_name: ($c.servername // $c.server),
+                    insecure: false
+                },
+                transport: {
+                    type: "ws",
+                    path: $c["ws-opts"].path,
+                    headers: {
+                        Host: ($c["ws-opts"].headers.Host // $c.server)
+                    }
+                }
+            }
+        elif $c.type == "ss" then
+            {
+                type: "shadowsocks",
+                tag: $tag,
+                server: $c.server,
+                server_port: $c.port,
+                method: $c.cipher,
+                password: $c.password
+            }
+        elif $c.type == "wireguard" then
+            {
+                type: "wireguard",
+                tag: $tag,
+                server: $c.server,
+                server_port: $c.port,
+                local_address: [($c.ip | if contains("/") then . else . + "/32" end)],
+                private_key: $c["private-key"],
+                peer_public_key: $c["public-key"],
+                pre_shared_key: $c["pre-shared-key"],
+                mtu: ($c.mtu // 1360)
+            }
+        else
+            empty
+        end
+        | walk(if type == "object" then with_entries(select(.value != null and .value != "")) else . end)
+    ' "$metadata_file" >> "$target_file"
+
+    after_size=$(wc -c < "$target_file" | tr -d ' ')
+    if [ "$after_size" = "$before_size" ]; then
+        log_warn "跳过不支持的 metadata sing-box 类型: $type ($metadata_file)"
+        return 1
+    fi
+}
+
 metadata_security_rank() {
     case "$1" in
         xray-reality) echo 10 ;;
@@ -326,6 +529,9 @@ load_metadata_nodes() {
         if append_metadata_clash_proxy "$metadata_file" "$CLASH_PROXIES_SAFE"; then
             append_proxy_name "$CLASH_NAMES_SAFE" "$name"
         fi
+        if append_metadata_singbox_outbound "$metadata_file" "$SINGBOX_OUTBOUNDS_SAFE" "$SINGBOX_ENDPOINTS_SAFE"; then
+            append_proxy_name "$SINGBOX_NAMES_SAFE" "$name"
+        fi
 
     done < <(metadata_files_by_security)
 }
@@ -334,7 +540,7 @@ show_subscription_links() {
     local sub_domain="$1"
     local sub_scheme="$2"
     local sub_port="$3"
-    local origin sub_path clash_path sub_url clash_url
+    local origin sub_path clash_path singbox_path sub_url clash_url singbox_url
     if [ -z "$sub_domain" ]; then
         echo ""
         log_warn "订阅文件已生成，但没有可公开访问的订阅域名，因此不打印订阅链接和订阅二维码。"
@@ -347,8 +553,10 @@ show_subscription_links() {
     origin=$(easynet_subscription_origin "$sub_domain" "$sub_scheme" "$sub_port")
     sub_path="$(easynet_subscription_endpoint "sub")"
     clash_path="$(easynet_subscription_endpoint "clash")"
+    singbox_path="$(easynet_subscription_endpoint "singbox")"
     sub_url="${origin}${sub_path}"
     clash_url="${origin}${clash_path}"
+    singbox_url="${origin}${singbox_path}"
 
     echo ""
     echo "========================================"
@@ -370,9 +578,18 @@ show_subscription_links() {
         qrencode -t utf8 "$clash_url"
     fi
     echo ""
+    echo "【sing-box 配置】适用于 Raspberry Pi / 卡片机 / 无界面 Linux："
+    echo -e "${GREEN}${singbox_url}${NC}"
+    if command -v qrencode &> /dev/null; then
+        echo ""
+        echo "sing-box 配置二维码："
+        qrencode -t utf8 "$singbox_url"
+    fi
+    echo ""
     echo "说明："
     echo "- ${sub_path} 为 URI 聚合订阅"
     echo "- ${clash_path} 为 Mihomo YAML 订阅"
+    echo "- ${singbox_path} 为 sing-box JSON 配置"
     echo "========================================"
 }
 
@@ -392,5 +609,6 @@ if [ -s "$LINKS_FILE_SAFE" ]; then
 fi
 
 generate_clash_config "$CLASH_FILE" "$CLASH_PROXIES_SAFE" "$CLASH_NAMES_SAFE"
+generate_singbox_config "$SINGBOX_FILE" "$SINGBOX_OUTBOUNDS_SAFE" "$SINGBOX_ENDPOINTS_SAFE" "$SINGBOX_NAMES_SAFE"
 
 show_subscription_links "$(easynet_subscription_domain)" "$(easynet_subscription_scheme)" "$(easynet_subscription_port)"

@@ -98,6 +98,37 @@ easynet_subscription_endpoint() {
     fi
 }
 
+easynet_subscription_endpoint_specs() {
+    cat <<'EOF'
+sub|sub|text/plain
+clash|clash|application/x-yaml
+singbox|singbox|application/json
+EOF
+}
+
+easynet_write_subscription_routes() {
+    local route_file="$1"
+    local web_root="$2"
+    local current_prefix="$3"
+    local previous_prefix="${4:-}"
+    local prefix endpoint file_name content_type
+
+    > "$route_file"
+    for prefix in "$current_prefix" "$previous_prefix"; do
+        [ -z "$prefix" ] && continue
+        while IFS='|' read -r endpoint file_name content_type; do
+            [ -z "$endpoint" ] && continue
+            cat >> "$route_file" <<EOF
+location = ${prefix}/${endpoint} {
+    alias ${web_root}/${file_name};
+    default_type ${content_type};
+}
+
+EOF
+        done < <(easynet_subscription_endpoint_specs)
+    done
+}
+
 easynet_subscription_url() {
     local endpoint="$1"
     local domain scheme port origin

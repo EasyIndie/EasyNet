@@ -11,8 +11,8 @@
 - ⚡ 性能优化：BBR 拥塞控制加速
 - 🔄 自动化运维：系统更新、证书续期 hook、日志限额与 logrotate
 - 🤖 无交互部署：支持 `.env` 或环境变量进行一键安装
-- 🔗 节点订阅：配置域名后自动生成 URI / Clash 订阅链接和二维码
-- 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket）
+- 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
+- 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5-$10/月）
 - 🛡️ 安全稳定，自带单元测试保护核心逻辑
 
@@ -73,6 +73,7 @@ EasyNet/
   - Windows/macOS/Linux 用 `Clash Verge Rev`
   - Android 用 `Clash Meta for Android`
   - iOS 用 `Shadowrocket`
+  - Raspberry Pi / 卡片机用 `sing-box`
 
 ### 手动部署
 
@@ -90,6 +91,7 @@ cd EasyNet
 4. 在客户端中按类型导入订阅：
    - `Clash Verge Rev` 使用部署输出中的 Clash 订阅
    - `Shadowrocket` 使用部署输出中的 URI 订阅
+   - `sing-box` 使用部署输出中的 sing-box 配置
    - 忘记链接时运行 `./scripts/show_subscription.sh` 重新显示订阅链接和二维码
    - 怀疑订阅链接泄露时运行 `./scripts/rotate_subscription.sh` 主动轮换
 
