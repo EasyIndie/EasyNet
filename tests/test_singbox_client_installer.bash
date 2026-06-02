@@ -56,7 +56,8 @@ else
 fi
 assert_equals "true" "$installer_has_service_flow" "Installer creates and starts a dedicated systemd service"
 
-if rg -q 'start\|stop\|restart\|status\|update' "$INSTALLER" \
+if rg -q 'start|stop|restart|status|update|doctor' "$INSTALLER" \
+    && rg -q "switch-mode" "$INSTALLER" \
     && rg -q 'systemctl start "\$\{SERVICE_NAME\}\.service"' "$INSTALLER" \
     && rg -q 'systemctl stop "\$\{SERVICE_NAME\}\.service"' "$INSTALLER" \
     && rg -q 'systemctl restart "\$\{SERVICE_NAME\}\.service"' "$INSTALLER"; then
@@ -65,5 +66,25 @@ else
     installer_has_control_commands="false"
 fi
 assert_equals "true" "$installer_has_control_commands" "Installer supports service control commands"
+
+if rg -q "doctor()" "$INSTALLER" \
+    && rg -q "7890 监听状态" "$INSTALLER" \
+    && rg -q "journalctl -u" "$INSTALLER" \
+    && rg -q "jq '.inbounds'" "$INSTALLER"; then
+    installer_has_doctor="true"
+else
+    installer_has_doctor="false"
+fi
+assert_equals "true" "$installer_has_doctor" "Installer can diagnose mixed mode listener failures"
+
+if rg -q "update_saved_mode" "$INSTALLER" \
+    && rg -q "grep -q '\\^SINGBOX_MODE='" "$INSTALLER" \
+    && rg -q "printf.*SINGBOX_MODE" "$INSTALLER" \
+    && rg -q "sing-box 客户端模式已切换为" "$INSTALLER"; then
+    installer_can_switch_mode="true"
+else
+    installer_can_switch_mode="false"
+fi
+assert_equals "true" "$installer_can_switch_mode" "Installer switches mode without reinstalling"
 
 test_end

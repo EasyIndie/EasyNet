@@ -12,6 +12,7 @@ STATE_DIR="${EASYNET_SINGBOX_STATE_DIR:-/etc/easynet}"
 SERVICE_NAME="${EASYNET_SINGBOX_SERVICE_NAME:-easynet-singbox}"
 UPDATE_NAME="${EASYNET_SINGBOX_UPDATE_NAME:-easynet-singbox-update}"
 GITHUB_API="${EASYNET_SINGBOX_RELEASE_API:-https://api.github.com/repos/SagerNet/sing-box/releases/latest}"
+ENV_FILE="$STATE_DIR/singbox-client.env"
 
 log() { printf '[INFO] %s\n' "$*"; }
 warn() { printf '[WARN] %s\n' "$*" >&2; }
@@ -21,7 +22,8 @@ usage() {
     cat <<EOF
 Usage:
   sudo bash $0 --config-url <EasyNet /singbox URL> [--mode mixed|tun] [--sing-box-url <tar.gz URL>]
-  sudo bash $0 start|stop|restart|status|update
+  sudo bash $0 start|stop|restart|status|update|doctor
+  sudo bash $0 switch-mode mixed|tun
 
 Options:
   --config-url      EasyNet sing-box config URL, usually https://domain/s/<random>/singbox
@@ -37,9 +39,15 @@ require_root() {
 
 parse_args() {
     case "${1:-}" in
-        start|stop|restart|status|update)
+        start|stop|restart|status|update|doctor)
             ACTION="$1"
             shift
+            ;;
+        switch-mode)
+            ACTION="$1"
+            [ $# -ge 2 ] || die "switch-mode 需要 mixed 或 tun"
+            MODE="$2"
+            shift 2
             ;;
     esac
 
@@ -163,6 +171,22 @@ EOF
     chmod 600 "$STATE_DIR/singbox-client.env"
 }
 
+update_saved_mode() {
+    local tmp_file
+
+    [ -f "$ENV_FILE" ] || die "未找到 $ENV_FILE，请先完成客户端安装。"
+
+    tmp_file="$(mktemp /tmp/easynet-singbox-env.XXXXXX)"
+    if grep -q '^SINGBOX_MODE=' "$ENV_FILE"; then
+        sed "s/^SINGBOX_MODE=.*/SINGBOX_MODE='$MODE'/" "$ENV_FILE" > "$tmp_file"
+    else
+        cp "$ENV_FILE" "$tmp_file"
+        printf "\nSINGBOX_MODE='%s'\n" "$MODE" >> "$tmp_file"
+    fi
+    install -m 0600 "$tmp_file" "$ENV_FILE"
+    rm -f "$tmp_file"
+}
+
 write_update_script() {
     cat > "$INSTALL_DIR/easynet-singbox-update" <<'EOF'
 #!/bin/bash
@@ -268,6 +292,42 @@ local_lan_ip() {
     hostname -I 2>/dev/null | awk '{print $1}'
 }
 
+doctor() {
+    log "sing-box 客户端排查信息"
+
+    if [ -f "$ENV_FILE" ]; then
+        # shellcheck disable=SC1090
+        source "$ENV_FILE"
+        log "保存模式: ${SINGBOX_MODE:-mixed}"
+        log "配置链接: ${SINGBOX_CONFIG_URL:-unknown}"
+        log "配置文件: ${SINGBOX_CONFIG_FILE:-$CONFIG_DIR/config.json}"
+    else
+        warn "未找到 $ENV_FILE，请先完成客户端安装。"
+    fi
+
+    if [ -f "${SINGBOX_CONFIG_FILE:-$CONFIG_DIR/config.json}" ]; then
+        log "当前入站配置:"
+        jq '.inbounds' "${SINGBOX_CONFIG_FILE:-$CONFIG_DIR/config.json}" || true
+    else
+        warn "未找到 sing-box 配置文件。"
+    fi
+
+    log "7890 监听状态:"
+    if command -v ss >/dev/null 2>&1; then
+        ss -lntup 2>/dev/null | awk 'NR == 1 || /:7890[[:space:]]/'
+    elif command -v netstat >/dev/null 2>&1; then
+        netstat -lntup 2>/dev/null | awk 'NR == 1 || /:7890[[:space:]]/'
+    else
+        warn "缺少 ss/netstat，无法检查端口监听。"
+    fi
+
+    log "服务状态:"
+    systemctl status "${SERVICE_NAME}.service" --no-pager || true
+
+    log "最近日志:"
+    journalctl -u "${SERVICE_NAME}.service" -n 80 --no-pager || true
+}
+
 run_action() {
     case "$ACTION" in
         start)
@@ -282,9 +342,18 @@ run_action() {
         status)
             systemctl status "${SERVICE_NAME}.service" --no-pager
             ;;
+        doctor)
+            doctor
+            ;;
         update)
             "$INSTALL_DIR/easynet-singbox-update"
             systemctl restart "${SERVICE_NAME}.service"
+            ;;
+        switch-mode)
+            update_saved_mode
+            "$INSTALL_DIR/easynet-singbox-update"
+            systemctl restart "${SERVICE_NAME}.service"
+            log "sing-box 客户端模式已切换为: $MODE"
             ;;
     esac
 }

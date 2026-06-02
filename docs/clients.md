@@ -135,6 +135,14 @@ sudo bash easynet-singbox-client.sh start
 sudo bash easynet-singbox-client.sh stop
 sudo bash easynet-singbox-client.sh restart
 sudo bash easynet-singbox-client.sh status
+sudo bash easynet-singbox-client.sh doctor
+```
+
+切换模式并立即生效：
+
+```bash
+sudo bash easynet-singbox-client.sh switch-mode tun
+sudo bash easynet-singbox-client.sh switch-mode mixed
 ```
 
 手动更新配置：
@@ -162,6 +170,15 @@ sudo bash easynet-singbox-client.sh update
 - 先运行 `/usr/local/bin/sing-box check -c /etc/sing-box/config.json`
 - 确认使用的是 `singbox` 配置链接，不是 `sub` 或 `clash`
 - 如看到 `legacy inbound fields are deprecated`，先在服务端重新运行 `./scripts/generate_subscription.sh`，再在树莓派执行 `/usr/local/bin/easynet-singbox-update`
+
+### mixed 模式无法连接 7890
+
+- 先确认当前确实是 `mixed` 模式：`sudo bash easynet-singbox-client.sh doctor`
+- 如果当前是 `tun`，切回 mixed：`sudo bash easynet-singbox-client.sh switch-mode mixed`
+- 确认服务已启动：`systemctl status easynet-singbox --no-pager`
+- 确认端口已监听：`ss -lntup | grep ':7890'`
+- 如果没有监听，查看日志：`journalctl -u easynet-singbox -n 80 --no-pager`
+- 修复后再测试：`curl -x socks5h://127.0.0.1:7890 https://www.google.com -I`
 
 ### 完整节点没有出现
 
