@@ -103,6 +103,7 @@ easynet_subscription_endpoint_specs() {
 sub|sub|text/plain
 clash|clash|application/x-yaml
 singbox|singbox|application/json
+singbox-client.sh|easynet-singbox-client.sh|text/x-shellscript
 EOF
 }
 

@@ -100,12 +100,13 @@ fi
 assert_equals "true" "$printed_edge_domain" "Edge domain prints stable random subscription paths without fixed or full links"
 
 if jq -e '.inbounds[] | select(.type == "mixed" and .listen_port == 7890)' "$WEB_ROOT/singbox" >/dev/null \
-    && jq -e '.outbounds[] | select(.type == "vless" and .tag == "Example")' "$WEB_ROOT/singbox" >/dev/null; then
+    && jq -e '.outbounds[] | select(.type == "vless" and .tag == "Example")' "$WEB_ROOT/singbox" >/dev/null \
+    && [ -f "$WEB_ROOT/easynet-singbox-client.sh" ]; then
     singbox_config_generated="true"
 else
     singbox_config_generated="false"
 fi
-assert_equals "true" "$singbox_config_generated" "sing-box config is generated from metadata without protocol config access"
+assert_equals "true" "$singbox_config_generated" "sing-box config and client installer are generated from metadata without protocol config access"
 
 rm -rf "$STATE_DIR/modules"
 mkdir -p \
@@ -186,7 +187,8 @@ show_subscription_output=$(
         bash "$PROJECT_ROOT/scripts/show_subscription.sh"
 )
 if printf '%s\n' "$show_subscription_output" | rg -q "https://edge.example.com/s/0123456789abcdef0123456789abcdef/clash" \
-    && printf '%s\n' "$show_subscription_output" | rg -q "https://edge.example.com/s/0123456789abcdef0123456789abcdef/singbox"; then
+    && printf '%s\n' "$show_subscription_output" | rg -q "https://edge.example.com/s/0123456789abcdef0123456789abcdef/singbox" \
+    && printf '%s\n' "$show_subscription_output" | rg -q "sudo bash easynet-singbox-client.sh --config-url"; then
     show_subscription_uses_edge_path="true"
 else
     show_subscription_uses_edge_path="false"
@@ -219,6 +221,7 @@ if printf '%s\n' "$rotation_output" | rg -q "https://edge.example.com${rotated_p
     && printf '%s\n' "$rotation_output" | rg -q "https://edge.example.com${rotated_prefix}/singbox" \
     && rg -q "location = ${rotated_prefix}/clash" "$STATE_DIR/exposure/edge/routes/subscription.conf" \
     && rg -q "location = ${rotated_prefix}/singbox" "$STATE_DIR/exposure/edge/routes/subscription.conf" \
+    && rg -q "location = ${rotated_prefix}/singbox-client.sh" "$STATE_DIR/exposure/edge/routes/subscription.conf" \
     && ! rg -q "$previous_prefix" "$STATE_DIR/exposure/edge/routes/subscription.conf"; then
     rotation_updates_routes="true"
 else
@@ -238,8 +241,10 @@ if printf '%s\n' "$grace_output" | rg -q "https://edge.example.com${grace_new_pr
     && printf '%s\n' "$grace_output" | rg -q "https://edge.example.com${grace_new_prefix}/singbox" \
     && rg -q "location = ${grace_new_prefix}/sub" "$STATE_DIR/exposure/edge/routes/subscription.conf" \
     && rg -q "location = ${grace_new_prefix}/singbox" "$STATE_DIR/exposure/edge/routes/subscription.conf" \
+    && rg -q "location = ${grace_new_prefix}/singbox-client.sh" "$STATE_DIR/exposure/edge/routes/subscription.conf" \
     && rg -q "location = ${grace_previous_prefix}/sub" "$STATE_DIR/exposure/edge/routes/subscription.conf" \
-    && rg -q "location = ${grace_previous_prefix}/singbox" "$STATE_DIR/exposure/edge/routes/subscription.conf"; then
+    && rg -q "location = ${grace_previous_prefix}/singbox" "$STATE_DIR/exposure/edge/routes/subscription.conf" \
+    && rg -q "location = ${grace_previous_prefix}/singbox-client.sh" "$STATE_DIR/exposure/edge/routes/subscription.conf"; then
     rotation_grace_keeps_previous="true"
 else
     rotation_grace_keeps_previous="false"

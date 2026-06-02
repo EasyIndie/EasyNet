@@ -91,7 +91,7 @@ cd EasyNet
 4. 在客户端中按类型导入订阅：
    - `Clash Verge Rev` 使用部署输出中的 Clash 订阅
    - `Shadowrocket` 使用部署输出中的 URI 订阅
-   - `sing-box` 使用部署输出中的 sing-box 配置
+   - 树莓派 / 卡片机使用部署输出中的“树莓派快速安装”两行命令
    - 忘记链接时运行 `./scripts/show_subscription.sh` 重新显示订阅链接和二维码
    - 怀疑订阅链接泄露时运行 `./scripts/rotate_subscription.sh` 主动轮换
 

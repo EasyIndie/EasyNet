@@ -26,6 +26,8 @@ WEB_ROOT="${EASYNET_WEB_ROOT:-/var/www/html}"
 SUB_FILE="${WEB_ROOT}/sub"
 CLASH_FILE="${WEB_ROOT}/clash"
 SINGBOX_FILE="${WEB_ROOT}/singbox"
+SINGBOX_CLIENT_INSTALLER_SOURCE="$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
+SINGBOX_CLIENT_INSTALLER_FILE="${WEB_ROOT}/easynet-singbox-client.sh"
 
 SUBSCRIPTION_TMP_DIR="$(mktemp -d /tmp/easynet-subscription.XXXXXX)"
 cleanup_subscription_tmp() {
@@ -191,6 +193,15 @@ generate_singbox_config() {
         } + if ($node_endpoints | length) > 0 then { endpoints: $node_endpoints } else {} end)' > "$output_file"
 
     chmod 644 "$output_file"
+}
+
+publish_singbox_client_installer() {
+    if [ ! -f "$SINGBOX_CLIENT_INSTALLER_SOURCE" ]; then
+        log_warn "未找到 sing-box 客户端安装脚本: $SINGBOX_CLIENT_INSTALLER_SOURCE"
+        return 0
+    fi
+
+    install -m 0644 "$SINGBOX_CLIENT_INSTALLER_SOURCE" "$SINGBOX_CLIENT_INSTALLER_FILE"
 }
 
 append_metadata_clash_proxy() {
@@ -540,7 +551,7 @@ show_subscription_links() {
     local sub_domain="$1"
     local sub_scheme="$2"
     local sub_port="$3"
-    local origin sub_path clash_path singbox_path sub_url clash_url singbox_url
+    local origin sub_path clash_path singbox_path installer_path sub_url clash_url singbox_url installer_url
     if [ -z "$sub_domain" ]; then
         echo ""
         log_warn "订阅文件已生成，但没有可公开访问的订阅域名，因此不打印订阅链接和订阅二维码。"
@@ -554,9 +565,11 @@ show_subscription_links() {
     sub_path="$(easynet_subscription_endpoint "sub")"
     clash_path="$(easynet_subscription_endpoint "clash")"
     singbox_path="$(easynet_subscription_endpoint "singbox")"
+    installer_path="$(easynet_subscription_endpoint "singbox-client.sh")"
     sub_url="${origin}${sub_path}"
     clash_url="${origin}${clash_path}"
     singbox_url="${origin}${singbox_path}"
+    installer_url="${origin}${installer_path}"
 
     echo ""
     echo "========================================"
@@ -586,10 +599,15 @@ show_subscription_links() {
         qrencode -t utf8 "$singbox_url"
     fi
     echo ""
+    echo "树莓派快速安装："
+    echo "curl -fsSL \"${installer_url}\" -o easynet-singbox-client.sh"
+    echo "sudo bash easynet-singbox-client.sh --config-url \"${singbox_url}\""
+    echo ""
     echo "说明："
     echo "- ${sub_path} 为 URI 聚合订阅"
     echo "- ${clash_path} 为 Mihomo YAML 订阅"
     echo "- ${singbox_path} 为 sing-box JSON 配置"
+    echo "- ${installer_path} 为 sing-box 客户端安装脚本"
     echo "========================================"
 }
 
@@ -602,6 +620,7 @@ fi
 
 log_info "生成订阅文件..."
 mkdir -p "$WEB_ROOT"
+publish_singbox_client_installer
 
 if [ -s "$LINKS_FILE_SAFE" ]; then
     base64_no_wrap < "$LINKS_FILE_SAFE" > "$SUB_FILE"

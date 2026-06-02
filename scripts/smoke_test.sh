@@ -51,10 +51,13 @@ check_ports() {
 }
 
 check_subscription() {
-    local sub_url clash_url
-    if sub_url="$(easynet_subscription_url sub 2>/dev/null)" && clash_url="$(easynet_subscription_url clash 2>/dev/null)"; then
+    local sub_url clash_url singbox_url
+    if sub_url="$(easynet_subscription_url sub 2>/dev/null)" \
+        && clash_url="$(easynet_subscription_url clash 2>/dev/null)" \
+        && singbox_url="$(easynet_subscription_url singbox 2>/dev/null)"; then
         log_info "URI 订阅: $sub_url"
         log_info "Clash 订阅: $clash_url"
+        log_info "sing-box 配置: $singbox_url"
     else
         log_warn "未发现可公开访问的订阅入口。"
     fi

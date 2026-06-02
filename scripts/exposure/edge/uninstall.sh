@@ -16,6 +16,7 @@ main() {
     uninstall_remove_file "$WEB_ROOT/sub" "URI 订阅文件"
     uninstall_remove_file "$WEB_ROOT/clash" "Clash 订阅文件"
     uninstall_remove_file "$WEB_ROOT/singbox" "sing-box 配置文件"
+    uninstall_remove_file "$WEB_ROOT/easynet-singbox-client.sh" "sing-box 客户端安装脚本"
     uninstall_remove_path "$EDGE_STATE_DIR" "Edge 状态"
     uninstall_remove_path "${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}" "Edge 证书目录"
 

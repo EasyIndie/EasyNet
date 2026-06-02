@@ -13,7 +13,7 @@ NC='\033[0m'
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
 main() {
-    local sub_url clash_url singbox_url
+    local sub_url clash_url singbox_url installer_url
 
     if ! sub_url="$(easynet_subscription_url "sub")"; then
         log_warn "没有找到可公开访问的订阅域名。请先配置 EASYNET_DOMAIN 或 EASYNET_SUBSCRIPTION_DOMAIN 并部署 Edge Gateway。"
@@ -21,6 +21,7 @@ main() {
     fi
     clash_url="$(easynet_subscription_url "clash")"
     singbox_url="$(easynet_subscription_url "singbox")"
+    installer_url="$(easynet_subscription_url "singbox-client.sh")"
 
     echo ""
     echo "========================================"
@@ -59,6 +60,10 @@ main() {
         echo ""
         echo "未安装 qrencode，无法显示 sing-box 配置二维码。"
     fi
+    echo ""
+    echo "树莓派快速安装："
+    echo "curl -fsSL \"${installer_url}\" -o easynet-singbox-client.sh"
+    echo "sudo bash easynet-singbox-client.sh --config-url \"${singbox_url}\""
     echo "========================================"
 }
 
