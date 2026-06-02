@@ -138,12 +138,18 @@ sudo bash easynet-singbox-client.sh status
 sudo bash easynet-singbox-client.sh doctor
 ```
 
+`status` 会先打印当前客户端模式，再显示 `easynet-singbox` 的 systemd 状态。
+
+`doctor` 会自动检查当前模式、入站配置、服务状态和代理连通性，并在最后输出“代理正常”或具体异常结论。默认探测地址是 `https://www.gstatic.com/generate_204`，可通过 `EASYNET_SINGBOX_PROBE_URL` 临时覆盖。
+
 切换模式并立即生效：
 
 ```bash
 sudo bash easynet-singbox-client.sh switch-mode tun
 sudo bash easynet-singbox-client.sh switch-mode mixed
 ```
+
+切换时脚本会先停止 `easynet-singbox`，再写入新模式、重新生成并校验配置，最后启动服务；如果新模式失败，会尝试恢复原模式。
 
 手动更新配置：
 
@@ -155,9 +161,13 @@ sudo bash easynet-singbox-client.sh update
 
 ## 验证连接
 
-- 打开 https://www.google.com
-- 打开任意出口 IP 查询网站
-- 查看出口 IP 是否变为服务器所在地
+优先运行：
+
+```bash
+sudo bash easynet-singbox-client.sh doctor
+```
+
+如果结论为代理正常，再按需打开网页或访问出口 IP 查询网站确认出口位置。
 
 ## 常见问题
 
@@ -173,12 +183,18 @@ sudo bash easynet-singbox-client.sh update
 
 ### mixed 模式无法连接 7890
 
-- 先确认当前确实是 `mixed` 模式：`sudo bash easynet-singbox-client.sh doctor`
+- 先运行自动诊断：`sudo bash easynet-singbox-client.sh doctor`
 - 如果当前是 `tun`，切回 mixed：`sudo bash easynet-singbox-client.sh switch-mode mixed`
-- 确认服务已启动：`systemctl status easynet-singbox --no-pager`
-- 确认端口已监听：`ss -lntup | grep ':7890'`
-- 如果没有监听，查看日志：`journalctl -u easynet-singbox -n 80 --no-pager`
+- 如果诊断结论显示服务未运行或端口未监听，按输出中的服务状态和日志继续处理
 - 修复后再测试：`curl -x socks5h://127.0.0.1:7890 https://www.google.com -I`
+
+### tun 模式无法访问域名
+
+- 先确认 mixed 模式可用：`curl -x socks5h://127.0.0.1:7890 https://www.google.com -I`
+- 切换到 tun 并重新生成配置：`sudo bash easynet-singbox-client.sh switch-mode tun`
+- 运行自动诊断：`sudo bash easynet-singbox-client.sh doctor`
+- 如果诊断结论显示连通性失败，确认配置中存在 `tun-in`、`hijack-dns` 和 `dns.servers`
+- 再测试：`curl https://www.google.com -I`
 
 ### 完整节点没有出现
 

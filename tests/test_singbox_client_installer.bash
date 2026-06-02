@@ -47,6 +47,16 @@ else
 fi
 assert_equals "true" "$installer_supports_modes" "Installer supports mixed and tun modes"
 
+if rg -q 'tag: "remote-dns"' "$INSTALLER" \
+    && rg -q 'detour: "Proxy"' "$INSTALLER" \
+    && rg -q "server_domains" "$INSTALLER" \
+    && rg -q 'action: "hijack-dns"' "$INSTALLER"; then
+    installer_tun_handles_dns="true"
+else
+    installer_tun_handles_dns="false"
+fi
+assert_equals "true" "$installer_tun_handles_dns" "Installer configures DNS hijack for tun mode"
+
 if rg -q "easynet-singbox.service|SERVICE_NAME" "$INSTALLER" \
     && rg -q "ExecStart=.*sing-box run -c" "$INSTALLER" \
     && rg -q "systemctl enable --now" "$INSTALLER"; then
@@ -58,6 +68,8 @@ assert_equals "true" "$installer_has_service_flow" "Installer creates and starts
 
 if rg -q 'start|stop|restart|status|update|doctor' "$INSTALLER" \
     && rg -q "switch-mode" "$INSTALLER" \
+    && rg -q "print_status()" "$INSTALLER" \
+    && rg -q "当前模式" "$INSTALLER" \
     && rg -q 'systemctl start "\$\{SERVICE_NAME\}\.service"' "$INSTALLER" \
     && rg -q 'systemctl stop "\$\{SERVICE_NAME\}\.service"' "$INSTALLER" \
     && rg -q 'systemctl restart "\$\{SERVICE_NAME\}\.service"' "$INSTALLER"; then
@@ -70,14 +82,22 @@ assert_equals "true" "$installer_has_control_commands" "Installer supports servi
 if rg -q "doctor()" "$INSTALLER" \
     && rg -q "7890 监听状态" "$INSTALLER" \
     && rg -q "journalctl -u" "$INSTALLER" \
-    && rg -q "jq '.inbounds'" "$INSTALLER"; then
+    && rg -q "jq '.inbounds'" "$INSTALLER" \
+    && rg -q "代理连通性测试" "$INSTALLER" \
+    && rg -q "诊断结论" "$INSTALLER" \
+    && rg -q "代理正常" "$INSTALLER" \
+    && rg -q "socks5h://127.0.0.1:7890" "$INSTALLER" \
+    && rg -q "EASYNET_SINGBOX_PROBE_URL" "$INSTALLER"; then
     installer_has_doctor="true"
 else
     installer_has_doctor="false"
 fi
-assert_equals "true" "$installer_has_doctor" "Installer can diagnose mixed mode listener failures"
+assert_equals "true" "$installer_has_doctor" "Installer can diagnose proxy connectivity and print a conclusion"
 
 if rg -q "update_saved_mode" "$INSTALLER" \
+    && rg -q "switch_mode()" "$INSTALLER" \
+    && rg -q "service_stop_wait" "$INSTALLER" \
+    && rg -q "service_start_checked" "$INSTALLER" \
     && rg -q "grep -q '\\^SINGBOX_MODE='" "$INSTALLER" \
     && rg -q "printf.*SINGBOX_MODE" "$INSTALLER" \
     && rg -q "sing-box 客户端模式已切换为" "$INSTALLER"; then
@@ -86,5 +106,16 @@ else
     installer_can_switch_mode="false"
 fi
 assert_equals "true" "$installer_can_switch_mode" "Installer switches mode without reinstalling"
+
+if rg -q 'systemctl stop "\$\{SERVICE_NAME\}\.service" \|\| true' "$INSTALLER" \
+    && rg -q 'systemctl is-active --quiet "\$\{SERVICE_NAME\}\.service"' "$INSTALLER" \
+    && rg -q "previous_mode" "$INSTALLER" \
+    && rg -q "恢复原模式" "$INSTALLER" \
+    && rg -q 'systemctl start "\$\{SERVICE_NAME\}\.service"' "$INSTALLER"; then
+    installer_switches_mode_safely="true"
+else
+    installer_switches_mode_safely="false"
+fi
+assert_equals "true" "$installer_switches_mode_safely" "Installer stops service and rolls back on mode switch failure"
 
 test_end

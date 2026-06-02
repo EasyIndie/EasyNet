@@ -171,20 +171,25 @@ EOF
     chmod 600 "$STATE_DIR/singbox-client.env"
 }
 
-update_saved_mode() {
+set_saved_mode() {
+    local mode="$1"
     local tmp_file
 
     [ -f "$ENV_FILE" ] || die "未找到 $ENV_FILE，请先完成客户端安装。"
 
     tmp_file="$(mktemp /tmp/easynet-singbox-env.XXXXXX)"
     if grep -q '^SINGBOX_MODE=' "$ENV_FILE"; then
-        sed "s/^SINGBOX_MODE=.*/SINGBOX_MODE='$MODE'/" "$ENV_FILE" > "$tmp_file"
+        sed "s/^SINGBOX_MODE=.*/SINGBOX_MODE='$mode'/" "$ENV_FILE" > "$tmp_file"
     else
         cp "$ENV_FILE" "$tmp_file"
-        printf "\nSINGBOX_MODE='%s'\n" "$MODE" >> "$tmp_file"
+        printf "\nSINGBOX_MODE='%s'\n" "$mode" >> "$tmp_file"
     fi
     install -m 0600 "$tmp_file" "$ENV_FILE"
     rm -f "$tmp_file"
+}
+
+update_saved_mode() {
+    set_saved_mode "$MODE"
 }
 
 write_update_script() {
@@ -220,6 +225,43 @@ case "${SINGBOX_MODE:-mixed}" in
         ;;
     tun)
         jq '
+            def server_domains:
+                ([.outbounds[]?.server?, .endpoints[]?.server?]
+                    | map(select(type == "string" and test("[A-Za-z]")))
+                    | unique);
+
+            server_domains as $server_domains
+            | .dns = {
+                servers: [
+                    {
+                        type: "local",
+                        tag: "local-dns"
+                    },
+                    {
+                        type: "tcp",
+                        tag: "remote-dns",
+                        server: "8.8.8.8",
+                        server_port: 53,
+                        detour: "Proxy"
+                    }
+                ],
+                rules: (
+                    if ($server_domains | length) > 0 then
+                        [
+                            {
+                                domain: $server_domains,
+                                action: "route",
+                                server: "local-dns"
+                            }
+                        ]
+                    else
+                        []
+                    end
+                ),
+                final: "remote-dns",
+                strategy: "ipv4_only"
+            }
+            |
             .inbounds = [
                 {
                     type: "tun",
@@ -232,7 +274,13 @@ case "${SINGBOX_MODE:-mixed}" in
                     mtu: 1500
                 }
             ]
-            | .route.rules = ([{ inbound: "tun-in", action: "sniff" }] + ((.route.rules // []) | map(select(.action != "sniff"))))
+            | .route.rules = (
+                [
+                    { inbound: "tun-in", port: 53, action: "hijack-dns" },
+                    { inbound: "tun-in", action: "sniff" }
+                ]
+                + ((.route.rules // []) | map(select(.action != "sniff" and .action != "hijack-dns")))
+            )
         ' "$tmp_file" > "$mode_file"
         ;;
     *)
@@ -293,32 +341,79 @@ local_lan_ip() {
 }
 
 doctor() {
+    local mode="${SINGBOX_MODE:-mixed}"
+    local config_file="${SINGBOX_CONFIG_FILE:-$CONFIG_DIR/config.json}"
+    local service_ok="false"
+    local listener_ok="skip"
+    local proxy_ok="false"
+    local probe_url="${EASYNET_SINGBOX_PROBE_URL:-https://www.gstatic.com/generate_204}"
+
     log "sing-box 客户端排查信息"
 
     if [ -f "$ENV_FILE" ]; then
         # shellcheck disable=SC1090
         source "$ENV_FILE"
-        log "保存模式: ${SINGBOX_MODE:-mixed}"
+        mode="${SINGBOX_MODE:-mixed}"
+        config_file="${SINGBOX_CONFIG_FILE:-$CONFIG_DIR/config.json}"
+        log "保存模式: $mode"
         log "配置链接: ${SINGBOX_CONFIG_URL:-unknown}"
-        log "配置文件: ${SINGBOX_CONFIG_FILE:-$CONFIG_DIR/config.json}"
+        log "配置文件: $config_file"
     else
         warn "未找到 $ENV_FILE，请先完成客户端安装。"
     fi
 
-    if [ -f "${SINGBOX_CONFIG_FILE:-$CONFIG_DIR/config.json}" ]; then
+    if [ -f "$config_file" ]; then
         log "当前入站配置:"
-        jq '.inbounds' "${SINGBOX_CONFIG_FILE:-$CONFIG_DIR/config.json}" || true
+        jq '.inbounds' "$config_file" || true
     else
         warn "未找到 sing-box 配置文件。"
     fi
 
-    log "7890 监听状态:"
-    if command -v ss >/dev/null 2>&1; then
-        ss -lntup 2>/dev/null | awk 'NR == 1 || /:7890[[:space:]]/'
-    elif command -v netstat >/dev/null 2>&1; then
-        netstat -lntup 2>/dev/null | awk 'NR == 1 || /:7890[[:space:]]/'
+    if systemctl is-active --quiet "${SERVICE_NAME}.service"; then
+        service_ok="true"
+    fi
+
+    if [ "$mode" = "mixed" ]; then
+        log "7890 监听状态:"
+        if command -v ss >/dev/null 2>&1; then
+            ss -lntup 2>/dev/null | awk 'NR == 1 || /:7890[[:space:]]/'
+            if ss -lnt 2>/dev/null | awk '{print $4}' | grep -Eq '(^|:|\])7890$'; then
+                listener_ok="true"
+            else
+                listener_ok="false"
+            fi
+        elif command -v netstat >/dev/null 2>&1; then
+            netstat -lntup 2>/dev/null | awk 'NR == 1 || /:7890[[:space:]]/'
+            if netstat -lnt 2>/dev/null | awk '{print $4}' | grep -Eq '(^|:|\])7890$'; then
+                listener_ok="true"
+            else
+                listener_ok="false"
+            fi
+        else
+            listener_ok="unknown"
+            warn "缺少 ss/netstat，无法检查端口监听。"
+        fi
+    fi
+
+    log "代理连通性测试:"
+    if [ "$service_ok" != "true" ]; then
+        warn "跳过连通性测试：服务未运行。"
+    elif [ "$mode" = "mixed" ]; then
+        if curl -fsSIL --max-time 12 -x socks5h://127.0.0.1:7890 "$probe_url" >/dev/null; then
+            proxy_ok="true"
+            log "mixed 代理测试通过: $probe_url"
+        else
+            warn "mixed 代理测试失败: curl -x socks5h://127.0.0.1:7890 $probe_url"
+        fi
+    elif [ "$mode" = "tun" ]; then
+        if curl -fsSIL --max-time 12 "$probe_url" >/dev/null; then
+            proxy_ok="true"
+            log "tun 全局代理测试通过: $probe_url"
+        else
+            warn "tun 全局代理测试失败: curl $probe_url"
+        fi
     else
-        warn "缺少 ss/netstat，无法检查端口监听。"
+        warn "未知模式，无法执行代理连通性测试: $mode"
     fi
 
     log "服务状态:"
@@ -326,6 +421,100 @@ doctor() {
 
     log "最近日志:"
     journalctl -u "${SERVICE_NAME}.service" -n 80 --no-pager || true
+
+    log "诊断结论:"
+    if [ "$service_ok" != "true" ]; then
+        warn "代理异常：${SERVICE_NAME}.service 未运行。"
+        return 1
+    fi
+    if [ "$mode" = "mixed" ] && [ "$listener_ok" = "false" ]; then
+        warn "代理异常：mixed 模式未监听 127.0.0.1:7890。"
+        return 1
+    fi
+    if [ "$proxy_ok" != "true" ]; then
+        warn "代理异常：连通性测试未通过。"
+        return 1
+    fi
+    log "代理正常：当前 $mode 模式连通性测试通过。"
+}
+
+print_status() {
+    local mode="${SINGBOX_MODE:-mixed}"
+
+    if [ -f "$ENV_FILE" ]; then
+        # shellcheck disable=SC1090
+        source "$ENV_FILE"
+        mode="${SINGBOX_MODE:-mixed}"
+    else
+        warn "未找到 $ENV_FILE，无法读取保存模式。"
+    fi
+
+    log "当前模式: $mode"
+    systemctl status "${SERVICE_NAME}.service" --no-pager
+}
+
+service_stop_wait() {
+    systemctl stop "${SERVICE_NAME}.service" || true
+
+    for _ in 1 2 3 4 5; do
+        if ! systemctl is-active --quiet "${SERVICE_NAME}.service"; then
+            return 0
+        fi
+        sleep 1
+    done
+
+    die "停止 ${SERVICE_NAME}.service 超时，请运行 doctor 查看服务状态。"
+}
+
+service_start_checked() {
+    systemctl start "${SERVICE_NAME}.service"
+    systemctl is-active --quiet "${SERVICE_NAME}.service" ||
+        die "${SERVICE_NAME}.service 启动失败，请运行 doctor 查看日志。"
+}
+
+update_and_restart() {
+    service_stop_wait
+    "$INSTALL_DIR/easynet-singbox-update"
+    service_start_checked
+}
+
+switch_mode() {
+    local previous_mode
+
+    [ -f "$ENV_FILE" ] || die "未找到 $ENV_FILE，请先完成客户端安装。"
+    previous_mode="$(
+        grep -E '^SINGBOX_MODE=' "$ENV_FILE" 2>/dev/null |
+            tail -n 1 |
+            sed "s/^SINGBOX_MODE=//; s/^'//; s/'$//"
+    )"
+    previous_mode="${previous_mode:-mixed}"
+
+    log "停止 sing-box 客户端服务..."
+    service_stop_wait
+
+    log "切换模式: ${previous_mode} -> ${MODE}"
+    set_saved_mode "$MODE"
+
+    if ! "$INSTALL_DIR/easynet-singbox-update"; then
+        warn "新模式配置生成失败，恢复原模式: $previous_mode"
+        set_saved_mode "$previous_mode"
+        "$INSTALL_DIR/easynet-singbox-update" || true
+        service_start_checked
+        return 1
+    fi
+
+    if ! systemctl start "${SERVICE_NAME}.service"; then
+        warn "新模式启动失败，恢复原模式: $previous_mode"
+        set_saved_mode "$previous_mode"
+        "$INSTALL_DIR/easynet-singbox-update" || true
+        service_start_checked
+        return 1
+    fi
+
+    systemctl is-active --quiet "${SERVICE_NAME}.service" ||
+        die "${SERVICE_NAME}.service 启动后未保持运行，请运行 doctor 查看日志。"
+
+    log "sing-box 客户端模式已切换为: $MODE"
 }
 
 run_action() {
@@ -340,20 +529,16 @@ run_action() {
             systemctl restart "${SERVICE_NAME}.service"
             ;;
         status)
-            systemctl status "${SERVICE_NAME}.service" --no-pager
+            print_status
             ;;
         doctor)
             doctor
             ;;
         update)
-            "$INSTALL_DIR/easynet-singbox-update"
-            systemctl restart "${SERVICE_NAME}.service"
+            update_and_restart
             ;;
         switch-mode)
-            update_saved_mode
-            "$INSTALL_DIR/easynet-singbox-update"
-            systemctl restart "${SERVICE_NAME}.service"
-            log "sing-box 客户端模式已切换为: $MODE"
+            switch_mode
             ;;
     esac
 }
