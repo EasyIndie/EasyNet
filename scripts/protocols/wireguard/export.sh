@@ -30,6 +30,7 @@ export_wireguard_metadata() {
 
     local wg_priv_key wg_addr wg_dns wg_pub_key wg_psk wg_endpoint wg_mtu ip_only wg_server wg_port
     local enc_priv enc_pub enc_psk enc_dns uri dns_json metadata_json
+    local wg_obfs jc jmin jmax
 
     wg_priv_key=$(read_conf_value "PrivateKey" "$wg_conf")
     wg_addr=$(read_conf_value "Address" "$wg_conf")
@@ -49,13 +50,56 @@ export_wireguard_metadata() {
     wg_port="${wg_endpoint##*:}"
     wg_mtu="${wg_mtu:-1360}"
 
+    # AmneziaWG obfuscation params (client-side, server stays standard WG)
+    wg_obfs="${EASYNET_WIREGUARD_OBFS:-false}"
+    jc="${EASYNET_WIREGUARD_JC:-5}"
+    jmin="${EASYNET_WIREGUARD_JMIN:-50}"
+    jmax="${EASYNET_WIREGUARD_JMAX:-1000}"
+
     enc_priv=$(urlencode "$wg_priv_key")
     enc_pub=$(urlencode "$wg_pub_key")
     enc_psk=$(urlencode "$wg_psk")
     enc_dns=$(urlencode "$wg_dns")
-    uri="wg://${wg_endpoint}?publicKey=${enc_pub}&privateKey=${enc_priv}&presharedKey=${enc_psk}&ip=${ip_only}&mtu=${wg_mtu}&dns=${enc_dns}&udp=1#EasyNet-WG"
+    uri="wg://${wg_endpoint}?publicKey=${enc_pub}&privateKey=${enc_priv}&presharedKey=${enc_psk}&ip=${ip_only}&mtu=${wg_mtu}&dns=${enc_dns}&udp=1"
+    if [ "$wg_obfs" = "true" ]; then
+        uri="${uri}&jc=${jc}&jmin=${jmin}&jmax=${jmax}"
+    fi
+    uri="${uri}#EasyNet-WG"
 
     dns_json=$(printf '%s' "$wg_dns" | jq -R 'split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))')
+
+    # Build Clash metadata; attach obfs fields when enabled
+    local clash_json
+    clash_json=$(jq -n \
+        --arg server "$wg_server" \
+        --arg private_key "$wg_priv_key" \
+        --arg public_key "$wg_pub_key" \
+        --arg psk "$wg_psk" \
+        --arg ip "$ip_only" \
+        --argjson port "$wg_port" \
+        --argjson mtu "$wg_mtu" \
+        --argjson dns "$dns_json" \
+        '{
+            name: "EasyNet-WG",
+            type: "wireguard",
+            server: $server,
+            port: $port,
+            ip: $ip,
+            "private-key": $private_key,
+            "public-key": $public_key,
+            "pre-shared-key": $psk,
+            udp: true,
+            mtu: $mtu,
+            dns: $dns
+        }')
+
+    if [ "$wg_obfs" = "true" ]; then
+        clash_json=$(echo "$clash_json" | jq \
+            --argjson jc "$jc" \
+            --argjson jmin "$jmin" \
+            --argjson jmax "$jmax" \
+            '. + { jc: $jc, jmin: $jmin, jmax: $jmax }')
+    fi
 
     metadata_json=$(jq -n \
         --arg module_name "$MODULE_NAME" \
@@ -71,7 +115,7 @@ export_wireguard_metadata() {
         --arg uri "$uri" \
         --argjson port "$wg_port" \
         --argjson mtu "$wg_mtu" \
-        --argjson dns "$dns_json" \
+        --argjson clash "$clash_json" \
         '{
             schemaVersion: 1,
             "module": $module_name,
@@ -83,19 +127,7 @@ export_wireguard_metadata() {
             security: $security,
             client: {
                 uri: $uri,
-                clash: {
-                    name: "EasyNet-WG",
-                    type: "wireguard",
-                    server: $server,
-                    port: $port,
-                    ip: $ip,
-                    "private-key": $private_key,
-                    "public-key": $public_key,
-                    "pre-shared-key": $psk,
-                    udp: true,
-                    mtu: $mtu,
-                    dns: $dns
-                }
+                clash: $clash
             },
             firewall: [
                 { port: $port, proto: "udp" }

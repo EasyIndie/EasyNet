@@ -140,6 +140,12 @@ show_config() {
     local wg_conf="$CLIENT_CONFIG_DIR/$client_name.conf"
     local wg_priv_key wg_addr wg_dns wg_pub_key wg_psk wg_endpoint wg_mtu
     local enc_priv enc_pub enc_psk enc_dns ip_only wg_uri
+    local wg_obfs jc jmin jmax
+
+    wg_obfs="${EASYNET_WIREGUARD_OBFS:-false}"
+    jc="${EASYNET_WIREGUARD_JC:-5}"
+    jmin="${EASYNET_WIREGUARD_JMIN:-50}"
+    jmax="${EASYNET_WIREGUARD_JMAX:-1000}"
 
     echo ""
     echo "========================================"
@@ -148,6 +154,9 @@ show_config() {
     echo "服务器 IP: $(get_public_ip)"
     echo "端口: 51820"
     echo "服务器公钥: $(cat "$WG_DIR/server_public.key")"
+    if [ "$wg_obfs" = "true" ]; then
+        echo "AmneziaWG 混淆: 已启用 (Jc=$jc, Jmin=$jmin, Jmax=$jmax)"
+    fi
     echo ""
     echo "客户端配置文件: $wg_conf"
     echo ""
@@ -167,7 +176,11 @@ show_config() {
     enc_psk=$(urlencode "$wg_psk")
     enc_dns=$(urlencode "$wg_dns")
     ip_only=$(echo "$wg_addr" | cut -d'/' -f1)
-    wg_uri="wg://${wg_endpoint}?publicKey=${enc_pub}&privateKey=${enc_priv}&presharedKey=${enc_psk}&ip=${ip_only}&mtu=${wg_mtu}&dns=${enc_dns}&udp=1#EasyNet-WG"
+    wg_uri="wg://${wg_endpoint}?publicKey=${enc_pub}&privateKey=${enc_priv}&presharedKey=${enc_psk}&ip=${ip_only}&mtu=${wg_mtu}&dns=${enc_dns}&udp=1"
+    if [ "$wg_obfs" = "true" ]; then
+        wg_uri="${wg_uri}&jc=${jc}&jmin=${jmin}&jmax=${jmax}"
+    fi
+    wg_uri="${wg_uri}#EasyNet-WG"
 
     echo ""
     echo -e "${YELLOW}WireGuard 客户端链接 (推荐复制此链接导入):${NC}"
@@ -181,7 +194,12 @@ show_config() {
         echo "未安装 qrencode，无法显示二维码。"
     fi
     echo ""
-    echo -e "${YELLOW}安全提示: WireGuard UDP 特征明显，更适合中转、低延迟或管理场景，不建议作为最高抗 DPI 主力。${NC}"
+    if [ "$wg_obfs" = "true" ]; then
+        echo "AmneziaWG 混淆已启用，请使用支持 AmneziaWG 的客户端。"
+    else
+        echo -e "${YELLOW}安全提示: WireGuard UDP 特征明显，更适合中转、低延迟或管理场景，不建议作为最高抗 DPI 主力。${NC}"
+        echo -e "${YELLOW}          设置 EASYNET_WIREGUARD_OBFS=true 启用 AmneziaWG 混淆 (Jc/Jmin/Jmax 垃圾包填充)。${NC}"
+    fi
     echo "========================================"
 }
 

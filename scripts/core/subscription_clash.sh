@@ -162,6 +162,9 @@ EOF
             public_key=$(jq -r '.client.clash."public-key" // empty' "$metadata_file")
             pre_shared_key=$(jq -r '.client.clash."pre-shared-key" // empty' "$metadata_file")
             mtu=$(jq -r '.client.clash.mtu // 1360' "$metadata_file")
+            jc=$(jq -r '.client.clash.jc // empty' "$metadata_file")
+            jmin=$(jq -r '.client.clash.jmin // empty' "$metadata_file")
+            jmax=$(jq -r '.client.clash.jmax // empty' "$metadata_file")
 
             cat >> "$output_file" <<EOF
   - name: "$(yaml_escape "$name")"
@@ -174,6 +177,15 @@ EOF
     pre-shared-key: "$(yaml_escape "$pre_shared_key")"
     udp: true
     mtu: $mtu
+EOF
+            if [ -n "$jc" ] && [ "$jc" != "null" ]; then
+                cat >> "$output_file" <<EOF
+    jc: $jc
+    jmin: $jmin
+    jmax: $jmax
+EOF
+            fi
+            cat >> "$output_file" <<EOF
     dns:
 EOF
             dns_count=$(jq '.client.clash.dns | length' "$metadata_file")

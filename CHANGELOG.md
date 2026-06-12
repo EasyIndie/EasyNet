@@ -5,6 +5,11 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.9] - 2026-06-12
+
+### 新增
+- **WireGuard AmneziaWG 混淆**：新增 `EASYNET_WIREGUARD_OBFS` 环境变量，启用后 WireGuard 客户端输出含 Jc/Jmin/Jmax 垃圾包参数，消除 WireGuard 明显 UDP 指纹。服务端无需改动（标准 WireGuard 静默丢弃垃圾包）
+
 ## [0.0.8] - 2026-06-12
 
 ### 新增
@@ -93,6 +98,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.9]: https://github.com/EasyIndie/EasyNet/compare/0.0.8...0.0.9
 [0.0.8]: https://github.com/EasyIndie/EasyNet/compare/0.0.7...0.0.8
 [0.0.7]: https://github.com/EasyIndie/EasyNet/compare/0.0.6...0.0.7
 [0.0.6]: https://github.com/EasyIndie/EasyNet/compare/0.0.5...0.0.6

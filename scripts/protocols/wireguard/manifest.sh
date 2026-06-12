@@ -4,7 +4,7 @@
 
 MANIFEST_VERSION=1
 MODULE_NAME="wireguard"
-MODULE_DISPLAY_NAME="WireGuard"
+MODULE_DISPLAY_NAME="WireGuard (+Amnezia obfs)"
 MODULE_PROTOCOL="wireguard"
 MODULE_CLASH_TYPE="wireguard"
 MODULE_SINGBOX_TYPE="wireguard"

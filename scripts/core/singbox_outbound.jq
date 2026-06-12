@@ -110,6 +110,21 @@ elif $c.type == "ss" then
         method: $c.cipher,
         password: $c.password
     }
+elif $c.type == "wireguard" and $c.jc then
+    {
+        type: "wireguard",
+        tag: $tag,
+        server: $c.server,
+        server_port: $c.port,
+        local_address: [($c.ip | if contains("/") then . else . + "/32" end)],
+        private_key: $c["private-key"],
+        peer_public_key: $c["public-key"],
+        pre_shared_key: $c["pre-shared-key"],
+        mtu: ($c.mtu // 1360),
+        jc: $c.jc,
+        jmin: $c.jmin,
+        jmax: $c.jmax
+    }
 elif $c.type == "wireguard" then
     {
         type: "wireguard",
