@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.4] - 2026-06-12
+
+### Added
+- Manifest versioning: all protocol manifests declare `MANIFEST_VERSION=1`, with version validation in discovery layer to protect the plugin contract
+- Pre-flight configuration validation (`scripts/core/validate.sh`): checks required tools, port conflicts, domain resolution, and OS compatibility before deployment
+
+### Changed
+- Extracted sing-box outbound jq logic to independent `scripts/core/singbox_outbound.jq` for easier maintenance and testing
+
 ## [0.0.3] - 2026-06-12
 
 ### Added
@@ -46,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - logrotate and journald log limits
 - Unit test framework with 13 test suites
 
+[0.0.4]: https://github.com/EasyIndie/EasyNet/compare/0.0.3...0.0.4
 [0.0.3]: https://github.com/EasyIndie/EasyNet/compare/0.0.2...0.0.3
 [0.0.2]: https://github.com/EasyIndie/EasyNet/compare/0.0.1...0.0.2
 [0.0.1]: https://github.com/EasyIndie/EasyNet/releases/tag/0.0.1

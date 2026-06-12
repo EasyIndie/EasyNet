@@ -2,6 +2,7 @@
 # EasyNet protocol manifest - sourced by orchestrators
 # Static metadata for the Xray + Reality module.
 
+MANIFEST_VERSION=1
 MODULE_NAME="xray-reality"
 MODULE_DISPLAY_NAME="Xray+Reality"
 MODULE_PROTOCOL="vless"

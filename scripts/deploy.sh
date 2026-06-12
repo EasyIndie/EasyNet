@@ -26,6 +26,7 @@ source "$PROJECT_ROOT/scripts/core/env_file.sh"
 source "$PROJECT_ROOT/scripts/core/maintenance.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
 source "$PROJECT_ROOT/scripts/core/profiles.sh"
+source "$PROJECT_ROOT/scripts/core/validate.sh"
 source "$PROJECT_ROOT/scripts/exposure/edge/routes.sh"
 
 # ALL_MODULES is now auto-discovered from protocols/*/manifest.sh
@@ -343,6 +344,15 @@ deploy_module() {
 deploy_modules() {
     local module
     DEPLOY_SELECTION_MODULES=("$@")
+
+    # Pre-flight validation (non-fatal by default; set EASYNET_STRICT_PRECHECK=true to abort on failure)
+    if ! validate_easynet_config "$@"; then
+        if [ "${EASYNET_STRICT_PRECHECK:-false}" = "true" ]; then
+            log_error "预检失败，部署中止。设置 EASYNET_STRICT_PRECHECK=false 可跳过预检继续部署。"
+            exit 1
+        fi
+        log_warn "预检发现警告项，继续部署..."
+    fi
 
     if [ "${EASYNET_AUTO_ROLLBACK:-false}" = "true" ]; then
         create_backup

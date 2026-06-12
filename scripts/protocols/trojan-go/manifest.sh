@@ -2,6 +2,7 @@
 # EasyNet protocol manifest - sourced by orchestrators
 # Static metadata for the Trojan-Go module.
 
+MANIFEST_VERSION=1
 MODULE_NAME="trojan-go"
 MODULE_DISPLAY_NAME="Trojan-Go"
 MODULE_PROTOCOL="trojan"

@@ -2,6 +2,7 @@
 # EasyNet protocol manifest - sourced by orchestrators
 # Static metadata for the WireGuard module.
 
+MANIFEST_VERSION=1
 MODULE_NAME="wireguard"
 MODULE_DISPLAY_NAME="WireGuard"
 MODULE_PROTOCOL="wireguard"

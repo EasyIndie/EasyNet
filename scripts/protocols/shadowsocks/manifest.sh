@@ -2,6 +2,7 @@
 # EasyNet protocol manifest - sourced by orchestrators
 # Static metadata for the Shadowsocks module.
 
+MANIFEST_VERSION=1
 MODULE_NAME="shadowsocks"
 MODULE_DISPLAY_NAME="Shadowsocks"
 MODULE_PROTOCOL="ss"

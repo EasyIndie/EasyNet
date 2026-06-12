@@ -2,6 +2,7 @@
 # EasyNet protocol manifest - sourced by orchestrators
 # Static metadata for the Hysteria2 module.
 
+MANIFEST_VERSION=1
 MODULE_NAME="hysteria2"
 MODULE_DISPLAY_NAME="Hysteria2"
 MODULE_PROTOCOL="hysteria2"

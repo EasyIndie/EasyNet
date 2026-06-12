@@ -42,12 +42,19 @@ discovery_load_manifest() {
         return 1
     fi
     # Clear previous manifest variables to avoid stale values
+    unset MANIFEST_VERSION
     unset MODULE_NAME MODULE_DISPLAY_NAME MODULE_PROTOCOL
     unset MODULE_CLASH_TYPE MODULE_SINGBOX_TYPE MODULE_SECURITY_RANK
     unset MODULE_DEFAULT_PORT MODULE_DEFAULT_PUBLIC_PORT
     unset MODULE_EDGE_MODE MODULE_PROFILES MODULE_NGINX_ROUTE_TEMPLATE
     unset MODULE_SYSTEMD_SERVICES MODULE_FIREWALL_RULES MODULE_ENV_PREFIX
     source "$manifest_path"
+
+    # Validate manifest version (contract protection)
+    if [ "${MANIFEST_VERSION:-0}" -lt 1 ]; then
+        echo "[ERROR] Manifest for '${MODULE_NAME:-unknown}' has unsupported MANIFEST_VERSION='${MANIFEST_VERSION:-}' (need >= 1)" >&2
+        return 1
+    fi
 }
 
 # Get a specific variable from a module's manifest
@@ -65,7 +72,7 @@ discovery_get_manifest_value() {
 # Validate that a loaded manifest has all required fields
 discovery_validate_manifest() {
     local required_vars=(
-        MODULE_NAME MODULE_DISPLAY_NAME MODULE_CLASH_TYPE
+        MANIFEST_VERSION MODULE_NAME MODULE_DISPLAY_NAME MODULE_CLASH_TYPE
         MODULE_SINGBOX_TYPE MODULE_SECURITY_RANK MODULE_EDGE_MODE
     )
     local var

@@ -2,6 +2,7 @@
 # EasyNet protocol manifest - sourced by orchestrators
 # Static metadata for the V2Ray module.
 
+MANIFEST_VERSION=1
 MODULE_NAME="v2ray"
 MODULE_DISPLAY_NAME="V2Ray"
 MODULE_PROTOCOL="vmess"
