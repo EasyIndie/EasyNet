@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# EasyNet Subscription Generator
-# - /sub: base64 encoded URI subscription for Shadowrocket / v2rayN / v2rayNG
-# - /clash: Mihomo YAML subscription for Clash Verge Rev / Mihomo
-# - /singbox: sing-box JSON config for low-resource headless clients
+# EasyNet 订阅生成器
+# - /sub: base64 编码的 URI 订阅，适用于 Shadowrocket / v2rayN / v2rayNG
+# - /clash: Mihomo YAML 订阅，适用于 Clash Verge Rev / Mihomo
+# - /singbox: sing-box JSON 配置，适用于低资源无界面客户端
 
 set -e
 

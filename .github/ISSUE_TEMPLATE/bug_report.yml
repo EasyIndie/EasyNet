@@ -77,8 +77,6 @@ body:
       options:
         - Xray+Reality
         - Hysteria2
-        - Trojan-Go
-        - V2Ray
         - Shadowsocks
         - WireGuard
         - N/A (core / infrastructure)

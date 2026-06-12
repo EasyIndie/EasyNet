@@ -21,7 +21,7 @@ else
 fi
 assert_equals "false" "$old_exposure_dirs_present" "Old exposure implementations have been removed"
 
-if rg -q "/etc/trojan-go|/usr/local/etc/v2ray|/usr/local/etc/xray" "$PROJECT_ROOT/scripts/exposure"; then
+if rg -q "/usr/local/etc/xray" "$PROJECT_ROOT/scripts/exposure"; then
     exposure_uses_protocol_state="true"
 else
     exposure_uses_protocol_state="false"
@@ -34,13 +34,6 @@ else
     legacy_dirs_present="false"
 fi
 assert_equals "false" "$legacy_dirs_present" "Legacy wrapper directories have been removed"
-
-if rg -q "EASYNET_TROJAN_WS_PATH" "$PROJECT_ROOT/scripts/protocols/trojan-go/deploy.sh"; then
-    trojan_accepts_external_route="true"
-else
-    trojan_accepts_external_route="false"
-fi
-assert_equals "true" "$trojan_accepts_external_route" "Trojan-Go protocol accepts route path from exposure layer"
 
 if rg -q "listen \\$\\{EDGE_HTTPS_PORT\\} ssl|EDGE_HTTPS_PORT=\"\\$\\{EASYNET_EDGE_HTTPS_PORT:-443\\}\"|include \\$\\{EDGE_ROUTES_DIR\\}/\\*.conf" "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"; then
     edge_owns_tcp443="true"

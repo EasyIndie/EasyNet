@@ -44,50 +44,6 @@ elif $c.type == "hysteria2" then
             insecure: ($c["skip-cert-verify"] // false)
         }
     }
-elif $c.type == "trojan" then
-    {
-        type: "trojan",
-        tag: $tag,
-        server: $c.server,
-        server_port: $c.port,
-        password: $c.password,
-        network: "tcp",
-        tls: {
-            enabled: true,
-            server_name: ($c.sni // $c.server),
-            insecure: false
-        },
-        transport: {
-            type: "ws",
-            path: $c["ws-opts"].path,
-            headers: {
-                Host: ($c["ws-opts"].headers.Host // $c.server)
-            }
-        }
-    }
-elif $c.type == "vmess" then
-    {
-        type: "vmess",
-        tag: $tag,
-        server: $c.server,
-        server_port: $c.port,
-        uuid: $c.uuid,
-        security: ($c.cipher // "auto"),
-        alter_id: ($c.alterId // 0),
-        network: "tcp",
-        tls: {
-            enabled: true,
-            server_name: ($c.servername // $c.server),
-            insecure: false
-        },
-        transport: {
-            type: "ws",
-            path: $c["ws-opts"].path,
-            headers: {
-                Host: ($c["ws-opts"].headers.Host // $c.server)
-            }
-        }
-    }
 elif $c.type == "ss" then
     {
         type: "shadowsocks",

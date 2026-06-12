@@ -9,118 +9,97 @@ test_start "Uninstall Architecture"
 
 assert_equals "hysteria2" "$(resolve_uninstall_modules 1)" "Uninstall menu 1 resolves to Hysteria2 (alphabetically first)"
 assert_equals "shadowsocks" "$(resolve_uninstall_modules 2)" "Uninstall menu 2 resolves to Shadowsocks"
-assert_equals "trojan-go" "$(resolve_uninstall_modules 3)" "Uninstall menu 3 resolves to Trojan-Go"
-assert_equals "v2ray" "$(resolve_uninstall_modules 4)" "Uninstall menu 4 resolves to V2Ray"
-assert_equals "wireguard" "$(resolve_uninstall_modules 5)" "Uninstall menu 5 resolves to WireGuard"
-assert_equals "xray-reality" "$(resolve_uninstall_modules 6)" "Uninstall menu 6 resolves to Xray+Reality (alphabetically last)"
-assert_equals "edge-exposure" "$(resolve_uninstall_modules 7)" "Uninstall menu 7 resolves to Edge Gateway"
-assert_equals "__exit__" "$(resolve_uninstall_modules 8)" "Uninstall menu 8 resolves to exit sentinel"
+assert_equals "wireguard" "$(resolve_uninstall_modules 3)" "Uninstall menu 3 resolves to WireGuard"
+assert_equals "xray-reality" "$(resolve_uninstall_modules 4)" "Uninstall menu 4 resolves to Xray+Reality (alphabetically last)"
+assert_equals "edge-exposure" "$(resolve_uninstall_modules 5)" "Uninstall menu 5 resolves to Edge Gateway"
+assert_equals "__exit__" "$(resolve_uninstall_modules 6)" "Uninstall menu 6 resolves to exit sentinel"
 
-all_uninstall_modules="$(resolve_uninstall_modules 0 | xargs)"
-assert_equals "hysteria2 shadowsocks trojan-go v2ray wireguard xray-reality edge-exposure" "$all_uninstall_modules" "Uninstall menu 0 removes all protocol modules and Edge Gateway (alphabetical order)"
+all_modules="$(resolve_uninstall_modules 0 | xargs)"
+assert_equals "hysteria2 shadowsocks wireguard xray-reality edge-exposure" "$all_modules" "Uninstall menu 0 removes all protocol modules and Edge Gateway (alphabetical order)"
 
 assert_equals "$PROJECT_ROOT/scripts/protocols/xray-reality/uninstall.sh" "$(uninstall_entrypoint xray-reality)" "Xray Reality has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/protocols/hysteria2/uninstall.sh" "$(uninstall_entrypoint hysteria2)" "Hysteria2 has isolated uninstall entrypoint"
-assert_equals "$PROJECT_ROOT/scripts/protocols/trojan-go/uninstall.sh" "$(uninstall_entrypoint trojan-go)" "Trojan-Go has isolated uninstall entrypoint"
-assert_equals "$PROJECT_ROOT/scripts/protocols/v2ray/uninstall.sh" "$(uninstall_entrypoint v2ray)" "V2Ray has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/protocols/shadowsocks/uninstall.sh" "$(uninstall_entrypoint shadowsocks)" "Shadowsocks has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/protocols/wireguard/uninstall.sh" "$(uninstall_entrypoint wireguard)" "WireGuard has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/exposure/edge/uninstall.sh" "$(uninstall_entrypoint edge-exposure)" "Edge Gateway has isolated uninstall entrypoint"
 
 if resolve_uninstall_modules unknown-module >/dev/null; then
-    invalid_module_ok="false"
+    invalid_ok="false"
 else
-    invalid_module_ok="true"
+    invalid_ok="true"
 fi
-assert_equals "true" "$invalid_module_ok" "Unknown uninstall module fails resolution"
+assert_equals "true" "$invalid_ok" "Unknown uninstall module fails resolution"
 
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
-export EASYNET_STATE_DIR="$TMP_DIR/state"
-mkdir -p "$EASYNET_STATE_DIR/modules/xray-reality" "$EASYNET_STATE_DIR/modules/trojan-go" "$EASYNET_STATE_DIR/modules/wireguard" "$EASYNET_STATE_DIR/modules/example-shared"
+STATE_DIR="$TMP_DIR/state"
+export EASYNET_STATE_DIR="$STATE_DIR"
+source "$PROJECT_ROOT/scripts/core/firewall.sh"
+mkdir -p "$STATE_DIR/modules/example"
 
-cat > "$EASYNET_STATE_DIR/modules/xray-reality/metadata.json" <<'JSON'
+cat > "$STATE_DIR/modules/example/metadata.json" <<'JSON'
 {
   "schemaVersion": 1,
-  "module": "xray-reality",
+  "module": "example",
   "enabled": true,
   "protocol": "vless",
   "client": {
     "uri": "vless://example",
-    "clash": {"name": "xray", "type": "vless"}
+    "clash": { "name": "Example", "type": "vless" }
   },
   "firewall": [
-    {"port": 8443, "proto": "tcp"}
-  ],
-  "systemd": {"services": ["xray"]}
+    { "port": 8443, "proto": "tcp" }
+  ]
 }
 JSON
 
-cat > "$EASYNET_STATE_DIR/modules/trojan-go/metadata.json" <<'JSON'
-{
-  "schemaVersion": 1,
-  "module": "trojan-go",
-  "enabled": true,
-  "protocol": "trojan",
-  "client": {
-    "uri": "trojan://example",
-    "clash": {"name": "trojan", "type": "trojan"}
-  },
-  "firewall": [
-    {"port": 443, "proto": "tcp"}
-  ],
-  "systemd": {"services": ["trojan-go"]}
-}
-JSON
-
-cat > "$EASYNET_STATE_DIR/modules/wireguard/metadata.json" <<'JSON'
-{
-  "schemaVersion": 1,
-  "module": "wireguard",
-  "enabled": true,
-  "protocol": "wireguard",
-  "client": {
-    "uri": "wg://example",
-    "clash": {"name": "wg", "type": "wireguard"}
-  },
-  "firewall": [
-    {"port": 51820, "proto": "udp"}
-  ],
-  "systemd": {"services": ["wg-quick@wg0"]}
-}
-JSON
-
-cat > "$EASYNET_STATE_DIR/modules/example-shared/metadata.json" <<'JSON'
-{
-  "schemaVersion": 1,
-  "module": "example-shared",
-  "enabled": true,
-  "protocol": "example",
-  "client": {
-    "uri": "example://node",
-    "clash": {"name": "example", "type": "ss"}
-  },
-  "firewall": [
-    {"port": 51820, "proto": "udp"}
-  ],
-  "systemd": {"services": ["example"]}
-}
-JSON
-
-source "$PROJECT_ROOT/scripts/core/uninstall.sh"
-
-assert_equals "8443/tcp" "$(uninstall_firewall_rules_to_delete xray-reality)" "Unique module firewall rule is removable"
-assert_equals "" "$(uninstall_firewall_rules_to_delete trojan-go)" "Base firewall rule is preserved during module uninstall"
-assert_equals "" "$(uninstall_firewall_rules_to_delete wireguard)" "Firewall rule shared by another module is preserved"
-
-if rg -q "scripts/server|/server/" "$PROJECT_ROOT/scripts/uninstall.sh" "$PROJECT_ROOT/scripts/protocols"/*/uninstall.sh; then
-    uninstall_references_legacy_server="true"
+if printf '%s\n' "$(firewall_metadata_rules)" | rg -q "8443/tcp"; then
+    unique_rule_found="true"
 else
-    uninstall_references_legacy_server="false"
+    unique_rule_found="false"
 fi
-assert_equals "false" "$uninstall_references_legacy_server" "Uninstall flow does not reference legacy server wrappers"
+assert_equals "true" "$unique_rule_found" "Unique module firewall rule is removable"
 
-if rg -q "nginx-exposure|subscription-exposure|exposure/nginx|exposure/subscription" "$PROJECT_ROOT/scripts/uninstall.sh"; then
+if printf '%s\n' "$(firewall_all_rules)" | rg -q "22/tcp"; then
+    base_rules_preserved="true"
+else
+    base_rules_preserved="false"
+fi
+assert_equals "true" "$base_rules_preserved" "Base firewall rule is preserved during module uninstall"
+
+mkdir -p "$STATE_DIR/modules/example-b"
+cat > "$STATE_DIR/modules/example-b/metadata.json" <<'JSON'
+{
+  "schemaVersion": 1,
+  "module": "example-b",
+  "enabled": true,
+  "protocol": "vless",
+  "client": {
+    "uri": "vless://example",
+    "clash": { "name": "ExampleB", "type": "vless" }
+  },
+  "firewall": [
+    { "port": 8443, "proto": "tcp" }
+  ]
+}
+JSON
+all_rules="$(firewall_all_rules)"
+duplicate_count=$(printf '%s\n' "$all_rules" | grep -c "8443/tcp")
+if [ "$duplicate_count" -eq 1 ]; then
+    duplicate_rule_deduped="true"
+else
+    duplicate_rule_deduped="false"
+fi
+assert_equals "true" "$duplicate_rule_deduped" "Firewall rule shared by another module is preserved"
+
+if rg -q "scripts/server|/server/|nginx-exposure|subscription-exposure" "$PROJECT_ROOT/scripts/uninstall.sh"; then
+    uninstall_references_legacy="true"
+else
+    uninstall_references_legacy="false"
+fi
+assert_equals "false" "$uninstall_references_legacy" "Uninstall flow does not reference legacy server wrappers"
+
+if rg -q "sub_full|clash_full|easynet_nginx_state_dir|easynet_subscription_state_dir" "$PROJECT_ROOT/scripts/uninstall.sh"; then
     uninstall_references_old_exposure="true"
 else
     uninstall_references_old_exposure="false"

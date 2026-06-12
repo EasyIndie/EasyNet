@@ -29,22 +29,22 @@ else
 fi
 
 # Test 2: Fallback Logic simulation
-# Simulate the logic of replacing default /trojan with a secure random path
+# Simulate the logic of replacing default /default-path with a secure random path
 simulate_path_recovery() {
     local current_path="$1"
     
-    if [ "$current_path" == "/trojan" ] || [ -z "$current_path" ]; then
+    if [ "$current_path" == "/default-path" ] || [ -z "$current_path" ]; then
         echo "$(generate_random_path)"
     else
         echo "$current_path"
     fi
 }
 
-recovered_path=$(simulate_path_recovery "/trojan")
-if [ "$recovered_path" != "/trojan" ] && [[ "$recovered_path" == /* ]]; then
-    assert_equals "true" "true" "Default path /trojan is replaced with secure path"
+recovered_path=$(simulate_path_recovery "/default-path")
+if [ "$recovered_path" != "/default-path" ] && [[ "$recovered_path" == /* ]]; then
+    assert_equals "true" "true" "Default path /default-path is replaced with secure path"
 else
-    assert_equals "true" "false" "Default path /trojan is replaced with secure path"
+    assert_equals "true" "false" "Default path /default-path is replaced with secure path"
 fi
 
 valid_path="/a6d31173"

@@ -43,7 +43,7 @@
 
 ### 新增
 - 初始发布
-- 支持 6 种代理协议：Xray+Reality、Hysteria2、Trojan-Go、V2Ray、Shadowsocks、WireGuard
+- 支持 4 种代理协议：Xray+Reality、Hysteria2、Shadowsocks、WireGuard
 - 通过 deploy.sh 自动化部署
 - 按协议模块卸载
 - 基于 Nginx 的 Edge Gateway 暴露层

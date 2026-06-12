@@ -9,7 +9,7 @@
 - VPS：1 核、1GB 内存、20GB SSD 起步 👉 **[可选VPS提供商列表](./vps-providers.md)**
 - 系统：Ubuntu 22.04+ 或 Debian 11+
 - 位置：优先香港、日本、新加坡
-- 域名：Hysteria2 / Trojan-Go / V2Ray / 订阅链接需要域名
+- 域名：Hysteria2 和订阅链接需要域名
 - 端口：确保 `80/tcp`、`443/tcp` 可入站访问；按协议额外开放 `8443/tcp`、`443/udp`、`8388/tcp/udp`、`51820/udp`
 
 ## 协议选择
@@ -18,8 +18,6 @@
 | ------------ | --- | ------------------------- |
 | Xray+Reality | 高   | 抗封锁优先，允许使用支持 Reality 的客户端 |
 | Hysteria2    | 高   | UDP/QUIC 场景，适合与 Reality 组成双主力方案 |
-| Trojan-Go    | 高   | WebSocket + TLS 兼容方案，由 Edge 统一承载 |
-| V2Ray        | 中   | VMess WebSocket 兼容补充，由 Edge 统一承载 |
 | Shadowsocks  | 低   | 仅在特定客户端或测试场景使用            |
 | WireGuard    | 低   | 适合中转、低延迟、独立 VPN 场景        |
 
@@ -27,7 +25,6 @@
 
 - 日常优先：`Xray+Reality`，需要 UDP/QUIC 补充时加 `Hysteria2`
 - 订阅承载与协议部署解耦；配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 后会自动启用 Edge Gateway 并打印订阅链接和二维码
-- 兼容性补充：`Trojan-Go` / `V2Ray`
 - 特定用途：`Shadowsocks` / `WireGuard`
 
 ## 快速部署
@@ -56,7 +53,7 @@ cd EasyNet
 
 - 单协议优先选 `Xray+Reality`
 - 想一次部署全部协议可选 `0`
-- 部署编号 `1` 到 `6` 按安全性和抗 DPI 能力从高到低排序
+- 部署编号 `1` 到 `4` 按安全性和抗 DPI 能力从高到低排序
 
 说明：各协议模块部署后会导出标准 metadata，订阅生成器只读取 metadata。部署入口统一走 `scripts/protocols/*` 与 `scripts/exposure/edge`。订阅链接只在存在 Edge Gateway 域名，或显式设置 `EASYNET_SUBSCRIPTION_DOMAIN` 时打印。
 
@@ -80,8 +77,6 @@ EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 ```bash
 EASYNET_MODULE=xray-reality ./scripts/deploy.sh
 EASYNET_MODULE=hysteria2 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
-EASYNET_MODULE=trojan-go EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
-EASYNET_MODULE=v2ray EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 EASYNET_MODULE=shadowsocks ./scripts/deploy.sh
 EASYNET_MODULE=wireguard ./scripts/deploy.sh
 ```
@@ -107,13 +102,11 @@ EASYNET_PROFILE=compat EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - Edge Gateway 默认独占公网 `443/tcp`，首次部署时生成稳定随机订阅前缀，并使用 Nginx 在 `https://域名/s/<随机值>/sub`、`https://域名/s/<随机值>/clash`、`https://域名/s/<随机值>/singbox` 发布订阅
 - 随机订阅前缀会持久化保存，重启、重部署、证书续期和重新生成订阅都不会改变；可运行 `./scripts/show_subscription.sh` 重新显示链接和二维码
 - 如怀疑订阅链接泄露，可运行 `./scripts/rotate_subscription.sh` 主动轮换订阅入口；如需给多设备迁移留出时间，可使用 `./scripts/rotate_subscription.sh --grace` 暂时保留旧入口
-- 需要走 `443/tcp` 的 HTTP/WebSocket 协议作为 Edge backend 监听本机回环地址，避免协议模块直接抢占公网 443
-- `V2Ray` 与 `Trojan-Go` 由 Edge 统一处理公网 `443/tcp`
-- `Hysteria2` 使用 Edge 统一证书，但自身监听 `443/udp` 承载 QUIC 流量
+- `Hysteria2` 使用 Edge 统一证书，自身监听 `443/udp` 承载 QUIC 流量
 - 如同时配置 `EASYNET_DOMAIN` 与 `EASYNET_SUBSCRIPTION_DOMAIN`，两者都需要解析到当前服务器，Edge 证书会同时覆盖这两个域名
 - 如确需调整 Edge 端口，可使用高级变量 `EASYNET_EDGE_HTTPS_PORT`
 - 当前订阅输出保留 URI、Clash/Mihomo 与 sing-box 三类入口
-- 订阅文件中的节点顺序按安全性和抗 DPI 能力从高到低输出：`Xray+Reality`、`Hysteria2`、`Trojan-Go`、`V2Ray`、`Shadowsocks`、`WireGuard`
+- 订阅文件中的节点顺序按安全性和抗 DPI 能力从高到低输出：`Xray+Reality`、`Hysteria2`、`Shadowsocks`、`WireGuard`
 
 环境变量：
 
@@ -125,11 +118,9 @@ EASYNET_PROFILE=compat EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - `0`：全部部署
 - `1`：`xray-reality`
 - `2`：`hysteria2`
-- `3`：`trojan-go`
-- `4`：`v2ray`
-- `5`：`shadowsocks`
-- `6`：`wireguard`
-- `7`：退出
+- `3`：`shadowsocks`
+- `4`：`wireguard`
+- `5`：退出
 
 ## 卸载部署
 
@@ -152,8 +143,6 @@ EASYNET_UNINSTALL_CHOICE=0 ./scripts/uninstall.sh
 ```bash
 EASYNET_UNINSTALL_MODULE=xray-reality ./scripts/uninstall.sh
 EASYNET_UNINSTALL_MODULE=hysteria2 ./scripts/uninstall.sh
-EASYNET_UNINSTALL_MODULE=trojan-go ./scripts/uninstall.sh
-EASYNET_UNINSTALL_MODULE=v2ray ./scripts/uninstall.sh
 EASYNET_UNINSTALL_MODULE=shadowsocks ./scripts/uninstall.sh
 EASYNET_UNINSTALL_MODULE=wireguard ./scripts/uninstall.sh
 EASYNET_UNINSTALL_MODULE=edge-exposure ./scripts/uninstall.sh
@@ -164,12 +153,10 @@ EASYNET_UNINSTALL_MODULE=edge-exposure ./scripts/uninstall.sh
 - `0`：卸载全部协议与 Edge Gateway
 - `1`：`xray-reality`
 - `2`：`hysteria2`
-- `3`：`trojan-go`
-- `4`：`v2ray`
-- `5`：`shadowsocks`
-- `6`：`wireguard`
-- `7`：仅清理 Edge Gateway 与订阅文件
-- `8`：退出
+- `3`：`shadowsocks`
+- `4`：`wireguard`
+- `5`：仅清理 Edge Gateway 与订阅文件
+- `6`：退出
 
 默认行为：
 
@@ -187,8 +174,6 @@ EASYNET_UNINSTALL_MODULE=edge-exposure ./scripts/uninstall.sh
 ```bash
 systemctl status xray
 systemctl status hysteria-server.service
-systemctl status trojan-go
-systemctl status v2ray
 systemctl status shadowsocks-libev-server
 systemctl status wg-quick@wg0
 ```
@@ -210,7 +195,7 @@ sysctl net.ipv4.tcp_congestion_control
 
 ### 长期运行检查
 
-Edge TLS 证书由 `acme.sh` 自动续期。续期完成后会调用 `scripts/exposure/edge/cert_renew_hook.sh`，自动修复 Edge 证书权限并重启 `nginx`、`hysteria-server.service`、`trojan-go`。
+Edge TLS 证书由 `acme.sh` 自动续期。续期完成后会调用 `scripts/exposure/edge/cert_renew_hook.sh`，自动修复 Edge 证书权限并重启 `nginx` 和 `hysteria-server.service`。
 
 日志方面，部署脚本会限制 journald 使用量，并为 Nginx 写入 EasyNet 管理的 logrotate 配置。可定期检查：
 

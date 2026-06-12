@@ -2,7 +2,7 @@
 
 ## 先按这个顺序查
 
-遇到“部署失败”或“客户端连不上”时，优先执行这 5 步：
+遇到"部署失败"或"客户端连不上"时，优先执行这 5 步：
 
 1. 查服务状态：`systemctl status <服务名> --no-pager`
 2. 查日志：`journalctl -u <服务名> -n 50 --no-pager -l`
@@ -14,8 +14,6 @@
 
 - `xray`
 - `hysteria-server.service`
-- `trojan-go`
-- `v2ray`
 - `shadowsocks-libev-server`
 - `wg-quick@wg0`
 
@@ -34,7 +32,7 @@
 ### Edge 证书续期后协议异常
 
 现象：
-- Edge 证书刚续期，Hysteria2 或 Trojan-Go 开始异常
+- Edge 证书刚续期，Hysteria2 开始异常
 
 处理：
 - 手动执行续期 hook：`./scripts/exposure/edge/cert_renew_hook.sh`
@@ -92,17 +90,6 @@
 - 测试服务器出口：`curl -4 https://www.gstatic.com/generate_204 -I`
 - 查看日志：`journalctl -u hysteria-server.service -n 100 --no-pager -l`
 
-### Trojan-Go 或 V2Ray 能连通但打不开网页
-
-现象：
-- 连接成功，但网页打不开
-
-处理：
-- 检查 Edge 路由：`ls -l /var/lib/easynet/exposure/edge/routes`
-- 检查后端监听：`ss -ltnp | grep -E ':(4443|4444)'`
-- 确认域名、SNI、WebSocket 路径是最新订阅或部署输出值
-- 查看日志：`journalctl -u trojan-go -n 50 --no-pager -l` 或 `journalctl -u v2ray -n 50 --no-pager -l`
-
 ### Shadowsocks 连不上
 
 现象：
@@ -148,12 +135,9 @@
 ```bash
 systemctl status xray --no-pager
 systemctl status hysteria-server.service --no-pager
-systemctl status trojan-go --no-pager
-systemctl status v2ray --no-pager
 systemctl status wg-quick@wg0 --no-pager
 journalctl -u hysteria-server.service -n 100 --no-pager -l
 journalctl -u xray -n 50 --no-pager -l
-journalctl -u trojan-go -n 50 --no-pager -l
 ss -ltnup
 wg show
 ufw status verbose

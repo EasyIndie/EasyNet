@@ -87,10 +87,9 @@ main() {
         done
     fi
 
-    # Legacy fallback: ensure hysteria2 and trojan-go are restarted
-    # (in case their metadata is missing)
+    # Legacy fallback: ensure hysteria2 is restarted
+    # (in case its metadata is missing)
     restart_if_exists hysteria-server.service
-    restart_if_exists trojan-go
 
     log_info "Edge 证书续期 hook 已完成。"
 }

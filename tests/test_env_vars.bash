@@ -43,14 +43,6 @@ export EASYNET_MODULE="wireguard"
 result_wireguard_module=$(run_env_selection_for_test)
 assert_equals "wireguard" "$result_wireguard_module" "With EASYNET_MODULE=wireguard, it should select WireGuard"
 
-export EASYNET_MODULE="trojan-go"
-result_trojan_module=$(run_env_selection_for_test)
-assert_equals "trojan-go" "$result_trojan_module" "With EASYNET_MODULE=trojan-go, it should select Trojan-Go"
-
-export EASYNET_MODULE="v2ray"
-result_v2ray_module=$(run_env_selection_for_test)
-assert_equals "v2ray" "$result_v2ray_module" "With EASYNET_MODULE=v2ray, it should select V2Ray"
-
 export EASYNET_MODULE="hysteria2"
 result_hysteria2_module=$(run_env_selection_for_test)
 assert_equals "hysteria2" "$result_hysteria2_module" "With EASYNET_MODULE=hysteria2, it should select Hysteria2"
@@ -90,20 +82,20 @@ cat > "$ENV_FILE" <<'ENV'
 EASYNET_DOMAIN="proxy env.example.com"
 EASYNET_PROFILE=balanced
 UNSAFE_COMMAND=$(touch /tmp/easynet-should-not-exist)
-TROJAN_VERSION=0.0.0
+UNSUPPORTED_VAR=0.0.0
 export EASYNET_SUBSCRIPTION_DOMAIN='sub.example.com'
 ENV
 
 unset EASYNET_DOMAIN
 unset EASYNET_PROFILE
 unset EASYNET_SUBSCRIPTION_DOMAIN
-unset TROJAN_VERSION
+unset UNSUPPORTED_VAR
 load_env_file_path "$ENV_FILE"
 
 assert_equals "proxy env.example.com" "$EASYNET_DOMAIN" "Env parser preserves quoted EASYNET value with spaces"
 assert_equals "balanced" "$EASYNET_PROFILE" "Env parser loads plain EASYNET value"
 assert_equals "sub.example.com" "$EASYNET_SUBSCRIPTION_DOMAIN" "Env parser supports export prefix and single quotes"
-assert_equals "" "${TROJAN_VERSION:-}" "Env parser ignores non-EASYNET variables"
+assert_equals "" "${UNSUPPORTED_VAR:-}" "Env parser ignores non-EASYNET variables"
 assert_equals "false" "$([ -e /tmp/easynet-should-not-exist ] && echo true || echo false)" "Env parser does not execute command substitutions"
 
 test_end

@@ -7,7 +7,7 @@ source "$DIR/test_helper.bash"
 test_start "Subscription Output Verification"
 
 # ============================================================
-# Setup: Create a fake state with metadata fixtures for all 6 protocols
+# Setup: Create a fake state with metadata fixtures for all 4 protocols
 # ============================================================
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
@@ -15,7 +15,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 STATE_DIR="$TMP_DIR/state"
 WEB_ROOT="$TMP_DIR/web"
 mkdir -p "$STATE_DIR/exposure/edge" "$STATE_DIR/modules"
-for mod in xray-reality shadowsocks trojan-go v2ray wireguard hysteria2; do
+for mod in xray-reality shadowsocks wireguard hysteria2; do
     mkdir -p "$STATE_DIR/modules/$mod"
 done
 echo "example.com" > "$STATE_DIR/exposure/edge/domain.txt"
@@ -89,86 +89,6 @@ cat > "$STATE_DIR/modules/shadowsocks/metadata.json" <<'JSON'
   ],
   "systemd": {
     "services": ["shadowsocks-libev-server"]
-  }
-}
-JSON
-
-# Write metadata for a trojan node (Trojan-Go style)
-cat > "$STATE_DIR/modules/trojan-go/metadata.json" <<'JSON'
-{
-  "schemaVersion": 1,
-  "module": "trojan-go",
-  "enabled": true,
-  "protocol": "trojan",
-  "listen": "127.0.0.1",
-  "port": 4444,
-  "publicPort": 443,
-  "transport": "tcp",
-  "security": "tls",
-  "client": {
-    "uri": "trojan://password222@example.com:443?security=tls&sni=example.com&type=ws&path=%2Fws-path-22222222&host=example.com#EasyNet-Trojan",
-    "clash": {
-      "name": "EasyNet-Trojan",
-      "type": "trojan",
-      "server": "example.com",
-      "port": 443,
-      "password": "password2222222222",
-      "sni": "example.com",
-      "network": "ws",
-      "ws-opts": {
-        "path": "/ws-path-22222222",
-        "headers": {
-          "Host": "example.com"
-        }
-      }
-    }
-  },
-  "firewall": [
-    { "port": 443, "proto": "tcp" }
-  ],
-  "systemd": {
-    "services": ["trojan-go"]
-  }
-}
-JSON
-
-# Write metadata for a vmess node (V2Ray style)
-cat > "$STATE_DIR/modules/v2ray/metadata.json" <<'JSON'
-{
-  "schemaVersion": 1,
-  "module": "v2ray",
-  "enabled": true,
-  "protocol": "vmess",
-  "listen": "127.0.0.1",
-  "port": 4443,
-  "publicPort": 443,
-  "transport": "tcp",
-  "security": "tls",
-  "client": {
-    "uri": "vmess://...",
-    "clash": {
-      "name": "EasyNet-V2Ray",
-      "type": "vmess",
-      "server": "example.com",
-      "port": 443,
-      "uuid": "uuid-3333-3333-3333-333333333333",
-      "alterId": 0,
-      "cipher": "auto",
-      "servername": "example.com",
-      "network": "ws",
-      "ws-opts": {
-        "path": "/ws-path-33333333",
-        "headers": {
-          "Host": "example.com"
-        }
-      }
-    }
-  },
-  "firewall": [
-    { "port": 443, "proto": "tcp" }
-  ],
-  "systemd": {
-    "services": ["v2ray"]
   }
 }
 JSON
@@ -285,9 +205,9 @@ fi
 assert_equals "true" "$clash_has_proxy_groups" "Clash config has Proxy and Auto groups"
 
 # ============================================================
-# Test 5: Clash config includes all 6 protocol proxies
+# Test 5: Clash config includes all 4 protocol proxies
 # ============================================================
-for name in "EasyNet-Reality" "EasyNet-Shadowsocks" "EasyNet-Trojan" "EasyNet-V2Ray" "EasyNet-WireGuard" "EasyNet-Hysteria2"; do
+for name in "EasyNet-Reality" "EasyNet-Shadowsocks" "EasyNet-WireGuard" "EasyNet-Hysteria2"; do
     if printf '%s\n' "$clash_content" | grep -q "name: \"$name\""; then
         result="true"
     else
@@ -307,14 +227,14 @@ fi
 assert_equals "true" "$clash_has_reality" "Clash vless proxy has reality-opts"
 
 # ============================================================
-# Test 7: Clash trojan proxy has ws-opts
+# Test 7: Clash vless proxy has reality-opts (anti-DPI protection)
 # ============================================================
-if printf '%s\n' "$clash_content" | grep -q "ws-opts:"; then
-    clash_trojan_has_ws="true"
+if printf '%s\n' "$clash_content" | grep -q "reality-opts:"; then
+    clash_has_reality_anti_dpi="true"
 else
-    clash_trojan_has_ws="false"
+    clash_has_reality_anti_dpi="false"
 fi
-assert_equals "true" "$clash_trojan_has_ws" "Clash trojan/vmess proxy has ws-opts"
+assert_equals "true" "$clash_has_reality_anti_dpi" "Clash vless proxy retains reality-opts for anti-DPI"
 
 # ============================================================
 # Test 8: Clash wireguard proxy has dns entries
@@ -337,7 +257,7 @@ fi
 assert_equals "true" "$clash_h2_has_obfs" "Clash hysteria2 proxy has obfs fields"
 
 # ============================================================
-# Test 10: sing-box config has valid JSON structure
+# Test 9: sing-box config has valid JSON structure
 # ============================================================
 if jq -e '.log.level == "info"' "$WEB_ROOT/singbox" >/dev/null 2>&1; then
     sb_has_log="true"
@@ -346,7 +266,7 @@ else
 fi
 assert_equals "true" "$sb_has_log" "sing-box config has log section"
 
-if jq -e '.outbounds | length >= 8' "$WEB_ROOT/singbox" >/dev/null 2>&1; then
+if jq -e '.outbounds | length >= 6' "$WEB_ROOT/singbox" >/dev/null 2>&1; then
     sb_has_outbounds="true"
 else
     sb_has_outbounds="false"
@@ -354,11 +274,11 @@ fi
 assert_equals "true" "$sb_has_outbounds" "sing-box config has expected outbounds (nodes + Proxy + Auto + DIRECT + REJECT)"
 
 # ============================================================
-# Test 11: sing-box config has all 6 node types
+# Test 10: sing-box config has all node types
 # ============================================================
 sb_types="$(jq -r '[.outbounds[].type] | join(",")' "$WEB_ROOT/singbox")"
 
-for sb_type in "vless" "shadowsocks" "trojan" "vmess" "hysteria2"; do
+for sb_type in "vless" "shadowsocks" "hysteria2"; do
     if printf '%s\n' "$sb_types" | grep -q "$sb_type"; then
         result="true"
     else
@@ -368,7 +288,7 @@ for sb_type in "vless" "shadowsocks" "trojan" "vmess" "hysteria2"; do
 done
 
 # ============================================================
-# Test 12: WireGuard is rendered as endpoint (not outbound) in sing-box
+# Test 11: WireGuard is rendered as endpoint (not outbound) in sing-box
 # ============================================================
 if jq -e '.endpoints[] | select(.type == "wireguard")' "$WEB_ROOT/singbox" >/dev/null 2>&1; then
     sb_wg_is_endpoint="true"
@@ -378,7 +298,7 @@ fi
 assert_equals "true" "$sb_wg_is_endpoint" "sing-box renders WireGuard as endpoint"
 
 # ============================================================
-# Test 13: sing-box has route section with sniff rule
+# Test 12: sing-box has route section with sniff rule
 # ============================================================
 if jq -e '.route.final == "Proxy"' "$WEB_ROOT/singbox" >/dev/null 2>&1; then
     sb_has_route="true"
@@ -388,7 +308,7 @@ fi
 assert_equals "true" "$sb_has_route" "sing-box config has route section"
 
 # ============================================================
-# Test 14: Empty metadata dir produces no error (graceful)
+# Test 13: Empty metadata dir produces no error (graceful)
 # ============================================================
 EMPTY_DIR="$(mktemp -d)"
 EMPTY_WEB="$(mktemp -d)"

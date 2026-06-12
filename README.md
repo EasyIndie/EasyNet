@@ -6,11 +6,11 @@
 
 ## 项目概述
 
-一套完整的境外 VPS 部署方案，实现在受限网络环境下的稳定科学上网服务。支持 6 种主流协议，满足不同场景需求。
+一套完整的境外 VPS 部署方案，实现在受限网络环境下的稳定科学上网服务。支持 4 种主流协议，满足不同场景需求。
 
 ## 核心特性
 
-- 🚀 支持 6 种代理协议（Xray+Reality、Hysteria2、Trojan-Go、V2Ray、Shadowsocks、WireGuard）
+- 🚀 支持 4 种代理协议（Xray+Reality、Hysteria2、Shadowsocks、WireGuard）
 - 🔒 强安全架构：TLS 加密、WebSocket 随机路径、Edge Gateway 本地回环隐蔽分发
 - ⚡ 性能优化：BBR 拥塞控制加速
 - 🔄 自动化运维：系统更新、证书续期 hook、日志限额与 logrotate
@@ -34,8 +34,6 @@
 | ---------------- | -------------- | ----------- | ----------- |
 | **Xray+Reality** | 无需域名，超强隐蔽，反代名站 | 客户端要求较高     | 🥇 极高 (推荐)  |
 | **Hysteria2**    | QUIC/UDP 性能好，支持 salamander 混淆 | 需要域名与 UDP 可达 | 🥇 高 (推荐补充) |
-| **Trojan-Go**    | 安全性高，标准HTTPS伪装 | 需要真实域名证书    | 🥈 高 (推荐)   |
-| **V2Ray**        | 配合TLS混淆，灵活性强   | 配置较复杂       | 🥈 较高       |
 | **Shadowsocks**  | 简单快速，0-RTT     | 全随机流量易被识别   | 🥉 中等/偏低    |
 | **WireGuard**    | 超快速度，极低延迟      | UDP特征明显易被阻断 | 🥉 低 (适合中转) |
 
@@ -49,8 +47,6 @@ EasyNet/
 │   ├── protocols/        # 独立协议模块（新架构）
 │   │   ├── xray-reality/
 │   │   ├── hysteria2/
-│   │   ├── trojan-go/
-│   │   ├── v2ray/
 │   │   ├── shadowsocks/
 │   │   └── wireguard/
 │   ├── deploy.sh         # 一键部署脚本

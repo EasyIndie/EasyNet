@@ -38,7 +38,7 @@ assert_equals "true" "$smoke_test_executable" "Real deployment smoke test script
 
 if [ -x "$PROJECT_ROOT/scripts/exposure/edge/cert_renew_hook.sh" ] &&
     rg -q "cert_renew_hook.sh|--reloadcmd.*EDGE_RENEW_HOOK" "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh" &&
-    rg -q "hysteria-server.service|trojan-go|fix_edge_cert_permissions|grant_cert_access_to_user" "$PROJECT_ROOT/scripts/exposure/edge/cert_renew_hook.sh"; then
+    rg -q "hysteria-server.service|fix_edge_cert_permissions|grant_cert_access_to_user" "$PROJECT_ROOT/scripts/exposure/edge/cert_renew_hook.sh"; then
     cert_hook_ready="true"
 else
     cert_hook_ready="false"

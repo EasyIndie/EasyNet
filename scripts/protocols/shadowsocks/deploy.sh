@@ -100,7 +100,7 @@ show_config() {
         echo "未安装 qrencode，无法显示二维码。"
     fi
     echo ""
-    echo "安全提示: Shadowsocks 仅建议作为兼容或测试方案，抗 DPI 能力低于 Reality/Hysteria2/Trojan-Go。"
+    echo "安全提示: Shadowsocks 仅建议作为兼容或测试方案，抗 DPI 能力低于 Reality 和 Hysteria2。"
     echo "========================================"
 }
 

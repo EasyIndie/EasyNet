@@ -97,18 +97,3 @@ location ${route_path} {
 EOF
     fi
 }
-
-# ============================================================
-# Deprecated protocol-specific route functions
-# These are kept for backward compatibility with scripts that
-# may call them directly. New code should use ensure_edge_backend_route().
-# ============================================================
-ensure_edge_trojan_route() {
-    log_warn "[DEPRECATED] ensure_edge_trojan_route: use ensure_edge_backend_route 'trojan-go' instead"
-    ensure_edge_backend_route "trojan-go"
-}
-
-ensure_edge_v2ray_route() {
-    log_warn "[DEPRECATED] ensure_edge_v2ray_route: use ensure_edge_backend_route 'v2ray' instead"
-    ensure_edge_backend_route "v2ray"
-}

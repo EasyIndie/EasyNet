@@ -6,7 +6,7 @@ source "$DIR/test_helper.bash"
 
 test_start "Subscription Generator Isolation"
 
-if rg -q "/etc/trojan-go|/usr/local/etc/v2ray|/etc/shadowsocks-libev|/etc/wireguard|/usr/local/etc/xray" "$PROJECT_ROOT/scripts/generate_subscription.sh"; then
+if rg -q "/etc/shadowsocks-libev|/etc/wireguard|/usr/local/etc/xray" "$PROJECT_ROOT/scripts/generate_subscription.sh"; then
     generator_reads_protocol_state="true"
 else
     generator_reads_protocol_state="false"
@@ -113,13 +113,11 @@ assert_equals "true" "$singbox_config_generated" "sing-box config and client ins
 rm -rf "$STATE_DIR/modules"
 mkdir -p \
     "$STATE_DIR/modules/wireguard" \
-    "$STATE_DIR/modules/v2ray" \
-    "$STATE_DIR/modules/trojan-go" \
     "$STATE_DIR/modules/shadowsocks" \
     "$STATE_DIR/modules/hysteria2" \
     "$STATE_DIR/modules/xray-reality"
 
-for module in wireguard v2ray trojan-go shadowsocks hysteria2 xray-reality; do
+for module in wireguard shadowsocks hysteria2 xray-reality; do
     if [ "$module" = "wireguard" ]; then
         cat > "$STATE_DIR/modules/$module/metadata.json" <<JSON
 {
@@ -172,10 +170,10 @@ EASYNET_WEB_ROOT="$WEB_ROOT" \
     bash "$PROJECT_ROOT/scripts/generate_subscription.sh" >/dev/null
 
 ordered_subscription_links="$(openssl base64 -d -A -in "$WEB_ROOT/sub")"
-expected_subscription_links=$'xray-reality://node\nhysteria2://node\ntrojan-go://node\nv2ray://node\nshadowsocks://node\nwireguard://node'
+expected_subscription_links=$'xray-reality://node\nhysteria2://node\nshadowsocks://node\nwireguard://node'
 assert_equals "$expected_subscription_links" "$ordered_subscription_links" "URI subscription file orders nodes by security and anti-DPI strength"
 ordered_singbox_tags="$(jq -r '.outbounds[] | select(.tag == "Proxy").outbounds[] | select(. != "Auto" and . != "DIRECT")' "$WEB_ROOT/singbox")"
-expected_singbox_tags=$'xray-reality\nhysteria2\ntrojan-go\nv2ray\nshadowsocks\nwireguard'
+expected_singbox_tags=$'xray-reality\nhysteria2\nshadowsocks\nwireguard'
 assert_equals "$expected_singbox_tags" "$ordered_singbox_tags" "sing-box config orders nodes by security and anti-DPI strength"
 if jq -e '.endpoints[] | select(.type == "wireguard" and .tag == "wireguard")' "$WEB_ROOT/singbox" >/dev/null; then
     singbox_wireguard_endpoint="true"

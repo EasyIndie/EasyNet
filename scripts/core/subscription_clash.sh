@@ -142,55 +142,6 @@ EOF
     udp: true
 EOF
             ;;
-        trojan)
-            password=$(jq -r '.client.clash.password // empty' "$metadata_file")
-            sni=$(jq -r '.client.clash.sni // empty' "$metadata_file")
-            network=$(jq -r '.client.clash.network // empty' "$metadata_file")
-            ws_path=$(jq -r '.client.clash."ws-opts".path // empty' "$metadata_file")
-            host=$(jq -r '.client.clash."ws-opts".headers.Host // empty' "$metadata_file")
-
-            cat >> "$output_file" <<EOF
-  - name: "$(yaml_escape "$name")"
-    type: trojan
-    server: "$(yaml_escape "$server")"
-    port: $port
-    password: "$(yaml_escape "$password")"
-    udp: true
-    sni: "$(yaml_escape "$sni")"
-    network: "$(yaml_escape "$network")"
-    ws-opts:
-      path: "$(yaml_escape "$ws_path")"
-      headers:
-        Host: "$(yaml_escape "$host")"
-EOF
-            ;;
-        vmess)
-            uuid=$(jq -r '.client.clash.uuid // empty' "$metadata_file")
-            alter_id=$(jq -r '.client.clash.alterId // 0' "$metadata_file")
-            cipher=$(jq -r '.client.clash.cipher // "auto"' "$metadata_file")
-            sni=$(jq -r '.client.clash.servername // empty' "$metadata_file")
-            network=$(jq -r '.client.clash.network // "ws"' "$metadata_file")
-            ws_path=$(jq -r '.client.clash."ws-opts".path // empty' "$metadata_file")
-            host=$(jq -r '.client.clash."ws-opts".headers.Host // empty' "$metadata_file")
-
-            cat >> "$output_file" <<EOF
-  - name: "$(yaml_escape "$name")"
-    type: vmess
-    server: "$(yaml_escape "$server")"
-    port: $port
-    uuid: "$(yaml_escape "$uuid")"
-    alterId: $alter_id
-    cipher: "$(yaml_escape "$cipher")"
-    udp: true
-    tls: true
-    servername: "$(yaml_escape "$sni")"
-    network: "$(yaml_escape "$network")"
-    ws-opts:
-      path: "$(yaml_escape "$ws_path")"
-      headers:
-        Host: "$(yaml_escape "$host")"
-EOF
-            ;;
         wireguard)
             ip=$(jq -r '.client.clash.ip // empty' "$metadata_file")
             private_key=$(jq -r '.client.clash."private-key" // empty' "$metadata_file")
