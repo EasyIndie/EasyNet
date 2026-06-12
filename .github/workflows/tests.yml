@@ -59,8 +59,8 @@ jobs:
           - tests/test_protocol_metadata.bash
           - tests/test_singbox_client_installer.bash
           - tests/test_subscription_isolation.bash
+          - tests/test_subscription_output.bash
           - tests/test_uninstall_architecture.bash
-          - tests/test_vmess_generation.bash
           - tests/test_wireguard_generation.bash
     steps:
       - name: Checkout repository
