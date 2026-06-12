@@ -22,8 +22,13 @@ PROJECT_ROOT="$(dirname "$UNINSTALL_SCRIPT_DIR")"
 source "$PROJECT_ROOT/scripts/core/env.sh"
 source "$PROJECT_ROOT/scripts/core/env_file.sh"
 source "$PROJECT_ROOT/scripts/core/cron.sh"
+source "$PROJECT_ROOT/scripts/core/discovery.sh"
 
-ALL_MODULES=(xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard)
+# ALL_MODULES is auto-discovered from protocols/*/manifest.sh
+ALL_MODULES=()
+while IFS= read -r mod; do
+    ALL_MODULES+=("$mod")
+done < <(discovery_list_modules)
 
 load_env_file() {
     if [ -f "$PROJECT_ROOT/.env" ]; then
@@ -40,25 +45,17 @@ check_root() {
 }
 
 module_is_known() {
-    local module="$1"
-    local known
-    for known in "${ALL_MODULES[@]}"; do
-        [ "$module" = "$known" ] && return 0
-    done
-    return 1
+    discovery_module_exists "$1"
 }
 
 module_display_name() {
-    case "$1" in
-        trojan-go) echo "Trojan-Go" ;;
-        v2ray) echo "V2Ray" ;;
-        shadowsocks) echo "Shadowsocks" ;;
-        wireguard) echo "WireGuard" ;;
-        xray-reality) echo "Xray+Reality" ;;
-        hysteria2) echo "Hysteria2" ;;
-        edge-exposure) echo "Edge Gateway" ;;
-        *) echo "$1" ;;
-    esac
+    if [ "$1" = "edge-exposure" ]; then
+        echo "Edge Gateway"
+    elif discovery_load_manifest "$1" 2>/dev/null; then
+        echo "$MODULE_DISPLAY_NAME"
+    else
+        echo "$1"
+    fi
 }
 
 select_from_env() {
@@ -82,18 +79,21 @@ show_menu() {
         return
     fi
 
+    local idx=1
     echo "========================================"
     echo "  EasyNet 代理服务器卸载"
     echo "========================================"
     echo "0. 卸载全部协议与 Edge Gateway"
-    echo "1. 卸载 Xray+Reality"
-    echo "2. 卸载 Hysteria2"
-    echo "3. 卸载 Trojan-Go"
-    echo "4. 卸载 V2Ray"
-    echo "5. 卸载 Shadowsocks-libev"
-    echo "6. 卸载 WireGuard"
-    echo "7. 仅清理 Edge Gateway 与订阅文件"
-    echo "8. 退出"
+    for module_name in "${ALL_MODULES[@]}"; do
+        if discovery_load_manifest "$module_name" 2>/dev/null; then
+            printf "%d. 卸载 %s\n" "$idx" "$MODULE_DISPLAY_NAME"
+        else
+            printf "%d. 卸载 %s\n" "$idx" "$module_name"
+        fi
+        ((idx++))
+    done
+    printf "%d. 仅清理 Edge Gateway 与订阅文件\n" "$idx"
+    printf "%d. 退出\n" "$((idx + 1))"
     echo "========================================"
     echo -e "${YELLOW}提示: 默认会删除 EasyNet 生成的配置、服务文件、metadata 与订阅文件；包卸载需显式设置 EASYNET_UNINSTALL_PURGE_PACKAGES=true。${NC}"
     read -p "请选择要卸载的服务: " choice
@@ -101,17 +101,23 @@ show_menu() {
 
 resolve_uninstall_modules() {
     local selection="$1"
+    local edge_index=$(( ${#ALL_MODULES[@]} + 1 ))
+    local exit_index=$(( ${#ALL_MODULES[@]} + 2 ))
 
     case "$selection" in
         0) printf '%s\n' "${ALL_MODULES[@]}"; echo "edge-exposure" ;;
-        1) echo "xray-reality" ;;
-        2) echo "hysteria2" ;;
-        3) echo "trojan-go" ;;
-        4) echo "v2ray" ;;
-        5) echo "shadowsocks" ;;
-        6) echo "wireguard" ;;
-        7) echo "edge-exposure" ;;
-        8) echo "__exit__" ;;
+        [0-9]|[0-9][0-9])
+            local index=$((selection - 1))
+            if [ "$index" -ge 0 ] && [ "$index" -lt "${#ALL_MODULES[@]}" ]; then
+                echo "${ALL_MODULES[$index]}"
+            elif [ "$selection" = "$edge_index" ]; then
+                echo "edge-exposure"
+            elif [ "$selection" = "$exit_index" ]; then
+                echo "__exit__"
+            else
+                return 1
+            fi
+            ;;
         edge-exposure) echo "edge-exposure" ;;
         *)
             if module_is_known "$selection"; then
@@ -125,18 +131,17 @@ resolve_uninstall_modules() {
 
 uninstall_entrypoint() {
     local module="$1"
-    local entrypoint
 
-    case "$module" in
-        edge-exposure) entrypoint="$UNINSTALL_SCRIPT_DIR/exposure/edge/uninstall.sh" ;;
-        *) entrypoint="$UNINSTALL_SCRIPT_DIR/protocols/$module/uninstall.sh" ;;
-    esac
-
-    if [ -x "$entrypoint" ]; then
-        echo "$entrypoint"
-    else
+    if [ "$module" = "edge-exposure" ]; then
+        local entrypoint="$UNINSTALL_SCRIPT_DIR/exposure/edge/uninstall.sh"
+        if [ -x "$entrypoint" ]; then
+            echo "$entrypoint"
+            return 0
+        fi
         return 1
     fi
+
+    discovery_uninstall_entrypoint "$module"
 }
 
 uninstall_module() {

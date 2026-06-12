@@ -24,10 +24,15 @@ source "$PROJECT_ROOT/scripts/core/cron.sh"
 source "$PROJECT_ROOT/scripts/core/env.sh"
 source "$PROJECT_ROOT/scripts/core/env_file.sh"
 source "$PROJECT_ROOT/scripts/core/maintenance.sh"
+source "$PROJECT_ROOT/scripts/core/discovery.sh"
+source "$PROJECT_ROOT/scripts/core/profiles.sh"
 source "$PROJECT_ROOT/scripts/exposure/edge/routes.sh"
 
-ALL_MODULES=(xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard)
-BALANCED_MODULES=(xray-reality hysteria2)
+# ALL_MODULES is now auto-discovered from protocols/*/manifest.sh
+ALL_MODULES=()
+while IFS= read -r mod; do
+    ALL_MODULES+=("$mod")
+done < <(discovery_list_modules)
 DEPLOY_SELECTION_MODULES=()
 
 load_env_file_path() {
@@ -139,52 +144,39 @@ show_menu() {
         return
     fi
 
+    local idx=1
     echo "========================================"
     echo "  EasyNet 代理服务器部署"
     echo "========================================"
     echo "0. 全部部署"
-    echo "1. 部署 Xray+Reality (最高安全/抗 DPI)"
-    echo "2. 部署 Hysteria2"
-    echo "3. 部署 Trojan-Go"
-    echo "4. 部署 V2Ray"
-    echo "5. 部署 Shadowsocks-libev"
-    echo "6. 部署 WireGuard"
-    echo "7. 退出"
+    for module_name in "${ALL_MODULES[@]}"; do
+        if discovery_load_manifest "$module_name" 2>/dev/null; then
+            printf "%d. 部署 %s\n" "$idx" "$MODULE_DISPLAY_NAME"
+        else
+            printf "%d. 部署 %s\n" "$idx" "$module_name"
+        fi
+        ((idx++))
+    done
+    printf "%d. 退出\n" "$idx"
     echo "========================================"
-    echo -e "${YELLOW}提示: 编号 1-6 按安全性和抗 DPI 能力从高到低排序。完成后请选择 7 退出。${NC}"
+    echo -e "${YELLOW}提示: 编号 1-${#ALL_MODULES[@]} 按模块名称排序。完成后请选择 ${idx} 退出。${NC}"
     read -p "请选择要部署的服务: " choice
 }
 
 module_is_known() {
-    local module="$1"
-    local known
-    for known in "${ALL_MODULES[@]}"; do
-        if [ "$module" = "$known" ]; then
-            return 0
-        fi
-    done
-    return 1
+    discovery_module_exists "$1"
 }
 
 module_display_name() {
-    case "$1" in
-        trojan-go) echo "Trojan-Go" ;;
-        v2ray) echo "V2Ray" ;;
-        shadowsocks) echo "Shadowsocks" ;;
-        wireguard) echo "WireGuard" ;;
-        xray-reality) echo "Xray+Reality" ;;
-        hysteria2) echo "Hysteria2" ;;
-        *) echo "$1" ;;
-    esac
+    if discovery_load_manifest "$1" 2>/dev/null; then
+        echo "$MODULE_DISPLAY_NAME"
+    else
+        echo "$1"
+    fi
 }
 
 module_entrypoint() {
-    local protocol_entrypoint="$DEPLOY_SCRIPT_DIR/protocols/$1/deploy.sh"
-    if [ -x "$protocol_entrypoint" ]; then
-        echo "$protocol_entrypoint"
-    else
-        return 1
-    fi
+    discovery_module_entrypoint "$1"
 }
 
 deployment_includes_module() {
@@ -203,17 +195,19 @@ deploy_edge_gateway() {
 }
 
 module_uses_edge_backend() {
-    case "$1" in
-        trojan-go|v2ray) return 0 ;;
-        *) return 1 ;;
-    esac
+    local module="$1"
+    if ! discovery_load_manifest "$module" 2>/dev/null; then
+        return 1
+    fi
+    [ "$MODULE_EDGE_MODE" = "backend" ]
 }
 
 module_requires_edge() {
-    case "$1" in
-        hysteria2|trojan-go|v2ray) return 0 ;;
-        *) return 1 ;;
-    esac
+    local module="$1"
+    if ! discovery_load_manifest "$module" 2>/dev/null; then
+        return 1
+    fi
+    [ "$MODULE_EDGE_MODE" = "backend" ] || [ "$MODULE_EDGE_MODE" = "shared_tls" ]
 }
 
 edge_gateway_enabled() {
@@ -252,14 +246,14 @@ ensure_edge_domain() {
 export_route_env_for_module() {
     local module="$1"
 
-    case "$module" in
-        trojan-go)
-            ensure_edge_trojan_route
-            ;;
-        v2ray)
-            ensure_edge_v2ray_route
-            ;;
-    esac
+    if ! discovery_load_manifest "$module" 2>/dev/null; then
+        return 1
+    fi
+
+    # Backend-mode protocols need an nginx reverse-proxy route
+    if [ "$MODULE_EDGE_MODE" = "backend" ]; then
+        ensure_edge_backend_route "$module"
+    fi
 }
 
 prepare_module_dependencies() {
@@ -267,12 +261,7 @@ prepare_module_dependencies() {
 }
 
 resolve_profile_modules() {
-    case "$1" in
-        strict) echo "xray-reality" ;;
-        balanced) printf '%s\n' "${BALANCED_MODULES[@]}" ;;
-        compat) printf '%s\n' "${ALL_MODULES[@]}" ;;
-        *) return 1 ;;
-    esac
+    profile_resolve "$1"
 }
 
 resolve_modules() {
@@ -281,13 +270,17 @@ resolve_modules() {
     case "$selection" in
         profile:*) resolve_profile_modules "${selection#profile:}" ;;
         0) printf '%s\n' "${ALL_MODULES[@]}" ;;
-        1) echo "xray-reality" ;;
-        2) echo "hysteria2" ;;
-        3) echo "trojan-go" ;;
-        4) echo "v2ray" ;;
-        5) echo "shadowsocks" ;;
-        6) echo "wireguard" ;;
-        7) echo "__exit__" ;;
+        [0-9]|[0-9][0-9])
+            local index=$((selection - 1))
+            if [ "$index" -ge 0 ] && [ "$index" -lt "${#ALL_MODULES[@]}" ]; then
+                echo "${ALL_MODULES[$index]}"
+            elif [ "$selection" = "$(( ${#ALL_MODULES[@]} + 1 ))" ]; then
+                echo "__exit__"
+            else
+                return 1
+            fi
+            ;;
+        __exit__) echo "__exit__" ;;
         *)
             if module_is_known "$selection"; then
                 echo "$selection"

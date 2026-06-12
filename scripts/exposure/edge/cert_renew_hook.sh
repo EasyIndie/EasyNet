@@ -38,6 +38,17 @@ fix_edge_cert_permissions() {
     chmod 644 "$EDGE_CERT_FILE"
     chmod 600 "$EDGE_KEY_FILE"
 
+    # Dynamically grant cert access to all services that consume Edge certificates
+    # by reading systemd services from all deployed modules
+    local all_services
+    all_services=$(cron_restart_services 2>/dev/null) || true
+    if [ -n "$all_services" ]; then
+        echo "$all_services" | while IFS= read -r svc; do
+            [ -n "$svc" ] && grant_cert_access_to_user "$(service_user "$svc")"
+        done
+    fi
+
+    # Legacy fallback: ensure hysteria-server gets cert access
     if service_exists hysteria-server.service; then
         grant_cert_access_to_user "$(service_user hysteria-server.service)"
     fi
@@ -56,10 +67,31 @@ main() {
         return 0
     fi
 
+    source "$CORE_DIR/metadata.sh"
+    source "$CORE_DIR/cron.sh"
+    source "$CORE_DIR/discovery.sh"
+
     fix_edge_cert_permissions
+
+    # Always restart nginx (Edge Gateway)
     restart_if_exists nginx
+
+    # Dynamically restart services that use Edge certificates,
+    # discovered from metadata across all deployed modules.
+    # nginx is excluded since it's restarted separately above.
+    local services
+    services=$(cron_restart_services 2>/dev/null) || true
+    if [ -n "$services" ]; then
+        echo "$services" | while IFS= read -r svc; do
+            [ -n "$svc" ] && restart_if_exists "$svc"
+        done
+    fi
+
+    # Legacy fallback: ensure hysteria2 and trojan-go are restarted
+    # (in case their metadata is missing)
     restart_if_exists hysteria-server.service
     restart_if_exists trojan-go
+
     log_info "Edge 证书续期 hook 已完成。"
 }
 

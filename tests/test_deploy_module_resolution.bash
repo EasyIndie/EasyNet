@@ -7,12 +7,12 @@ source "$PROJECT_ROOT/scripts/deploy.sh"
 
 test_start "Deploy Module Resolution"
 
-assert_equals "xray-reality" "$(resolve_modules 1)" "Menu 1 resolves to Xray Reality module"
-assert_equals "hysteria2" "$(resolve_modules 2)" "Menu 2 resolves to Hysteria2 module"
+assert_equals "hysteria2" "$(resolve_modules 1)" "Menu 1 resolves to Hysteria2 module (alphabetically first)"
+assert_equals "shadowsocks" "$(resolve_modules 2)" "Menu 2 resolves to Shadowsocks module"
 assert_equals "trojan-go" "$(resolve_modules 3)" "Menu 3 resolves to Trojan-Go module"
 assert_equals "v2ray" "$(resolve_modules 4)" "Menu 4 resolves to V2Ray module"
-assert_equals "shadowsocks" "$(resolve_modules 5)" "Menu 5 resolves to Shadowsocks module"
-assert_equals "wireguard" "$(resolve_modules 6)" "Menu 6 resolves to WireGuard module"
+assert_equals "wireguard" "$(resolve_modules 5)" "Menu 5 resolves to WireGuard module"
+assert_equals "xray-reality" "$(resolve_modules 6)" "Menu 6 resolves to Xray-Reality module (alphabetically last)"
 assert_equals "xray-reality" "$(resolve_modules xray-reality)" "Module name resolves directly"
 assert_equals "xray-reality" "$(resolve_modules profile:strict)" "Strict profile resolves to Xray Reality"
 assert_equals "xray-reality hysteria2" "$(resolve_modules profile:balanced | xargs)" "Balanced profile resolves to Reality and Hysteria2"
@@ -55,10 +55,10 @@ fi
 assert_equals "true" "$edge_with_backend_module" "Edge Gateway is required for Trojan-Go backend deployment"
 
 all_modules="$(resolve_modules 0 | xargs)"
-assert_equals "xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard" "$all_modules" "Menu 0 resolves to all modules in security order"
+assert_equals "hysteria2 shadowsocks trojan-go v2ray wireguard xray-reality" "$all_modules" "Menu 0 resolves to all modules (alphabetical order)"
 
 compat_modules="$(resolve_modules profile:compat | xargs)"
-assert_equals "xray-reality hysteria2 trojan-go v2ray shadowsocks wireguard" "$compat_modules" "Compat profile resolves to all modules in security order"
+assert_equals "hysteria2 shadowsocks trojan-go v2ray wireguard xray-reality" "$compat_modules" "Compat profile resolves to all modules (alphabetical order)"
 
 assert_equals "$PROJECT_ROOT/scripts/protocols/trojan-go/deploy.sh" "$(module_entrypoint trojan-go)" "Trojan-Go deploys through protocol module"
 assert_equals "$PROJECT_ROOT/scripts/protocols/v2ray/deploy.sh" "$(module_entrypoint v2ray)" "V2Ray deploys through protocol module"

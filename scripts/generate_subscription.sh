@@ -12,6 +12,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 source "$PROJECT_ROOT/scripts/core/metadata.sh"
 source "$PROJECT_ROOT/scripts/core/env.sh"
 source "$PROJECT_ROOT/scripts/core/subscription.sh"
+source "$PROJECT_ROOT/scripts/core/discovery.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -503,15 +504,12 @@ append_metadata_singbox_outbound() {
 }
 
 metadata_security_rank() {
-    case "$1" in
-        xray-reality) echo 10 ;;
-        hysteria2) echo 20 ;;
-        trojan-go) echo 30 ;;
-        v2ray) echo 40 ;;
-        shadowsocks) echo 50 ;;
-        wireguard) echo 60 ;;
-        *) echo 99 ;;
-    esac
+    local rank
+    rank=$(discovery_get_manifest_value "$1" "MODULE_SECURITY_RANK") || {
+        echo 99
+        return 0
+    }
+    echo "$rank"
 }
 
 metadata_files_by_security() {
