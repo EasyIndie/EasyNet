@@ -5,6 +5,11 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.8] - 2026-06-12
+
+### 新增
+- **Xray Finalmask Fragment**：新增 `EASYNET_REALITY_FRAGMENT` 环境变量（如 `tlshello`），启用 TCP 包分片混淆，随机化包长分布对抗 ML 指纹识别。可选配置分片长度和间隔
+
 ## [0.0.7] - 2026-06-12
 
 ### 新增
@@ -88,6 +93,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.8]: https://github.com/EasyIndie/EasyNet/compare/0.0.7...0.0.8
 [0.0.7]: https://github.com/EasyIndie/EasyNet/compare/0.0.6...0.0.7
 [0.0.6]: https://github.com/EasyIndie/EasyNet/compare/0.0.5...0.0.6
 [0.0.5]: https://github.com/EasyIndie/EasyNet/compare/0.0.4...0.0.5

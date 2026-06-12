@@ -33,6 +33,9 @@ configure_reality() {
     local transport="${EASYNET_REALITY_TRANSPORT:-tcp}"
     local xhttp_mode="${EASYNET_REALITY_XHTTP_MODE:-auto}"
     local xmux_concurrency="${EASYNET_REALITY_XMUX_CONCURRENCY:-0}"
+    local fragment="${EASYNET_REALITY_FRAGMENT:-}"
+    local fragment_length="${EASYNET_REALITY_FRAGMENT_LENGTH:-100-200}"
+    local fragment_interval="${EASYNET_REALITY_FRAGMENT_INTERVAL:-10-20}"
 
     if [ -f "$XRAY_DIR/config.json" ] && grep -q "privateKey" "$XRAY_DIR/config.json"; then
         log_info "检测到已有的 Xray 配置，跳过生成新密钥，直接使用现有配置。"
@@ -40,6 +43,17 @@ configure_reality() {
         PORT=$(jq -r '.inbounds[0].port // empty' "$XRAY_DIR/config.json")
         PUBLIC_KEY=$(cat "$XRAY_DIR/public.key" 2>/dev/null || echo "")
         PUBLIC_IP=$(get_public_ip)
+
+        # Update Fragment settings on existing config if requested
+        if [ -n "$fragment" ]; then
+            jq --arg packets "$fragment" \
+               --arg length "$fragment_length" \
+               --arg interval "$fragment_interval" \
+               '.inbounds[0].streamSettings.fragmentSettings = { "packets": $packets, "length": $length, "interval": $interval }' \
+               "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
+            log_info "Fragment 混淆已启用: packets=$fragment length=$fragment_length interval=$fragment_interval"
+            systemctl restart xray
+        fi
     else
         UUID=$(generate_uuid)
         PUBLIC_IP=$(get_public_ip)
@@ -186,6 +200,16 @@ EOF
         ' "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
 
         log_info "配置文件已生成 (transport=$transport)"
+
+        # Inject Finalmask Fragment if enabled
+        if [ -n "$fragment" ]; then
+            jq --arg packets "$fragment" \
+               --arg length "$fragment_length" \
+               --arg interval "$fragment_interval" \
+               '.inbounds[0].streamSettings.fragmentSettings = { "packets": $packets, "length": $length, "interval": $interval }' \
+               "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
+            log_info "Fragment 混淆已启用: packets=$fragment length=$fragment_length interval=$fragment_interval"
+        fi
     fi
 }
 
@@ -217,6 +241,8 @@ show_config() {
     public_ip=$(get_public_ip)
     transport=$(jq -r '.inbounds[0].streamSettings.network // "tcp"' "$config_file")
     xhttp_mode=$(jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // "auto"' "$config_file")
+    fragment_packets=$(jq -r '.inbounds[0].streamSettings.fragmentSettings.packets // empty' "$config_file")
+    fragment_length=$(jq -r '.inbounds[0].streamSettings.fragmentSettings.length // empty' "$config_file")
 
     echo ""
     echo "========================================"
@@ -231,6 +257,9 @@ show_config() {
     echo "传输方式: $transport"
     if [ "$transport" = "xhttp" ]; then
         echo "XHTTP 模式: $xhttp_mode"
+    fi
+    if [ -n "$fragment_packets" ]; then
+        echo "Fragment 混淆: $fragment_packets / $fragment_length"
     fi
     echo "流控: xtls-rprx-vision"
     echo ""
