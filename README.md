@@ -10,15 +10,19 @@
 
 ## 核心特性
 
-- 🚀 支持 4 种代理协议（Xray+Reality、Hysteria2、Shadowsocks、WireGuard）
-- 🔒 强安全架构：TLS 加密、WebSocket 随机路径、Edge Gateway 本地回环隐蔽分发
-- ⚡ 性能优化：BBR 拥塞控制加速
+- 🚀 支持 4 种代理协议，全部内置混淆对抗 DPI：
+  - **Xray+Reality** — TLS 指纹模仿 + XHTTP/HTTP3 传输 + Fragment 包分片
+  - **Hysteria2** — QUIC/UDP + Salamander 混淆 + Port Hopping 端口跳变
+  - **Shadowsocks 2022** — BLAKE3-AES-256-GCM 加密，完整重放保护
+  - **WireGuard** (+AmneziaWG) — 可选 Jc/Jmin/Jmax 垃圾包填充消除指纹
+- 🔒 强安全架构：REALITY 无证书 TLS、Finalmask Fragment、Edge Gateway 反代伪装
+- ⚡ 性能优化：BBR 拥塞控制、XHTTP 多路复用 (XMUX)、QUIC 0-RTT
 - 🔄 自动化运维：系统更新、证书续期 hook、日志限额与 logrotate
 - 🤖 无交互部署：支持 `.env` 或环境变量进行一键安装
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5-$10/月）
-- 🛡️ 安全稳定，自带单元测试保护核心逻辑
+- 🛡️ 安全稳定，自带 14 个测试套件保护核心逻辑
 
 ## 协议对比与防探测等级
 
@@ -26,16 +30,28 @@
 
 - 日常优先 `Xray+Reality`；需要 UDP/QUIC 补充时用 `balanced`
 - 订阅承载与协议部署解耦；配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 后会自动生成订阅链接和订阅二维码
-- `Shadowsocks` 和 `WireGuard` 仅建议在特定场景使用
+- `Shadowsocks 2022` 和 `WireGuard` 可通过环境变量启用额外混淆
 
 简要对比：
 
-| 协议               | 优点             | 缺点          | 防探测等级       |
-| ---------------- | -------------- | ----------- | ----------- |
-| **Xray+Reality** | 无需域名，超强隐蔽，反代名站 | 客户端要求较高     | 🥇 极高 (推荐)  |
-| **Hysteria2**    | QUIC/UDP 性能好，支持 salamander 混淆 | 需要域名与 UDP 可达 | 🥇 高 (推荐补充) |
-| **Shadowsocks**  | 简单快速，0-RTT     | 全随机流量易被识别   | 🥉 中等/偏低    |
-| **WireGuard**    | 超快速度，极低延迟      | UDP特征明显易被阻断 | 🥉 低 (适合中转) |
+| 协议               | 传输/混淆             | 优点             | 防探测等级       |
+| ---------------- | ------------------ | -------------- | ----------- |
+| **Xray+Reality** | TCP/XHTTP + REALITY + Fragment | 无需域名，TLS 指纹模仿，包分片抗 ML | 🥇 极高 (推荐)  |
+| **Hysteria2**    | QUIC/UDP + Salamander + Port Hopping | 端口跳变抗封锁，HTTP/3 伪装 | 🥇 高 (推荐补充) |
+| **Shadowsocks 2022** | TCP+UDP / BLAKE3-AES-256-GCM | 2022 Edition 强加密，重放保护 | 🥈 中等+ |
+| **WireGuard** +Amnezia | UDP + Jc/Jmin/Jmax 垃圾包 | 可启用混淆消除 UDP 指纹 | 🥈 中等 (启用混淆后) |
+
+### 协议混淆能力速览
+
+| 能力 | Xray+Reality | Hysteria2 | Shadowsocks | WireGuard |
+|------|:--:|:--:|:--:|:--:|
+| TLS 指纹模仿 (REALITY) | ✅ | — | — | — |
+| HTTP/3 伪装 (XHTTP) | ✅ | ✅ (QUIC) | — | — |
+| 包分片混淆 (Fragment) | ✅ | — | — | — |
+| QUIC 混淆 (Salamander) | — | ✅ | — | — |
+| 端口跳变 (Port Hopping) | — | ✅ | — | — |
+| 垃圾包填充 (AmneziaWG) | — | — | — | ✅ |
+| 2022 Edition 加密 | — | — | ✅ | — |
 
 ## 项目结构
 
@@ -98,8 +114,20 @@ cd EasyNet
 ### 自动部署
 
 ```bash
+# 基础部署（balanced 配置：Xray+Reality + Hysteria2）
 EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
+
+# 最强抗 DPI 配置示例
+EASYNET_PROFILE=balanced \
+  EASYNET_DOMAIN=proxy.example.com \
+  EASYNET_REALITY_TRANSPORT=xhttp \
+  EASYNET_REALITY_FRAGMENT=tlshello \
+  EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000 \
+  EASYNET_WIREGUARD_OBFS=true \
+  ./scripts/deploy.sh
 ```
+
+所有环境变量详见 [`.env.example`](./.env.example) 和[部署说明](./docs/deployment.md)。
 
 ### 卸载部署
 

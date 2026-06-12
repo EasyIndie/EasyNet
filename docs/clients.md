@@ -140,16 +140,28 @@ sudo bash easynet-singbox-client.sh doctor
 
 如果结论为代理正常，再按需打开网页或访问出口 IP 查询网站确认出口位置。
 
+## 协议客户端兼容性
+
+| 协议特性 | 最低客户端要求 |
+|----------|--------------|
+| Shadowsocks 2022 (BLAKE3) | Clash Verge Rev ≥1.6, Shadowrocket ≥2.2.38, sing-box ≥1.8 |
+| Xray XHTTP 传输 | Clash Verge Rev ≥1.7, sing-box ≥1.11 |
+| Xray Fragment 混淆 | 客户端自动适配（服务端配置） |
+| Hysteria2 Port Hopping | 需客户端支持 `port_hopping` 参数 |
+| WireGuard AmneziaWG | Clash Verge Rev (支持 jc/jmin/jmax), AmneziaWG 客户端 |
+
 ## 常见问题
 
 ### Clash Verge Rev 导入失败
 
 - 你可能导入了 URI 订阅 `sub`，Clash/Mihomo 应使用 `clash`
+- 检查协议兼容性：XHTTP 传输需 Clash Verge Rev ≥1.7
 
 ### sing-box 启动失败
 
 - 先运行 `/usr/local/bin/sing-box check -c /etc/sing-box/config.json`
 - 确认使用的是 `singbox` 配置链接
+- Shadowsocks 2022 节点需 sing-box ≥1.8
 - 如看到 `legacy inbound fields are deprecated`，先在服务端重新运行 `./scripts/generate_subscription.sh`，再在树莓派执行 `/usr/local/bin/easynet-singbox-update`
 
 ### mixed 模式无法连接 7890
@@ -172,3 +184,13 @@ sudo bash easynet-singbox-client.sh doctor
 
 - 确认使用的是当前部署输出或 `./scripts/show_subscription.sh` 显示的订阅入口
 - 确认服务器已成功运行 `./scripts/generate_subscription.sh`
+
+### AmneziaWG 节点无法连接
+
+- 服务器端为标准 WireGuard（无需改动），客户端需使用支持 jc/jmin/jmax 的 AmneziaWG 客户端
+- 如客户端不支持 AmneziaWG，关闭 `EASYNET_WIREGUARD_OBFS` 重新部署以生成标准 WireGuard 配置
+
+### Hysteria2 端口跳变后无法连接
+
+- 确认客户端支持 port hopping 参数
+- 确认云厂商安全组和服务器防火墙已放行跳变端口范围（如 20000-30000/udp）

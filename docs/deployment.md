@@ -10,22 +10,38 @@
 - 系统：Ubuntu 22.04+ 或 Debian 11+
 - 位置：优先香港、日本、新加坡
 - 域名：Hysteria2 和订阅链接需要域名
-- 端口：确保 `80/tcp`、`443/tcp` 可入站访问；按协议额外开放 `8443/tcp`、`443/udp`、`8388/tcp/udp`、`51820/udp`
+- 端口：确保 `80/tcp`、`443/tcp` 可入站访问；按协议额外开放 `8443/tcp`、`443/udp`、`8388/tcp+udp`、`51820/udp`；Hysteria2 Port Hopping 启用的端口范围；XHTTP 模式需 `8443/tcp`
 
 ## 协议选择
 
-| 协议           | 推荐度 | 适用场景                      |
-| ------------ | --- | ------------------------- |
-| Xray+Reality | 高   | 抗封锁优先，允许使用支持 Reality 的客户端 |
-| Hysteria2    | 高   | UDP/QUIC 场景，适合与 Reality 组成双主力方案 |
-| Shadowsocks  | 低   | 仅在特定客户端或测试场景使用            |
-| WireGuard    | 低   | 适合中转、低延迟、独立 VPN 场景        |
+| 协议           | 推荐度 | 核心混淆                 | 适用场景                      |
+| ------------ | --- | ---------------------- | ------------------------- |
+| Xray+Reality | 高   | REALITY + Fragment + XHTTP | 抗封锁优先，TLS 指纹模仿 + 包分片抗 ML |
+| Hysteria2    | 高   | Salamander + Port Hopping | UDP/QUIC 场景，端口跳变抗封锁 |
+| Shadowsocks 2022 | 中   | BLAKE3-AES-256-GCM     | 兼容性场景，2022 Edition 强加密 |
+| WireGuard    | 中   | AmneziaWG (Jc/Jmin/Jmax) | 启用混淆后适合中转、低延迟、独立 VPN |
 
 结论：
 
 - 日常优先：`Xray+Reality`，需要 UDP/QUIC 补充时加 `Hysteria2`
 - 订阅承载与协议部署解耦；配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 后会自动启用 Edge Gateway 并打印订阅链接和二维码
-- 特定用途：`Shadowsocks` / `WireGuard`
+- `Shadowsocks 2022` 和 `WireGuard` 可通过环境变量启用额外混淆提升防探测能力
+
+### 协议混淆增强
+
+通过环境变量可选启用的混淆能力：
+
+```bash
+# Xray+Reality: XHTTP/HTTP3 传输 + Fragment 包分片
+EASYNET_REALITY_TRANSPORT=xhttp
+EASYNET_REALITY_FRAGMENT=tlshello
+
+# Hysteria2: 端口跳变（ISP 封锁单个端口时自动切换）
+EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000
+
+# WireGuard: AmneziaWG 垃圾包填充（消除 UDP 指纹）
+EASYNET_WIREGUARD_OBFS=true
+```
 
 ## 快速部署
 
@@ -175,7 +191,7 @@ EASYNET_UNINSTALL_MODULE=edge-exposure ./scripts/uninstall.sh
 ```bash
 systemctl status xray
 systemctl status hysteria-server.service
-systemctl status shadowsocks-libev-server
+systemctl status shadowsocks-rust-server
 systemctl status wg-quick@wg0
 ```
 

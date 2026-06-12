@@ -8,4 +8,4 @@
 
 
 [vultr]: <https://www.vultr.com/>
-[vultr-cli]: <https://gihub.com/vultr/vultr-cli>
+[vultr-cli]: <https://github.com/vultr/vultr-cli>

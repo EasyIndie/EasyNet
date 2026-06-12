@@ -14,7 +14,7 @@
 
 - `xray`
 - `hysteria-server.service`
-- `shadowsocks-libev-server`
+- `shadowsocks-rust-server`
 - `wg-quick@wg0`
 
 ## 通用问题
@@ -96,9 +96,11 @@
 - 服务运行中，但客户端超时
 
 处理：
+- 确认客户端支持 Shadowsocks 2022 Edition 加密（`2022-blake3-aes-256-gcm`）
+- 旧客户端（如老版本 Shadowrocket）可能不支持 2022 cipher，需更新客户端版本
 - 确认服务监听在 `0.0.0.0`
 - 确认服务器和云安全组放行 Shadowsocks 端口，默认 `8388/tcp` 和 `8388/udp`
-- 查看日志：`journalctl -u shadowsocks-libev-server -n 50 --no-pager -l`
+- 查看日志：`journalctl -u shadowsocks-rust-server -n 50 --no-pager -l`
 
 ### WireGuard 无握手
 
@@ -120,13 +122,46 @@
 - 检查 NAT 规则：`iptables -t nat -S`
 - 检查主网卡名称和 `AllowedIPs`
 
+### WireGuard AmneziaWG 混淆不生效
+
+现象：
+- 启用了 `EASYNET_WIREGUARD_OBFS=true`，但客户端仍被识别为 WireGuard
+
+处理：
+- 服务端为标准 WireGuard（无需改动），混淆由客户端完成
+- 确认客户端支持 AmneziaWG（含 jc/jmin/jmax 参数）
+- Clash Verge Rev / Mihomo 通过订阅导入自动包含混淆参数
+- 如使用 WireGuard 原生客户端，需改用 AmneziaWG 客户端版本
+
+### Hysteria2 启用 Port Hopping 后连接失败
+
+现象：
+- 启用端口跳变后客户端无法连接
+
+处理：
+- 确认云安全组和服务器防火墙已放行整个跳变端口范围（如 `20000:30000/udp`）
+- 查看 Hysteria2 日志：`journalctl -u hysteria-server.service -n 100 --no-pager -l`
+- 确认客户端配置中包含 `port_hopping` 参数（通过订阅导入自动包含）
+- 如客户端不支持 Port Hopping，关闭 `EASYNET_HYSTERIA2_PORT_HOPPING` 重新部署
+
+### Xray XHTTP 模式下连接异常
+
+现象：
+- `EASYNET_REALITY_TRANSPORT=xhttp` 部署后客户端无法连接
+
+处理：
+- 确认客户端支持 XHTTP/HTTP3 传输（需 Clash Verge Rev ≥1.7 或 sing-box ≥1.11）
+- 查看 Xray 日志：`journalctl -u xray -n 100 --no-pager -l`
+- 检查 Xray 配置中 xhttpSettings：`jq '.inbounds[0].streamSettings.xhttpSettings' /usr/local/etc/xray/config.json`
+- 如客户端版本不兼容，切回 TCP：取消设置 `EASYNET_REALITY_TRANSPORT` 重新部署
+
 ## 快速判断是否是客户端问题
 
 - 换一个客户端重新导入订阅
 - 优先用订阅导入，不要手动抄参数
-- Reality 手动导入时重点检查 `SNI`、`PublicKey`、`ShortID`
-- Hysteria2 手动导入时重点检查 `password`、`obfs-password`、`SNI`
-- WireGuard 独立使用时优先导入 `client1.conf`
+- Reality 手动导入时重点检查 `SNI`、`PublicKey`、`ShortID`；XHTTP 模式还需检查 `type=xhttp`
+- Hysteria2 手动导入时重点检查 `password`、`obfs-password`、`SNI`；Port Hopping 时检查端口范围
+- WireGuard 独立使用时优先导入 `client1.conf`；AmneziaWG 模式注意 `jc`/`jmin`/`jmax` 参数
 
 ## 还不行时
 
@@ -135,10 +170,14 @@
 ```bash
 systemctl status xray --no-pager
 systemctl status hysteria-server.service --no-pager
+systemctl status shadowsocks-rust-server --no-pager
 systemctl status wg-quick@wg0 --no-pager
 journalctl -u hysteria-server.service -n 100 --no-pager -l
 journalctl -u xray -n 50 --no-pager -l
+journalctl -u shadowsocks-rust-server -n 50 --no-pager -l
 ss -ltnup
 wg show
 ufw status verbose
+jq '.inbounds[0].streamSettings.network' /usr/local/etc/xray/config.json
+jq '.inbounds[0].streamSettings.fragmentSettings' /usr/local/etc/xray/config.json
 ```
