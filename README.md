@@ -124,13 +124,13 @@ EASYNET_UNINSTALL_MODULE=edge-exposure ./scripts/uninstall.sh
 - [客户端说明](./docs/clients.md)
 - [故障排查指南](./docs/troubleshooting-guide.md)
 
-## 贡献指南 / Contributing
+## 贡献指南
 
-Contributions are welcome! Please read the [Contributing Guide](CONTRIBUTING.md) to get started.
+欢迎贡献！请阅读[贡献指南](CONTRIBUTING.md)开始。
 
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security Policy](SECURITY.md)
-- [Changelog](CHANGELOG.md)
+- [行为准则](CODE_OF_CONDUCT.md)
+- [安全策略](SECURITY.md)
+- [变更日志](CHANGELOG.md)
 
 ## 许可证
 

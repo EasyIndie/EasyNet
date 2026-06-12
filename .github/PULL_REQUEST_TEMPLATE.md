@@ -1,32 +1,32 @@
-## Description
+## 变更描述
 
-<!-- Describe the change and why it was made. Link the related issue if applicable. -->
+<!-- 描述变更内容和原因。如有关联 Issue 请注明。 -->
 
 Fixes #(issue)
 
-## Type of Change
+## 变更类型
 
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Documentation update
-- [ ] Refactoring / code cleanup
-- [ ] CI / tooling
+- [ ] 缺陷修复
+- [ ] 新功能
+- [ ] 文档更新
+- [ ] 重构 / 代码整理
+- [ ] CI / 工具链
 
-## How Has This Been Tested?
+## 测试方式
 
-- [ ] All existing tests pass (`bash tests/run_all_tests.bash`)
-- [ ] Syntax check passes (`bash -n` on all modified scripts)
-- [ ] Added / updated tests for the change
-- [ ] Bug fix includes a regression test proving the fix works
+- [ ] 所有已有测试通过（`bash tests/run_all_tests.bash`）
+- [ ] 语法检查通过（所有修改过的脚本均通过 `bash -n`）
+- [ ] 为变更添加或更新了测试
+- [ ] 缺陷修复包含回归测试证明修复有效
 
-## Checklist
+## 检查清单
 
-- [ ] My code follows the project's coding conventions
-- [ ] I have updated the documentation if needed
-- [ ] I have linked the related issue (`Fixes #123`)
+- [ ] 代码遵循项目的编码规范
+- [ ] 已按需更新文档
+- [ ] 已关联 Issue（`Fixes #123`）
 
-### For New Protocols Only
+### 仅新增协议时
 
-- [ ] Includes `deploy.sh`, `export.sh`, and `uninstall.sh`
-- [ ] Includes `metadata.schema.json` (optional but recommended)
-- [ ] Updates docs/deployment.md and docs/clients.md as needed
+- [ ] 包含 `deploy.sh`、`export.sh`、`uninstall.sh`
+- [ ] 包含 `metadata.schema.json`（可选但推荐）
+- [ ] 按需更新 docs/deployment.md 和 docs/clients.md

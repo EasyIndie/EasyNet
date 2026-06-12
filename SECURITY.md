@@ -1,33 +1,33 @@
-# Security Policy
+# 安全策略
 
-## Supported Versions
+## 受支持版本
 
-Only the latest stable release receives security patches. We do not backport fixes to older versions.
+仅最新稳定版接收安全补丁。不对旧版本回溯修复。
 
-| Version | Supported |
-|---------|-----------|
-| latest  | ✅ Yes    |
-| older   | ❌ No     |
+| 版本 | 支持状态 |
+|------|----------|
+| 最新版 | ✅ 是 |
+| 旧版本 | ❌ 否 |
 
-## Reporting a Vulnerability
+## 报告漏洞
 
-Please report security vulnerabilities by emailing the project maintainer directly — **do not** open a public GitHub issue.
+请通过邮件直接联系项目维护者报告安全漏洞 — **请勿** 公开提交 GitHub Issue。
 
-You should receive an acknowledgment within **48 hours**. If you don't, please follow up to ensure the message was received.
+你应在 **48 小时** 内收到确认回复。如未收到，请跟进确认消息已送达。
 
-### Preferred Format
+### 建议格式
 
-To help us respond quickly, please include:
+为帮助我们快速响应，请包含：
 
-- A brief description of the vulnerability
-- Steps to reproduce (proof of concept preferred)
-- Affected versions
-- Potential impact
+- 漏洞简要描述
+- 复现步骤（最好附带概念验证）
+- 受影响版本
+- 潜在影响
 
-### What to Expect
+### 处理流程
 
-1. **Acknowledgment** within 48 hours
-2. **Investigation** and a fix target within 7 days
-3. **Coordinated disclosure**: once a fix is released, we will disclose the vulnerability in the release notes
+1. **确认** — 48 小时内
+2. **调查** — 7 天内给出修复计划
+3. **协同披露** — 修复发布后，在版本发布说明中披露漏洞
 
-Thank you for helping keep EasyNet and its users safe.
+感谢你帮助保护 EasyNet 及其用户的安全。
