@@ -7,7 +7,7 @@ CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/metadata.sh"
 
 MODULE_NAME="shadowsocks"
-CONFIG_DIR="${SHADOWSOCKS_CONFIG_DIR:-/etc/shadowsocks-libev}"
+CONFIG_DIR="${SHADOWSOCKS_CONFIG_DIR:-/etc/shadowsocks-rust}"
 
 get_public_ip() {
     if [ -n "$EASYNET_PUBLIC_IP" ]; then
@@ -26,18 +26,20 @@ export_shadowsocks_metadata() {
         return 1
     fi
 
-    local port password method public_ip userinfo uri metadata_json
-    port=$(jq -r '.server_port // empty' "$config_file")
-    password=$(jq -r '.password // empty' "$config_file")
-    method=$(jq -r '.method // empty' "$config_file")
+    local port psk method public_ip userinfo uri metadata_json
+    # shadowsocks-rust uses { "servers": [ { ... } ] } format;
+    # also tolerate legacy { "server_port": ..., "password": ... } format for upgrades
+    port=$(jq -r '.servers[0].server_port // .server_port // empty' "$config_file")
+    psk=$(jq -r '.servers[0].password // .password // empty' "$config_file")
+    method=$(jq -r '.servers[0].method // .method // "2022-blake3-aes-256-gcm"' "$config_file")
     public_ip=$(get_public_ip)
 
-    if [ -z "$port" ] || [ -z "$password" ] || [ -z "$method" ] || [ -z "$public_ip" ]; then
+    if [ -z "$port" ] || [ -z "$psk" ] || [ -z "$method" ] || [ -z "$public_ip" ]; then
         echo "Shadowsocks metadata is incomplete" >&2
         return 1
     fi
 
-    userinfo=$(printf '%s' "${method}:${password}" | base64 | tr -d '\n' | tr '+/' '-_' | sed 's/=*$//')
+    userinfo=$(printf '%s:%s' "${method}" "${psk}" | base64 -w 0 | tr '+/' '-_' | sed 's/=*$//')
     uri="ss://${userinfo}@${public_ip}:${port}#EasyNet-SS"
 
     metadata_json=$(jq -n \
@@ -48,7 +50,7 @@ export_shadowsocks_metadata() {
         --arg security "$method" \
         --arg server "$public_ip" \
         --arg method "$method" \
-        --arg password "$password" \
+        --arg password "$psk" \
         --arg uri "$uri" \
         --argjson port "$port" \
         '{
@@ -77,7 +79,7 @@ export_shadowsocks_metadata() {
                 { port: $port, proto: "udp" }
             ],
             systemd: {
-                services: ["shadowsocks-libev-server"]
+                services: ["shadowsocks-rust-server"]
             }
         }')
 

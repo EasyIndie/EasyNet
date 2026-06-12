@@ -110,6 +110,8 @@ append_metadata_clash_proxy() {
             client_fingerprint=$(jq -r '.client.clash."client-fingerprint" // empty' "$metadata_file")
             public_key=$(jq -r '.client.clash."reality-opts"."public-key" // empty' "$metadata_file")
             short_id=$(jq -r '.client.clash."reality-opts"."short-id" // empty' "$metadata_file")
+            xhttp_mode=$(jq -r '.client.clash."xhttp-opts".mode // empty' "$metadata_file")
+            xmux_cc=$(jq -r '.client.clash."xhttp-opts".xmux.concurrency // empty' "$metadata_file")
 
             cat >> "$output_file" <<EOF
   - name: "$(yaml_escape "$name")"
@@ -127,6 +129,18 @@ append_metadata_clash_proxy() {
       public-key: "$(yaml_escape "$public_key")"
       short-id: "$(yaml_escape "$short_id")"
 EOF
+            if [ -n "$xhttp_mode" ]; then
+                cat >> "$output_file" <<EOF
+    xhttp-opts:
+      mode: "$(yaml_escape "$xhttp_mode")"
+EOF
+                if [ -n "$xmux_cc" ] && [ "$xmux_cc" != "null" ] && [ "$xmux_cc" -gt 0 ] 2>/dev/null; then
+                    cat >> "$output_file" <<EOF
+      xmux:
+        concurrency: $xmux_cc
+EOF
+                fi
+            fi
             ;;
         ss)
             cipher=$(jq -r '.client.clash.cipher // empty' "$metadata_file")

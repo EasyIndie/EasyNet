@@ -30,6 +30,10 @@ configure_reality() {
     log_info "配置 Xray+Reality..."
     mkdir -p "$XRAY_DIR"
 
+    local transport="${EASYNET_REALITY_TRANSPORT:-tcp}"
+    local xhttp_mode="${EASYNET_REALITY_XHTTP_MODE:-auto}"
+    local xmux_concurrency="${EASYNET_REALITY_XMUX_CONCURRENCY:-0}"
+
     if [ -f "$XRAY_DIR/config.json" ] && grep -q "privateKey" "$XRAY_DIR/config.json"; then
         log_info "检测到已有的 Xray 配置，跳过生成新密钥，直接使用现有配置。"
         UUID=$(jq -r '.inbounds[0].settings.clients[0].id // empty' "$XRAY_DIR/config.json")
@@ -51,7 +55,66 @@ configure_reality() {
         SERVER_NAMES_ARR="[${SERVER_NAMES_ARR%, }]"
         PORT="${EASYNET_REALITY_PORT:-8443}"
 
-        cat > "$XRAY_DIR/config.json" << EOF
+        # Build streamSettings based on transport
+        if [ "$transport" = "xhttp" ]; then
+            cat > "$XRAY_DIR/config.json" << EOF
+{
+    "inbounds": [
+        {
+            "listen": "0.0.0.0",
+            "port": $PORT,
+            "protocol": "vless",
+            "settings": {
+                "clients": [
+                    {
+                        "id": "$UUID",
+                        "flow": "xtls-rprx-vision"
+                    }
+                ],
+                "decryption": "none"
+            },
+            "streamSettings": {
+                "network": "xhttp",
+                "security": "reality",
+                "realitySettings": {
+                    "show": false,
+                    "dest": "$DEST",
+                    "xver": 0,
+                    "serverNames": $SERVER_NAMES_ARR,
+                    "privateKey": "",
+                    "minClientVer": "",
+                    "maxClientVer": "",
+                    "maxTimeDiff": 0,
+                    "shortIds": [
+                        ""
+                    ]
+                },
+                "xhttpSettings": {
+                    "mode": "$xhttp_mode"
+                }
+            }
+        }
+    ],
+    "outbounds": [
+        {
+            "protocol": "freedom",
+            "tag": "direct"
+        },
+        {
+            "protocol": "blackhole",
+            "tag": "blocked"
+        }
+    ]
+}
+EOF
+            # Add XMUX if enabled
+            if [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
+                jq --argjson cc "$xmux_concurrency" \
+                    '.inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $cc, "connIdleTime": 60 }' \
+                    "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
+            fi
+        else
+            cat > "$XRAY_DIR/config.json" << EOF
 {
     "inbounds": [
         {
@@ -98,6 +161,7 @@ configure_reality() {
     ]
 }
 EOF
+        fi
 
         log_info "生成 Reality 密钥..."
         local actual_xray_bin
@@ -121,7 +185,7 @@ EOF
             .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid
         ' "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
 
-        log_info "配置文件已生成"
+        log_info "配置文件已生成 (transport=$transport)"
     fi
 }
 
@@ -144,13 +208,15 @@ ensure_short_id() {
 
 show_config() {
     local config_file="$XRAY_DIR/config.json"
-    local uuid public_key short_id server_names public_ip config_url
+    local uuid public_key short_id server_names public_ip config_url transport xhttp_mode
 
     uuid=$(jq -r '.inbounds[0].settings.clients[0].id // empty' "$config_file")
     public_key=$(cat "$XRAY_DIR/public.key" 2>/dev/null)
     short_id=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[0] // empty' "$config_file")
     server_names=$(jq -r '.inbounds[0].streamSettings.realitySettings.serverNames[0] // empty' "$config_file")
     public_ip=$(get_public_ip)
+    transport=$(jq -r '.inbounds[0].streamSettings.network // "tcp"' "$config_file")
+    xhttp_mode=$(jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // "auto"' "$config_file")
 
     echo ""
     echo "========================================"
@@ -162,10 +228,18 @@ show_config() {
     echo "公钥: $public_key"
     echo "Short ID: $short_id"
     echo "目标网站: $server_names"
+    echo "传输方式: $transport"
+    if [ "$transport" = "xhttp" ]; then
+        echo "XHTTP 模式: $xhttp_mode"
+    fi
     echo "流控: xtls-rprx-vision"
     echo ""
 
-    config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
+    if [ "$transport" = "xhttp" ]; then
+        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode&flow=xtls-rprx-vision#EasyNet-Reality"
+    else
+        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
+    fi
     echo "客户端配置:"
     echo "$config_url"
     echo ""

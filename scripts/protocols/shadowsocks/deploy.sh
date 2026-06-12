@@ -5,11 +5,26 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
+source "$CORE_DIR/download.sh"
 
-CONFIG_DIR="${SHADOWSOCKS_CONFIG_DIR:-/etc/shadowsocks-libev}"
+CONFIG_DIR="${SHADOWSOCKS_CONFIG_DIR:-/etc/shadowsocks-rust}"
+SS_BIN="${SS_BIN:-/usr/local/bin/ssserver}"
+SS_VERSION="${SS_VERSION:-1.22.0}"
 
-generate_password() {
-    openssl rand -hex 16
+detect_arch() {
+    local arch
+    arch=$(uname -m)
+    case "$arch" in
+        x86_64)  echo "x86_64-unknown-linux-gnu" ;;
+        aarch64) echo "aarch64-unknown-linux-gnu" ;;
+        armv7l)  echo "armv7-unknown-linux-gnueabihf" ;;
+        *)       log_error "不支持的架构: $arch"; exit 1 ;;
+    esac
+}
+
+generate_psk() {
+    # 2022-blake3-aes-256-gcm uses a 32-byte key
+    openssl rand -base64 32
 }
 
 get_public_ip() {
@@ -17,54 +32,103 @@ get_public_ip() {
 }
 
 install_shadowsocks() {
-    log_info "安装 Shadowsocks-libev..."
-    apt install -y shadowsocks-libev
+    if command -v ssserver &>/dev/null; then
+        local inst_ver
+        inst_ver=$(ssserver --version 2>&1 | grep -oP '[\d]+\.[\d]+\.[\d]+' || echo "0")
+        log_info "检测到已安装的 shadowsocks-rust v${inst_ver}，跳过安装。"
+        return
+    fi
+
+    # Check if cargo-installed
+    if [ -x "$SS_BIN" ]; then
+        log_info "检测到 $SS_BIN，跳过安装。"
+        return
+    fi
+
+    log_info "安装 shadowsocks-rust v${SS_VERSION}..."
+    local arch
+    arch=$(detect_arch)
+
+    local tar_file="shadowsocks-v${SS_VERSION}.${arch}.tar.xz"
+    local url="https://github.com/shadowsocks/shadowsocks-rust/releases/download/v${SS_VERSION}/${tar_file}"
+
+    local tmp_dir
+    tmp_dir=$(mktemp -d)
+    trap 'rm -rf "$tmp_dir"' RETURN
+
+    log_info "下载 $url ..."
+    curl -fsSL -o "$tmp_dir/$tar_file" "$url" || {
+        log_error "下载 shadowsocks-rust 失败，请检查网络或架构兼容性。"
+        exit 1
+    }
+
+    if [ -n "${EASYNET_SHADOWSOCKS_INSTALL_SHA256:-}" ]; then
+        log_info "校验 SHA256..."
+        echo "${EASYNET_SHADOWSOCKS_INSTALL_SHA256}  $tmp_dir/$tar_file" | sha256sum -c
+    fi
+
+    tar -xJf "$tmp_dir/$tar_file" -C "$tmp_dir"
+    local bin_path
+    bin_path=$(find "$tmp_dir" -name ssserver -type f | head -1)
+    if [ -z "$bin_path" ]; then
+        log_error "未在归档中找到 ssserver 二进制文件。"
+        exit 1
+    fi
+
+    install -m 755 "$bin_path" "$SS_BIN"
+    log_info "shadowsocks-rust ssserver 已安装到 $SS_BIN"
 }
 
 configure_shadowsocks() {
-    log_info "配置 Shadowsocks-libev..."
+    log_info "配置 Shadowsocks 2022 Edition..."
     mkdir -p "$CONFIG_DIR"
 
     if [ -f "$CONFIG_DIR/config.json" ] && grep -q "password" "$CONFIG_DIR/config.json"; then
-        log_info "检测到已有的 Shadowsocks 配置，跳过生成新密码，直接使用现有配置。"
-        PASSWORD=$(jq -r '.password' "$CONFIG_DIR/config.json")
-        PORT=$(jq -r '.server_port' "$CONFIG_DIR/config.json")
+        log_info "检测到已有的 Shadowsocks 配置，跳过生成新密钥，直接使用现有配置。"
+        PSK=$(jq -r '.servers[0].password // .password // empty' "$CONFIG_DIR/config.json")
+        PORT=$(jq -r '.servers[0].server_port // .server_port // empty' "$CONFIG_DIR/config.json")
+        METHOD=$(jq -r '.servers[0].method // .method // "2022-blake3-aes-256-gcm"' "$CONFIG_DIR/config.json")
         PUBLIC_IP=$(get_public_ip)
     else
-        PASSWORD=$(generate_password)
+        PSK=$(generate_psk)
         PORT="${EASYNET_SHADOWSOCKS_PORT:-8388}"
+        METHOD="2022-blake3-aes-256-gcm"
         PUBLIC_IP=$(get_public_ip)
 
         cat > "$CONFIG_DIR/config.json" << EOF
 {
-    "server": ["0.0.0.0", "::0"],
-    "server_port": $PORT,
-    "password": "$PASSWORD",
-    "timeout": 60,
-    "method": "chacha20-ietf-poly1305"
+    "servers": [
+        {
+            "server": "0.0.0.0",
+            "server_port": $PORT,
+            "method": "$METHOD",
+            "password": "$PSK"
+        }
+    ]
 }
 EOF
 
-        log_info "Shadowsocks 配置文件已创建"
+        log_info "Shadowsocks 2022 配置文件已创建"
     fi
 }
 
 create_systemd_service() {
     log_info "创建 systemd 服务..."
 
-    systemctl stop shadowsocks-libev || true
-    systemctl disable shadowsocks-libev || true
+    # Stop old libev service if it exists
+    systemctl stop shadowsocks-libev shadowsocks-libev-server 2>/dev/null || true
+    systemctl disable shadowsocks-libev shadowsocks-libev-server 2>/dev/null || true
 
-    cat > /etc/systemd/system/shadowsocks-libev-server.service << 'EOF'
+    cat > /etc/systemd/system/shadowsocks-rust-server.service << 'EOF'
 [Unit]
-Description=Shadowsocks-libev Server
+Description=Shadowsocks-rust Server (2022 Edition)
 After=network.target nss-lookup.target
 
 [Service]
 Type=simple
 User=nobody
 Group=nogroup
-ExecStart=/usr/bin/ss-server -c /etc/shadowsocks-libev/config.json -s 0.0.0.0 -u
+ExecStart=/usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json -U
 Restart=on-failure
 RestartSec=5
 
@@ -73,23 +137,23 @@ WantedBy=multi-user.target
 EOF
 
     systemctl daemon-reload
-    systemctl enable shadowsocks-libev-server
-    systemctl restart shadowsocks-libev-server
+    systemctl enable shadowsocks-rust-server
+    systemctl restart shadowsocks-rust-server
 }
 
 show_config() {
     local userinfo config_url
-    userinfo=$(printf '%s' "chacha20-ietf-poly1305:$PASSWORD" | base64 | tr -d '\n' | tr '+/' '-_' | sed 's/=*$//')
+    userinfo=$(printf '%s:%s' "$METHOD" "$PSK" | base64 -w 0 | tr '+/' '-_' | sed 's/=*$//')
     config_url="ss://${userinfo}@${PUBLIC_IP}:${PORT}#EasyNet-SS"
 
     echo ""
     echo "========================================"
-    echo "  Shadowsocks 部署成功"
+    echo "  Shadowsocks 2022 Edition 部署成功"
     echo "========================================"
     echo "服务器 IP: $PUBLIC_IP"
     echo "端口: $PORT"
-    echo "密码: $PASSWORD"
-    echo "加密方式: chacha20-ietf-poly1305"
+    echo "PSK: $PSK"
+    echo "加密方式: $METHOD"
     echo ""
     echo "SS 链接: $config_url"
     echo ""
@@ -100,7 +164,8 @@ show_config() {
         echo "未安装 qrencode，无法显示二维码。"
     fi
     echo ""
-    echo "安全提示: Shadowsocks 仅建议作为兼容或测试方案，抗 DPI 能力低于 Reality 和 Hysteria2。"
+    echo "注意: Shadowsocks 2022 Edition 需要客户端支持 2022 加密方式。"
+    echo "      Android/v2rayNG/Clash Verge Rev/Shadowrocket 均支持。"
     echo "========================================"
 }
 

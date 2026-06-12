@@ -27,6 +27,18 @@
             }
         }
     }
+    + if $c.network == "xhttp" then
+        {
+            transport: {
+                type: "xhttp",
+                mode: ($c["xhttp-opts"].mode // "auto")
+            }
+            +
+            if $c["xhttp-opts"].xmux.concurrency then
+                { xmux: { concurrency: $c["xhttp-opts"].xmux.concurrency } }
+            else {} end
+        }
+    else {} end
 elif $c.type == "hysteria2" then
     {
         type: "hysteria2",

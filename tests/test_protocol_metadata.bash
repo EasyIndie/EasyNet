@@ -118,7 +118,7 @@ fi
 assert_equals "true" "$ss_metadata_valid" "Shadowsocks metadata satisfies core contract"
 assert_equals "ss" "$(jq -r '.client.clash.type' "$SS_METADATA_FILE")" "Shadowsocks metadata exposes Clash type"
 assert_equals "8388" "$(jq -r '.firewall[0].port' "$SS_METADATA_FILE")" "Shadowsocks metadata declares firewall port"
-assert_equals "shadowsocks-libev-server" "$(jq -r '.systemd.services[0]' "$SS_METADATA_FILE")" "Shadowsocks metadata declares service"
+assert_equals "shadowsocks-rust-server" "$(jq -r '.systemd.services[0]' "$SS_METADATA_FILE")" "Shadowsocks metadata declares service"
 
 cat > "$WG_FIXTURE_DIR/clients/client1.conf" <<'CONF'
 [Interface]

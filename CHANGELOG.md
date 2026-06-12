@@ -5,6 +5,15 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.6] - 2026-06-12
+
+### 变更
+- **Shadowsocks 2022 Edition**：从 `shadowsocks-libev` + `chacha20-ietf-poly1305` 升级为 `shadowsocks-rust` + `2022-blake3-aes-256-gcm`，修复 AEAD 安全漏洞并增加完整重放保护
+- **Xray Reality XHTTP 传输**：新增 `EASYNET_REALITY_TRANSPORT` 环境变量（默认 `tcp`，可选 `xhttp`），支持 HTTP/3 伪装传输与 XMUX 多路复用
+- Shadowsocks 防探测等级上调至 40（原 50）
+- 新增 `EASYNET_REALITY_XHTTP_MODE` 和 `EASYNET_REALITY_XMUX_CONCURRENCY` 环境变量
+- .env.example 注释更新，Shadowsocks 标签改为 "Shadowsocks 2022"
+
 ## [0.0.5] - 2026-06-12
 
 ### 移除
@@ -74,6 +83,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.6]: https://github.com/EasyIndie/EasyNet/compare/0.0.5...0.0.6
 [0.0.5]: https://github.com/EasyIndie/EasyNet/compare/0.0.4...0.0.5
 [0.0.4]: https://github.com/EasyIndie/EasyNet/compare/0.0.3...0.0.4
 [0.0.3]: https://github.com/EasyIndie/EasyNet/compare/0.0.2...0.0.3
