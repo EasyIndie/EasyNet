@@ -4,7 +4,64 @@
 
 .client.clash as $c
 | ($c.name // .module) as $tag
-| if $c.type == "vless" then
+| if $c.type == "vless" and $c.network == "xhttp" and $c["xhttp-opts"].xmux.concurrency then
+    {
+        type: "vless",
+        tag: $tag,
+        server: $c.server,
+        server_port: $c.port,
+        uuid: $c.uuid,
+        flow: ($c.flow // ""),
+        network: "xhttp",
+        tls: {
+            enabled: true,
+            server_name: $c.servername,
+            utls: {
+                enabled: true,
+                fingerprint: ($c["client-fingerprint"] // "chrome")
+            },
+            reality: {
+                enabled: true,
+                public_key: $c["reality-opts"]["public-key"],
+                short_id: $c["reality-opts"]["short-id"]
+            }
+        },
+        transport: {
+            type: "xhttp",
+            mode: ($c["xhttp-opts"].mode // "auto")
+        },
+        xmux: {
+            concurrency: $c["xhttp-opts"].xmux.concurrency
+        }
+    }
+elif $c.type == "vless" and $c.network == "xhttp" then
+    {
+        type: "vless",
+        tag: $tag,
+        server: $c.server,
+        server_port: $c.port,
+        uuid: $c.uuid,
+        flow: ($c.flow // ""),
+        network: "xhttp",
+        tls: {
+            enabled: true,
+            server_name: $c.servername,
+            utls: {
+                enabled: true,
+                fingerprint: ($c["client-fingerprint"] // "chrome")
+            },
+            reality: {
+                enabled: true,
+                public_key: $c["reality-opts"]["public-key"],
+                short_id: $c["reality-opts"]["short-id"]
+            }
+        },
+        transport: {
+            type: "xhttp",
+            mode: ($c["xhttp-opts"].mode // "auto")
+        }
+    }
+elif $c.type == "vless" then
     {
         type: "vless",
         tag: $tag,
@@ -27,18 +84,6 @@
             }
         }
     }
-    + if $c.network == "xhttp" then
-        {
-            transport: {
-                type: "xhttp",
-                mode: ($c["xhttp-opts"].mode // "auto")
-            }
-            +
-            if $c["xhttp-opts"].xmux.concurrency then
-                { xmux: { concurrency: $c["xhttp-opts"].xmux.concurrency } }
-            else {} end
-        }
-    else {} end
 elif $c.type == "hysteria2" then
     {
         type: "hysteria2",
