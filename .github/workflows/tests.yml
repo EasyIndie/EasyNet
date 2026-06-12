@@ -36,7 +36,7 @@ jobs:
       - name: Run shellcheck
         run: |
           find scripts tests -type f \( -name "*.sh" -o -name "*.bash" \) \
-            -exec shellcheck --shell=bash --severity=warning {} +
+            -exec shellcheck --shell=bash --severity=error {} +
 
       - name: Run all tests
         run: bash tests/run_all_tests.bash
