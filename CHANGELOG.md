@@ -5,6 +5,25 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.5] - 2026-06-12
+
+### 移除
+- 移除 Trojan-Go 协议模块（上游自 2023 年停更，无安全补丁）
+- 移除 V2Ray 协议模块（VMess 为 GFW 重点目标，功能与 Xray 完全重叠）
+- 协议从 6 个精简为 4 个：Xray+Reality、Hysteria2、Shadowsocks、WireGuard
+
+### 新增
+- Edge Gateway 根路径反代伪装：默认代理到 Bing，消除 EasyNet 服务器指纹
+- Xray Reality serverNames 多目标支持：逗号分隔多目标分散流量
+- 新增 `EASYNET_EDGE_MASQUERADE_URL` 环境变量
+- 新增订阅输出端到端测试（`test_subscription_output.bash`，22 个用例）
+
+### 变更
+- 所有项目文档统一使用简体中文
+- Clash YAML 生成逻辑拆分到独立模块 `scripts/core/subscription_clash.sh`
+- generate_subscription.sh 从 525 行精简至 299 行
+- 部署菜单编号递补（1=Hysteria2, 2=Shadowsocks, 3=WireGuard, 4=Xray+Reality）
+
 ## [0.0.4] - 2026-06-12
 
 ### 新增
@@ -55,6 +74,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.5]: https://github.com/EasyIndie/EasyNet/compare/0.0.4...0.0.5
 [0.0.4]: https://github.com/EasyIndie/EasyNet/compare/0.0.3...0.0.4
 [0.0.3]: https://github.com/EasyIndie/EasyNet/compare/0.0.2...0.0.3
 [0.0.2]: https://github.com/EasyIndie/EasyNet/compare/0.0.1...0.0.2
