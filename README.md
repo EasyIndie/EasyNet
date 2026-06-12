@@ -1,6 +1,8 @@
 # EasyNet - 境外 VPS 代理服务器部署方案
 
 [![Tests](https://github.com/EasyIndie/EasyNet/actions/workflows/tests.yml/badge.svg)](https://github.com/EasyIndie/EasyNet/actions/workflows/tests.yml)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Keep a Changelog](https://img.shields.io/badge/Keep%20a%20Changelog-2.0.0-%23E05735)](CHANGELOG.md)
 
 ## 项目概述
 
@@ -121,3 +123,26 @@ EASYNET_UNINSTALL_MODULE=edge-exposure ./scripts/uninstall.sh
 - [部署说明](./docs/deployment.md)
 - [客户端说明](./docs/clients.md)
 - [故障排查指南](./docs/troubleshooting-guide.md)
+
+## 贡献指南 / Contributing
+
+Contributions are welcome! Please read the [Contributing Guide](CONTRIBUTING.md) to get started.
+
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
+
+## 许可证
+
+Copyright © 2026 EasyIndie
+
+本项目采用 **GNU Affero General Public License v3.0 (AGPL v3)** 发布。
+
+AGPL v3 是一个强 copyleft 许可证，它要求：
+- ✅ 任何人可以自由使用、修改、分享本软件
+- ✅ 修改后的版本如果通过网络提供服务，**必须向用户公开修改后的完整源码**
+- ❌ 不得将本软件或其修改版本闭源商业化
+
+这意味着任何基于本项目的二次开发、衍生产品或 SaaS 服务都必须以 AGPL v3 开源发布。这是标准开源许可证中对"被商用抄袭"防御力最强的选择。
+
+完整的许可证文本见 [LICENSE](./LICENSE) 文件。

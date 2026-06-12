@@ -1,0 +1,84 @@
+name: Bug Report
+description: File a bug report to help improve EasyNet
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Please check [existing issues](https://github.com/EasyIndie/EasyNet/issues) first to avoid duplicates.
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did this bug occur?
+      options:
+        - Local development / testing
+        - Remote VPS deployment
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: EasyNet Version
+      description: What version of EasyNet? (from VERSION file or git tag)
+      placeholder: "0.0.3"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Server OS
+      description: Which OS is the target server running?
+      placeholder: "Ubuntu 22.04 / Debian 12"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: What happened? What did you expect to happen?
+      placeholder: When I run deploy.sh with X config, the script crashes at step Y...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. Clone latest main
+        2. Set EASYNET_PROFILE=balanced
+        3. Run ./scripts/deploy.sh
+        4. Observe error at line 42
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Please copy and paste any relevant log output.
+      render: shell
+
+  - type: dropdown
+    id: protocols
+    attributes:
+      label: Affected Protocols
+      description: Which protocols are affected (if applicable)?
+      multiple: true
+      options:
+        - Xray+Reality
+        - Hysteria2
+        - Trojan-Go
+        - V2Ray
+        - Shadowsocks
+        - WireGuard
+        - N/A (core / infrastructure)
