@@ -19,19 +19,37 @@ export_hysteria2_metadata() {
         source "$HYSTERIA2_ENV_FILE"
     fi
 
-    local domain port password obfs_password sni uri metadata_json
+    local domain port password obfs_password sni port_hopping hop_interval uri metadata_json
     domain="${HYSTERIA2_DOMAIN:-${EASYNET_DOMAIN:-}}"
     port="${HYSTERIA2_PORT:-${EASYNET_HYSTERIA2_PORT:-443}}"
     password="${HYSTERIA2_PASSWORD:-${EASYNET_HYSTERIA2_PASSWORD:-}}"
     obfs_password="${HYSTERIA2_OBFS_PASSWORD:-${EASYNET_HYSTERIA2_OBFS_PASSWORD:-}}"
     sni="${HYSTERIA2_SNI:-$domain}"
+    port_hopping="${HYSTERIA2_PORT_HOPPING:-${EASYNET_HYSTERIA2_PORT_HOPPING:-}}"
+    hop_interval="${HYSTERIA2_PORT_HOP_INTERVAL:-30s}"
 
     if [ -z "$domain" ] || [ -z "$port" ] || [ -z "$password" ] || [ -z "$obfs_password" ]; then
         echo "Hysteria2 metadata is incomplete" >&2
         return 1
     fi
 
-    uri="hysteria2://$(urlencode "$password")@$domain:$port/?sni=$(urlencode "$sni")&obfs=salamander&obfs-password=$(urlencode "$obfs_password")#EasyNet-Hysteria2"
+    # Build URI; append port-hopping params when enabled
+    uri="hysteria2://$(urlencode "$password")@$domain:$port/?sni=$(urlencode "$sni")&obfs=salamander&obfs-password=$(urlencode "$obfs_password")"
+    if [ -n "$port_hopping" ]; then
+        uri="${uri}&porthopping=$(urlencode "$port_hopping")&porthopping-interval=$(urlencode "$hop_interval")"
+    fi
+    uri="${uri}#EasyNet-Hysteria2"
+
+    # Build firewall rules; add port range when hopping is enabled
+    local firewall_json
+    firewall_json=$(jq -n \
+        --argjson port "$port" \
+        --arg port_hopping "$port_hopping" \
+        '[
+            { port: $port, proto: "udp" }
+        ] + if $port_hopping != "" then [
+            { port: $port_hopping, proto: "udp" }
+        ] else [] end')
 
     metadata_json=$(jq -n \
         --arg module_name "$MODULE_NAME" \
@@ -45,6 +63,7 @@ export_hysteria2_metadata() {
         --arg obfs_password "$obfs_password" \
         --arg uri "$uri" \
         --argjson port "$port" \
+        --argjson firewall "$firewall_json" \
         '{
             schemaVersion: 1,
             "module": $module_name,
@@ -70,9 +89,7 @@ export_hysteria2_metadata() {
                     down: "100 Mbps"
                 }
             },
-            firewall: [
-                { port: $port, proto: "udp" }
-            ],
+            firewall: $firewall,
             systemd: {
                 services: ["hysteria-server.service"]
             }

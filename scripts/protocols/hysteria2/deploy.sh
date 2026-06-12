@@ -99,13 +99,15 @@ set_hysteria2_file_permissions() {
 }
 
 configure_hysteria2() {
-    local domain port password obfs_password masquerade_url
+    local domain port password obfs_password masquerade_url port_hopping hop_interval
 
     domain="$(require_domain)"
     port="${EASYNET_HYSTERIA2_PORT:-443}"
     password="${EASYNET_HYSTERIA2_PASSWORD:-$(random_secret)}"
     obfs_password="${EASYNET_HYSTERIA2_OBFS_PASSWORD:-$(random_secret)}"
     masquerade_url="${EASYNET_HYSTERIA2_MASQUERADE_URL:-https://www.bing.com/}"
+    port_hopping="${EASYNET_HYSTERIA2_PORT_HOPPING:-}"
+    hop_interval="${EASYNET_HYSTERIA2_PORT_HOP_INTERVAL:-30s}"
 
     log_info "配置 Hysteria2..."
     mkdir -p "$HYSTERIA2_CONFIG_DIR"
@@ -134,12 +136,28 @@ obfs:
     password: $obfs_password
 EOF
 
+    # Append port hopping config if enabled
+    if [ -n "$port_hopping" ]; then
+        cat >> "$HYSTERIA2_CONFIG_FILE" <<EOF
+
+portHopping:
+  interval: $hop_interval
+  ports:
+    - $port_hopping
+EOF
+        log_info "Port Hopping 已启用: $port_hopping (间隔 $hop_interval)"
+    fi
+
     : > "$HYSTERIA2_ENV_FILE"
     write_env_var HYSTERIA2_DOMAIN "$domain"
     write_env_var HYSTERIA2_PORT "$port"
     write_env_var HYSTERIA2_PASSWORD "$password"
     write_env_var HYSTERIA2_OBFS_PASSWORD "$obfs_password"
     write_env_var HYSTERIA2_SNI "$domain"
+    if [ -n "$port_hopping" ]; then
+        write_env_var HYSTERIA2_PORT_HOPPING "$port_hopping"
+        write_env_var HYSTERIA2_PORT_HOP_INTERVAL "$hop_interval"
+    fi
 
     set_hysteria2_file_permissions
 }
