@@ -14,7 +14,7 @@
   - **Xray+Reality** — TLS 指纹模仿 + XHTTP/HTTP3 传输 + Fragment 包分片
   - **Hysteria2** — QUIC/UDP + Salamander 混淆 + Port Hopping 端口跳变
   - **Shadowsocks 2022** — BLAKE3-AES-256-GCM 加密，完整重放保护
-  - **WireGuard** (+AmneziaWG) — 可选 Jc/Jmin/Jmax 垃圾包填充消除指纹
+  - **WireGuard** (+AmneziaWG) — 默认启用 Jc/Jmin/Jmax 垃圾包填充消除指纹
 - 🔒 强安全架构：REALITY 无证书 TLS、Finalmask Fragment、Edge Gateway 反代伪装
 - ⚡ 性能优化：BBR 拥塞控制、XHTTP 多路复用 (XMUX)、QUIC 0-RTT
 - 🔄 自动化运维：系统更新、证书续期 hook、日志限额与 logrotate

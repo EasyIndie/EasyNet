@@ -98,7 +98,7 @@ cat > "$SS_FIXTURE_DIR/config.json" <<'JSON'
   "server_port": 8388,
   "password": "ss-password-fixture",
   "timeout": 60,
-  "method": "chacha20-ietf-poly1305"
+  "method": "2022-blake3-aes-256-gcm"
 }
 JSON
 

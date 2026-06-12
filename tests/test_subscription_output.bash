@@ -88,7 +88,7 @@ cat > "$STATE_DIR/modules/shadowsocks/metadata.json" <<'JSON'
     { "port": 8388, "proto": "udp" }
   ],
   "systemd": {
-    "services": ["shadowsocks-libev-server"]
+    "services": ["shadowsocks-rust-server"]
   }
 }
 JSON

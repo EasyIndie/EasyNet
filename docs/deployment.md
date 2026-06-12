@@ -29,17 +29,18 @@
 
 ### 协议混淆增强
 
-通过环境变量可选启用的混淆能力：
+协议混淆增强（Fragment 和 AmneziaWG 默认已启用，以下为显式配置示例）：
 
 ```bash
-# Xray+Reality: XHTTP/HTTP3 传输 + Fragment 包分片
-EASYNET_REALITY_TRANSPORT=xhttp
+# Xray+Reality: Fragment 包分片（默认 tlshello，设空禁用）
 EASYNET_REALITY_FRAGMENT=tlshello
+# Xray+Reality: XHTTP/HTTP3 传输（需客户端支持，默认 tcp）
+EASYNET_REALITY_TRANSPORT=xhttp
 
-# Hysteria2: 端口跳变（ISP 封锁单个端口时自动切换）
+# Hysteria2: 端口跳变（默认禁用，需放行防火墙端口范围）
 EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000
 
-# WireGuard: AmneziaWG 垃圾包填充（消除 UDP 指纹）
+# WireGuard: AmneziaWG 垃圾包填充（默认 true，设 false 禁用）
 EASYNET_WIREGUARD_OBFS=true
 ```
 

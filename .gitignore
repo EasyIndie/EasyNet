@@ -16,7 +16,7 @@
 /sub
 /sub_full
 
-# Python cache (from tools/generate-qrcode.py)
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
