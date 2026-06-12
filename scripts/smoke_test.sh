@@ -63,10 +63,35 @@ check_subscription() {
     fi
 }
 
+check_cert_expiry() {
+    local cert_dir cert_file
+    cert_dir="${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}"
+    cert_file="${cert_dir}/fullchain.crt"
+
+    if [ ! -f "$cert_file" ]; then
+        return 0
+    fi
+
+    if openssl x509 -checkend $((30 * 86400)) -noout -in "$cert_file" 2>/dev/null; then
+        log_info "TLS 证书有效"
+    else
+        if openssl x509 -checkend 0 -noout -in "$cert_file" 2>/dev/null; then
+            log_warn "TLS 证书将在 30 天内过期!"
+        else
+            log_error "TLS 证书已过期!"
+        fi
+    fi
+
+    local expiry
+    expiry=$(openssl x509 -enddate -noout -in "$cert_file" 2>/dev/null | cut -d= -f2)
+    log_info "证书到期时间: $expiry"
+}
+
 main() {
     check_metadata
     check_ports
     check_subscription
+    check_cert_expiry
 }
 
 main "$@"

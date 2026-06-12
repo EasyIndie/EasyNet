@@ -35,6 +35,9 @@ while IFS= read -r mod; do
 done < <(discovery_list_modules)
 DEPLOY_SELECTION_MODULES=()
 
+# Backup file path for auto-rollback
+BACKUP_FILE=""
+
 load_env_file_path() {
     load_easynet_env_file "$1"
 }
@@ -291,6 +294,38 @@ resolve_modules() {
     esac
 }
 
+create_backup() {
+    local state_dir
+    state_dir="$(easynet_state_dir)"
+    if [ -d "$state_dir" ]; then
+        BACKUP_FILE="/tmp/easynet_backup_$(date +%s).tar.gz"
+        if tar czf "$BACKUP_FILE" -C "$(dirname "$state_dir")" "$(basename "$state_dir")" 2>/dev/null; then
+            log_info "已备份当前状态: $BACKUP_FILE"
+        else
+            log_warn "状态目录备份失败，跳过回滚保护"
+            BACKUP_FILE=""
+        fi
+    else
+        log_info "无已部署状态，跳过备份"
+    fi
+}
+
+rollback() {
+    local exit_code=$?
+    if [ "${EASYNET_AUTO_ROLLBACK:-false}" = "true" ] && [ -n "$BACKUP_FILE" ] && [ -f "$BACKUP_FILE" ]; then
+        log_warn "部署失败 (退出码: $exit_code)，正在自动回滚..."
+        local state_dir
+        state_dir="$(easynet_state_dir)"
+        rm -rf "$state_dir" 2>/dev/null || true
+        if tar xzf "$BACKUP_FILE" -C "$(dirname "$state_dir")" 2>/dev/null; then
+            rm -f "$BACKUP_FILE" 2>/dev/null || true
+            log_info "回滚完成，状态已恢复至部署前"
+        else
+            log_error "回滚失败，请手动恢复: $BACKUP_FILE"
+        fi
+    fi
+}
+
 deploy_module() {
     local module="$1"
     local entrypoint
@@ -308,6 +343,11 @@ deploy_module() {
 deploy_modules() {
     local module
     DEPLOY_SELECTION_MODULES=("$@")
+
+    if [ "${EASYNET_AUTO_ROLLBACK:-false}" = "true" ]; then
+        create_backup
+    fi
+
     ensure_edge_domain
     if edge_gateway_enabled; then
         deploy_edge_gateway
@@ -347,7 +387,14 @@ main() {
             exit 0
         fi
 
+        if [ "${EASYNET_AUTO_ROLLBACK:-false}" = "true" ]; then
+            trap 'rollback' ERR
+        fi
         deploy_modules "${selected_modules[@]}"
+        if [ "${EASYNET_AUTO_ROLLBACK:-false}" = "true" ]; then
+            trap - ERR
+            rm -f "$BACKUP_FILE" 2>/dev/null || true
+        fi
         
         # 如果使用环境变量进行自动化部署，执行一次后自动退出，避免死循环
         if [ -n "$EASYNET_SERVICE_CHOICE" ] || [ -n "$EASYNET_MODULE" ] || [ -n "$EASYNET_PROFILE" ]; then

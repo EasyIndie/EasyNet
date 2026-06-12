@@ -25,13 +25,18 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq ripgrep
+          sudo apt-get install -y jq ripgrep shellcheck
 
       - name: Check shell syntax
         run: |
           while IFS= read -r file; do
             bash -n "$file"
           done < <(find scripts tests -type f \( -name "*.sh" -o -name "*.bash" \) | sort)
+
+      - name: Run shellcheck
+        run: |
+          find scripts tests -type f \( -name "*.sh" -o -name "*.bash" \) \
+            -exec shellcheck --shell=bash --severity=warning {} +
 
       - name: Run all tests
         run: bash tests/run_all_tests.bash
