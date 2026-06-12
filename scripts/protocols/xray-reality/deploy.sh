@@ -33,7 +33,7 @@ configure_reality() {
     local transport="${EASYNET_REALITY_TRANSPORT:-tcp}"
     local xhttp_mode="${EASYNET_REALITY_XHTTP_MODE:-auto}"
     local xmux_concurrency="${EASYNET_REALITY_XMUX_CONCURRENCY:-0}"
-    local fragment="${EASYNET_REALITY_FRAGMENT:-}"
+    local fragment="${EASYNET_REALITY_FRAGMENT:-tlshello}"
     local fragment_length="${EASYNET_REALITY_FRAGMENT_LENGTH:-100-200}"
     local fragment_interval="${EASYNET_REALITY_FRAGMENT_INTERVAL:-10-20}"
 

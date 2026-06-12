@@ -142,7 +142,7 @@ show_config() {
     local enc_priv enc_pub enc_psk enc_dns ip_only wg_uri
     local wg_obfs jc jmin jmax
 
-    wg_obfs="${EASYNET_WIREGUARD_OBFS:-false}"
+    wg_obfs="${EASYNET_WIREGUARD_OBFS:-true}"
     jc="${EASYNET_WIREGUARD_JC:-5}"
     jmin="${EASYNET_WIREGUARD_JMIN:-50}"
     jmax="${EASYNET_WIREGUARD_JMAX:-1000}"

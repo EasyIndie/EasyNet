@@ -183,27 +183,8 @@ module_entrypoint() {
     discovery_module_entrypoint "$1"
 }
 
-deployment_includes_module() {
-    local target="$1"
-    local module
-    for module in "${DEPLOY_SELECTION_MODULES[@]}"; do
-        if [ "$module" = "$target" ]; then
-            return 0
-        fi
-    done
-    return 1
-}
-
 deploy_edge_gateway() {
     bash "$DEPLOY_SCRIPT_DIR/exposure/edge/deploy.sh"
-}
-
-module_uses_edge_backend() {
-    local module="$1"
-    if ! discovery_load_manifest "$module" 2>/dev/null; then
-        return 1
-    fi
-    [ "$MODULE_EDGE_MODE" = "backend" ]
 }
 
 module_requires_edge() {

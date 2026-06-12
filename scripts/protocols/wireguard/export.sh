@@ -51,7 +51,7 @@ export_wireguard_metadata() {
     wg_mtu="${wg_mtu:-1360}"
 
     # AmneziaWG obfuscation params (client-side, server stays standard WG)
-    wg_obfs="${EASYNET_WIREGUARD_OBFS:-false}"
+    wg_obfs="${EASYNET_WIREGUARD_OBFS:-true}"
     jc="${EASYNET_WIREGUARD_JC:-5}"
     jmin="${EASYNET_WIREGUARD_JMIN:-50}"
     jmax="${EASYNET_WIREGUARD_JMAX:-1000}"
