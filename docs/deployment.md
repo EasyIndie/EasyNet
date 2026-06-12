@@ -105,6 +105,7 @@ EASYNET_PROFILE=compat EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 - `Hysteria2` 使用 Edge 统一证书，自身监听 `443/udp` 承载 QUIC 流量
 - 如同时配置 `EASYNET_DOMAIN` 与 `EASYNET_SUBSCRIPTION_DOMAIN`，两者都需要解析到当前服务器，Edge 证书会同时覆盖这两个域名
 - 如确需调整 Edge 端口，可使用高级变量 `EASYNET_EDGE_HTTPS_PORT`
+- Edge Gateway 根路径默认反向代理到 Bing 以消除指纹，可通过 `EASYNET_EDGE_MASQUERADE_URL` 自定义
 - 当前订阅输出保留 URI、Clash/Mihomo 与 sing-box 三类入口
 - 订阅文件中的节点顺序按安全性和抗 DPI 能力从高到低输出：`Xray+Reality`、`Hysteria2`、`Shadowsocks`、`WireGuard`
 

@@ -40,7 +40,15 @@ configure_reality() {
         UUID=$(generate_uuid)
         PUBLIC_IP=$(get_public_ip)
         DEST="${EASYNET_REALITY_DEST:-www.microsoft.com:443}"
-        SERVER_NAMES="${EASYNET_REALITY_SERVER_NAME:-www.microsoft.com}"
+        SERVER_NAMES="${EASYNET_REALITY_SERVER_NAME:-www.microsoft.com,cloudflare.com}"
+        # Build JSON array from comma-separated server names
+        SERVER_NAMES_ARR=""
+        IFS=',' read -ra _sn <<< "$SERVER_NAMES"
+        for _s in "${_sn[@]}"; do
+            _s="$(echo "$_s" | xargs)"
+            SERVER_NAMES_ARR+="\"$_s\", "
+        done
+        SERVER_NAMES_ARR="[${SERVER_NAMES_ARR%, }]"
         PORT="${EASYNET_REALITY_PORT:-8443}"
 
         cat > "$XRAY_DIR/config.json" << EOF
@@ -66,9 +74,7 @@ configure_reality() {
                     "show": false,
                     "dest": "$DEST",
                     "xver": 0,
-                    "serverNames": [
-                        "$SERVER_NAMES"
-                    ],
+                    "serverNames": $SERVER_NAMES_ARR,
                     "privateKey": "",
                     "minClientVer": "",
                     "maxClientVer": "",

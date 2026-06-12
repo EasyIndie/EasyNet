@@ -18,6 +18,7 @@ EDGE_HTTP_PORT="${EASYNET_EDGE_HTTP_PORT:-80}"
 EDGE_HTTPS_PORT="${EASYNET_EDGE_HTTPS_PORT:-443}"
 EDGE_CERT_DIR="${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}"
 EDGE_RENEW_HOOK="${EASYNET_EDGE_RENEW_HOOK:-$SCRIPT_DIR/cert_renew_hook.sh}"
+EDGE_MASQUERADE_URL="${EASYNET_EDGE_MASQUERADE_URL:-https://www.bing.com}"
 EDGE_SUBSCRIPTION_PATH_PREFIX=""
 EDGE_SERVER_NAMES="$EDGE_DOMAIN"
 if [ -n "$EASYNET_DOMAIN" ] && [ "$EASYNET_DOMAIN" != "$EDGE_DOMAIN" ]; then
@@ -86,7 +87,10 @@ server {
 
     location / {
         access_log off;
-        try_files \$uri \$uri/ =404;
+        proxy_pass ${EDGE_MASQUERADE_URL};
+        proxy_set_header Host \$proxy_host;
+        proxy_ssl_server_name on;
+        proxy_redirect off;
     }
 }
 EOF
@@ -105,7 +109,11 @@ server {
     }
 
     location / {
-        return 301 https://\$host\$request_uri;
+        access_log off;
+        proxy_pass ${EDGE_MASQUERADE_URL};
+        proxy_set_header Host \$proxy_host;
+        proxy_ssl_server_name on;
+        proxy_redirect off;
     }
 }
 
@@ -118,13 +126,15 @@ server {
     ssl_protocols TLSv1.2 TLSv1.3;
 
     root $WEB_ROOT;
-    index index.html;
 
     include ${EDGE_ROUTES_DIR}/*.conf;
 
     location / {
         access_log off;
-        try_files \$uri \$uri/ =404;
+        proxy_pass ${EDGE_MASQUERADE_URL};
+        proxy_set_header Host \$proxy_host;
+        proxy_ssl_server_name on;
+        proxy_redirect off;
     }
 }
 EOF
@@ -165,18 +175,6 @@ setup_edge_nginx() {
     log_info "配置 Edge Gateway..."
     apt install -y nginx
     mkdir -p "$WEB_ROOT" "$EDGE_ROUTES_DIR"
-
-    cat > "$WEB_ROOT/index.html" << 'HTML'
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Welcome</title>
-</head>
-<body>
-    <h1>Welcome</h1>
-</body>
-</html>
-HTML
 
     write_edge_http_site
     ln -sf /etc/nginx/sites-available/easynet-edge /etc/nginx/sites-enabled/
