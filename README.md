@@ -24,6 +24,9 @@
 - 💰 成本可控（$5-$10/月）
 - 🛡️ 安全稳定，自带 14 个测试套件保护核心逻辑
 
+> 💡 下表由 `docs/generate-protocol-table.sh` 从协议 manifest 自动生成。
+> 修改 protocol 参数后，运行 `bash docs/generate-protocol-table.sh --update` 同步。
+
 ## 协议对比与防探测等级
 
 如果你只想快速决策：

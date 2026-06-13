@@ -100,6 +100,12 @@ tests/test_<名称>_*.bash    # 对应的测试文件
 docs/                       # 按需更新 deployment.md、clients.md
 ```
 
+新增或修改协议后，运行文档生成器同步协议支持表：
+
+```bash
+bash docs/generate-protocol-table.sh --update
+```
+
 非协议变更（订阅系统、Edge Gateway、CI、文档等）按变更范围自行判断需要包含的内容。
 
 ---
