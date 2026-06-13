@@ -121,12 +121,6 @@ configure_reality() {
     ]
 }
 EOF
-            # Add XMUX if enabled
-            if [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
-                jq --argjson cc "$xmux_concurrency" \
-                    '.inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $cc, "connIdleTime": 60 }' \
-                    "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
-            fi
         else
             cat > "$XRAY_DIR/config.json" << EOF
 {
@@ -194,21 +188,29 @@ EOF
 
         SHORT_ID=$(openssl rand -hex 8)
 
-        jq --arg pk "$PRIVATE_KEY" --arg sid "$SHORT_ID" '
-            .inbounds[0].streamSettings.realitySettings.privateKey = $pk |
-            .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid
-        ' "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
+        # Single combined jq — inject privateKey, shortId, optional fragment, optional xmux
+        JQ_ARGS=(--arg pk "$PRIVATE_KEY" --arg sid "$SHORT_ID")
+        JQ_FILTER='.inbounds[0].streamSettings.realitySettings.privateKey = $pk |
+                     .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid'
+
+        if [ -n "$fragment" ]; then
+            JQ_ARGS+=(--arg f_packets "$fragment" --arg f_length "$fragment_length" --arg f_interval "$fragment_interval")
+            JQ_FILTER+=' | .inbounds[0].streamSettings.fragmentSettings = { "packets": $f_packets, "length": $f_length, "interval": $f_interval }'
+        fi
+        if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
+            JQ_ARGS+=(--argjson xmux_cc "$xmux_concurrency")
+            JQ_FILTER+=' | .inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $xmux_cc, "connIdleTime": 60 }'
+        fi
+
+        jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && \
+            mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
 
         log_info "配置文件已生成 (transport=$transport)"
-
-        # Inject Finalmask Fragment if enabled
         if [ -n "$fragment" ]; then
-            jq --arg packets "$fragment" \
-               --arg length "$fragment_length" \
-               --arg interval "$fragment_interval" \
-               '.inbounds[0].streamSettings.fragmentSettings = { "packets": $packets, "length": $length, "interval": $interval }' \
-               "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
             log_info "Fragment 混淆已启用: packets=$fragment length=$fragment_length interval=$fragment_interval"
+        fi
+        if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
+            log_info "XMUX 多路复用已启用: concurrency=$xmux_concurrency"
         fi
     fi
 }
