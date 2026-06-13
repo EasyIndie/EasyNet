@@ -39,7 +39,7 @@ jobs:
             -exec shellcheck --rcfile=.shellcheckrc --shell=bash --severity=style {} +
 
       - name: Run all tests
-        run: bats --timing --pretty tests/*.bats
+        run: bats --timing --formatter tap tests/*.bats
 
   integration-test:
     name: Integration test (config generation)
