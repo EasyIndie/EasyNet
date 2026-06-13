@@ -25,7 +25,13 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq ripgrep shellcheck bats
+          sudo apt-get install -y jq ripgrep bats
+          # Install latest shellcheck (supports --rcfile)
+          SC_VERSION="v0.10.0"
+          wget -q "https://github.com/koalaman/shellcheck/releases/download/$SC_VERSION/shellcheck-$SC_VERSION.linux.x86_64.tar.xz"
+          tar -xf "shellcheck-$SC_VERSION.linux.x86_64.tar.xz"
+          sudo mv "shellcheck-$SC_VERSION/shellcheck" /usr/local/bin/shellcheck
+          rm -rf "shellcheck-$SC_VERSION" "shellcheck-$SC_VERSION.linux.x86_64.tar.xz"
 
       - name: Run shellcheck
         run: |
