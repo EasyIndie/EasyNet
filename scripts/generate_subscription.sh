@@ -139,7 +139,12 @@ append_metadata_singbox_outbound() {
     local metadata_file="$1"
     local output_file="$2"
     local endpoint_file="$3"
-    local target_file before_size after_size type
+    local module render_jq type target_file
+
+    module=$(jq -r '.module // empty' "$metadata_file")
+    [ -z "$module" ] && return 1
+
+    render_jq=$(discovery_module_render_script "$module" "singbox") || return 1
 
     type=$(jq -r '.client.clash.type // empty' "$metadata_file")
     if [ "$type" = "wireguard" ]; then
@@ -148,14 +153,7 @@ append_metadata_singbox_outbound() {
         target_file="$output_file"
     fi
 
-    before_size=$(wc -c < "$target_file" | tr -d ' ')
-    jq -c -f "$PROJECT_ROOT/scripts/core/singbox_outbound.jq" "$metadata_file" >> "$target_file"
-
-    after_size=$(wc -c < "$target_file" | tr -d ' ')
-    if [ "$after_size" = "$before_size" ]; then
-        log_warn "跳过不支持的 metadata sing-box 类型: $type ($metadata_file)"
-        return 1
-    fi
+    jq -c -f "$render_jq" "$metadata_file" >> "$target_file"
 }
 
 metadata_security_rank() {

@@ -37,7 +37,7 @@ mkdir -p "$STATE_DIR/modules/example"
 cat > "$STATE_DIR/modules/example/metadata.json" <<'JSON'
 {
   "schemaVersion": 1,
-  "module": "example",
+  "module": "xray-reality",
   "enabled": true,
   "protocol": "vless",
   "listen": "0.0.0.0",

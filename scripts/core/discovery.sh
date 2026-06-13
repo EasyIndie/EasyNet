@@ -240,3 +240,35 @@ discovery_uninstall_entrypoint() {
 
     return 1
 }
+
+# Locate a render script for the given module and type ("clash" or "singbox").
+# Returns the script path on success, 1 if none found.
+discovery_module_render_script() {
+    local module_name="$1"
+    local render_type="$2"  # "clash" or "singbox"
+    local protocols_dir render_path
+
+    protocols_dir="$(discovery_protocols_dir)"
+
+    # Protocol modules: render_clash.sh (executable) or render_singbox.jq
+    if [ "$render_type" = "singbox" ]; then
+        render_path="$protocols_dir/$module_name/render_singbox.jq"
+        [ -f "$render_path" ] && { echo "$render_path"; return 0; }
+    else
+        render_path="$protocols_dir/$module_name/render_clash.sh"
+        [ -x "$render_path" ] && { echo "$render_path"; return 0; }
+    fi
+
+    # Exposure modules (same convention)
+    local exposure_dir
+    exposure_dir="$(discovery_exposure_dir)"
+    if [ "$render_type" = "singbox" ]; then
+        render_path="$exposure_dir/$module_name/render_singbox.jq"
+        [ -f "$render_path" ] && { echo "$render_path"; return 0; }
+    else
+        render_path="$exposure_dir/$module_name/render_clash.sh"
+        [ -x "$render_path" ] && { echo "$render_path"; return 0; }
+    fi
+
+    return 1
+}
