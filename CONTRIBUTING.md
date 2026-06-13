@@ -94,7 +94,8 @@ scripts/protocols/<名称>/
 ├── deploy.sh               # 部署脚本
 ├── export.sh               # 配置导出
 ├── uninstall.sh            # 卸载脚本
-└── metadata.schema.json    # 元数据契约（可选但推荐）
+├── render_clash.sh         # Clash YAML 输出（可选）
+├── render_singbox.jq       # sing-box JSON 输出（可选）
 tests/test_<名称>_*.bash    # 对应的测试文件
 docs/                       # 按需更新 deployment.md、clients.md
 ```

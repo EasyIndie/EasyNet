@@ -28,5 +28,5 @@ Fixes #(issue)
 ### 仅新增协议时
 
 - [ ] 包含 `deploy.sh`、`export.sh`、`uninstall.sh`
-- [ ] 包含 `metadata.schema.json`（可选但推荐）
+- [ ] 包含 `render_clash.sh` 和/或 `render_singbox.jq`（可选，推荐）
 - [ ] 按需更新 docs/deployment.md 和 docs/clients.md
