@@ -7,7 +7,7 @@
 EASYNET_DISCOVERY_CORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 discovery_protocols_dir() {
-    echo "$(cd "$EASYNET_DISCOVERY_CORE_DIR/../protocols" &>/dev/null && pwd)"
+    cd "$EASYNET_DISCOVERY_CORE_DIR/../protocols" &>/dev/null && pwd || true
 }
 
 # List all discovered module names (one per line, sorted alphabetically)
@@ -48,6 +48,7 @@ discovery_load_manifest() {
     unset MODULE_DEFAULT_PORT MODULE_DEFAULT_PUBLIC_PORT
     unset MODULE_EDGE_MODE MODULE_PROFILES MODULE_NGINX_ROUTE_TEMPLATE
     unset MODULE_SYSTEMD_SERVICES MODULE_FIREWALL_RULES MODULE_ENV_PREFIX
+    # shellcheck source=/dev/null  # dynamic path per module; sourced at runtime
     source "$manifest_path"
 
     # Validate manifest version (contract protection)
@@ -133,7 +134,8 @@ discovery_has_render_script() {
 # Get the deploy entrypoint for a module
 discovery_module_entrypoint() {
     local module_name="$1"
-    local deploy_path="$(discovery_protocols_dir)/$module_name/deploy.sh"
+    local deploy_path
+    deploy_path="$(discovery_protocols_dir)/$module_name/deploy.sh"
     if [ -x "$deploy_path" ]; then
         echo "$deploy_path"
         return 0
@@ -142,9 +144,11 @@ discovery_module_entrypoint() {
 }
 
 # Get the uninstall entrypoint for a module
+# shellcheck disable=SC2329  # sourced by calling scripts, not invoked directly
 discovery_uninstall_entrypoint() {
     local module_name="$1"
-    local uninstall_path="$(discovery_protocols_dir)/$module_name/uninstall.sh"
+    local uninstall_path
+    uninstall_path="$(discovery_protocols_dir)/$module_name/uninstall.sh"
     if [ -x "$uninstall_path" ]; then
         echo "$uninstall_path"
         return 0
@@ -165,7 +169,7 @@ discovery_module_by_index() {
 # ============================================================
 
 discovery_exposure_dir() {
-    echo "$(cd "$EASYNET_DISCOVERY_CORE_DIR/../exposure" &>/dev/null && pwd)"
+    cd "$EASYNET_DISCOVERY_CORE_DIR/../exposure" &>/dev/null && pwd || true
 }
 
 # List exposure module names (directory basenames under exposure/*/)
@@ -199,6 +203,7 @@ discovery_load_exposure_manifest() {
         return 1
     fi
     unset MANIFEST_VERSION MODULE_NAME MODULE_DISPLAY_NAME MODULE_TYPE
+    # shellcheck source=/dev/null  # dynamic path per module; sourced at runtime
     source "$manifest_path"
     if [ "${MANIFEST_VERSION:-0}" -lt 1 ]; then
         echo "[ERROR] Exposure manifest for '${MODULE_NAME:-$module_name}' has unsupported MANIFEST_VERSION" >&2

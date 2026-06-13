@@ -62,7 +62,7 @@ validate_required_tools() {
 validate_port_conflicts() {
     local modules=("$@")
     local declared_ports=()
-    local port mod_a mod_b conflict=0
+    local mod_a mod_b conflict=0
 
     if [ "${#modules[@]}" -eq 0 ]; then
         while IFS= read -r mod; do

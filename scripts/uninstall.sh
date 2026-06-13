@@ -85,7 +85,7 @@ show_menu() {
     printf "%d. 退出\n" "$idx"
     echo "========================================"
     echo -e "${YELLOW}提示: 默认会删除 EasyNet 生成的配置、服务文件、metadata 与订阅文件；包卸载需显式设置 EASYNET_UNINSTALL_PURGE_PACKAGES=true。${NC}"
-    read -p "请选择要卸载的服务: " choice
+    read -r -p "请选择要卸载的服务: " choice
 }
 
 resolve_uninstall_modules() {

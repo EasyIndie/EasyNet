@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034  # sourced by orchestrators
 # EasyNet protocol manifest - sourced by orchestrators
 # Static metadata for the Xray + Reality module.
 

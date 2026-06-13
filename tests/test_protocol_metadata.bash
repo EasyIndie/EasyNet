@@ -57,6 +57,7 @@ METADATA_FILE="$STATE_DIR/modules/xray-reality/metadata.json"
 assert_equals "true" "$([ -f "$METADATA_FILE" ] && echo true || echo false)" "Xray Reality export writes module metadata"
 
 source "$PROJECT_ROOT/scripts/core/metadata.sh"
+# shellcheck disable=SC2034  # consumed by sourced scripts
 EASYNET_STATE_DIR="$STATE_DIR"
 if metadata_validate_file "$METADATA_FILE"; then
     metadata_valid="true"

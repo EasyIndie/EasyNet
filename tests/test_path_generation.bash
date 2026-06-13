@@ -34,7 +34,7 @@ simulate_path_recovery() {
     local current_path="$1"
     
     if [ "$current_path" == "/default-path" ] || [ -z "$current_path" ]; then
-        echo "$(generate_random_path)"
+        generate_random_path
     else
         echo "$current_path"
     fi

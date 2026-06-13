@@ -50,6 +50,7 @@ unified-delay: true
 proxies:
 HEADER
 
+    # shellcheck disable=SC2129  # grouping is less clear for heredoc sections
     cat "$proxies_file" >> "$output_file"
 
     cat >> "$output_file" <<'GROUPS'

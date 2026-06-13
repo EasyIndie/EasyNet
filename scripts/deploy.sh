@@ -155,7 +155,7 @@ show_menu() {
     printf "%d. 退出\n" "$idx"
     echo "========================================"
     echo -e "${YELLOW}提示: 编号 1-${#ALL_MODULES[@]} 按模块名称排序。完成后请选择 ${idx} 退出。${NC}"
-    read -p "请选择要部署的服务: " choice
+    read -r -p "请选择要部署的服务: " choice
 }
 
 module_is_known() {
@@ -211,7 +211,7 @@ ensure_edge_domain() {
         return 0
     fi
 
-    read -p "请输入 Edge Gateway 绑定域名: " EASYNET_DOMAIN
+    read -r -p "请输入 Edge Gateway 绑定域名: " EASYNET_DOMAIN
     if [ -z "$EASYNET_DOMAIN" ]; then
         log_error "Edge Gateway 域名不能为空"
         return 1

@@ -43,7 +43,7 @@ for file in \
     "$SINGBOX_OUTBOUNDS_SAFE" \
     "$SINGBOX_ENDPOINTS_SAFE" \
     "$SINGBOX_NAMES_SAFE"; do
-    > "$file"
+    : > "$file"
 done
 
 append_proxy_name() {

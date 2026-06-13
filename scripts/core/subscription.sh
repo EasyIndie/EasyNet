@@ -114,7 +114,7 @@ easynet_write_subscription_routes() {
     local previous_prefix="${4:-}"
     local prefix endpoint file_name content_type
 
-    > "$route_file"
+    : > "$route_file"
     for prefix in "$current_prefix" "$previous_prefix"; do
         [ -z "$prefix" ] && continue
         while IFS='|' read -r endpoint file_name content_type; do

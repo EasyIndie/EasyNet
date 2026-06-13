@@ -42,7 +42,6 @@ configure_reality() {
         UUID=$(jq -r '.inbounds[0].settings.clients[0].id // empty' "$XRAY_DIR/config.json")
         PORT=$(jq -r '.inbounds[0].port // empty' "$XRAY_DIR/config.json")
         PUBLIC_KEY=$(cat "$XRAY_DIR/public.key" 2>/dev/null || echo "")
-        PUBLIC_IP=$(get_public_ip)
 
         # Update Fragment settings on existing config if requested
         if [ -n "$fragment" ]; then
@@ -56,7 +55,6 @@ configure_reality() {
         fi
     else
         UUID=$(generate_uuid)
-        PUBLIC_IP=$(get_public_ip)
         DEST="${EASYNET_REALITY_DEST:-www.microsoft.com:443}"
         SERVER_NAMES="${EASYNET_REALITY_SERVER_NAME:-www.microsoft.com,cloudflare.com}"
         # Build JSON array from comma-separated server names
@@ -190,15 +188,18 @@ EOF
 
         # Single combined jq — inject privateKey, shortId, optional fragment, optional xmux
         JQ_ARGS=(--arg pk "$PRIVATE_KEY" --arg sid "$SHORT_ID")
+        # shellcheck disable=SC2016  # $pk, $sid etc. are jq --arg vars, not bash
         JQ_FILTER='.inbounds[0].streamSettings.realitySettings.privateKey = $pk |
                      .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid'
 
         if [ -n "$fragment" ]; then
             JQ_ARGS+=(--arg f_packets "$fragment" --arg f_length "$fragment_length" --arg f_interval "$fragment_interval")
+            # shellcheck disable=SC2016  # $f_* are jq --arg vars
             JQ_FILTER+=' | .inbounds[0].streamSettings.fragmentSettings = { "packets": $f_packets, "length": $f_length, "interval": $f_interval }'
         fi
         if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
             JQ_ARGS+=(--argjson xmux_cc "$xmux_concurrency")
+            # shellcheck disable=SC2016  # $xmux_cc is a jq --argjson var
             JQ_FILTER+=' | .inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $xmux_cc, "connIdleTime": 60 }'
         fi
 

@@ -1,0 +1,6 @@
+# ShellCheck configuration for EasyNet
+# Global suppressions for patterns that are intentional in this codebase:
+
+# SC1091: "Not following" — dynamic source paths (e.g. source "$CORE_DIR/...")
+# are intentional in this project and cannot be statically resolved.
+disable=SC1091

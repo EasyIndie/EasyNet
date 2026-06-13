@@ -28,8 +28,7 @@ _upper() {
 
 ensure_edge_backend_route() {
     local module="$1"
-    local edge_state_dir edge_routes_dir route_path route_domain
-    local module_upper
+    local edge_state_dir edge_routes_dir route_path
 
     if ! discovery_load_manifest "$module" 2>/dev/null; then
         log_error "Cannot set up edge route: unknown module '$module'"
@@ -56,8 +55,6 @@ ensure_edge_backend_route() {
         echo "$route_path" > "$path_file"
     fi
 
-    route_domain="$(edge_protocol_public_domain)"
-
     # Export env vars for the backend protocol to consume
     export "EASYNET_${env_prefix}_PORT=${MODULE_DEFAULT_PORT:-4444}"
     export "EASYNET_${env_prefix}_LISTEN=127.0.0.1"
@@ -67,12 +64,6 @@ ensure_edge_backend_route() {
     export "EASYNET_${env_prefix}_BACKEND_PORT=${MODULE_DEFAULT_PORT:-4444}"
 
     local backend_port="${MODULE_DEFAULT_PORT:-4444}"
-
-    # Expose route variables for template interpolation in MODULE_NGINX_ROUTE_TEMPLATE
-    local ROUTE_PATH="$route_path"
-    local BACKEND_PORT="$backend_port"
-    local BACKEND_LISTEN="127.0.0.1"
-    local ROUTE_DOMAIN="$route_domain"
 
     # Write nginx config: use template from manifest, or default HTTP pass-through
     if [ -n "${MODULE_NGINX_ROUTE_TEMPLATE:-}" ]; then

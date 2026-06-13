@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2034  # sourced by orchestrators
 # EasyNet exposure manifest - sourced by orchestrators
 # Declares the Edge Gateway (Nginx + acme.sh + subscription host) as
 # a discoverable uninstallable module, eliminating hardcoded special

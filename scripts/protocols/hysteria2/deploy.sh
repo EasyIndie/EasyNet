@@ -37,7 +37,7 @@ require_domain() {
         return
     fi
 
-    read -p "请输入 Hysteria2 绑定域名: " domain
+    read -r -p "请输入 Hysteria2 绑定域名: " domain
     if [ -z "$domain" ]; then
         log_error "Hysteria2 需要可解析到本机的域名。"
         exit 1
