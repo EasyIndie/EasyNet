@@ -25,13 +25,7 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq ripgrep shellcheck
-
-      - name: Check shell syntax
-        run: |
-          while IFS= read -r file; do
-            bash -n "$file"
-          done < <(find scripts tests -type f \( -name "*.sh" -o -name "*.bash" \) | sort)
+          sudo apt-get install -y jq ripgrep shellcheck bats
 
       - name: Run shellcheck
         run: |
@@ -39,29 +33,11 @@ jobs:
             -exec shellcheck --rcfile=.shellcheckrc --shell=bash --severity=style {} +
 
       - name: Run all tests
-        run: bash tests/run_all_tests.bash
+        run: bats --timing --pretty tests/*.bats
 
-  unit-tests:
-    name: Unit test (${{ matrix.test }})
+  integration-test:
+    name: Integration test (real deployment)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        test:
-          - tests/test_cron_services.bash
-          - tests/test_deploy_module_resolution.bash
-          - tests/test_env_vars.bash
-          - tests/test_exposure_state.bash
-          - tests/test_firewall_rules.bash
-          - tests/test_hardening.bash
-          - tests/test_json_manipulation.bash
-          - tests/test_path_generation.bash
-          - tests/test_protocol_metadata.bash
-          - tests/test_singbox_client_installer.bash
-          - tests/test_subscription_isolation.bash
-          - tests/test_subscription_output.bash
-          - tests/test_uninstall_architecture.bash
-          - tests/test_wireguard_generation.bash
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -70,6 +46,3 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq ripgrep
-
-      - name: Run unit test
-        run: bash "${{ matrix.test }}"
