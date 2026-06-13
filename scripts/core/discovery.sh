@@ -145,7 +145,7 @@ discovery_module_entrypoint() {
 }
 
 # Get the uninstall entrypoint for a module
-# shellcheck disable=SC2329  # sourced by calling scripts, not invoked directly
+# shellcheck disable=SC2317,SC2329  # invoked indirectly by callers that source this file
 discovery_uninstall_entrypoint() {
     local module_name="$1"
     local uninstall_path
