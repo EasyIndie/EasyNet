@@ -8,6 +8,13 @@ source "$PROJECT_ROOT/scripts/core/env_file.sh"
 source "$PROJECT_ROOT/scripts/core/cron.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
 
+# Error trap for set -eE: provides context on unexpected failures
+_easynet_error_handler() {
+    local exit_code=$?
+    log_error "非预期错误 (退出码: $exit_code) at ${BASH_SOURCE[0]##*/}:${BASH_LINENO[0]}"
+    exit "$exit_code"
+}
+
 # ALL_MODULES combines protocol modules + exposure modules (e.g. Edge Gateway)
 ALL_MODULES=()
 while IFS= read -r mod; do
@@ -157,6 +164,7 @@ main() {
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-    set -e
+    set -eE
+    trap '_easynet_error_handler' ERR
     main "$@"
 fi

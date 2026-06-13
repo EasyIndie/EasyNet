@@ -13,6 +13,13 @@ source "$PROJECT_ROOT/scripts/core/profiles.sh"
 source "$PROJECT_ROOT/scripts/core/validate.sh"
 source "$PROJECT_ROOT/scripts/exposure/edge/routes.sh"
 
+# Error trap for set -eE: provides context on unexpected failures
+_easynet_error_handler() {
+    local exit_code=$?
+    log_error "非预期错误 (退出码: $exit_code) at ${BASH_SOURCE[0]##*/}:${BASH_LINENO[0]}"
+    exit "$exit_code"
+}
+
 # ALL_MODULES is now auto-discovered from protocols/*/manifest.sh
 ALL_MODULES=()
 while IFS= read -r mod; do
@@ -382,6 +389,7 @@ main() {
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-    set -e
+    set -eE
+    trap '_easynet_error_handler' ERR
     main "$@"
 fi
