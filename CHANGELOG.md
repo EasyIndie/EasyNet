@@ -5,6 +5,25 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.1.0] - 2026-06-13
+
+### 重构
+- **协议渲染器模块化**：Clash YAML 和 sing-box JSON 输出拆分为每个协议独立的 `render_clash.sh`/`render_singbox.jq`，新增协议无需修改核心文件
+- **Edge Gateway manifest 化**：`exposure/edge/manifest.sh` 声明自身模块，uninstall.sh 通过通用发现机制处理所有模块，消除硬编码
+- **Metadata schema 下沉 + 语义验证**：schema.json 移至 `core/` 共享；新增端口范围、URI 格式、防火墙规则校验
+- **统一日志函数**：消除 4 个入口文件的重复 log_* 定义，统一 source `core/logging.sh`
+- **消除 eval**：`discovery_get_manifest_value` 白名单 case 分支替代 eval，消除代码注入风险
+- **set -e 改进**：全局 `set -e` → `set -eE` + ERR trap，意外失败输出文件名+行号+退出码
+- **Xray 配置竞条件修复**：合并多次 jq 写入为单次调用，消除中间状态不一致窗口
+
+### 修复
+- **UFW SSH 锁死防护**：自动探测 sshd 非标准端口并注入防火墙白名单
+- **ShellCheck 全量修复**：CI 升级至 `--severity=style`，清理 SC2188/SC2155/SC2005/SC2162/SC2034 等 30+ 项
+
+### 新增
+- **BATS 测试框架**：从自定义 test_helper.bash（73 行）迁移到 bats-core（178 测试用例）
+- **协议表自动生成**：`docs/generate-protocol-table.sh` 从 manifest 自动生成 markdown 支持表
+
 ## [0.0.9] - 2026-06-12
 
 ### 新增

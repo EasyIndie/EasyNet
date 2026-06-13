@@ -97,7 +97,7 @@ EasyNet/
 ### 手动部署
 
 ```bash
-git clone https://github.com/your-repo/EasyNet.git
+git clone https://github.com/EasyIndie/EasyNet.git
 cd EasyNet
 ./scripts/deploy.sh
 ```

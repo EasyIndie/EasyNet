@@ -36,7 +36,7 @@ jobs:
         run: bats --timing --pretty tests/*.bats
 
   integration-test:
-    name: Integration test (real deployment)
+    name: Integration test (config generation)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -46,3 +46,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq ripgrep
+
+      - name: Validate config generation (dry-run)
+        run: |
+          mkdir -p /tmp/easynet-test/modules/xray-reality
+          cat > /tmp/easynet-test/modules/xray-reality/metadata.json <<'JSON'
+          {"schemaVersion":1,"module":"xray-reality","enabled":true,"protocol":"vless","port":8443,"client":{"uri":"vless://example","clash":{"server":"10.0.0.1","port":8443}}}
+          JSON
+          mkdir -p /tmp/easynet-test/exposure/edge
+          echo "test.example.com" > /tmp/easynet-test/exposure/edge/domain.txt
+          echo "https" > /tmp/easynet-test/exposure/edge/scheme.txt
+          echo "/s/test" > /tmp/easynet-test/exposure/edge/subscription_path_prefix.txt
+          EASYNET_STATE_DIR=/tmp/easynet-test EASYNET_WEB_ROOT=/tmp/easynet-web \
+            bash scripts/generate_subscription.sh
+          [ -s /tmp/easynet-web/sub ] && echo "OK: subscription generated"
+          [ -s /tmp/easynet-web/clash ] && echo "OK: clash generated"
+          [ -s /tmp/easynet-web/singbox ] && echo "OK: singbox generated"
+          rm -rf /tmp/easynet-test /tmp/easynet-web
