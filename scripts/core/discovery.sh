@@ -7,6 +7,7 @@
 EASYNET_DISCOVERY_CORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 discovery_protocols_dir() {
+    # shellcheck disable=SC2015  # Intentional: pwd on success, empty on failure
     cd "$EASYNET_DISCOVERY_CORE_DIR/../protocols" &>/dev/null && pwd || true
 }
 
@@ -169,6 +170,7 @@ discovery_module_by_index() {
 # ============================================================
 
 discovery_exposure_dir() {
+    # shellcheck disable=SC2015  # Intentional: pwd on success, empty on failure
     cd "$EASYNET_DISCOVERY_CORE_DIR/../exposure" &>/dev/null && pwd || true
 }
 
