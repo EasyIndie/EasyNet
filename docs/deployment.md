@@ -163,12 +163,12 @@ EASYNET_UNINSTALL_MODULE=xray-reality ./scripts/uninstall.sh
 EASYNET_UNINSTALL_MODULE=hysteria2 ./scripts/uninstall.sh
 EASYNET_UNINSTALL_MODULE=shadowsocks ./scripts/uninstall.sh
 EASYNET_UNINSTALL_MODULE=wireguard ./scripts/uninstall.sh
-EASYNET_UNINSTALL_MODULE=edge-exposure ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 ```
 
 卸载编号：
 
-- `0`：卸载全部协议与 Edge Gateway
+- `0`：卸载全部模块（含 Edge Gateway）
 - `1`：`xray-reality`
 - `2`：`hysteria2`
 - `3`：`shadowsocks`

@@ -8,11 +8,11 @@ source "$PROJECT_ROOT/scripts/core/env_file.sh"
 source "$PROJECT_ROOT/scripts/core/cron.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
 
-# ALL_MODULES is auto-discovered from protocols/*/manifest.sh
+# ALL_MODULES combines protocol modules + exposure modules (e.g. Edge Gateway)
 ALL_MODULES=()
 while IFS= read -r mod; do
     ALL_MODULES+=("$mod")
-done < <(discovery_list_modules)
+done < <(discovery_list_uninstallable_modules)
 
 load_env_file() {
     if [ -f "$PROJECT_ROOT/.env" ]; then
@@ -29,13 +29,12 @@ check_root() {
 }
 
 module_is_known() {
-    discovery_module_exists "$1"
+    # Check both protocol and exposure modules
+    discovery_any_module_exists "$1"
 }
 
 module_display_name() {
-    if [ "$1" = "edge-exposure" ]; then
-        echo "Edge Gateway"
-    elif discovery_load_manifest "$1" 2>/dev/null; then
+    if discovery_load_any_manifest "$1" 2>/dev/null; then
         echo "$MODULE_DISPLAY_NAME"
     else
         echo "$1"
@@ -67,17 +66,16 @@ show_menu() {
     echo "========================================"
     echo "  EasyNet 代理服务器卸载"
     echo "========================================"
-    echo "0. 卸载全部协议与 Edge Gateway"
+    echo "0. 卸载全部"
     for module_name in "${ALL_MODULES[@]}"; do
-        if discovery_load_manifest "$module_name" 2>/dev/null; then
+        if discovery_load_any_manifest "$module_name" 2>/dev/null; then
             printf "%d. 卸载 %s\n" "$idx" "$MODULE_DISPLAY_NAME"
         else
             printf "%d. 卸载 %s\n" "$idx" "$module_name"
         fi
         ((idx++))
     done
-    printf "%d. 仅清理 Edge Gateway 与订阅文件\n" "$idx"
-    printf "%d. 退出\n" "$((idx + 1))"
+    printf "%d. 退出\n" "$idx"
     echo "========================================"
     echo -e "${YELLOW}提示: 默认会删除 EasyNet 生成的配置、服务文件、metadata 与订阅文件；包卸载需显式设置 EASYNET_UNINSTALL_PURGE_PACKAGES=true。${NC}"
     read -p "请选择要卸载的服务: " choice
@@ -85,24 +83,20 @@ show_menu() {
 
 resolve_uninstall_modules() {
     local selection="$1"
-    local edge_index=$(( ${#ALL_MODULES[@]} + 1 ))
-    local exit_index=$(( ${#ALL_MODULES[@]} + 2 ))
+    local exit_index=$(( ${#ALL_MODULES[@]} + 1 ))
 
     case "$selection" in
-        0) printf '%s\n' "${ALL_MODULES[@]}"; echo "edge-exposure" ;;
+        0) printf '%s\n' "${ALL_MODULES[@]}" ;;
         [0-9]|[0-9][0-9])
             local index=$((selection - 1))
             if [ "$index" -ge 0 ] && [ "$index" -lt "${#ALL_MODULES[@]}" ]; then
                 echo "${ALL_MODULES[$index]}"
-            elif [ "$selection" = "$edge_index" ]; then
-                echo "edge-exposure"
             elif [ "$selection" = "$exit_index" ]; then
                 echo "__exit__"
             else
                 return 1
             fi
             ;;
-        edge-exposure) echo "edge-exposure" ;;
         *)
             if module_is_known "$selection"; then
                 echo "$selection"
@@ -115,16 +109,6 @@ resolve_uninstall_modules() {
 
 uninstall_entrypoint() {
     local module="$1"
-
-    if [ "$module" = "edge-exposure" ]; then
-        local entrypoint="$UNINSTALL_SCRIPT_DIR/exposure/edge/uninstall.sh"
-        if [ -x "$entrypoint" ]; then
-            echo "$entrypoint"
-            return 0
-        fi
-        return 1
-    fi
-
     discovery_uninstall_entrypoint "$module"
 }
 

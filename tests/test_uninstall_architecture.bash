@@ -7,21 +7,21 @@ source "$PROJECT_ROOT/scripts/uninstall.sh"
 
 test_start "Uninstall Architecture"
 
-assert_equals "hysteria2" "$(resolve_uninstall_modules 1)" "Uninstall menu 1 resolves to Hysteria2 (alphabetically first)"
-assert_equals "shadowsocks" "$(resolve_uninstall_modules 2)" "Uninstall menu 2 resolves to Shadowsocks"
-assert_equals "wireguard" "$(resolve_uninstall_modules 3)" "Uninstall menu 3 resolves to WireGuard"
-assert_equals "xray-reality" "$(resolve_uninstall_modules 4)" "Uninstall menu 4 resolves to Xray+Reality (alphabetically last)"
-assert_equals "edge-exposure" "$(resolve_uninstall_modules 5)" "Uninstall menu 5 resolves to Edge Gateway"
+assert_equals "edge" "$(resolve_uninstall_modules 1)" "Uninstall menu 1 resolves to Edge Gateway (alphabetically first)"
+assert_equals "hysteria2" "$(resolve_uninstall_modules 2)" "Uninstall menu 2 resolves to Hysteria2"
+assert_equals "shadowsocks" "$(resolve_uninstall_modules 3)" "Uninstall menu 3 resolves to Shadowsocks"
+assert_equals "wireguard" "$(resolve_uninstall_modules 4)" "Uninstall menu 4 resolves to WireGuard"
+assert_equals "xray-reality" "$(resolve_uninstall_modules 5)" "Uninstall menu 5 resolves to Xray+Reality (alphabetically last)"
 assert_equals "__exit__" "$(resolve_uninstall_modules 6)" "Uninstall menu 6 resolves to exit sentinel"
 
 all_modules="$(resolve_uninstall_modules 0 | xargs)"
-assert_equals "hysteria2 shadowsocks wireguard xray-reality edge-exposure" "$all_modules" "Uninstall menu 0 removes all protocol modules and Edge Gateway (alphabetical order)"
+assert_equals "edge hysteria2 shadowsocks wireguard xray-reality" "$all_modules" "Uninstall menu 0 removes all modules (alphabetical order, includes Edge Gateway)"
 
 assert_equals "$PROJECT_ROOT/scripts/protocols/xray-reality/uninstall.sh" "$(uninstall_entrypoint xray-reality)" "Xray Reality has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/protocols/hysteria2/uninstall.sh" "$(uninstall_entrypoint hysteria2)" "Hysteria2 has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/protocols/shadowsocks/uninstall.sh" "$(uninstall_entrypoint shadowsocks)" "Shadowsocks has isolated uninstall entrypoint"
 assert_equals "$PROJECT_ROOT/scripts/protocols/wireguard/uninstall.sh" "$(uninstall_entrypoint wireguard)" "WireGuard has isolated uninstall entrypoint"
-assert_equals "$PROJECT_ROOT/scripts/exposure/edge/uninstall.sh" "$(uninstall_entrypoint edge-exposure)" "Edge Gateway has isolated uninstall entrypoint"
+assert_equals "$PROJECT_ROOT/scripts/exposure/edge/uninstall.sh" "$(uninstall_entrypoint edge)" "Edge Gateway has isolated uninstall entrypoint"
 
 if resolve_uninstall_modules unknown-module >/dev/null; then
     invalid_ok="false"

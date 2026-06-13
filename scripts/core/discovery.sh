@@ -158,3 +158,85 @@ discovery_module_by_index() {
     local index="$1"
     discovery_list_modules | sed -n "${index}p"
 }
+
+# ============================================================
+# Exposure module support — lets uninstall.sh discover the
+# Edge Gateway the same way it discovers protocol modules.
+# ============================================================
+
+discovery_exposure_dir() {
+    echo "$(cd "$EASYNET_DISCOVERY_CORE_DIR/../exposure" &>/dev/null && pwd)"
+}
+
+# List exposure module names (directory basenames under exposure/*/)
+discovery_list_exposure_modules() {
+    local exposure_dir manifest_path name
+    exposure_dir="$(discovery_exposure_dir)"
+    if [ ! -d "$exposure_dir" ]; then
+        return 0
+    fi
+    for manifest_path in "$exposure_dir"/*/manifest.sh; do
+        [ -f "$manifest_path" ] || continue
+        name="$(basename "$(dirname "$manifest_path")")"
+        echo "$name"
+    done | sort
+}
+
+# Combined list for uninstall — merged and sorted alphabetically
+discovery_list_uninstallable_modules() {
+    {
+        discovery_list_modules
+        discovery_list_exposure_modules
+    } | sort
+}
+
+# Load an exposure module's manifest (analogous to discovery_load_manifest)
+discovery_load_exposure_manifest() {
+    local module_name="$1"
+    local manifest_path
+    manifest_path="$(discovery_exposure_dir)/$module_name/manifest.sh"
+    if [ ! -f "$manifest_path" ]; then
+        return 1
+    fi
+    unset MANIFEST_VERSION MODULE_NAME MODULE_DISPLAY_NAME MODULE_TYPE
+    source "$manifest_path"
+    if [ "${MANIFEST_VERSION:-0}" -lt 1 ]; then
+        echo "[ERROR] Exposure manifest for '${MODULE_NAME:-$module_name}' has unsupported MANIFEST_VERSION" >&2
+        return 1
+    fi
+}
+
+# Try protocol manifest first, then exposure manifest
+discovery_load_any_manifest() {
+    discovery_load_manifest "$1" 2>/dev/null && return 0
+    discovery_load_exposure_manifest "$1" 2>/dev/null && return 0
+    return 1
+}
+
+# Check if a module exists in either protocols or exposure
+discovery_any_module_exists() {
+    local module_name="$1"
+    discovery_module_exists "$module_name" && return 0
+    [ -f "$(discovery_exposure_dir)/$module_name/manifest.sh" ] && return 0
+    return 1
+}
+
+# Get the uninstall entrypoint — tries protocol first, then exposure
+discovery_uninstall_entrypoint() {
+    local module_name="$1"
+    local uninstall_path
+
+    uninstall_path="$(discovery_protocols_dir)/$module_name/uninstall.sh"
+    if [ -x "$uninstall_path" ]; then
+        echo "$uninstall_path"
+        return 0
+    fi
+
+    uninstall_path="$(discovery_exposure_dir)/$module_name/uninstall.sh"
+    if [ -x "$uninstall_path" ]; then
+        echo "$uninstall_path"
+        return 0
+    fi
+
+    return 1
+}

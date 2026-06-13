@@ -139,7 +139,7 @@ EASYNET_UNINSTALL_CHOICE=0 ./scripts/uninstall.sh
 
 ```bash
 EASYNET_UNINSTALL_MODULE=xray-reality ./scripts/uninstall.sh
-EASYNET_UNINSTALL_MODULE=edge-exposure ./scripts/uninstall.sh
+EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 ```
 
 ## 文档
