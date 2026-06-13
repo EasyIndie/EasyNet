@@ -21,7 +21,7 @@ JSON
 
     # Shadowsocks fixture
     cat > "$SS_FIXTURE_DIR/config.json" <<'JSON'
-{"server":["0.0.0.0","::0"],"server_port":8388,"method":"2022-blake3-aes-256-gcm"}
+{"server":["0.0.0.0","::0"],"server_port":8388,"password":"ss-password-fixture","method":"2022-blake3-aes-256-gcm"}
 JSON
     EASYNET_STATE_DIR="$STATE_DIR" EASYNET_PUBLIC_IP="203.0.113.10" SHADOWSOCKS_CONFIG_DIR="$SS_FIXTURE_DIR" \
         bash "$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)/../scripts/protocols/shadowsocks/export.sh"
@@ -59,8 +59,12 @@ ENV
     EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" EASYNET_PUBLIC_IP="203.0.113.10" \
         bash "$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)/../scripts/generate_subscription.sh" >/dev/null
 
-    source "$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)/../scripts/core/metadata.sh"
     export PROJECT_ROOT="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)/.."
+}
+
+setup() {
+    load test_helper
+    source "$PROJECT_ROOT/scripts/core/metadata.sh"
 }
 
 teardown_file() {
