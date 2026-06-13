@@ -58,6 +58,7 @@ discovery_load_manifest() {
 }
 
 # Get a specific variable from a module's manifest
+# Uses a whitelist of known manifest variable names instead of eval.
 discovery_get_manifest_value() {
     local module_name="$1"
     local var_name="$2"
@@ -65,7 +66,29 @@ discovery_get_manifest_value() {
     if ! discovery_load_manifest "$module_name"; then
         return 1
     fi
-    eval "value=\"\${$var_name:-}\""
+
+    case "$var_name" in
+        MANIFEST_VERSION)           value="${MANIFEST_VERSION:-}" ;;
+        MODULE_NAME)                value="${MODULE_NAME:-}" ;;
+        MODULE_DISPLAY_NAME)        value="${MODULE_DISPLAY_NAME:-}" ;;
+        MODULE_PROTOCOL)            value="${MODULE_PROTOCOL:-}" ;;
+        MODULE_CLASH_TYPE)          value="${MODULE_CLASH_TYPE:-}" ;;
+        MODULE_SINGBOX_TYPE)        value="${MODULE_SINGBOX_TYPE:-}" ;;
+        MODULE_SECURITY_RANK)       value="${MODULE_SECURITY_RANK:-}" ;;
+        MODULE_DEFAULT_PORT)        value="${MODULE_DEFAULT_PORT:-}" ;;
+        MODULE_DEFAULT_PUBLIC_PORT) value="${MODULE_DEFAULT_PUBLIC_PORT:-}" ;;
+        MODULE_EDGE_MODE)           value="${MODULE_EDGE_MODE:-}" ;;
+        MODULE_PROFILES)            value="${MODULE_PROFILES:-}" ;;
+        MODULE_SYSTEMD_SERVICES)    value="${MODULE_SYSTEMD_SERVICES[*]:-}" ;;
+        MODULE_ENV_PREFIX)          value="${MODULE_ENV_PREFIX:-}" ;;
+        MODULE_NGINX_ROUTE_TEMPLATE) value="${MODULE_NGINX_ROUTE_TEMPLATE:-}" ;;
+        MODULE_TYPE)                value="${MODULE_TYPE:-}" ;;
+        *)
+            echo "[ERROR] Unknown or unsafe manifest variable: $var_name" >&2
+            return 1
+            ;;
+    esac
+
     echo "$value"
 }
 
