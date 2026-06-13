@@ -2,9 +2,47 @@
 
 EASYNET_CORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 source "$EASYNET_CORE_DIR/metadata.sh"
+source "$EASYNET_CORE_DIR/logging.sh"
+
+# Auto-detect the SSH port(s) the system is actually listening on,
+# so that ufw --force enable never locks us out.
+firewall_detect_ssh_ports() {
+    local ports=()
+    local line port
+
+    # Try ss first (modern), fall back to netstat or lsof
+    if command -v ss &>/dev/null; then
+        while IFS= read -r line; do
+            port="${line##*:}"
+            port="${port%%[!0-9]*}"
+            [[ -n "$port" && "$port" =~ ^[0-9]+$ ]] && ports+=("$port")
+        done < <(ss -tnlp 2>/dev/null | grep -i sshd)
+    elif command -v netstat &>/dev/null; then
+        while IFS= read -r line; do
+            port="${line##*:}"
+            port="${port%%[!0-9]*}"
+            [[ -n "$port" && "$port" =~ ^[0-9]+$ ]] && ports+=("$port")
+        done < <(netstat -tnlp 2>/dev/null | grep -i sshd)
+    fi
+
+    # Deduplicate and output
+    printf '%s\n' "${ports[@]}" | awk 'NF && !seen[$0]++'
+}
 
 firewall_base_rules() {
+    local port
+
+    # Always include well-known service ports
     printf '%s\n' "22/tcp" "80/tcp" "443/tcp"
+
+    # Dynamically include any non-standard SSH ports in use
+    while IFS= read -r port; do
+        [ -z "$port" ] && continue
+        # 22/tcp is already in the static list above; skip to avoid noise
+        [ "$port" = "22" ] && continue
+        printf '%s/tcp\n' "$port"
+        log_info "已自动检测 SSH 非标准端口 $port/tcp 并加入防火墙白名单"
+    done < <(firewall_detect_ssh_ports)
 }
 
 firewall_metadata_rules() {
