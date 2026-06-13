@@ -4,13 +4,8 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+source "$PROJECT_ROOT/scripts/core/logging.sh"
 source "$PROJECT_ROOT/scripts/core/subscription.sh"
-
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
 main() {
     local sub_url clash_url singbox_url installer_url

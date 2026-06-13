@@ -9,20 +9,12 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+source "$PROJECT_ROOT/scripts/core/logging.sh"
 source "$PROJECT_ROOT/scripts/core/metadata.sh"
 source "$PROJECT_ROOT/scripts/core/env.sh"
 source "$PROJECT_ROOT/scripts/core/subscription.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
 source "$PROJECT_ROOT/scripts/core/subscription_clash.sh"
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 WEB_ROOT="${EASYNET_WEB_ROOT:-/var/www/html}"
 SUB_FILE="${WEB_ROOT}/sub"
