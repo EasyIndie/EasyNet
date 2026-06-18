@@ -31,7 +31,7 @@ install_hysteria2() {
 
 require_domain() {
     if [ -n "${EASYNET_DOMAIN:-}" ]; then
-        echo "$EASYNET_DOMAIN"
+        echo "${EASYNET_DOMAIN:-}"
         return
     fi
 

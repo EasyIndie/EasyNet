@@ -153,7 +153,7 @@ install_singbox_binary() {
     # Verify SHA256 if provided
     if [ -n "${EASYNET_SINGBOX_INSTALL_SHA256:-}" ]; then
         log "校验 sing-box 压缩包 SHA256..."
-        printf '%s  %s\n' "$EASYNET_SINGBOX_INSTALL_SHA256" "$tarball" | sha256sum -c - || die "sing-box 压缩包 SHA256 校验失败，请检查下载来源或更新 EASYNET_SINGBOX_INSTALL_SHA256"
+        printf '%s  %s\n' "${EASYNET_SINGBOX_INSTALL_SHA256:-}" "$tarball" | sha256sum -c - || die "sing-box 压缩包 SHA256 校验失败，请检查下载来源或更新 EASYNET_SINGBOX_INSTALL_SHA256"
     fi
 
     tar -xzf "$tarball" -C "$tmp_dir"
