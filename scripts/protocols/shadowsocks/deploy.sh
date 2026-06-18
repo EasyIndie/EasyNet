@@ -101,8 +101,9 @@ create_systemd_service() {
     log_info "创建 systemd 服务..."
 
     # shadowsocks-rust >=1.24.0 requires --encrypt-method and --server-addr
-    # even when --config is provided. METHOD is set by configure_shadowsocks().
-    # shellcheck disable=SC2086
+    # even when --config is provided. The CLI flags create a separate server
+    # instance that also needs -k <password> or SS_SERVER_PASSWORD env var.
+    # METHOD and PSK are set by configure_shadowsocks() before this runs.
     cat > /etc/systemd/system/shadowsocks-rust-server.service << EOF
 [Unit]
 Description=Shadowsocks-rust Server (2022 Edition)
@@ -117,7 +118,7 @@ ProtectHome=yes
 PrivateTmp=yes
 NoNewPrivileges=yes
 CapabilityBoundingSet=~
-ExecStart=/usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json -U --encrypt-method ${METHOD} --server-addr 0.0.0.0
+ExecStart=/usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json -U --encrypt-method ${METHOD} --server-addr 0.0.0.0 -k ${PSK}
 Restart=on-failure
 RestartSec=5
 
