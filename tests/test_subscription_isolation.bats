@@ -43,7 +43,7 @@ JSON
 
 # -- With Edge state, verify stable paths --
 
-@test "Edge domain prints stable random subscription paths without fixed or full links" {
+@test "Edge domain prints direct subscription paths when DIRECT_PATHS is enabled" {
     TMP_DIR=$(mktemp -d)
     STATE_DIR="$TMP_DIR/state"
     WEB_ROOT="$TMP_DIR/web"
@@ -58,8 +58,9 @@ JSON
     echo "/s/0123456789abcdef0123456789abcdef" > "$STATE_DIR/exposure/edge/subscription_path_prefix.txt"
     run env EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" \
         bash "$PROJECT_ROOT/scripts/generate_subscription.sh"
-    echo "$output" | rg -q "https://edge.example.com/s/0123456789abcdef0123456789abcdef/sub"
-    echo "$output" | rg -q "https://edge.example.com/s/0123456789abcdef0123456789abcdef/singbox"
+    echo "$output" | rg -q "https://edge.example.com/sub"
+    echo "$output" | rg -q "https://edge.example.com/singbox"
+    echo "$output" | rg -q "https://edge.example.com/clash"
     rm -rf "$TMP_DIR"
 }
 
@@ -150,7 +151,7 @@ JSON
     echo "443" > "$STATE_DIR/exposure/edge/port.txt"
     run env EASYNET_STATE_DIR="$STATE_DIR" \
         bash "$PROJECT_ROOT/scripts/show_subscription.sh"
-    echo "$output" | rg -q "https://edge.example.com/s/test/clash"
+    echo "$output" | rg -q "https://edge.example.com/clash"
     rm -rf "$TMP_DIR"
 }
 

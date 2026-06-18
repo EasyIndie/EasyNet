@@ -74,7 +74,7 @@ write_edge_subscription_routes() {
 
     # Also write direct-path routes (e.g. /sub, /clash, /singbox) for convenience
     # Enabled via EASYNET_SUBSCRIPTION_DIRECT_PATHS=true
-    if [ "${EASYNET_SUBSCRIPTION_DIRECT_PATHS:-false}" = "true" ]; then
+    if [ "${EASYNET_SUBSCRIPTION_DIRECT_PATHS:-true}" = "true" ]; then
         while IFS='|' read -r endpoint file_name content_type; do
             [ -z "$endpoint" ] && continue
             cat >> "$EDGE_ROUTES_DIR/subscription.conf" <<EOF
