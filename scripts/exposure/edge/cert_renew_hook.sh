@@ -27,8 +27,10 @@ grant_cert_access_to_user() {
     [ "$user" = "root" ] && return 0
     id "$user" >/dev/null 2>&1 || return 0
 
-    log_info "授予 Edge 证书读取权限给服务用户: $user"
-    chown root:"$user" "$EDGE_CERT_DIR" "$EDGE_CERT_FILE" "$EDGE_KEY_FILE"
+    local group
+    group=$(id -gn "$user" 2>/dev/null) || group="$user"
+    log_info "授予 Edge 证书读取权限给服务用户: $user (group: $group)"
+    chown root:"$group" "$EDGE_CERT_DIR" "$EDGE_CERT_FILE" "$EDGE_KEY_FILE"
     chmod 750 "$EDGE_CERT_DIR"
     chmod 640 "$EDGE_CERT_FILE" "$EDGE_KEY_FILE"
 }
