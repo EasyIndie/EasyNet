@@ -261,6 +261,9 @@ source_protocol() {
     # fragmentSettings must NOT exist in xhttp mode
     run jq '.inbounds[0].streamSettings.fragmentSettings // empty' "$config"
     [ -z "$output" ]
+    # flow must NOT exist (xtls-rprx-vision only works with tcp)
+    run jq '.inbounds[0].settings.clients[0].flow // empty' "$config"
+    [ -z "$output" ]
 }
 
 @test "Xray: xhttp transport with fragment env var set skips fragmentSettings" {
@@ -287,6 +290,9 @@ source_protocol() {
     [ "$output" = "xhttp" ]
     # fragmentSettings must be absent even though var is set
     run jq '.inbounds[0].streamSettings.fragmentSettings // empty' "$config"
+    [ -z "$output" ]
+    # flow must NOT exist (xtls-rprx-vision only works with tcp)
+    run jq '.inbounds[0].settings.clients[0].flow // empty' "$config"
     [ -z "$output" ]
 }
 
@@ -357,6 +363,9 @@ source_protocol() {
     # xhttpSettings should exist
     run jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // empty' "$XRAY_DIR/config.json"
     [ "$output" = "auto" ]
+    # flow must NOT exist after switch (xtls-rprx-vision only works with tcp)
+    run jq '.inbounds[0].settings.clients[0].flow // empty' "$XRAY_DIR/config.json"
+    [ -z "$output" ]
 }
 
 # -------------------------------------------------------------------------
