@@ -1,4 +1,4 @@
-# EasyNet - 境外 VPS 代理服务器部署方案
+# EasyNet — 境外 VPS 代理服务器部署方案
 
 [![Tests](https://github.com/EasyIndie/EasyNet/actions/workflows/tests.yml/badge.svg)](https://github.com/EasyIndie/EasyNet/actions/workflows/tests.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
@@ -14,22 +14,19 @@
   - **Xray+Reality** — TLS 指纹模仿 + XHTTP/HTTP3 传输 + Fragment 包分片 + XMUX 多路复用
   - **Hysteria2** — QUIC/UDP + Salamander 混淆 + Port Hopping 端口跳变
   - **Shadowsocks 2022** — BLAKE3-AES-256-GCM 加密，完整重放保护
-  - **WireGuard (+AmneziaWG)** — 默认启用 Jc/Jmin/Jmax 垃圾包填充消除 UDP 指纹
+  - **WireGuard (+Amnezia obfs)** — 默认启用 Jc/Jmin/Jmax 垃圾包填充消除 UDP 指纹
 - 🔒 强安全架构：REALITY 无证书 TLS、Finalmask Fragment、Edge Gateway 反代伪装
 - ⚡ 性能优化：BBR 拥塞控制、XHTTP 多路复用 (XMUX)、QUIC 0-RTT
 - 🔄 自动化运维：系统更新、证书续期 hook（自动修正权限并重启服务）、日志限额与 logrotate
 - 🤖 无交互部署：支持 `.env` 或环境变量进行一键安装
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
-- 💰 成本可控（$5-$10/月）
-- 🛡️ 安全稳定，自带 14 个测试套件保护核心逻辑
-
-> 💡 下表由 `docs/generate-protocol-table.sh` 从协议 manifest 自动生成。
-> 修改 protocol 参数后，运行 `bash docs/generate-protocol-table.sh --update` 同步。
+- 💰 成本可控（$5–$15/月）
+- 🛡️ 安全稳定，自带 262 个测试用例（23 套件）保护核心逻辑
 
 ## 协议对比与防探测等级
 
-如果你只想快速决策：
+如果你想快速决策：
 
 - 日常优先 `Xray+Reality`；需要 UDP/QUIC 补充时用 `balanced`
 - 订阅承载与协议部署解耦；配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 后会自动生成订阅链接和订阅二维码
@@ -39,10 +36,10 @@
 
 | 协议 | 传输/混淆 | 优点 | 防探测等级 |
 |------|-----------|------|-----------|
-| **Xray+Reality** | TCP/XHTTP + REALITY + Fragment + XMUX | 无需域名，TLS 指纹模仿，包分片抗 ML，多路复用 | 🥇 极高 (推荐) |
-| **Hysteria2** | QUIC/UDP + Salamander + Port Hopping | 端口跳变抗封锁，HTTP/3 伪装 | 🥇 高 (推荐补充) |
+| **Xray+Reality** | TCP/XHTTP + REALITY + Fragment + XMUX | 无需域名，TLS 指纹模仿，包分片抗 ML，多路复用 | 🥇 极高（推荐） |
+| **Hysteria2** | QUIC/UDP + Salamander + Port Hopping | 端口跳变抗封锁，HTTP/3 伪装 | 🥇 高（推荐补充） |
 | **Shadowsocks 2022** | TCP+UDP / BLAKE3-AES-256-GCM | 2022 Edition 强加密，重放保护 | 🥈 中等+ |
-| **WireGuard** +Amnezia | UDP + Jc/Jmin/Jmax 垃圾包 | 可启用混淆消除 UDP 指纹 | 🥈 中等 (启用混淆后) |
+| **WireGuard (+Amnezia obfs)** | UDP + Jc/Jmin/Jmax 垃圾包 | 可启用混淆消除 UDP 指纹 | 🥈 中等（启用混淆后） |
 
 ### 协议混淆能力速览
 
@@ -57,35 +54,86 @@
 | 垃圾包填充 (AmneziaWG) | — | — | — | ✅ |
 | 2022 Edition 板载加密 | — | — | ✅ | — |
 
+### 协议元数据对比（各模块 manifest 定义）
+
+| 属性 | Xray+Reality | Hysteria2 | Shadowsocks 2022 | WireGuard |
+|------|:---:|:---:|:---:|:---:|
+| Clash 类型 | `vless` | `hysteria2` | `ss` | `wireguard` |
+| sing-box 类型 | `vless` | `hysteria2` | `shadowsocks` | `wireguard` |
+| 安全等级（越小越安全） | 10 | 20 | 40 | 60 |
+| 默认端口 | 8443 | 443 | 8388 | 51820 |
+| Edge 模式 | `none` | `shared_tls` | `none` | `none` |
+| systemd 服务名 | `xray` | `hysteria-server.service` | `shadowsocks-rust-server` | `wg-quick@wg0` |
+| 所属策略 | strict, balanced, compat | balanced, compat | compat | compat |
+
+> 💡 如需刷新上表，可在修改 manifest 后运行 `bash docs/generate-protocol-table.sh --update`。
+
+## 支持的协议
+<!-- EasyNet 协议支持表 — 由 docs/generate-protocol-table.sh 自动生成 -->
+<!-- 手动修改无效，请通过修改 protocols/*/manifest.sh 后重新生成 -->
+
+| 协议 | 安全等级 | 默认端口 | Edge 模式 | 部署策略 |
+|------|:--------:|:--------:|:---------:|----------|
+| Hysteria2 | 20 | 443 | 共享 TLS | balanced, compat |
+| Shadowsocks 2022 | 40 | 8388 | — | compat |
+| WireGuard (+Amnezia obfs) | 60 | 51820 | — | compat |
+| Xray+Reality | 10 | 8443 | — | strict, balanced, compat |
+
 ## 项目结构
 
 ```
 EasyNet/
-├── scripts/              # 部署脚本目录
-│   ├── core/             # 可复用核心函数与 metadata 契约（discovery、firewall、cron、subscription、uninstall 等）
-│   ├── exposure/edge/    # Edge Gateway（Nginx + acme.sh TLS + 订阅托管 + 证书续期 hook）
-│   ├── protocols/        # 独立协议模块（新架构，各模块自声明 manifest）
-│   │   ├── xray-reality/  #   deploy, export, render, uninstall
-│   │   ├── hysteria2/     #   deploy, export, render, uninstall
-│   │   ├── shadowsocks/   #   deploy, export, render, uninstall
-│   │   └── wireguard/     #   deploy, export, render, uninstall
-│   ├── clients/          # 客户端安装脚本
-│   ├── deploy.sh         # 一键部署脚本（入口）
-│   ├── uninstall.sh      # 模块化卸载脚本（入口）
-│   ├── generate_subscription.sh  # 订阅文件生成
-│   ├── show_subscription.sh      # 重新显示订阅链接和二维码
-│   ├── rotate_subscription.sh    # 轮换订阅入口（支持 --grace 迁移宽限）
-│   └── smoke_test.sh     # 真实部署快速检查
-├── tests/                # 单元测试与架构约束测试（14 个 bats 套件）
-├── docs/                 # 精简文档目录
-│   ├── deployment.md     # 部署、协议选择、订阅承载、环境变量全表
-│   ├── clients.md        # 全平台客户端说明与常见问题
-│   └── troubleshooting-guide.md  # 故障排查指南
-├── tools/                # 辅助工具（二维码生成等）
-├── .env.example          # 环境变量配置模板
-├── VERSION               # 当前版本（0.1.0，严格 semver，无前缀）
-├── CHANGELOG.md          # 变更日志
-└── README.md             # 项目概览（本文件）
+├── scripts/                    # 部署脚本目录
+│   ├── core/                   # 可复用核心函数（19 文件）
+│   │   ├── discovery.sh        #   插件系统（manifest 加载、校验、排序）
+│   │   ├── metadata.sh         #   metadata.json 写入/校验
+│   │   ├── bootstrap.sh        #   系统初始化（apt、BBR、防火墙、自动更新）
+│   │   ├── firewall.sh         #   UFW 规则管理
+│   │   ├── cron.sh             #   每日服务重启
+│   │   ├── profiles.sh         #   部署策略（strict/balanced/compat）
+│   │   ├── download.sh         #   下载 + SHA256 校验 + 执行
+│   │   ├── crypto.sh           #   密钥生成、架构检测
+│   │   ├── network.sh          #   公网 IP 检测
+│   │   ├── display.sh          #   QR 码显示
+│   │   ├── validate.sh         #   部署前预检
+│   │   ├── env.sh / env_file.sh#   状态目录路径、.env 解析
+│   │   ├── subscription*.sh    #   订阅生成（含 subscription_clash.sh）
+│   │   ├── logging.sh          #   统一日志函数
+│   │   ├── maintenance.sh      #   系统维护工具
+│   │   ├── url.sh              #   URL 编解码
+│   │   ├── uninstall.sh        #   安全路径/防火墙/服务删除
+│   │   └── metadata.schema.json#   metadata JSON Schema
+│   ├── protocols/              # 协议模块（4 种）
+│   │   ├── hysteria2/          #   6 文件：manifest、deploy、export、
+│   │   ├── xray-reality/       #   uninstall、render_clash、render_singbox.jq
+│   │   ├── shadowsocks/
+│   │   └── wireguard/
+│   ├── exposure/edge/          # Edge Gateway（Nginx + acme.sh + 订阅 + 证书续期）
+│   │   ├── manifest.sh         #   自身模块声明
+│   │   ├── deploy.sh / export.sh / uninstall.sh
+│   │   ├── routes.sh           #   Nginx 路由配置生成
+│   │   └── cert_renew_hook.sh  #   证书续期后处理（权限修正 + 服务重启）
+│   ├── clients/                # 客户端安装器（独立运行于终端设备）
+│   │   └── install_singbox_client.sh
+│   ├── deploy.sh               # 一键部署入口
+│   ├── uninstall.sh            # 模块化卸载入口
+│   ├── generate_subscription.sh# 订阅文件重新生成
+│   ├── show_subscription.sh    # 重新显示订阅链接和二维码
+│   ├── rotate_subscription.sh  # 轮换订阅入口（支持 --grace 迁移宽限）
+│   └── smoke_test.sh           # 部署后快速检查
+├── tests/                      # 单元测试（23 个 bats 套件，262 个用例）
+├── docs/                       # 文档目录
+│   ├── deployment.md           #   部署、协议选择、订阅承载、完整配置项
+│   ├── clients.md              #   全平台客户端说明与常见问题
+│   ├── troubleshooting-guide.md#   故障排查指南
+│   ├── vps-providers.md        #   VPS 提供商列表
+│   ├── architecture-review.md  #   架构与代码质量评估报告
+│   └── generate-protocol-table.sh  # 协议支持表自动生成工具
+├── tools/                      # 辅助工具（二维码生成等）
+├── .env.example                # 环境变量配置模板
+├── VERSION                     # 当前版本（严格 semver，无前缀）
+├── CHANGELOG.md                # 变更日志
+└── README.md                   # 项目概览（本文件）
 ```
 
 ## 快速开始
@@ -111,7 +159,7 @@ cd EasyNet
 
 最短流程：
 
-1. 运行脚本并按提示选择协议（交互菜单按模块目录名字母序排列）
+1. 运行脚本并按提示选择协议（交互菜单按抗 DPI 能力从高到低排列）
 2. 保存部署输出的密码、密钥参数和订阅链接
 3. 运行 `./scripts/smoke_test.sh` 快速检查服务、端口、防火墙和订阅入口
 4. 在客户端中按类型导入订阅：
@@ -158,13 +206,15 @@ EASYNET_UNINSTALL_MODULE=xray-reality ./scripts/uninstall.sh
 EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 ```
 
-> 交互菜单中的编号由模块发现自动生成（按模块目录名字母序排列），当前卸载顺序：edge → hysteria2 → shadowsocks → wireguard → xray-reality → 退出。
+> 交互菜单中的编号由模块发现自动生成（卸载按字母序排列），当前顺序：edge → hysteria2 → shadowsocks → wireguard → xray-reality → 退出。
 
 ## 文档
 
 - [部署说明](./docs/deployment.md) — 部署、协议选择、订阅承载、完整配置项清单
 - [客户端说明](./docs/clients.md) — 全平台客户端安装、导入与常见问题
 - [故障排查指南](./docs/troubleshooting-guide.md) — 分协议、分场景的排障流程
+- [VPS 提供商列表](./docs/vps-providers.md) — 推荐的境外 VPS 服务商
+- [架构评估报告](./docs/architecture-review.md) — 代码质量与架构改进建议
 
 ## 贡献指南
 

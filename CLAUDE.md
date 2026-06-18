@@ -10,7 +10,7 @@ EasyNet is a Bash-based server deployment tool that installs and manages proxy p
 
 | Command | Description |
 |---------|-------------|
-| `bats tests/*.bats` | Run all 179 tests |
+| `bats tests/*.bats` | Run all 262 tests (23 test files) |
 | `bats tests/test_protocol_metadata.bats` | Run a single test file |
 | `bats --formatter tap tests/` | TAP output (used in CI) |
 | `shellcheck --rcfile=.shellcheckrc --shell=bash --severity=style scripts/` | Lint all scripts |
@@ -23,7 +23,7 @@ CI runs both shellcheck and bats on push/PR to `main` (see `.github/workflows/te
 ```
 scripts/
   deploy.sh / uninstall.sh     ← Main orchestrators
-  core/                         ← Shared infrastructure (20 files)
+  core/                         ← Shared infrastructure (19 files)
     discovery.sh                ←   Plugin system (manifest loading, validation)
     metadata.sh                 ←   metadata.json write/validate (chmod 600)
     firewall.sh                 ←   UFW rules from metadata
@@ -37,6 +37,9 @@ scripts/
     validate.sh                 ←   Pre-flight checks
     env.sh / env_file.sh        ←   State directory paths, .env parsing
     subscription*.sh            ←   Subscription generation
+    logging.sh                  ←   Unified logging (log_info/log_error)
+    maintenance.sh              ←   System maintenance utilities
+    url.sh                      ←   URL encode/decode
     metadata.schema.json        ←   JSON schema for metadata contract
     uninstall.sh                ←   Safe path/firewall/service removal
   protocols/                    ← Plugin modules (4 protocols)
@@ -57,10 +60,14 @@ Protocol modules are discovered via filesystem: any `scripts/protocols/<name>/ma
 ```
 MANIFEST_VERSION=1
 MODULE_NAME="hysteria2"
-MODULE_SECURITY_RANK=20          # Lower = stronger anti-DPI
+MODULE_DISPLAY_NAME="Hysteria2"   # Human-readable label for menus
+MODULE_PROTOCOL="hysteria2"       # Protocol identifier
+MODULE_CLASH_TYPE="hysteria2"     # Clash/Mihomo type
+MODULE_SINGBOX_TYPE="hysteria2"   # sing-box type
+MODULE_SECURITY_RANK=20           # Lower = stronger anti-DPI
 MODULE_DEFAULT_PORT=443
-MODULE_EDGE_MODE="shared_tls"    # "shared_tls" | "backend" | "none"
-MODULE_PROFILES="balanced compat"  # Which deployment profiles include this
+MODULE_EDGE_MODE="shared_tls"     # "shared_tls" | "backend" | "none"
+MODULE_PROFILES="balanced compat" # Which deployment profiles include this
 MODULE_SYSTEMD_SERVICES=("hysteria-server.service")
 ```
 

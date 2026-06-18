@@ -32,7 +32,7 @@
 | Xray+Reality | 高 | REALITY + Fragment + XHTTP | 抗封锁优先，TLS 指纹模仿 + 包分片抗 ML |
 | Hysteria2 | 高 | Salamander + Port Hopping | UDP/QUIC 场景，端口跳变抗封锁 |
 | Shadowsocks 2022 | 中 | BLAKE3-AES-256-GCM | 兼容性场景，2022 Edition 强加密 |
-| WireGuard (+Amnezia) | 中 | Jc/Jmin/Jmax 垃圾包填充 | 启用混淆后适合中转、低延迟、独立 VPN |
+| WireGuard (+Amnezia obfs) | 中 | Jc/Jmin/Jmax 垃圾包填充 | 启用混淆后适合中转、低延迟、独立 VPN |
 
 结论：
 
@@ -50,7 +50,7 @@
 | 默认端口 | 8443 | 443 | 8388 | 51820 |
 | Edge 模式 | `none` | `shared_tls` | `none` | `none` |
 | systemd 服务名 | `xray` | `hysteria-server.service` | `shadowsocks-rust-server` | `wg-quick@wg0` |
-| 所属策略 | strict / balanced / compat | balanced / compat | compat | compat |
+| 所属策略 | strict, balanced, compat | balanced, compat | compat | compat |
 
 ### 协议混淆能力速览
 
@@ -106,20 +106,20 @@ cd EasyNet
 ./scripts/deploy.sh
 ```
 
-交互菜单中的编号由协议发现自动生成（按模块目录名 **字母序** 排列），当前顺序如下：
+部署菜单中的编号由协议自动发现生成，按 **抗 DPI 能力从高到低**（即 `MODULE_SECURITY_RANK` 升序）排列，当前顺序如下：
 
-| 编号 | 模块 | 说明 |
-|------|------|------|
-| `0` | 全部部署 | 部署当前所有已发现模块 |
-| `1` | `hysteria2` | Hysteria2 QUIC/UDP |
-| `2` | `shadowsocks` | Shadowsocks 2022 |
-| `3` | `wireguard` | WireGuard (+AmneziaWG) |
-| `4` | `xray-reality` | Xray+Reality |
-| `5` | 退出 | 结束部署脚本 |
+| 编号 | 模块 | 说明 | 安全等级 |
+|------|------|------|:--------:|
+| `0` | 全部部署 | 部署当前所有已发现模块 | — |
+| `1` | `xray-reality` | Xray+Reality（最高抗 DPI） | 10 |
+| `2` | `hysteria2` | Hysteria2 QUIC/UDP | 20 |
+| `3` | `shadowsocks` | Shadowsocks 2022 | 40 |
+| `4` | `wireguard` | WireGuard (+Amnezia obfs) | 60 |
+| `5` | 退出 | 结束部署脚本 | — |
 
-> 增加协议模块后编号会顺延。交互菜单仅在无自动化变量时显示；脚本在部署全部模块后自动回到菜单等待下一步选择（使用环境变量自动部署则执行一次后退出）。
+> 增加协议模块后按安全等级自动插入正确位置，编号随之变化。交互菜单仅在无自动化变量时显示；使用环境变量自动部署则执行一次后退出。
 
-说明：各协议模块部署后会导出标准 metadata，订阅生成器只读取 metadata。部署入口统一走 `scripts/protocols/*/*` 与 `scripts/exposure/edge`。订阅链接只在存在 Edge Gateway 域名时打印。
+说明：各协议模块部署后会导出标准 metadata，订阅生成器只读取 metadata。部署入口统一走 `scripts/protocols/*/` 与 `scripts/exposure/edge/`。订阅链接只在存在 Edge Gateway 域名时打印。
 
 ### 4. 自动化部署
 
@@ -161,6 +161,8 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 | `balanced` | `xray-reality` + `hysteria2` | 强安全 + 良好性能，推荐默认 |
 | `compat` | 全部已发现模块 | 最大兼容性，各类客户端 |
 
+> 注意：Shadowsocks 和 WireGuard 仅包含于 `compat` 策略，`balanced` 策略不含这两者。如需部署全部 4 种协议请使用 `compat` 或单独指定模块。
+
 订阅承载：
 
 - 配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 会自动部署 Edge Gateway，不改变协议组合
@@ -173,6 +175,7 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 | `https://域名/s/\<随机值\>/singbox` | JSON | sing-box |
 | `https://域名/s/\<随机值\>/singbox-client.sh` | Shell 脚本 | 树莓派 / 卡片机安装脚本 |
 
+- 默认同时提供 `/sub`、`/clash`、`/singbox` 直接路径访问（便于配置）。可通过 `EASYNET_SUBSCRIPTION_DIRECT_PATHS=false` 关闭，仅保留随机路径
 - 随机订阅前缀会持久化保存，重启、重部署、证书续期和重新生成订阅都不会改变；可运行 `./scripts/show_subscription.sh` 随时重新显示链接和二维码
 - 如怀疑订阅链接泄露，可运行 `./scripts/rotate_subscription.sh` 主动轮换订阅入口；如需给多设备迁移留出时间，可使用 `./scripts/rotate_subscription.sh --grace` 暂时保留旧入口
 - `Hysteria2` 使用 Edge 统一证书（`shared_tls` 模式），自身监听 `443/udp` 承载 QUIC 流量
@@ -184,7 +187,7 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 
 环境变量：
 
-- `.env` 只加载 `EASYNET_*` 前缀变量，非 `EASYNET_*` 变量会被忽略
+- `.env` 只加载 `EASYNET_*` 前缀变量，非 `EASYNET_*` 变量会被忽略（`SS_VERSION` 除外）
 - 远程安装脚本和发布包支持可选 SHA256 校验，变量见 `.env.example`
 
 ## 卸载部署
@@ -197,7 +200,7 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 ./scripts/uninstall.sh
 ```
 
-交互菜单中的编号由协议 + 暴露模块发现自动生成（字母序），当前顺序如下：
+卸载菜单中的编号由协议模块 + Edge Gateway 自动发现生成，按 **模块目录名字母序** 排列（`edge` < `hysteria2` < `shadowsocks` < `wireguard` < `xray-reality`），当前顺序如下：
 
 | 编号 | 模块 | 说明 |
 |------|------|------|
@@ -285,9 +288,9 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 |--------|------|------|--------|---------|
 | **最高** | `EASYNET_PROFILE` | 按策略选择协议组合 | `strict` / `balanced` / `compat` | 未设置时退至下一级 |
 | **中** | `EASYNET_MODULE` | 按名称部署单个模块 | `xray-reality` / `hysteria2` / `shadowsocks` / `wireguard` | 未设置时退至下一级 |
-| **最低** | `EASYNET_SERVICE_CHOICE` | 按编号选择（菜单字母序） | `0`(全部) / `1`-`N`(单个) / `N+1`(退出) | 三者均未设置 → 弹出交互式菜单 |
+| **最低** | `EASYNET_SERVICE_CHOICE` | 按编号选择（按安全等级排列） | `0`（全部）/ `1`–`N`（单个）/ `N+1`（退出） | 三者均未设置 → 弹出交互式菜单 |
 
-> 菜单编号由 `scripts/core/discovery.sh` 自动发现协议模块并按模块目录名字母序排列。新增模块后编号顺延，因此编号不固定。
+> 菜单编号由 `scripts/core/discovery.sh` 自动发现协议模块并按 `MODULE_SECURITY_RANK`（安全等级）升序排列。新增模块后编号会按安全等级插入，因此编号不固定。
 
 ### 卸载选择机制（独立变量空间）
 
@@ -295,7 +298,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 
 | 变量 | 作用 | 可选值 |
 |------|------|--------|
-| `EASYNET_UNINSTALL_CHOICE` | 按编号选择卸载目标 | `0`(全部) / `1`-`N`(单个) / `N+1`(退出)；编号含 Edge Gateway |
+| `EASYNET_UNINSTALL_CHOICE` | 按编号选择卸载目标 | `0`（全部）/ `1`–`N`（单个）/ `N+1`（退出）；编号含 Edge Gateway |
 | `EASYNET_UNINSTALL_MODULE` | 按名称卸载指定模块 | `xray-reality` / `hysteria2` / `shadowsocks` / `wireguard` / `edge` |
 | `EASYNET_UNINSTALL_KEEP_CONFIG` | 保留配置文件（迁移/排障用） | `false`（默认，清理配置） |
 | `EASYNET_UNINSTALL_PURGE_PACKAGES` | 同时卸载系统包 | `false`（默认，不卸载系统包） |
@@ -308,7 +311,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 
 | 变量 | 作用 | 默认值 |
 |------|------|--------|
-| `EASYNET_SERVICE_CHOICE` | 交互菜单编号选择（`0`=全部 / `1`-`N`=单个 / `N+1`=退出） | 未设置（交互菜单） |
+| `EASYNET_SERVICE_CHOICE` | 交互菜单编号选择（`0`=全部 / `1`–`N`=单个 / `N+1`=退出） | 未设置（交互菜单） |
 | `EASYNET_MODULE` | 按名称部署单个模块 | 未设置 |
 | `EASYNET_PROFILE` | 按策略部署（strict / balanced / compat） | 未设置 |
 | `EASYNET_AUTO_ROLLBACK` | 部署前备份 `state/`，失败时自动回滚 | `false` |
@@ -320,6 +323,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 |------|------|--------|
 | `EASYNET_DOMAIN` | 主域名；Hysteria2 / Edge TLS 要求域名已 A 记录解析到服务器公网 IP | 未设置（不部署 Edge） |
 | `EASYNET_SUBSCRIPTION_DOMAIN` | 订阅域名，可与主域名不同 | 同 `EASYNET_DOMAIN` |
+| `EASYNET_SUBSCRIPTION_DIRECT_PATHS` | 启用 /sub、/clash、/singbox 直接路径访问订阅 | `true` |
 | `EASYNET_EDGE_HTTP_PORT` | Edge HTTP 端口（acme.sh 证书挑战 + Nginx 伪装站点） | `80` |
 | `EASYNET_EDGE_HTTPS_PORT` | Edge HTTPS 端口（订阅 + 协议后端转发） | `443` |
 | `EASYNET_EDGE_CERT_DIR` | TLS 证书存放目录 | `/etc/ssl/easynet-edge` |
@@ -352,7 +356,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 |------|------|--------|
 | `EASYNET_REALITY_PORT` | Xray 监听端口 | `8443` |
 | `EASYNET_REALITY_DEST` | REALITY 目标/伪装服务器地址 | `www.microsoft.com:443` |
-| `EASYNET_REALITY_SERVER_NAME` | 逗号分隔的 SNI 名称列表 | `www.microsoft.com,cloudflare.com` |
+| `EASYNET_REALITY_SERVER_NAME` | 逗号分隔的 SNI 名称列表 | `www.microsoft.com,cloudflare.com,www.apple.com` |
 | `EASYNET_REALITY_TRANSPORT` | 传输层协议：`tcp` 或 `xhttp`（HTTP/3 伪装） | `tcp` |
 | `EASYNET_REALITY_XHTTP_MODE` | XHTTP 多路复用模式：`auto` / `stream-one` / `stream-up` / `packet-up` | `auto` |
 | `EASYNET_REALITY_XMUX_CONCURRENCY` | XMUX 多路复用并发数（`0` = 禁用） | `0` |
@@ -381,7 +385,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 |------|------|--------|
 | `EASYNET_SHADOWSOCKS_PORT` | ss-server 监听端口 | `8388` |
 | `EASYNET_SHADOWSOCKS_INSTALL_SHA256` | 发布包 SHA256 校验（可选） | 未设置（不校验） |
-| `SS_VERSION` | shadowsocks-rust 版本（非 `EASYNET_*` 前缀，需显式设置） | `1.22.0` |
+| `SS_VERSION` | shadowsocks-rust 版本（非 `EASYNET_*` 前缀，需显式设置） | `1.24.0` |
 
 #### WireGuard
 
@@ -412,7 +416,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 
 当 **不设置任何环境变量** 直接运行 `./scripts/deploy.sh` 时，系统按以下默认逻辑执行：
 
-1. **交互菜单** — 显示协议列表（按模块目录名字母序排列），等待用户手动选择
+1. **交互菜单** — 显示协议列表（按安全等级 `MODULE_SECURITY_RANK` 升序排列），等待用户手动选择
 2. **Edge 网关不部署** — `EASYNET_DOMAIN` 未设，Edge（Nginx + acme.sh TLS + 订阅托管）跳过
 3. **基础环境初始化** — 系统更新 → 安装基础依赖（curl、wget、git、unzip、jq 等）→ 启用 BBR → 配置 UFW（自动开放 `22/tcp`、`80/tcp`、`443/tcp` + 各已部署协议 metadata 中声明的端口）→ 配置 `unattended-upgrades` 自动安全更新 → 写入 cron（日志维护 + 每日 4:00 各已部署协议服务重启）
 4. **预检温和模式** — 工具缺失、端口冲突、DNS 未解析等问题仅告警，不中止部署；设 `EASYNET_STRICT_PRECHECK=true` 可转为中止

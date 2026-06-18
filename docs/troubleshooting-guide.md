@@ -157,7 +157,7 @@
 
 ## 快速判断是否是客户端问题
 
-- 换一个客户端重新导入订阅
+- 换一个客户端重新导入订阅（如 Clash Verge Rev 不行可换 Mihomo）
 - 优先用订阅导入，不要手动抄参数
 - Reality 手动导入时重点检查 `SNI`、`PublicKey`、`ShortID`；XHTTP 模式还需检查 `type=xhttp`
 - Hysteria2 手动导入时重点检查 `password`、`obfs-password`、`SNI`；Port Hopping 时检查端口范围

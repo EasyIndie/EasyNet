@@ -47,7 +47,7 @@
 2. **分类** — 维护者确认缺陷并评定严重程度：
    - **严重**（服务不可用、数据丢失）→ 立即修复
    - **一般**（功能异常，非阻塞）→ 下一个补丁版本
-3. **认领** — 在 Issue 下回复 "我来处理" 以避免重复劳动。
+3. **认领** — 在 Issue 下回复「我来处理」以避免重复劳动。
 4. **分支** — 基于 `main` 创建分支：
    ```bash
    git checkout -b fix/简短描述
@@ -91,16 +91,17 @@
 
 ```
 scripts/protocols/<名称>/
-├── deploy.sh               # 部署脚本
-├── export.sh               # 配置导出
-├── uninstall.sh            # 卸载脚本
-├── render_clash.sh         # Clash YAML 输出（可选）
-├── render_singbox.jq       # sing-box JSON 输出（可选）
-tests/test_<名称>_*.bash    # 对应的测试文件
-docs/                       # 按需更新 deployment.md、clients.md
+├── manifest.sh              # 模块声明（MANIFEST_VERSION、MODULE_ 系列变量）
+├── deploy.sh                # 部署脚本
+├── export.sh                # 配置导出为 metadata
+├── uninstall.sh             # 卸载脚本
+├── render_clash.sh          # Clash YAML 输出（推荐）
+├── render_singbox.jq        # sing-box JSON 输出（推荐）
+tests/test_<名称>_*.bats     # 对应的测试文件
+docs/                        # 按需更新 deployment.md、clients.md 等
 ```
 
-新增或修改协议后，运行文档生成器同步协议支持表：
+新增或修改协议后，可运行文档生成器同步协议支持表：
 
 ```bash
 bash docs/generate-protocol-table.sh --update
@@ -137,12 +138,14 @@ cd EasyNet
 ## 运行测试
 
 ```bash
-# 运行完整测试套件（15 个测试套件 + shell 语法检查）
+# 运行完整测试套件（23 个 bats 测试文件、262 个测试用例 + shell 语法检查）
 bash tests/run_all_tests.bash
 
 # 运行单个测试文件（开发时更快）
-bash tests/test_env_vars.bash
-# 测试运行器自动发现所有 tests/test_*.bash 文件，每个文件也可独立运行。
+bats tests/test_env_vars.bats
+
+# TAP 格式输出（CI 中使用）
+bats --formatter tap tests/
 
 # 检查所有脚本语法（与 CI 一致）
 find scripts tests -type f \( -name "*.sh" -o -name "*.bash" \) \
@@ -153,15 +156,13 @@ find scripts tests -type f \( -name "*.sh" -o -name "*.bash" \) \
 
 ## 编写测试
 
-EasyNet 使用自定义的轻量级 Bash 测试框架，定义在
-[tests/test_helper.bash](tests/test_helper.bash)。
+EasyNet 使用 [bats-core](https://github.com/bats-core/bats-core) 作为测试框架。
+测试文件放在 `tests/` 目录下，以 `.bats` 为扩展名。
 
 ### 测试框架 API
 
-EasyNet 使用 bats-core 作为测试框架。测试文件放在 `tests/` 目录下，以 `.bats` 为扩展名。
-
 ```bash
-# test_helper.bash 提供 assert_equals 和 assert_not_empty 辅助函数
+# test_helper.bash 提供辅助函数
 load test_helper
 
 @test "测试描述" {
@@ -176,14 +177,15 @@ load test_helper
 
 bats 核心断言模式：
 - `[ "$a" = "$b" ]` — 字符串相等
+- `[[ "$a" == pattern ]]` — 模式匹配
 - `run command` — 捕获 `$status` 和 `$output`
 - 更多用法参见 `bats --help`
 
 ### 约定
 
-- 测试文件命名为 `test_<主题>.bash`，放在 `tests/` 目录下。
-- 由 `run_all_tests.bash` 自动发现，无需注册。
-- 每个测试文件必须能独立运行（`bash test_foo.bash`）。
+- 测试文件以 `test_<主题>.bats` 命名，放在 `tests/` 目录下。
+- 由 `run_all_tests.bash` 自动发现（通过 bats 运行所有 `.bats` 文件），无需注册。
+- 每个测试文件必须能独立运行（`bats tests/test_foo.bats`）。
 - 测试可依赖 `jq` 和 `ripgrep` 已安装。
 
 ---

@@ -58,8 +58,6 @@ generate_document() {
 <!-- EasyNet 协议支持表 — 由 docs/generate-protocol-table.sh 自动生成 -->
 <!-- 手动修改无效，请通过修改 protocols/*/manifest.sh 后重新生成 -->
 
-## 支持的协议
-
 | 协议 | 安全等级 | 默认端口 | Edge 模式 | 部署策略 |
 |------|:--------:|:--------:|:---------:|----------|
 HEADER
@@ -78,9 +76,9 @@ case "${1:-}" in
         generate_document >> "$tmpfile"
 
         # Append everything after the table section
-        # Find the next ## after the table start
+        # Find the next ## after the table header and output from there
         awk '/^## 支持的协议/,0' "$PROJECT_ROOT/README.md" | tail -n +2 | \
-            awk 'BEGIN{s=0} /^## / && s==1{print; s=2} s==2{print} /^## 支持的协议/{s=1}' >> "$tmpfile" || true
+            awk '/^## /{s=1} s==1{print}' >> "$tmpfile" || true
 
         mv "$tmpfile" "$PROJECT_ROOT/README.md"
         log_info "README.md 已更新"
