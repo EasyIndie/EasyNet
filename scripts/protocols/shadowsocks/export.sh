@@ -27,11 +27,9 @@ export_shadowsocks_metadata() {
     fi
 
     local port psk method public_ip userinfo uri metadata_json
-    # shadowsocks-rust uses { "servers": [ { ... } ] } format;
-    # also tolerate legacy { "server_port": ..., "password": ... } format for upgrades
-    port=$(jq -r '.servers[0].server_port // .server_port // empty' "$config_file")
-    psk=$(jq -r '.servers[0].password // .password // empty' "$config_file")
-    method=$(jq -r '.servers[0].method // .method // "2022-blake3-aes-256-gcm"' "$config_file")
+    port=$(jq -r '.servers[0].server_port // empty' "$config_file")
+    psk=$(jq -r '.servers[0].password // empty' "$config_file")
+    method=$(jq -r '.servers[0].method // "2022-blake3-aes-256-gcm"' "$config_file")
     public_ip=$(get_public_ip)
 
     if [ -z "$port" ] || [ -z "$psk" ] || [ -z "$method" ] || [ -z "$public_ip" ]; then

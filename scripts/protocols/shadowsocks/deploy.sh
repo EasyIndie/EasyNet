@@ -85,9 +85,9 @@ configure_shadowsocks() {
 
     if [ -f "$CONFIG_DIR/config.json" ] && grep -q "password" "$CONFIG_DIR/config.json"; then
         log_info "检测到已有的 Shadowsocks 配置，跳过生成新密钥，直接使用现有配置。"
-        PSK=$(jq -r '.servers[0].password // .password // empty' "$CONFIG_DIR/config.json")
-        PORT=$(jq -r '.servers[0].server_port // .server_port // empty' "$CONFIG_DIR/config.json")
-        METHOD=$(jq -r '.servers[0].method // .method // "2022-blake3-aes-256-gcm"' "$CONFIG_DIR/config.json")
+        PSK=$(jq -r '.servers[0].password // empty' "$CONFIG_DIR/config.json")
+        PORT=$(jq -r '.servers[0].server_port // empty' "$CONFIG_DIR/config.json")
+        METHOD=$(jq -r '.servers[0].method // "2022-blake3-aes-256-gcm"' "$CONFIG_DIR/config.json")
         PUBLIC_IP=$(get_public_ip)
     else
         PSK=$(generate_psk)
@@ -114,10 +114,6 @@ EOF
 
 create_systemd_service() {
     log_info "创建 systemd 服务..."
-
-    # Stop old libev service if it exists
-    systemctl stop shadowsocks-libev shadowsocks-libev-server 2>/dev/null || true
-    systemctl disable shadowsocks-libev shadowsocks-libev-server 2>/dev/null || true
 
     cat > /etc/systemd/system/shadowsocks-rust-server.service << 'EOF'
 [Unit]
