@@ -2,20 +2,15 @@
 
 ## 先按这个顺序查
 
-遇到"部署失败"或"客户端连不上"时，优先执行这 5 步：
+遇到"部署失败"或"客户端连不上"时，按顺序执行以下检查：
 
-1. 查服务状态：`systemctl status <服务名> --no-pager`
-2. 查日志：`journalctl -u <服务名> -n 50 --no-pager -l`
-3. 查端口监听：`ss -ltnup`
-4. 查防火墙：`ufw status verbose`
-5. 重新导入最新订阅，避免混用旧单节点配置
+1. **服务状态**：`systemctl status <服务名> --no-pager`
+2. **日志**：`journalctl -u <服务名> -n 50 --no-pager -l`
+3. **端口监听**：`ss -ltnup`
+4. **防火墙**：`ufw status verbose`
+5. **订阅**：重新导入最新订阅，避免混用旧配置
 
-服务名按安全性和抗 DPI 能力从高到低：
-
-- `xray`
-- `hysteria-server.service`
-- `shadowsocks-rust-server`
-- `wg-quick@wg0`
+服务名（按安全等级降序）：`xray` → `hysteria-server.service` → `shadowsocks-rust-server` → `wg-quick@wg0`
 
 ## 通用问题
 

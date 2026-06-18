@@ -41,32 +41,6 @@
 | **Shadowsocks 2022** | TCP+UDP / BLAKE3-AES-256-GCM | 2022 Edition 强加密，重放保护 | 🥈 中等+ |
 | **WireGuard (+Amnezia obfs)** | UDP + Jc/Jmin/Jmax 垃圾包 | 可启用混淆消除 UDP 指纹 | 🥈 中等（启用混淆后） |
 
-### 协议混淆能力速览
-
-| 能力 | Xray+Reality | Hysteria2 | Shadowsocks | WireGuard |
-|------|:---:|:---:|:---:|:---:|
-| TLS 指纹模仿 (REALITY) | ✅ | — | — | — |
-| HTTP/3 伪装 (XHTTP) | ✅ | ✅ (QUIC) | — | — |
-| XMUX 多路复用 | ✅ | — | — | — |
-| 包分片混淆 (Fragment) | ✅ | — | — | — |
-| QUIC 混淆 (Salamander) | — | ✅ | — | — |
-| 端口跳变 (Port Hopping) | — | ✅ | — | — |
-| 垃圾包填充 (AmneziaWG) | — | — | — | ✅ |
-| 2022 Edition 板载加密 | — | — | ✅ | — |
-
-### 协议元数据对比（各模块 manifest 定义）
-
-| 属性 | Xray+Reality | Hysteria2 | Shadowsocks 2022 | WireGuard |
-|------|:---:|:---:|:---:|:---:|
-| Clash 类型 | `vless` | `hysteria2` | `ss` | `wireguard` |
-| sing-box 类型 | `vless` | `hysteria2` | `shadowsocks` | `wireguard` |
-| 安全等级（越小越安全） | 10 | 20 | 40 | 60 |
-| 默认端口 | 8443 | 443 | 8388 | 51820 |
-| Edge 模式 | `none` | `shared_tls` | `none` | `none` |
-| systemd 服务名 | `xray` | `hysteria-server.service` | `shadowsocks-rust-server` | `wg-quick@wg0` |
-| 所属策略 | strict, balanced, compat | balanced, compat | compat | compat |
-
-> 💡 如需刷新上表，可在修改 manifest 后运行 `bash docs/generate-protocol-table.sh --update`。
 
 ## 支持的协议
 <!-- EasyNet 协议支持表 — 由 docs/generate-protocol-table.sh 自动生成 -->
@@ -126,7 +100,6 @@ EasyNet/
 │   ├── deployment.md           #   部署、协议选择、订阅承载、完整配置项
 │   ├── clients.md              #   全平台客户端说明与常见问题
 │   ├── troubleshooting-guide.md#   故障排查指南
-│   ├── vps-providers.md        #   VPS 提供商列表
 │   ├── architecture-review.md  #   架构与代码质量评估报告
 │   └── generate-protocol-table.sh  # 协议支持表自动生成工具
 ├── tools/                      # 辅助工具（二维码生成等）
@@ -213,7 +186,6 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 - [部署说明](./docs/deployment.md) — 部署、协议选择、订阅承载、完整配置项清单
 - [客户端说明](./docs/clients.md) — 全平台客户端安装、导入与常见问题
 - [故障排查指南](./docs/troubleshooting-guide.md) — 分协议、分场景的排障流程
-- [VPS 提供商列表](./docs/vps-providers.md) — 推荐的境外 VPS 服务商
 - [架构评估报告](./docs/architecture-review.md) — 代码质量与架构改进建议
 
 ## 贡献指南
