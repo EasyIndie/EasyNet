@@ -248,21 +248,20 @@ bash -n scripts/my-script.sh
 
 ```bash
 # 1. 确认 main 分支就绪（所有测试通过、变更已合并）
-# 2. 更新 VERSION 文件为新的版本号
-# 3. 更新 CHANGELOG.md（按 Added / Fixed / Changed 分类）
-# 4. 提交
-git add VERSION CHANGELOG.md
+# 2. 更新 CHANGELOG.md（按 Added / Fixed / Changed 分类）
+# 3. 提交
+git add CHANGELOG.md
 git commit -m "Release X.Y.Z"
-# 5. 推送
+# 4. 推送
 git push origin main
-# 6. 打标签（严格的 semver 格式，无 v 前缀）
+# 5. 打标签（严格的 semver 格式，无 v 前缀）
 git tag X.Y.Z
 git push origin X.Y.Z
-# 7. GitHub Actions 自动创建 Release
+# 6. GitHub Actions 自动创建 Release
 ```
 
-[Release 工作流](.github/workflows/release.yml) 会：
-1. 校验 VERSION 文件与 git tag 一致
+[测试与发布工作流](.github/workflows/tests.yml) 会：
+1. 运行全量测试 + ShellCheck
 2. 从 CHANGELOG.md 提取发布说明
 3. 创建 GitHub Release
 

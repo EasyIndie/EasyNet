@@ -104,7 +104,6 @@ EasyNet/
 │   └── generate-protocol-table.sh  # 协议支持表自动生成工具
 ├── tools/                      # 辅助工具（二维码生成等）
 ├── .env.example                # 环境变量配置模板
-├── VERSION                     # 当前版本（严格 semver，无前缀）
 ├── CHANGELOG.md                # 变更日志
 └── README.md                   # 项目概览（本文件）
 ```
