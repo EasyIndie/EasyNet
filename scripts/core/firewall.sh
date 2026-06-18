@@ -57,7 +57,7 @@ firewall_metadata_rules() {
         # for UFW compatibility; integer ports pass through unchanged.
         while IFS= read -r rule; do
             [ -z "$rule" ] && continue
-            rule="${rule/-/:/}"
+            rule="${rule/-/:}"
             echo "$rule"
         done < <(jq -r '.firewall[]? | "\(.port)/\(.proto)"' "$metadata_file")
     done < <(metadata_list_files)
@@ -78,7 +78,20 @@ firewall_apply_rules() {
     local rule
     while IFS= read -r rule; do
         [ -z "$rule" ] && continue
-        ufw allow "$rule"
+
+        # Try short-form first (e.g. "443/udp", "20000:30000/udp");
+        # fall back to long-form for port ranges on UFW versions that reject the compact syntax.
+        if ! ufw allow "$rule" 2>/dev/null; then
+            # Check if this is a port range — the short form failed, try long-form
+            if [[ "$rule" =~ ^([0-9]+:[0-9]+)/(tcp|udp)$ ]]; then
+                local port_range="${BASH_REMATCH[1]}"
+                local proto="${BASH_REMATCH[2]}"
+                if ufw allow proto "$proto" to any port "$port_range" 2>/dev/null; then
+                    continue
+                fi
+            fi
+            log_warn "无法添加 UFW 规则(已跳过): $rule"
+        fi
     done < <(firewall_all_rules)
 
     if ! ufw status | grep -q "Status: active"; then
