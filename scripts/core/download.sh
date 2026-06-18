@@ -9,16 +9,16 @@ download_file() {
     local sha256="${3:-}"
 
     if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$url" -o "$output"
+        curl -fsSL "$url" -o "$output" || return 1
     elif command -v wget >/dev/null 2>&1; then
-        wget -q -O "$output" "$url"
+        wget -q -O "$output" "$url" || return 1
     else
         log_error "需要 curl 或 wget 下载安装文件。"
         return 1
     fi
 
     if [ -n "$sha256" ]; then
-        printf '%s  %s\n' "$sha256" "$output" | sha256sum -c -
+        printf '%s  %s\n' "$sha256" "$output" | sha256sum -c - || return 1
     fi
 }
 
@@ -29,7 +29,10 @@ run_downloaded_script() {
     local tmp_script status
 
     tmp_script="$(mktemp /tmp/easynet-install.XXXXXX)"
-    download_file "$url" "$tmp_script" "$sha256"
+    if ! download_file "$url" "$tmp_script" "$sha256"; then
+        rm -f "$tmp_script"
+        return 1
+    fi
     chmod 700 "$tmp_script"
     set +e
     bash "$tmp_script" "$@"

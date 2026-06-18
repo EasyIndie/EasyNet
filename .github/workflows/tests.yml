@@ -17,7 +17,10 @@ env:
 jobs:
   automated-tests:
     name: Automated test suite
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -43,7 +46,10 @@ jobs:
 
   integration-test:
     name: Integration test (config generation)
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -51,7 +57,7 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq ripgrep
+          sudo apt-get install -y jq ripgrep nginx
 
       - name: Validate config generation (dry-run)
         run: |

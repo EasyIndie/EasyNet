@@ -78,3 +78,34 @@ setup() {
     rg -q "previous_mode" "$INSTALLER"
     rg -q "恢复原模式" "$INSTALLER"
 }
+
+@test "Installer covers all 4 target architectures in detect_asset_arch" {
+    # Static check that the function maps all expected architectures
+    rg -q "linux-arm64" "$INSTALLER"
+    rg -q "linux-armv7" "$INSTALLER"
+    rg -q "linux-armv6" "$INSTALLER"
+    rg -q "linux-amd64" "$INSTALLER"
+}
+
+@test "Installer write_state template includes all required env vars" {
+    # Verify the env file template includes all required variables
+    rg -q "SINGBOX_CONFIG_URL" "$INSTALLER"
+    rg -q "SINGBOX_CONFIG_FILE" "$INSTALLER"
+    rg -q "SINGBOX_BIN" "$INSTALLER"
+    rg -q "SINGBOX_MODE" "$INSTALLER"
+}
+
+@test "Installer systemd service template has correct structure" {
+    # Verify systemd unit has required directives
+    rg -q "DynamicUser=yes" "$INSTALLER"
+    rg -q "ProtectSystem=full" "$INSTALLER"
+    rg -q "PrivateTmp=yes" "$INSTALLER"
+    rg -q "NoNewPrivileges=yes" "$INSTALLER"
+    rg -q "Restart=on-failure" "$INSTALLER"
+}
+
+@test "Installer update timer uses OnUnitActiveSec for daily schedule" {
+    rg -q "OnUnitActiveSec=1d" "$INSTALLER"
+    rg -q "RandomizedDelaySec" "$INSTALLER"
+    rg -q "Persistent=true" "$INSTALLER"
+}
