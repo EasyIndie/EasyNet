@@ -26,7 +26,12 @@
         "type": "object",
         "required": ["port", "proto"],
         "properties": {
-          "port": { "type": "integer" },
+          "port": {
+            "oneOf": [
+              { "type": "integer", "minimum": 1, "maximum": 65535 },
+              { "type": "string", "pattern": "^[0-9]+(-[0-9]+)?$" }
+            ]
+          },
           "proto": { "enum": ["tcp", "udp"] }
         }
       }

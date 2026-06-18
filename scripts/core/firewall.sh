@@ -46,14 +46,20 @@ firewall_base_rules() {
 }
 
 firewall_metadata_rules() {
-    local metadata_file
+    local metadata_file rule
 
     while IFS= read -r metadata_file; do
         [ -z "$metadata_file" ] && continue
         if ! metadata_validate_file "$metadata_file"; then
             continue
         fi
-        jq -r '.firewall[]? | "\(.port)/\(.proto)"' "$metadata_file"
+        # For string port ranges (e.g. "20000-30000"), convert hyphen to colon
+        # for UFW compatibility; integer ports pass through unchanged.
+        while IFS= read -r rule; do
+            [ -z "$rule" ] && continue
+            rule="${rule/-/:/}"
+            echo "$rule"
+        done < <(jq -r '.firewall[]? | "\(.port)/\(.proto)"' "$metadata_file")
     done < <(metadata_list_files)
 }
 

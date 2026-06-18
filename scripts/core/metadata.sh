@@ -59,11 +59,14 @@ metadata_validate_file() {
         return 1
     fi
 
-    # Each firewall entry must have valid port and proto
+    # Each firewall entry must have valid port and proto.
+    # Port can be integer (1-65535) or string port range (e.g. "20000-30000").
     invalid_fw=$(jq -r '
+        def is_valid_port(p): p | (type == "number") and . >= 1 and . <= 65535;
+        def is_valid_range(p): p | (type == "string") and (test("^[0-9]+-[0-9]+$"))
+            and (split("-") | map(tonumber) | .[0] >= 1 and .[0] <= 65535 and .[1] >= 1 and .[1] <= 65535 and .[0] < .[1]);
         .firewall[]? | select(
-            (.port | type != "number") or
-            .port < 1 or .port > 65535 or
+            ((is_valid_port(.port) or is_valid_range(.port)) | not) or
             (.proto != "tcp" and .proto != "udp")
         ) | "\(.port)/\(.proto)"
     ' "$metadata_path")
