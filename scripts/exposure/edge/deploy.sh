@@ -21,8 +21,8 @@ EDGE_RENEW_HOOK="${EASYNET_EDGE_RENEW_HOOK:-$SCRIPT_DIR/cert_renew_hook.sh}"
 EDGE_MASQUERADE_URL="${EASYNET_EDGE_MASQUERADE_URL:-https://www.bing.com}"
 EDGE_SUBSCRIPTION_PATH_PREFIX=""
 EDGE_SERVER_NAMES="$EDGE_DOMAIN"
-if [ -n "$EASYNET_DOMAIN" ] && [ "$EASYNET_DOMAIN" != "$EDGE_DOMAIN" ]; then
-    EDGE_SERVER_NAMES="$EDGE_SERVER_NAMES $EASYNET_DOMAIN"
+if [ -n "${EASYNET_DOMAIN:-}" ] && [ "${EASYNET_DOMAIN:-}" != "$EDGE_DOMAIN" ]; then
+    EDGE_SERVER_NAMES="$EDGE_SERVER_NAMES ${EASYNET_DOMAIN:-}"
 fi
 
 edge_acme_domain_args() {
@@ -36,7 +36,7 @@ ensure_edge_subscription_path_prefix() {
     local path_file path_prefix
 
     path_file="$EDGE_STATE_DIR/subscription_path_prefix.txt"
-    if [ -n "$EASYNET_SUBSCRIPTION_PATH_PREFIX" ]; then
+    if [ -n "${EASYNET_SUBSCRIPTION_PATH_PREFIX:-}" ]; then
         path_prefix="/${EASYNET_SUBSCRIPTION_PATH_PREFIX#/}"
         path_prefix="${path_prefix%/}"
     elif [ -f "$path_file" ]; then
