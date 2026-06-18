@@ -27,8 +27,8 @@ fi
 
 edge_acme_domain_args() {
     printf '%s\n' "-d" "$EDGE_DOMAIN"
-    if [ -n "$EASYNET_DOMAIN" ] && [ "$EASYNET_DOMAIN" != "$EDGE_DOMAIN" ]; then
-        printf '%s\n' "-d" "$EASYNET_DOMAIN"
+    if [ -n "${EASYNET_DOMAIN:-}" ] && [ "${EASYNET_DOMAIN:-}" != "$EDGE_DOMAIN" ]; then
+        printf '%s\n' "-d" "${EASYNET_DOMAIN:-}"
     fi
 }
 

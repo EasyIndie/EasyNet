@@ -5,7 +5,7 @@ source "$EASYNET_SUBSCRIPTION_CORE_DIR/env.sh"
 source "$EASYNET_SUBSCRIPTION_CORE_DIR/metadata.sh"
 
 easynet_subscription_domain() {
-    if [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ]; then
+    if [ -n "${EASYNET_SUBSCRIPTION_DOMAIN:-}" ]; then
         echo "$EASYNET_SUBSCRIPTION_DOMAIN"
         return
     fi
@@ -21,7 +21,7 @@ easynet_subscription_domain() {
 }
 
 easynet_subscription_scheme() {
-    if [ -n "$EASYNET_SUBSCRIPTION_SCHEME" ]; then
+    if [ -n "${EASYNET_SUBSCRIPTION_SCHEME:-}" ]; then
         echo "$EASYNET_SUBSCRIPTION_SCHEME"
         return
     fi
@@ -37,7 +37,7 @@ easynet_subscription_scheme() {
 }
 
 easynet_subscription_port() {
-    if [ -n "$EASYNET_SUBSCRIPTION_URL_PORT" ]; then
+    if [ -n "${EASYNET_SUBSCRIPTION_URL_PORT:-}" ]; then
         echo "$EASYNET_SUBSCRIPTION_URL_PORT"
         return
     fi
@@ -73,7 +73,7 @@ easynet_normalize_path_prefix() {
 }
 
 easynet_subscription_path_prefix() {
-    if [ -n "$EASYNET_SUBSCRIPTION_PATH_PREFIX" ]; then
+    if [ -n "${EASYNET_SUBSCRIPTION_PATH_PREFIX:-}" ]; then
         easynet_normalize_path_prefix "$EASYNET_SUBSCRIPTION_PATH_PREFIX"
         return
     fi
