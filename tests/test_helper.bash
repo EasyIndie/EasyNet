@@ -49,11 +49,14 @@ run_function() {
 
     # Source in a subshell so we don't pollute the test environment
     (
+        # shellcheck disable=SC1090  # dynamic path per call
         source "$script" >"$out_file" 2>"$err_file"
         "$func" "$@" >>"$out_file" 2>>"$err_file"
     ) && rc=0 || rc=$?
 
+    # shellcheck disable=SC2034  # used by calling test assertions (bats-compat)
     output="$(cat "$out_file" 2>/dev/null; cat "$err_file" 2>/dev/null)"
+    # shellcheck disable=SC2034  # used by calling test assertions (bats-compat)
     status=$rc
     rm -f "$out_file" "$err_file"
 }
