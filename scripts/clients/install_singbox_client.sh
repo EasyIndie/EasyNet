@@ -591,6 +591,9 @@ main() {
     log "下载并校验 sing-box 配置..."
     "$INSTALL_DIR/easynet-singbox-update"
 
+    # Stop existing service so new config takes effect on re-install
+    systemctl stop "${SERVICE_NAME}.service" 2>/dev/null || true
+
     write_systemd_units
     systemctl daemon-reload
     systemctl enable --now "${SERVICE_NAME}.service"
