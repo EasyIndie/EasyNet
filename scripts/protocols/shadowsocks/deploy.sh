@@ -118,7 +118,7 @@ ProtectHome=yes
 PrivateTmp=yes
 NoNewPrivileges=yes
 CapabilityBoundingSet=~
-ExecStart=/usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json -U --encrypt-method ${METHOD} --server-addr 0.0.0.0 -k ${PSK}
+ExecStart=/usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json -U --encrypt-method ${METHOD} --server-addr 0.0.0.0:${PORT} -k ${PSK}
 Restart=on-failure
 RestartSec=5
 
