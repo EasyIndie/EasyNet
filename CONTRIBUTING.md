@@ -158,19 +158,26 @@ EasyNet 使用自定义的轻量级 Bash 测试框架，定义在
 
 ### 测试框架 API
 
+EasyNet 使用 bats-core 作为测试框架。测试文件放在 `tests/` 目录下，以 `.bats` 为扩展名。
+
 ```bash
-source "$(dirname "$0")/test_helper.bash"
+# test_helper.bash 提供 assert_equals 和 assert_not_empty 辅助函数
+load test_helper
 
-test_start "测试组名称"
+@test "测试描述" {
+    result=$(some_function)
+    [ "$result" = "期望值" ]
 
-# 断言两个值相等
-assert_equals "期望值" "实际值" "测试描述"
-
-# 断言值非空
-assert_not_empty "$value" "测试描述"
-
-test_end
+    # 或使用辅助断言
+    assert_equals "期望值" "$result" "测试描述"
+    assert_not_empty "$result" "测试描述"
+}
 ```
+
+bats 核心断言模式：
+- `[ "$a" = "$b" ]` — 字符串相等
+- `run command` — 捕获 `$status` 和 `$output`
+- 更多用法参见 `bats --help`
 
 ### 约定
 

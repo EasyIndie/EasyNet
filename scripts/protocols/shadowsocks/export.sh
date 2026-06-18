@@ -1,21 +1,14 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/metadata.sh"
+source "$CORE_DIR/network.sh"
 
 MODULE_NAME="shadowsocks"
 CONFIG_DIR="${SHADOWSOCKS_CONFIG_DIR:-/etc/shadowsocks-rust}"
-
-get_public_ip() {
-    if [ -n "$EASYNET_PUBLIC_IP" ]; then
-        echo "$EASYNET_PUBLIC_IP"
-        return
-    fi
-    curl -s https://ipinfo.io/ip || curl -s https://ifconfig.me || curl -s https://api.ipify.org
-}
 
 export_shadowsocks_metadata() {
     local config_file="$CONFIG_DIR/config.json"

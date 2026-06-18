@@ -16,6 +16,13 @@ edge_routes_dir() {
     echo "$(edge_route_state_dir)/routes"
 }
 
+# ------------------------------------------------------------------
+# Generate a secure random route path (32 hex chars, prefixed with /)
+# ------------------------------------------------------------------
+generate_route_path() {
+    echo "/$(openssl rand -hex 16)"
+}
+
 # ============================================================
 # Generic Edge Backend Route (for any EDGE_MODE=backend protocol)
 # Uses the protocol's manifest.sh MODULE_NGINX_ROUTE_TEMPLATE,

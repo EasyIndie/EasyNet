@@ -189,7 +189,7 @@ teardown_file() {
 
 @test "Hysteria2 deploy prints QR code for client URI" {
     rg -q "配置二维码" "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"
-    rg -q 'qrencode -t utf8 "\$config_url"' "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"
+    rg -q 'show_qrcode "\$config_url"' "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"
 }
 
 @test "Hysteria2 reuses Edge TLS certificate without standalone ACME or provider-specific guidance" {

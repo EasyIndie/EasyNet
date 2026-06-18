@@ -13,6 +13,7 @@ source "$PROJECT_ROOT/scripts/core/logging.sh"
 source "$PROJECT_ROOT/scripts/core/metadata.sh"
 source "$PROJECT_ROOT/scripts/core/env.sh"
 source "$PROJECT_ROOT/scripts/core/subscription.sh"
+source "$PROJECT_ROOT/scripts/core/display.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
 source "$PROJECT_ROOT/scripts/core/subscription_clash.sh"
 
@@ -233,27 +234,15 @@ show_subscription_links() {
     echo "========================================"
     echo "【URI 订阅】适用于 Shadowrocket / v2rayN / v2rayNG："
     echo -e "${GREEN}${sub_url}${NC}"
-    if command -v qrencode &> /dev/null; then
-        echo ""
-        echo "URI 订阅二维码："
-        qrencode -t utf8 "$sub_url"
-    fi
+    show_qrcode "$sub_url" "URI 订阅二维码"
     echo ""
     echo "【Clash/Mihomo 订阅】适用于 Clash Verge Rev / Mihomo："
     echo -e "${GREEN}${clash_url}${NC}"
-    if command -v qrencode &> /dev/null; then
-        echo ""
-        echo "Clash/Mihomo 订阅二维码："
-        qrencode -t utf8 "$clash_url"
-    fi
+    show_qrcode "$clash_url" "Clash/Mihomo 订阅二维码"
     echo ""
     echo "【sing-box 配置】适用于 Raspberry Pi / 卡片机 / 无界面 Linux："
     echo -e "${GREEN}${singbox_url}${NC}"
-    if command -v qrencode &> /dev/null; then
-        echo ""
-        echo "sing-box 配置二维码："
-        qrencode -t utf8 "$singbox_url"
-    fi
+    show_qrcode "$singbox_url" "sing-box 配置二维码"
     echo ""
     echo "树莓派快速安装："
     echo "curl -fsSL \"${installer_url}\" -o easynet-singbox-client.sh"

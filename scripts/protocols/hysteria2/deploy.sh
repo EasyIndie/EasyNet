@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
@@ -8,6 +8,7 @@ source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/metadata.sh"
 source "$CORE_DIR/env.sh"
 source "$CORE_DIR/download.sh"
+source "$CORE_DIR/display.sh"
 
 HYSTERIA2_CONFIG_DIR="${HYSTERIA2_CONFIG_DIR:-/etc/hysteria}"
 HYSTERIA2_CONFIG_FILE="${HYSTERIA2_CONFIG_FILE:-$HYSTERIA2_CONFIG_DIR/config.yaml}"
@@ -193,11 +194,7 @@ show_config() {
     echo "$config_url"
     echo ""
     echo "配置二维码:"
-    if command -v qrencode &>/dev/null; then
-        qrencode -t utf8 "$config_url"
-    else
-        echo "未安装 qrencode，无法显示二维码。"
-    fi
+    show_qrcode "$config_url" "配置二维码"
     echo ""
     echo "连通性提示:"
     echo "- Hysteria2 使用 UDP/$port，请确认云厂商安全组和服务器防火墙均已放行 UDP/$port"
@@ -208,7 +205,6 @@ main() {
     install_hysteria2
     configure_hysteria2
     restart_hysteria2
-    "$SCRIPT_DIR/export.sh"
     show_config
 }
 

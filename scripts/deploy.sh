@@ -11,6 +11,7 @@ source "$PROJECT_ROOT/scripts/core/maintenance.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
 source "$PROJECT_ROOT/scripts/core/profiles.sh"
 source "$PROJECT_ROOT/scripts/core/validate.sh"
+source "$PROJECT_ROOT/scripts/core/bootstrap.sh"
 source "$PROJECT_ROOT/scripts/exposure/edge/routes.sh"
 
 # Error trap for set -eE: provides context on unexpected failures
@@ -174,6 +175,10 @@ module_entrypoint() {
     discovery_module_entrypoint "$1"
 }
 
+module_export_script() {
+    discovery_module_export_script "$1"
+}
+
 deploy_edge_gateway() {
     bash "$DEPLOY_SCRIPT_DIR/exposure/edge/deploy.sh"
 }
@@ -320,6 +325,13 @@ deploy_module() {
     log_info "开始部署 $(module_display_name "$module")..."
     prepare_module_dependencies "$module"
     bash "$entrypoint"
+
+    # Export metadata after deployment (orchestrator responsibility)
+    local export_script
+    export_script=$(module_export_script "$module") || true
+    if [ -n "$export_script" ]; then
+        bash "$export_script"
+    fi
 }
 
 deploy_modules() {
@@ -359,12 +371,8 @@ main() {
     check_root
     check_os
 
-    update_system
-    install_dependencies
-    enable_bbr
-    setup_firewall
-    setup_auto_update
-    setup_cron_jobs
+    bootstrap_system
+    bootstrap_security
 
     while true; do
         show_menu

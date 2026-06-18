@@ -1,19 +1,17 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/url.sh"
+source "$CORE_DIR/network.sh"
+source "$CORE_DIR/display.sh"
 
 WG_DIR="${WG_DIR:-/etc/wireguard}"
 WG_CONFIG="$WG_DIR/wg0.conf"
 CLIENT_CONFIG_DIR="${CLIENT_CONFIG_DIR:-$WG_DIR/clients}"
-
-get_public_ip() {
-    curl -s https://ipinfo.io/ip || curl -s https://ifconfig.me || curl -s https://api.ipify.org
-}
 
 generate_private_key() {
     wg genkey
@@ -194,11 +192,7 @@ show_config() {
 
     echo ""
     echo -e "${YELLOW}配置二维码 (请使用 Shadowrocket 或 Clash 扫码):${NC}"
-    if command -v qrencode &>/dev/null; then
-        echo "$wg_uri" | qrencode -t utf8
-    else
-        echo "未安装 qrencode，无法显示二维码。"
-    fi
+    show_qrcode "$wg_uri" "配置二维码"
     echo ""
     if [ "$wg_obfs" = "true" ]; then
         echo "AmneziaWG 混淆已启用，请使用支持 AmneziaWG 的客户端。"
@@ -215,7 +209,6 @@ main() {
     configure_server
     add_client "client1" 1
     create_systemd_service
-    "$SCRIPT_DIR/export.sh"
     show_config
 }
 

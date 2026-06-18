@@ -3,10 +3,12 @@
 # Usage: bash render_clash.sh <metadata.json>
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
+source "$CORE_DIR/subscription_clash.sh"
+
 METADATA_FILE="$1"
 [ -f "$METADATA_FILE" ] || exit 1
-
-yaml_escape() { local v="$1"; v="${v//\\/\\\\}"; v="${v//\"/\\\"}"; printf '%s' "$v"; }
 
 name=$(jq -r '.client.clash.name // .module' "$METADATA_FILE")
 server=$(jq -r '.client.clash.server // empty' "$METADATA_FILE")

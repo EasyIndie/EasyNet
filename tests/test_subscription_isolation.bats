@@ -155,7 +155,7 @@ JSON
 }
 
 @test "Show subscription command prints QR codes or explicit QR fallback messages" {
-    run rg -q "qrencode -t utf8.*sub_url|qrencode -t utf8.*clash_url|qrencode -t utf8.*singbox_url|无法显示 URI 订阅二维码|无法显示 Clash/Mihomo 订阅二维码|无法显示 sing-box 配置二维码" "$PROJECT_ROOT/scripts/show_subscription.sh"
+    run rg -q "show_qrcode.*订阅二维码|无法显示.*订阅二维码" "$PROJECT_ROOT/scripts/show_subscription.sh"
     [ "$status" -eq 0 ]
 }
 

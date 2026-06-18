@@ -1,21 +1,14 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/metadata.sh"
+source "$CORE_DIR/network.sh"
 
 MODULE_NAME="xray-reality"
 XRAY_DIR="${XRAY_DIR:-/usr/local/etc/xray}"
-
-get_public_ip() {
-    if [ -n "$EASYNET_PUBLIC_IP" ]; then
-        echo "$EASYNET_PUBLIC_IP"
-        return
-    fi
-    curl -s https://ipinfo.io/ip || curl -s https://ifconfig.me || curl -s https://api.ipify.org
-}
 
 export_xray_reality_metadata() {
     local config_file="$XRAY_DIR/config.json"

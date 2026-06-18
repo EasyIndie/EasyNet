@@ -1,11 +1,13 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/download.sh"
+source "$CORE_DIR/network.sh"
+source "$CORE_DIR/display.sh"
 
 CONFIG_DIR="${SHADOWSOCKS_CONFIG_DIR:-/etc/shadowsocks-rust}"
 SS_BIN="${SS_BIN:-/usr/local/bin/ssserver}"
@@ -25,10 +27,6 @@ detect_arch() {
 generate_psk() {
     # 2022-blake3-aes-256-gcm uses a 32-byte key
     openssl rand -base64 32
-}
-
-get_public_ip() {
-    curl -s https://ipinfo.io/ip || curl -s https://ifconfig.me || curl -s https://api.ipify.org
 }
 
 install_shadowsocks() {
@@ -160,11 +158,7 @@ show_config() {
     echo "SS 链接: $config_url"
     echo ""
     echo "配置二维码:"
-    if command -v qrencode &>/dev/null; then
-        qrencode -t utf8 "$config_url"
-    else
-        echo "未安装 qrencode，无法显示二维码。"
-    fi
+    show_qrcode "$config_url" "配置二维码"
     echo ""
     echo "注意: Shadowsocks 2022 Edition 需要客户端支持 2022 加密方式。"
     echo "      Android/v2rayNG/Clash Verge Rev/Shadowrocket 均支持。"
@@ -175,7 +169,6 @@ main() {
     install_shadowsocks
     configure_shadowsocks
     create_systemd_service
-    "$SCRIPT_DIR/export.sh"
     show_config
 }
 

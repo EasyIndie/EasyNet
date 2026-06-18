@@ -75,9 +75,11 @@ profile_module_belongs() {
     [ "$modules" = "__all__" ] && return 0
 
     local m
+    set -f
     for m in $modules; do
-        [ "$m" = "$module_name" ] && return 0
+        [ "$m" = "$module_name" ] && { set +f; return 0; }
     done
+    set +f
     return 1
 }
 

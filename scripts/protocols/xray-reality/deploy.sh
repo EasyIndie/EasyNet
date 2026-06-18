@@ -1,21 +1,19 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/download.sh"
+source "$CORE_DIR/network.sh"
+source "$CORE_DIR/display.sh"
 
 XRAY_DIR="${XRAY_DIR:-/usr/local/etc/xray}"
 XRAY_BIN="${XRAY_BIN:-/usr/local/bin/xray}"
 
 generate_uuid() {
     cat /proc/sys/kernel/random/uuid
-}
-
-get_public_ip() {
-    curl -s https://ipinfo.io/ip || curl -s https://ifconfig.me || curl -s https://api.ipify.org
 }
 
 install_xray() {
@@ -275,11 +273,7 @@ show_config() {
     echo "$config_url"
     echo ""
     echo "配置二维码:"
-    if command -v qrencode &>/dev/null; then
-        qrencode -t utf8 "$config_url"
-    else
-        echo "未安装 qrencode，无法显示二维码。"
-    fi
+    show_qrcode "$config_url" "配置二维码"
     echo "========================================"
 }
 
@@ -288,7 +282,6 @@ main() {
     configure_reality
     create_systemd_service
     ensure_short_id
-    "$SCRIPT_DIR/export.sh"
     show_config
 }
 

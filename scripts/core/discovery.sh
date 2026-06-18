@@ -144,14 +144,13 @@ discovery_module_entrypoint() {
     return 1
 }
 
-# Get the uninstall entrypoint for a module
-# shellcheck disable=SC2317,SC2329  # invoked indirectly by callers that source this file
-discovery_uninstall_entrypoint() {
+# Get the metadata export script for a module
+discovery_module_export_script() {
     local module_name="$1"
-    local uninstall_path
-    uninstall_path="$(discovery_protocols_dir)/$module_name/uninstall.sh"
-    if [ -x "$uninstall_path" ]; then
-        echo "$uninstall_path"
+    local export_path
+    export_path="$(discovery_protocols_dir)/$module_name/export.sh"
+    if [ -x "$export_path" ]; then
+        echo "$export_path"
         return 0
     fi
     return 1
