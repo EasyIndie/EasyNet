@@ -9,6 +9,7 @@ source "$CORE_DIR/metadata.sh"
 source "$CORE_DIR/env.sh"
 source "$CORE_DIR/download.sh"
 source "$CORE_DIR/display.sh"
+source "$CORE_DIR/crypto.sh"
 
 HYSTERIA2_CONFIG_DIR="${HYSTERIA2_CONFIG_DIR:-/etc/hysteria}"
 HYSTERIA2_CONFIG_FILE="${HYSTERIA2_CONFIG_FILE:-$HYSTERIA2_CONFIG_DIR/config.yaml}"
@@ -16,11 +17,7 @@ HYSTERIA2_ENV_FILE="${HYSTERIA2_ENV_FILE:-$HYSTERIA2_CONFIG_DIR/easynet.env}"
 HYSTERIA2_SERVICE="${HYSTERIA2_SERVICE:-hysteria-server.service}"
 HYSTERIA2_CERT_DIR="${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}"
 HYSTERIA2_CERT_FILE="${EASYNET_HYSTERIA2_CERT_FILE:-$HYSTERIA2_CERT_DIR/fullchain.crt}"
-HYSTERIA2_KEY_FILE="${EASYNET_HYSTERIA2_KEY_FILE:-$HYSTERIA2_CERT_DIR/private.key}"
-
-random_secret() {
-    openssl rand -hex 16
-}
+HYSTERIA2_KEY_FILE="${EASYNET_HYSTERIA2_KEY_FILE:-$HYSTERIA2_CERT_DIR/private.key"
 
 install_hysteria2() {
     if command -v hysteria &>/dev/null; then

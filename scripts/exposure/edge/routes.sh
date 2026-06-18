@@ -74,10 +74,9 @@ ensure_edge_backend_route() {
 
     # Write nginx config: use template from manifest, or default HTTP pass-through
     if [ -n "${MODULE_NGINX_ROUTE_TEMPLATE:-}" ]; then
-        # Interpolate template variables using eval heredoc
-        eval "cat > \"$edge_routes_dir/${module}.conf\" <<ROUTEEOF
-${MODULE_NGINX_ROUTE_TEMPLATE}
-ROUTEEOF"
+        # Interpolate template variables using envsubst
+        export route_path env_prefix backend_port module
+        echo "$MODULE_NGINX_ROUTE_TEMPLATE" | envsubst > "$edge_routes_dir/${module}.conf"
     else
         # Default HTTP reverse-proxy template
         cat > "$edge_routes_dir/${module}.conf" <<EOF

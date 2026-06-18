@@ -75,7 +75,7 @@ update_system() {
 
 install_dependencies() {
     log_info "安装基础依赖..."
-    apt install -y curl wget git unzip ca-certificates gnupg2 lsb-release qrencode jq
+    apt install -y curl wget git unzip ca-certificates gnupg2 lsb-release qrencode jq gettext-base
 }
 
 enable_bbr() {

@@ -8,13 +8,10 @@ source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/download.sh"
 source "$CORE_DIR/network.sh"
 source "$CORE_DIR/display.sh"
+source "$CORE_DIR/crypto.sh"
 
 XRAY_DIR="${XRAY_DIR:-/usr/local/etc/xray}"
 XRAY_BIN="${XRAY_BIN:-/usr/local/bin/xray}"
-
-generate_uuid() {
-    cat /proc/sys/kernel/random/uuid
-}
 
 install_xray() {
     local xray_version

@@ -8,26 +8,11 @@ source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/download.sh"
 source "$CORE_DIR/network.sh"
 source "$CORE_DIR/display.sh"
+source "$CORE_DIR/crypto.sh"
 
 CONFIG_DIR="${SHADOWSOCKS_CONFIG_DIR:-/etc/shadowsocks-rust}"
 SS_BIN="${SS_BIN:-/usr/local/bin/ssserver}"
 SS_VERSION="${SS_VERSION:-1.22.0}"
-
-detect_arch() {
-    local arch
-    arch=$(uname -m)
-    case "$arch" in
-        x86_64)  echo "x86_64-unknown-linux-gnu" ;;
-        aarch64) echo "aarch64-unknown-linux-gnu" ;;
-        armv7l)  echo "armv7-unknown-linux-gnueabihf" ;;
-        *)       log_error "不支持的架构: $arch"; exit 1 ;;
-    esac
-}
-
-generate_psk() {
-    # 2022-blake3-aes-256-gcm uses a 32-byte key
-    openssl rand -base64 32
-}
 
 install_shadowsocks() {
     if command -v ssserver &>/dev/null; then
@@ -45,7 +30,7 @@ install_shadowsocks() {
 
     log_info "安装 shadowsocks-rust v${SS_VERSION}..."
     local arch
-    arch=$(detect_arch)
+    arch=$(detect_rust_target)
 
     local tar_file="shadowsocks-v${SS_VERSION}.${arch}.tar.xz"
     local url="https://github.com/shadowsocks/shadowsocks-rust/releases/download/v${SS_VERSION}/${tar_file}"
