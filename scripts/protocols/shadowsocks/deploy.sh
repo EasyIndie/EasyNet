@@ -35,9 +35,9 @@ install_shadowsocks() {
     local tar_file="shadowsocks-v${SS_VERSION}.${arch}.tar.xz"
     local url="https://github.com/shadowsocks/shadowsocks-rust/releases/download/v${SS_VERSION}/${tar_file}"
 
-    local tmp_dir
+    local tmp_dir=""
     tmp_dir=$(mktemp -d)
-    trap 'rm -rf "$tmp_dir"' RETURN
+    trap 'rm -rf "${tmp_dir:-}"' RETURN
 
     log_info "下载 $url ..."
     curl -fsSL -o "$tmp_dir/$tar_file" "$url" || {
