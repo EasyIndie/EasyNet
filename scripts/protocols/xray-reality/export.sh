@@ -14,7 +14,7 @@ get_public_ip() {
         echo "$EASYNET_PUBLIC_IP"
         return
     fi
-    curl -s ipinfo.io/ip || curl -s ifconfig.me || curl -s api.ipify.org
+    curl -s https://ipinfo.io/ip || curl -s https://ifconfig.me || curl -s https://api.ipify.org
 }
 
 export_xray_reality_metadata() {

@@ -216,6 +216,11 @@ ensure_edge_domain() {
         log_error "Edge Gateway 域名不能为空"
         return 1
     fi
+    # Validate domain format
+    if ! [[ "$EASYNET_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
+        log_error "域名格式无效: $EASYNET_DOMAIN"
+        return 1
+    fi
     export EASYNET_DOMAIN
 }
 
@@ -268,14 +273,18 @@ resolve_modules() {
 }
 
 create_backup() {
-    local state_dir
+    local state_dir backup_dir
     state_dir="$(easynet_state_dir)"
     if [ -d "$state_dir" ]; then
-        BACKUP_FILE="/tmp/easynet_backup_$(date +%s).tar.gz"
+        backup_dir="/var/lib/easynet/backups"
+        mkdir -p "$backup_dir" && chmod 700 "$backup_dir"
+        BACKUP_FILE=$(mktemp "$backup_dir/easynet_backup.XXXXXX.tar.gz")
         if tar czf "$BACKUP_FILE" -C "$(dirname "$state_dir")" "$(basename "$state_dir")" 2>/dev/null; then
+            chmod 600 "$BACKUP_FILE"
             log_info "已备份当前状态: $BACKUP_FILE"
         else
             log_warn "状态目录备份失败，跳过回滚保护"
+            rm -f "$BACKUP_FILE" 2>/dev/null || true
             BACKUP_FILE=""
         fi
     else

@@ -149,6 +149,13 @@ install_singbox_binary() {
 
     log "下载 sing-box: $SINGBOX_URL"
     curl -fL "$SINGBOX_URL" -o "$tarball"
+
+    # Verify SHA256 if provided
+    if [ -n "${EASYNET_SINGBOX_INSTALL_SHA256:-}" ]; then
+        log "校验 sing-box 压缩包 SHA256..."
+        printf '%s  %s\n' "$EASYNET_SINGBOX_INSTALL_SHA256" "$tarball" | sha256sum -c - || die "sing-box 压缩包 SHA256 校验失败，请检查下载来源或更新 EASYNET_SINGBOX_INSTALL_SHA256"
+    fi
+
     tar -xzf "$tarball" -C "$tmp_dir"
     binary_path="$(find "$tmp_dir" -type f -name sing-box -perm -111 | head -n 1)"
     [ -n "$binary_path" ] || die "下载包中未找到 sing-box 可执行文件"
@@ -303,6 +310,13 @@ EOF
 }
 
 write_systemd_units() {
+    local dynamic_user_caps=""
+    # TUN mode requires CAP_NET_ADMIN; mixed mode needs no special privileges
+    if [ "${MODE:-mixed}" = "tun" ]; then
+        dynamic_user_caps="AmbientCapabilities=CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_NET_ADMIN"
+    fi
+
     cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOF
 [Unit]
 Description=EasyNet sing-box Client
@@ -311,7 +325,13 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=${INSTALL_DIR}/sing-box run -c ${CONFIG_DIR}/config.json
+DynamicUser=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+${dynamic_user_caps:+${dynamic_user_caps}
+}ExecStart=${INSTALL_DIR}/sing-box run -c ${CONFIG_DIR}/config.json
 Restart=on-failure
 RestartSec=5
 
@@ -325,6 +345,10 @@ Description=Update EasyNet sing-box config
 
 [Service]
 Type=oneshot
+DynamicUser=yes
+ProtectSystem=full
+PrivateTmp=yes
+NoNewPrivileges=yes
 ExecStart=${INSTALL_DIR}/easynet-singbox-update
 EOF
 

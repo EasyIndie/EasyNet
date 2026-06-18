@@ -42,6 +42,10 @@ require_domain() {
         log_error "Hysteria2 需要可解析到本机的域名。"
         exit 1
     fi
+    if ! [[ "$domain" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
+        log_error "域名格式无效: $domain"
+        exit 1
+    fi
     echo "$domain"
 }
 

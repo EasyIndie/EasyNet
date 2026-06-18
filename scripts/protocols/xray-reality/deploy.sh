@@ -15,13 +15,15 @@ generate_uuid() {
 }
 
 get_public_ip() {
-    curl -s ipinfo.io/ip || curl -s ifconfig.me || curl -s api.ipify.org
+    curl -s https://ipinfo.io/ip || curl -s https://ifconfig.me || curl -s https://api.ipify.org
 }
 
 install_xray() {
+    local xray_version
     log_info "安装 Xray..."
+    xray_version="${EASYNET_XRAY_VERSION:-1.8.4}"
     run_downloaded_script \
-        "https://github.com/XTLS/Xray-install/raw/main/install-release.sh" \
+        "https://github.com/XTLS/Xray-install/raw/v${xray_version}/install-release.sh" \
         "${EASYNET_XRAY_INSTALL_SHA256:-}" \
         install
 }
@@ -57,14 +59,10 @@ configure_reality() {
         UUID=$(generate_uuid)
         DEST="${EASYNET_REALITY_DEST:-www.microsoft.com:443}"
         SERVER_NAMES="${EASYNET_REALITY_SERVER_NAME:-www.microsoft.com,cloudflare.com}"
-        # Build JSON array from comma-separated server names
-        SERVER_NAMES_ARR=""
-        IFS=',' read -ra _sn <<< "$SERVER_NAMES"
-        for _s in "${_sn[@]}"; do
-            _s="$(echo "$_s" | xargs)"
-            SERVER_NAMES_ARR+="\"$_s\", "
-        done
-        SERVER_NAMES_ARR="[${SERVER_NAMES_ARR%, }]"
+        # Build JSON array from comma-separated server names using jq
+        SERVER_NAMES_ARR=$(jq -Rn --arg names "$SERVER_NAMES" '
+            $names | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))
+        ')
         PORT="${EASYNET_REALITY_PORT:-8443}"
 
         # Build streamSettings based on transport
@@ -168,6 +166,7 @@ EOF
 }
 EOF
         fi
+        chmod 600 "$XRAY_DIR/config.json"
 
         log_info "生成 Reality 密钥..."
         local actual_xray_bin

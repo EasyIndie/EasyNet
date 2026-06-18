@@ -124,6 +124,18 @@ server {
     ssl_certificate ${EDGE_CERT_DIR}/fullchain.crt;
     ssl_certificate_key ${EDGE_CERT_DIR}/private.key;
     ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    ssl_trusted_certificate ${EDGE_CERT_DIR}/fullchain.crt;
+
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
 
     root $WEB_ROOT;
 

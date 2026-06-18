@@ -12,7 +12,7 @@ WG_CONFIG="$WG_DIR/wg0.conf"
 CLIENT_CONFIG_DIR="${CLIENT_CONFIG_DIR:-$WG_DIR/clients}"
 
 get_public_ip() {
-    curl -s ipinfo.io/ip || curl -s ifconfig.me || curl -s api.ipify.org
+    curl -s https://ipinfo.io/ip || curl -s https://ifconfig.me || curl -s https://api.ipify.org
 }
 
 generate_private_key() {
@@ -71,6 +71,7 @@ EOF
 
         chmod 600 "$WG_CONFIG"
         echo "$SERVER_PUBLIC_KEY" > "$WG_DIR/server_public.key"
+        chmod 644 "$WG_DIR/server_public.key"
     fi
 }
 
@@ -161,6 +162,8 @@ show_config() {
     echo "客户端配置文件: $wg_conf"
     echo ""
     echo "配置内容如下 (可复制保存为 .conf 文件):"
+    echo -e "${YELLOW}⚠️ 以下内容包含您的 WireGuard 私钥和预共享密钥。${NC}"
+    echo -e "${YELLOW}   请勿公开分享此链接或配置文件。如怀疑泄露，请重新部署 WireGuard。${NC}"
     cat "$wg_conf"
 
     wg_priv_key=$(grep "PrivateKey" "$wg_conf" | sed 's/^[^=]*=[[:space:]]*//' | xargs)
@@ -182,6 +185,9 @@ show_config() {
     fi
     wg_uri="${wg_uri}#EasyNet-WG"
 
+    echo ""
+    echo -e "${YELLOW}⚠️ 安全警告：以下链接包含您的 WireGuard 私钥。${NC}"
+    echo -e "${YELLOW}   请勿公开分享此链接。如怀疑泄露，请重新部署 WireGuard。${NC}"
     echo ""
     echo -e "${YELLOW}WireGuard 客户端链接 (推荐复制此链接导入):${NC}"
     echo "$wg_uri"

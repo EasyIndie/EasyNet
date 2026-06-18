@@ -28,7 +28,7 @@ generate_psk() {
 }
 
 get_public_ip() {
-    curl -s ipinfo.io/ip || curl -s ifconfig.me || curl -s api.ipify.org
+    curl -s https://ipinfo.io/ip || curl -s https://ifconfig.me || curl -s https://api.ipify.org
 }
 
 install_shadowsocks() {
@@ -108,6 +108,7 @@ configure_shadowsocks() {
 }
 EOF
 
+        chmod 600 "$CONFIG_DIR/config.json"
         log_info "Shadowsocks 2022 配置文件已创建"
     fi
 }
@@ -124,6 +125,11 @@ After=network.target nss-lookup.target
 Type=simple
 User=nobody
 Group=nogroup
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+CapabilityBoundingSet=~
 ExecStart=/usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json -U
 Restart=on-failure
 RestartSec=5
