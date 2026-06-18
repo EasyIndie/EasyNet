@@ -23,56 +23,22 @@ install_xray() {
         install --version "v${xray_version}"
 }
 
-configure_reality() {
-    log_info "配置 Xray+Reality..."
-    mkdir -p "$XRAY_DIR"
-
-    local transport="${EASYNET_REALITY_TRANSPORT:-tcp}"
-    local xhttp_mode="${EASYNET_REALITY_XHTTP_MODE:-auto}"
-    local xmux_concurrency="${EASYNET_REALITY_XMUX_CONCURRENCY:-0}"
-    local fragment="${EASYNET_REALITY_FRAGMENT:-tlshello}"
-    local fragment_length="${EASYNET_REALITY_FRAGMENT_LENGTH:-100-200}"
-    local fragment_interval="${EASYNET_REALITY_FRAGMENT_INTERVAL:-10-20}"
-
-    if [ -f "$XRAY_DIR/config.json" ] && grep -q "privateKey" "$XRAY_DIR/config.json"; then
-        log_info "检测到已有的 Xray 配置，跳过生成新密钥，直接使用现有配置。"
-        UUID=$(jq -r '.inbounds[0].settings.clients[0].id // empty' "$XRAY_DIR/config.json")
-        PORT=$(jq -r '.inbounds[0].port // empty' "$XRAY_DIR/config.json")
-        PUBLIC_KEY=$(cat "$XRAY_DIR/public.key" 2>/dev/null || echo "")
-
-        # Update Fragment settings on existing config if requested
-        if [ -n "$fragment" ]; then
-            jq --arg packets "$fragment" \
-               --arg length "$fragment_length" \
-               --arg interval "$fragment_interval" \
-               '.inbounds[0].streamSettings.fragmentSettings = { "packets": $packets, "length": $length, "interval": $interval }' \
-               "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
-            log_info "Fragment 混淆已启用: packets=$fragment length=$fragment_length interval=$fragment_interval"
-            systemctl restart xray
-        fi
-    else
-        UUID=$(generate_uuid)
-        DEST="${EASYNET_REALITY_DEST:-www.microsoft.com:443}"
-        SERVER_NAMES="${EASYNET_REALITY_SERVER_NAME:-www.microsoft.com,cloudflare.com}"
-        # Build JSON array from comma-separated server names using jq
-        SERVER_NAMES_ARR=$(jq -Rn --arg names "$SERVER_NAMES" '
-            $names | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))
-        ')
-        PORT="${EASYNET_REALITY_PORT:-8443}"
-
-        # Build streamSettings based on transport
-        if [ "$transport" = "xhttp" ]; then
-            cat > "$XRAY_DIR/config.json" << EOF
+# Write xray config.json template based on transport type
+# Parameters: transport, uuid, port, dest, server_names_arr, xhttp_mode
+write_xray_config_template() {
+    local transport="$1" uuid="$2" port="$3" dest="$4" server_names_arr="$5" xhttp_mode="$6"
+    if [ "$transport" = "xhttp" ]; then
+        cat > "$XRAY_DIR/config.json" << EOF
 {
     "inbounds": [
         {
             "listen": "0.0.0.0",
-            "port": $PORT,
+            "port": $port,
             "protocol": "vless",
             "settings": {
                 "clients": [
                     {
-                        "id": "$UUID",
+                        "id": "$uuid",
                         "flow": "xtls-rprx-vision"
                     }
                 ],
@@ -83,9 +49,9 @@ configure_reality() {
                 "security": "reality",
                 "realitySettings": {
                     "show": false,
-                    "dest": "$DEST",
+                    "dest": "$dest",
                     "xver": 0,
-                    "serverNames": $SERVER_NAMES_ARR,
+                    "serverNames": $server_names_arr,
                     "privateKey": "",
                     "minClientVer": "",
                     "maxClientVer": "",
@@ -112,18 +78,18 @@ configure_reality() {
     ]
 }
 EOF
-        else
-            cat > "$XRAY_DIR/config.json" << EOF
+    else
+        cat > "$XRAY_DIR/config.json" << EOF
 {
     "inbounds": [
         {
             "listen": "0.0.0.0",
-            "port": $PORT,
+            "port": $port,
             "protocol": "vless",
             "settings": {
                 "clients": [
                     {
-                        "id": "$UUID",
+                        "id": "$uuid",
                         "flow": "xtls-rprx-vision"
                     }
                 ],
@@ -134,9 +100,9 @@ EOF
                 "security": "reality",
                 "realitySettings": {
                     "show": false,
-                    "dest": "$DEST",
+                    "dest": "$dest",
                     "xver": 0,
-                    "serverNames": $SERVER_NAMES_ARR,
+                    "serverNames": $server_names_arr,
                     "privateKey": "",
                     "minClientVer": "",
                     "maxClientVer": "",
@@ -160,8 +126,92 @@ EOF
     ]
 }
 EOF
+    fi
+    chmod 600 "$XRAY_DIR/config.json"
+}
+
+configure_reality() {
+    log_info "配置 Xray+Reality..."
+    mkdir -p "$XRAY_DIR"
+
+    local transport="${EASYNET_REALITY_TRANSPORT:-tcp}"
+    local xhttp_mode="${EASYNET_REALITY_XHTTP_MODE:-auto}"
+    local xmux_concurrency="${EASYNET_REALITY_XMUX_CONCURRENCY:-0}"
+    local fragment="${EASYNET_REALITY_FRAGMENT:-tlshello}"
+    local fragment_length="${EASYNET_REALITY_FRAGMENT_LENGTH:-100-200}"
+    local fragment_interval="${EASYNET_REALITY_FRAGMENT_INTERVAL:-10-20}"
+
+    if [ -f "$XRAY_DIR/config.json" ] && grep -q "privateKey" "$XRAY_DIR/config.json"; then
+        log_info "检测到已有的 Xray 配置，跳过生成新密钥，直接使用现有配置。"
+        UUID=$(jq -r '.inbounds[0].settings.clients[0].id // empty' "$XRAY_DIR/config.json")
+        PORT=$(jq -r '.inbounds[0].port // empty' "$XRAY_DIR/config.json")
+        PUBLIC_KEY=$(cat "$XRAY_DIR/public.key" 2>/dev/null || echo "")
+
+        # Check if transport type has changed — regenerate template if so
+        local current_transport
+        current_transport=$(jq -r '.inbounds[0].streamSettings.network // "tcp"' "$XRAY_DIR/config.json")
+        if [ "$current_transport" != "$transport" ]; then
+            log_info "传输方式从 ${current_transport} 切换为 ${transport}，重新生成配置..."
+            local existing_private_key
+            existing_private_key=$(jq -r '.inbounds[0].streamSettings.realitySettings.privateKey // empty' "$XRAY_DIR/config.json")
+            local existing_short_id
+            existing_short_id=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[0] // empty' "$XRAY_DIR/config.json")
+            local existing_dest
+            existing_dest=$(jq -r '.inbounds[0].streamSettings.realitySettings.dest // "www.microsoft.com:443"' "$XRAY_DIR/config.json")
+            local existing_server_names_arr
+            existing_server_names_arr=$(jq -c '.inbounds[0].streamSettings.realitySettings.serverNames // ["www.microsoft.com","cloudflare.com"]' "$XRAY_DIR/config.json")
+
+            write_xray_config_template "$transport" "$UUID" "$PORT" "$existing_dest" "$existing_server_names_arr" "$xhttp_mode"
+
+            # Inject preserved keys + optional fragment/xmux
+            JQ_ARGS=(--arg pk "$existing_private_key" --arg sid "$existing_short_id")
+            # shellcheck disable=SC2016  # $pk, $sid etc. are jq --arg vars, not bash
+            JQ_FILTER='.inbounds[0].streamSettings.realitySettings.privateKey = $pk |
+                         .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid'
+            if [ -n "$fragment" ] && [ "$transport" = "tcp" ]; then
+                JQ_ARGS+=(--arg f_packets "$fragment" --arg f_length "$fragment_length" --arg f_interval "$fragment_interval")
+                # shellcheck disable=SC2016  # $f_* are jq --arg vars
+                JQ_FILTER+=' | .inbounds[0].streamSettings.fragmentSettings = { "packets": $f_packets, "length": $f_length, "interval": $f_interval }'
+            fi
+            if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
+                JQ_ARGS+=(--argjson xmux_cc "$xmux_concurrency")
+                # shellcheck disable=SC2016  # $xmux_cc is a jq --argjson var
+                JQ_FILTER+=' | .inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $xmux_cc, "connIdleTime": 60 }'
+            fi
+            jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && \
+                mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
+
+            log_info "配置已更新为 $transport 传输方式"
+            systemctl restart xray
+            return  # Skip subsequent logic (already fully handled)
         fi
-        chmod 600 "$XRAY_DIR/config.json"
+
+        # Update Fragment settings on existing config (only applies to tcp transport)
+        if [ -n "$fragment" ]; then
+            if [ "$transport" = "tcp" ]; then
+                jq --arg packets "$fragment" \
+                   --arg length "$fragment_length" \
+                   --arg interval "$fragment_interval" \
+                   '.inbounds[0].streamSettings.fragmentSettings = { "packets": $packets, "length": $length, "interval": $interval }' \
+                   "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
+                log_info "Fragment 混淆已启用: packets=$fragment length=$fragment_length interval=$fragment_interval"
+                systemctl restart xray
+            else
+                log_info "注意: Fragment 不适用于 $transport 传输方式，已跳过（仅支持 tcp）"
+            fi
+        fi
+    else
+        UUID=$(generate_uuid)
+        DEST="${EASYNET_REALITY_DEST:-www.microsoft.com:443}"
+        SERVER_NAMES="${EASYNET_REALITY_SERVER_NAME:-www.microsoft.com,cloudflare.com}"
+        # Build JSON array from comma-separated server names using jq
+        SERVER_NAMES_ARR=$(jq -Rn --arg names "$SERVER_NAMES" '
+            $names | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))
+        ')
+        PORT="${EASYNET_REALITY_PORT:-8443}"
+
+        # Build config.json template via shared function
+        write_xray_config_template "$transport" "$UUID" "$PORT" "$DEST" "$SERVER_NAMES_ARR" "$xhttp_mode"
 
         log_info "生成 Reality 密钥..."
         local actual_xray_bin
@@ -186,7 +236,7 @@ EOF
         JQ_FILTER='.inbounds[0].streamSettings.realitySettings.privateKey = $pk |
                      .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid'
 
-        if [ -n "$fragment" ]; then
+        if [ -n "$fragment" ] && [ "$transport" = "tcp" ]; then
             JQ_ARGS+=(--arg f_packets "$fragment" --arg f_length "$fragment_length" --arg f_interval "$fragment_interval")
             # shellcheck disable=SC2016  # $f_* are jq --arg vars
             JQ_FILTER+=' | .inbounds[0].streamSettings.fragmentSettings = { "packets": $f_packets, "length": $f_length, "interval": $f_interval }'
@@ -202,7 +252,11 @@ EOF
 
         log_info "配置文件已生成 (transport=$transport)"
         if [ -n "$fragment" ]; then
-            log_info "Fragment 混淆已启用: packets=$fragment length=$fragment_length interval=$fragment_interval"
+            if [ "$transport" = "tcp" ]; then
+                log_info "Fragment 混淆已启用: packets=$fragment length=$fragment_length interval=$fragment_interval"
+            else
+                log_info "注意: Fragment 不适用于 $transport 传输方式，已跳过（仅支持 tcp）"
+            fi
         fi
         if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
             log_info "XMUX 多路复用已启用: concurrency=$xmux_concurrency"

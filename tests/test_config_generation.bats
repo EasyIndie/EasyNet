@@ -205,6 +205,12 @@ source_protocol() {
     [ "$output" = "xtls-rprx-vision" ]
     run jq -r '.inbounds[0].port' "$config"
     [ "$output" = "8443" ]
+    # Verify default TCP transport also includes fragmentSettings
+    run jq -r '.inbounds[0].streamSettings.fragmentSettings.packets // empty' "$config"
+    [ "$output" = "tlshello" ]
+    # Verify xhttpSettings not present in tcp mode
+    run jq '.inbounds[0].streamSettings.xhttpSettings // empty' "$config"
+    [ -z "$output" ]
 }
 
 @test "Xray: public.key and shortId are generated" {
@@ -228,6 +234,129 @@ source_protocol() {
     local config="$xray_dir/config.json"
     run jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[0]' "$config"
     [ "$output" = "deadbeefdeadbeef" ]
+}
+
+@test "Xray: xhttp transport generates config with xhttpSettings and no fragment" {
+    export EASYNET_REALITY_TRANSPORT=xhttp
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+
+    eval 'openssl() {
+        if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"
+        else command openssl "$@"; fi
+    }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -eq 0 ] || { echo "# configure_reality failed: $output" >&3; return 1; }
+
+    local config="${XRAY_DIR:-$TMP_DIR/xray}/config.json"
+    [ -f "$config" ] || { echo "# config.json not found" >&3; return 1; }
+
+    # xhttp transport assertions
+    run jq -r '.inbounds[0].streamSettings.network' "$config"
+    [ "$output" = "xhttp" ]
+    run jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // empty' "$config"
+    [ "$output" = "auto" ]
+    # fragmentSettings must NOT exist in xhttp mode
+    run jq '.inbounds[0].streamSettings.fragmentSettings // empty' "$config"
+    [ -z "$output" ]
+}
+
+@test "Xray: xhttp transport with fragment env var set skips fragmentSettings" {
+    export EASYNET_REALITY_TRANSPORT=xhttp
+    export EASYNET_REALITY_FRAGMENT=tlshello
+    export EASYNET_REALITY_FRAGMENT_LENGTH=40-120
+    export EASYNET_REALITY_FRAGMENT_INTERVAL=5-15
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+
+    eval 'openssl() {
+        if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"
+        else command openssl "$@"; fi
+    }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -eq 0 ] || { echo "# configure_reality failed: $output" >&3; return 1; }
+
+    local config="${XRAY_DIR:-$TMP_DIR/xray}/config.json"
+    [ -f "$config" ] || { echo "# config.json not found" >&3; return 1; }
+
+    run jq -r '.inbounds[0].streamSettings.network' "$config"
+    [ "$output" = "xhttp" ]
+    # fragmentSettings must be absent even though var is set
+    run jq '.inbounds[0].streamSettings.fragmentSettings // empty' "$config"
+    [ -z "$output" ]
+}
+
+@test "Xray: transport switch from tcp to xhttp preserves UUID and keys" {
+    export XRAY_DIR="$TMP_DIR/xray-switch"
+    mkdir -p "$XRAY_DIR"
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+
+    eval 'openssl() {
+        if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"
+        else command openssl "$@"; fi
+    }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    # Step 1: Deploy with default TCP
+    run configure_reality
+    [ "$status" -eq 0 ]
+
+    local uuid_tcp
+    uuid_tcp=$(jq -r '.inbounds[0].settings.clients[0].id' "$XRAY_DIR/config.json")
+    local pk_tcp
+    pk_tcp=$(jq -r '.inbounds[0].streamSettings.realitySettings.privateKey' "$XRAY_DIR/config.json")
+    local sid_tcp
+    sid_tcp=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[0]' "$XRAY_DIR/config.json")
+    local network_tcp
+    network_tcp=$(jq -r '.inbounds[0].streamSettings.network' "$XRAY_DIR/config.json")
+    [ "$network_tcp" = "tcp" ]
+
+    # Step 2: Re-deploy with xhttp transport
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+    export EASYNET_REALITY_TRANSPORT=xhttp
+    eval 'openssl() {
+        if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "bbccddee00112233"
+        else command openssl "$@"; fi
+    }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -eq 0 ] || { echo "# second configure_reality failed: $output" >&3; return 1; }
+
+    # Verify transport changed
+    local network_xhttp
+    network_xhttp=$(jq -r '.inbounds[0].streamSettings.network' "$XRAY_DIR/config.json")
+    [ "$network_xhttp" = "xhttp" ]
+
+    # Verify UUID, privateKey, shortId preserved
+    local uuid_xhttp
+    uuid_xhttp=$(jq -r '.inbounds[0].settings.clients[0].id' "$XRAY_DIR/config.json")
+    [ "$uuid_xhttp" = "$uuid_tcp" ]
+    local pk_xhttp
+    pk_xhttp=$(jq -r '.inbounds[0].streamSettings.realitySettings.privateKey' "$XRAY_DIR/config.json")
+    [ "$pk_xhttp" = "$pk_tcp" ]
+    local sid_xhttp
+    sid_xhttp=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[0]' "$XRAY_DIR/config.json")
+    [ "$sid_xhttp" = "$sid_tcp" ]
+
+    # public.key should persist
+    [ -f "$XRAY_DIR/public.key" ]
+    run cat "$XRAY_DIR/public.key"
+    [[ "$output" == *"PublicKeyBase64"* ]]
+
+    # fragmentSettings must not exist after switching to xhttp
+    run jq '.inbounds[0].streamSettings.fragmentSettings // empty' "$XRAY_DIR/config.json"
+    [ -z "$output" ]
+
+    # xhttpSettings should exist
+    run jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // empty' "$XRAY_DIR/config.json"
+    [ "$output" = "auto" ]
 }
 
 # -------------------------------------------------------------------------

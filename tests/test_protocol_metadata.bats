@@ -107,6 +107,27 @@ teardown_file() {
     [ "$status" -eq 1 ]
 }
 
+@test "Xray Reality xhttp export produces correct URI with type=xhttp" {
+    local xray_xhttp_dir="$TMP_DIR/xray-xhttp"
+    mkdir -p "$xray_xhttp_dir"
+    cat > "$xray_xhttp_dir/config.json" <<'JSON'
+{"inbounds":[{"streamSettings":{"network":"xhttp","security":"reality","xhttpSettings":{"mode":"auto"},"realitySettings":{"serverNames":["www.example.com"],"shortIds":["aabbccddeeff0011"]}},"settings":{"clients":[{"id":"11111111-1111-4111-8111-111111111111","flow":"xtls-rprx-vision"}]},"port":8443}]}
+JSON
+    echo "public-key-fixture" > "$xray_xhttp_dir/public.key"
+    local xhttp_state="$TMP_DIR/state-xhttp"
+    EASYNET_STATE_DIR="$xhttp_state" EASYNET_PUBLIC_IP="203.0.113.10" XRAY_DIR="$xray_xhttp_dir" \
+        bash "$PROJECT_ROOT/scripts/protocols/xray-reality/export.sh"
+
+    local meta="$xhttp_state/modules/xray-reality/metadata.json"
+    [ -f "$meta" ] || { echo "# metadata.json not found" >&3; return 1; }
+    run jq -r '.transport' "$meta"
+    [ "$output" = "xhttp" ]
+    run jq -r '.client.uri' "$meta"
+    [[ "$output" == *"type=xhttp"* ]]
+    run jq -r '.client.clash.network' "$meta"
+    [ "$output" = "xhttp" ]
+}
+
 # --- Shadowsocks ---
 
 @test "Shadowsocks export writes module metadata" {
