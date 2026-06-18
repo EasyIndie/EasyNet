@@ -190,7 +190,7 @@ qrencode -t utf8 "$wg_uri"                                 # QR 码包含私钥
 且 Xray-install 指向 `raw/main/install-release.sh`（非固定版本），属移动目标。
 
 **建议：**
-- 至少在一个主版本上固定 Xray-install URL（`v1.8.4` 或当前稳定版本）
+- 至少在一个主版本上固定 Xray-install URL（当前稳定版本 `v26.3.27`）
 - 在 `.env.example` 中填入已知正确的 SHA256 值，而非留空
 
 ---

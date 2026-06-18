@@ -16,9 +16,9 @@ XRAY_BIN="${XRAY_BIN:-/usr/local/bin/xray}"
 install_xray() {
     local xray_version
     log_info "安装 Xray..."
-    xray_version="${EASYNET_XRAY_VERSION:-1.8.4}"
+    xray_version="${EASYNET_XRAY_VERSION:-26.3.27}"
     run_downloaded_script \
-        "https://github.com/XTLS/Xray-install/raw/main/install-release.sh" \
+        "https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh" \
         "${EASYNET_XRAY_INSTALL_SHA256:-}" \
         install --version "v${xray_version}"
 }

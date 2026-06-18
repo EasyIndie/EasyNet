@@ -8,24 +8,24 @@ setup() {
     source "$PROJECT_ROOT/scripts/deploy.sh"
 }
 
-@test "Menu 1 resolves to Hysteria2 module (alphabetically first)" {
+@test "Menu 1 resolves to Xray-Reality module (strongest anti-DPI first)" {
     run resolve_modules 1
+    [ "$output" = "xray-reality" ]
+}
+
+@test "Menu 2 resolves to Hysteria2 module" {
+    run resolve_modules 2
     [ "$output" = "hysteria2" ]
 }
 
-@test "Menu 2 resolves to Shadowsocks module" {
-    run resolve_modules 2
+@test "Menu 3 resolves to Shadowsocks module" {
+    run resolve_modules 3
     [ "$output" = "shadowsocks" ]
 }
 
-@test "Menu 3 resolves to WireGuard module" {
-    run resolve_modules 3
-    [ "$output" = "wireguard" ]
-}
-
-@test "Menu 4 resolves to Xray-Reality module (alphabetically last)" {
+@test "Menu 4 resolves to WireGuard module (weakest anti-DPI last)" {
     run resolve_modules 4
-    [ "$output" = "xray-reality" ]
+    [ "$output" = "wireguard" ]
 }
 
 @test "Module name resolves directly" {
@@ -69,14 +69,14 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "Menu 0 resolves to all modules (alphabetical order)" {
+@test "Menu 0 resolves to all modules (anti-DPI security order)" {
     run resolve_modules 0
-    [ "$(echo "$output" | xargs)" = "hysteria2 shadowsocks wireguard xray-reality" ]
+    [ "$(echo "$output" | xargs)" = "xray-reality hysteria2 shadowsocks wireguard" ]
 }
 
-@test "Compat profile resolves to all modules (alphabetical order)" {
+@test "Compat profile resolves to all modules (anti-DPI security order)" {
     run resolve_modules profile:compat
-    [ "$(echo "$output" | xargs)" = "hysteria2 shadowsocks wireguard xray-reality" ]
+    [ "$(echo "$output" | xargs)" = "xray-reality hysteria2 shadowsocks wireguard" ]
 }
 
 @test "Deploy entrypoint has no old exposure compatibility logic" {
