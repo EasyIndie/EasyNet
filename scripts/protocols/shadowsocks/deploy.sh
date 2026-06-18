@@ -91,7 +91,8 @@ configure_shadowsocks() {
 }
 EOF
 
-        chmod 600 "$CONFIG_DIR/config.json"
+        # Service runs as User=nobody, needs world-readable config
+        chmod 644 "$CONFIG_DIR/config.json"
         log_info "Shadowsocks 2022 配置文件已创建"
     fi
 }
