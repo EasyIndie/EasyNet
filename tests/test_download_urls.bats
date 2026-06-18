@@ -14,12 +14,20 @@ load test_helper
 TIMEOUT=10
 
 # Helper: check if a URL returns a successful HTTP status (2xx or 3xx)
+# Retries once on failure to handle transient network issues.
 # Usage: url_ok <url>
 url_ok() {
     local url="$1"
     local code
-    code=$(curl -fsSL -o /dev/null -w "%{http_code}" --connect-timeout "$TIMEOUT" --max-time 15 "$url" 2>/dev/null || echo "000")
-    [ "$code" != "000" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ]
+    local attempt
+    for attempt in 1 2; do
+        code=$(curl -fsSL -o /dev/null -w "%{http_code}" --connect-timeout "$TIMEOUT" --max-time 15 "$url" 2>/dev/null || echo "000")
+        if [ "$code" != "000" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
+            return 0
+        fi
+        [ "$attempt" = 1 ] && sleep 3
+    done
+    return 1
 }
 
 # Helper: skip test if network is unavailable
