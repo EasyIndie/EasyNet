@@ -5,92 +5,52 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-## [0.1.0] - 2026-06-13
+## [0.0.3] - 2026-06-19
 
-### 重构
-- **协议渲染器模块化**：Clash YAML 和 sing-box JSON 输出拆分为每个协议独立的 `render_clash.sh`/`render_singbox.jq`，新增协议无需修改核心文件
-- **Edge Gateway manifest 化**：`exposure/edge/manifest.sh` 声明自身模块，uninstall.sh 通过通用发现机制处理所有模块，消除硬编码
-- **Metadata schema 下沉 + 语义验证**：schema.json 移至 `core/` 共享；新增端口范围、URI 格式、防火墙规则校验
-- **统一日志函数**：消除 4 个入口文件的重复 log_* 定义，统一 source `core/logging.sh`
-- **消除 eval**：`discovery_get_manifest_value` 白名单 case 分支替代 eval，消除代码注入风险
+### 架构重构
+- **插件化协议系统**：基于 manifest/discovery 的自动发现机制，新增协议只需创建 `protocols/<name>/` 目录，无需修改注册代码
+- **协议渲染器模块化**：Clash YAML 和 sing-box JSON 输出拆分为每个协议独立的 `render_clash.sh`/`render_singbox.jq`，解耦核心订阅管道
+- **Edge Gateway manifest 化**：`exposure/edge/manifest.sh` 声明自身模块，uninstall.sh 通过通用发现机制统一处理，消除硬编码
+- **Metadata schema v1 语义验证**：schema.json 下沉至 `core/` 共享，新增端口范围、URI 格式、防火墙规则校验
+- **统一日志函数**：消除 4 个入口文件的重复 log_* 定义，统一 source `scripts/core/logging.sh`
+- **消除 eval**：`discovery_get_manifest_value` 以白名单 case 分支替代 eval，消除代码注入风险
 - **set -e 改进**：全局 `set -e` → `set -eE` + ERR trap，意外失败输出文件名+行号+退出码
-- **Xray 配置竞条件修复**：合并多次 jq 写入为单次调用，消除中间状态不一致窗口
+- **协议排序集中化**：所有协议排序统一调用 `discovery_list_modules_by_security()`，消除重复排序逻辑
+- **协议精简**：移除 Trojan-Go（上游停更）和 V2Ray（VMess 高检测风险），从 6 协议精简为 4 协议
+
+### 协议升级
+- **Shadowsocks 2022 Edition**：从 `shadowsocks-libev` + `chacha20-ietf-poly1305` 升级为 `shadowsocks-rust` + `2022-blake3-aes-256-gcm`，修复 AEAD 安全漏洞并增加完整重放保护（v1.24.0）
+- **Xray Reality XHTTP 传输**：新增 `EASYNET_REALITY_TRANSPORT`（默认 `tcp`，可选 `xhttp`），支持 HTTP/3 伪装传输与 XMUX 多路复用
+- **Xray Finalmask Fragment**：新增 `EASYNET_REALITY_FRAGMENT` 环境变量，TCP 包分片混淆随机化包长分布对抗 ML 指纹识别
+- **Hysteria2 Port Hopping**：新增端口跳变支持，ISP 封锁单个端口后自动切换
+- **WireGuard AmneziaWG 混淆**：新增 `EASYNET_WIREGUARD_OBFS`，客户端输出含 Jc/Jmin/Jmax 垃圾包参数消除 UDP 指纹
+- **Xray 多目标 serverNames**：逗号分隔多域名分散流量特征
+- **Edge 根路径反代伪装**：默认反向代理到 Bing，消除 EasyNet 服务器指纹（`EASYNET_EDGE_MASQUERADE_URL`）
+- **抗 DPI 默认调优**：`.env.example` 默认启用 XHTTP + Fragment + Port Hopping 配置
+
+### CI 与测试
+- **BATS 测试框架迁移**：从自定义 test_helper.bash（73 行）迁移至 bats-core，测试用例从 13 增至 262（23 测试文件）
+- **ShellCheck 强制 `--severity=style`**：全量清理 SC2188/SC2155/SC2005/SC2162/SC2034/SC2317 等 40+ 项警告
+- **新增端到端测试**：订阅输出（22 用例）、URL 探活（12 用例）、配置生成 dry-run、unbound variable lint
+- **CI 矩阵更新**：从 ubuntu-22.04/24.04 升级至 24.04/26.04 LTS
+- **Release 流水线**：合并至测试工作流，强制测试通过后方可 Release
 
 ### 修复
-- **UFW SSH 锁死防护**：自动探测 sshd 非标准端口并注入防火墙白名单
-- **ShellCheck 全量修复**：CI 升级至 `--severity=style`，清理 SC2188/SC2155/SC2005/SC2162/SC2034 等 30+ 项
+- **UFW SSH 锁死防护**：自动探测 sshd 非标准端口并注入防火墙白名单；UFW 端口范围规则格式修复
+- **Xray 配置竞条件**：合并多次 jq 写入为单次原子调用，消除中间状态不一致窗口
+- **xhttp 不兼容处理**：XTLS Vision flow（与 HTTP/2 多路复用冲突）和 Fragment 分片在 xhttp 模式下自动跳过
+- **Shadowsocks 兼容性**：适配 v1.24.0 新增 CLI 参数（`--encrypt-method`/`--server-addr`/`-k`），修复端口冲突
+- **sing-box 适配**：v1.11+ WireGuard endpoint 格式变更，重装时旧服务停止，订阅解析修复
+- **set -u 安全**：全面修复 `EASYNET_*`/`HYSTERIA2_*`/`SINGBOX_*`/`NGINX_*`/`JOURNALD_*` 等裸引用
+- **安全审计**：文件权限（chmod 600）+ TLS 加固 + 供应链 SHA256 验证 + systemd 安全加固
+- **证书续期**：`cert_renew_hook.sh` 以 `id -gn` 替代硬编码组名，修复 Ubuntu 无 `nobody` 组问题
+- **Edgio 同步**：merge 后配置收敛，ShellCheck v0.10.0 新规则抑制（SC2015/SC2317）
 
-### 新增
-- **BATS 测试框架**：从自定义 test_helper.bash（73 行）迁移到 bats-core（178 测试用例）
-- **协议表自动生成**：`docs/generate-protocol-table.sh` 从 manifest 自动生成 markdown 支持表
-
-## [0.0.9] - 2026-06-12
-
-### 新增
-- **WireGuard AmneziaWG 混淆**：新增 `EASYNET_WIREGUARD_OBFS` 环境变量，启用后 WireGuard 客户端输出含 Jc/Jmin/Jmax 垃圾包参数，消除 WireGuard 明显 UDP 指纹。服务端无需改动（标准 WireGuard 静默丢弃垃圾包）
-
-## [0.0.8] - 2026-06-12
-
-### 新增
-- **Xray Finalmask Fragment**：新增 `EASYNET_REALITY_FRAGMENT` 环境变量（如 `tlshello`），启用 TCP 包分片混淆，随机化包长分布对抗 ML 指纹识别。可选配置分片长度和间隔
-
-## [0.0.7] - 2026-06-12
-
-### 新增
-- **Hysteria2 Port Hopping**：新增 `EASYNET_HYSTERIA2_PORT_HOPPING` 和 `EASYNET_HYSTERIA2_PORT_HOP_INTERVAL` 环境变量，支持端口跳变（port hopping），ISP 封锁单个端口后自动切换
-
-## [0.0.6] - 2026-06-12
-
-### 变更
-- **Shadowsocks 2022 Edition**：从 `shadowsocks-libev` + `chacha20-ietf-poly1305` 升级为 `shadowsocks-rust` + `2022-blake3-aes-256-gcm`，修复 AEAD 安全漏洞并增加完整重放保护
-- **Xray Reality XHTTP 传输**：新增 `EASYNET_REALITY_TRANSPORT` 环境变量（默认 `tcp`，可选 `xhttp`），支持 HTTP/3 伪装传输与 XMUX 多路复用
-- Shadowsocks 防探测等级上调至 40（原 50）
-- 新增 `EASYNET_REALITY_XHTTP_MODE` 和 `EASYNET_REALITY_XMUX_CONCURRENCY` 环境变量
-- .env.example 注释更新，Shadowsocks 标签改为 "Shadowsocks 2022"
-
-## [0.0.5] - 2026-06-12
-
-### 移除
-- 移除 Trojan-Go 协议模块（上游自 2023 年停更，无安全补丁）
-- 移除 V2Ray 协议模块（VMess 为 GFW 重点目标，功能与 Xray 完全重叠）
-- 协议从 6 个精简为 4 个：Xray+Reality、Hysteria2、Shadowsocks、WireGuard
-
-### 新增
-- Edge Gateway 根路径反代伪装：默认代理到 Bing，消除 EasyNet 服务器指纹
-- Xray Reality serverNames 多目标支持：逗号分隔多目标分散流量
-- 新增 `EASYNET_EDGE_MASQUERADE_URL` 环境变量
-- 新增订阅输出端到端测试（`test_subscription_output.bash`，22 个用例）
-
-### 变更
-- 所有项目文档统一使用简体中文
-- Clash YAML 生成逻辑拆分到独立模块 `scripts/core/subscription_clash.sh`
-- generate_subscription.sh 从 525 行精简至 299 行
-- 部署菜单编号递补（1=Hysteria2, 2=Shadowsocks, 3=WireGuard, 4=Xray+Reality）
-
-## [0.0.4] - 2026-06-12
-
-### 新增
-- Manifest 版本化：所有协议 manifest 声明 `MANIFEST_VERSION=1`，discovery 层增加版本校验以保护插件契约
-- 部署前配置预检（`scripts/core/validate.sh`）：检查必需工具、端口冲突、域名解析和操作系统兼容性
-
-### 变更
-- 将 sing-box outbound 的 jq 逻辑提取为独立文件 `scripts/core/singbox_outbound.jq`，便于独立维护和测试
-
-## [0.0.3] - 2026-06-12
-
-### 新增
-- CI 自动测试工作流（GitHub Actions）
-- VPS 提供商列表文档
-- sing-box 客户端 Tun 模式支持
-
-### 修复
-- sing-box 客户端安装脚本：DNS 解析器、订阅地址、二维码生成
-- GitHub Actions 工作流警告
-- sing-box 客户端订阅解析
-
-### 变更
-- 全面更新 README，增加协议对比、项目结构和部署文档
-- 改进 sing-box 客户端安装流程
+### 文档
+- 全量重写为简体中文，协议对比表、项目结构、部署文档同步更新
+- 新增 VPS 提供商列表、协议支持表自动生成工具
+- 新增 CLAUDE.md 项目开发指令
+- `.env.example` 全面对齐最新代码配置
 
 ## [0.0.2] - 2026-05-05
 
@@ -117,12 +77,6 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
-[0.0.9]: https://github.com/EasyIndie/EasyNet/compare/0.0.8...0.0.9
-[0.0.8]: https://github.com/EasyIndie/EasyNet/compare/0.0.7...0.0.8
-[0.0.7]: https://github.com/EasyIndie/EasyNet/compare/0.0.6...0.0.7
-[0.0.6]: https://github.com/EasyIndie/EasyNet/compare/0.0.5...0.0.6
-[0.0.5]: https://github.com/EasyIndie/EasyNet/compare/0.0.4...0.0.5
-[0.0.4]: https://github.com/EasyIndie/EasyNet/compare/0.0.3...0.0.4
 [0.0.3]: https://github.com/EasyIndie/EasyNet/compare/0.0.2...0.0.3
 [0.0.2]: https://github.com/EasyIndie/EasyNet/compare/0.0.1...0.0.2
 [0.0.1]: https://github.com/EasyIndie/EasyNet/releases/tag/0.0.1
