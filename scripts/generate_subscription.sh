@@ -157,15 +157,6 @@ append_metadata_singbox_outbound() {
     jq -c -f "$render_jq" "$metadata_file" >> "$target_file"
 }
 
-metadata_security_rank() {
-    local rank
-    rank=$(discovery_get_manifest_value "$1" "MODULE_SECURITY_RANK") || {
-        echo 99
-        return 0
-    }
-    echo "$rank"
-}
-
 metadata_files_by_security() {
     local metadata_file module rank
 
@@ -176,7 +167,7 @@ metadata_files_by_security() {
             continue
         fi
         module=$(jq -r '.module' "$metadata_file")
-        rank=$(metadata_security_rank "$module")
+        rank=$(discovery_get_manifest_value "$module" "MODULE_SECURITY_RANK") || rank=99
         printf '%s\t%s\n' "$rank" "$metadata_file"
     done < <(metadata_list_files) | sort -n -k1,1 | cut -f2-
 }

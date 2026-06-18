@@ -44,10 +44,12 @@ profile_exists() {
     [ -n "$val" ]
 }
 
-# Resolve a profile to a list of module names (one per line)
+# Resolve a profile to a list of module names (one per line),
+# sorted by MODULE_SECURITY_RANK (lower rank = stronger anti-DPI)
 # Returns 0 on success, 1 if profile unknown
 profile_resolve() {
     local profile_name="$1"
+    local mod rank
     local modules
     modules=$(_profile_get "$profile_name")
 
@@ -56,11 +58,16 @@ profile_resolve() {
     fi
 
     if [ "$modules" = "__all__" ]; then
-        discovery_list_modules
+        discovery_list_modules_by_security
         return 0
     fi
 
-    echo "$modules" | tr ' ' '\n'
+    # For specific profile lists, sort by security rank
+    echo "$modules" | tr ' ' '\n' | while IFS= read -r mod; do
+        [ -z "$mod" ] && continue
+        rank=$(discovery_get_manifest_value "$mod" "MODULE_SECURITY_RANK") || rank=99
+        printf '%d\t%s\n' "$rank" "$mod"
+    done | sort -n -k1,1 | cut -f2-
     return 0
 }
 

@@ -21,11 +21,12 @@ _easynet_error_handler() {
     exit "$exit_code"
 }
 
-# ALL_MODULES is now auto-discovered from protocols/*/manifest.sh
+# ALL_MODULES auto-discovered from protocols/*/manifest.sh,
+# sorted by MODULE_SECURITY_RANK (lower rank = stronger anti-DPI)
 ALL_MODULES=()
 while IFS= read -r mod; do
     ALL_MODULES+=("$mod")
-done < <(discovery_list_modules)
+done < <(discovery_list_modules_by_security)
 DEPLOY_SELECTION_MODULES=()
 
 # Backup file path for auto-rollback
@@ -155,7 +156,7 @@ show_menu() {
     done
     printf "%d. 退出\n" "$idx"
     echo "========================================"
-    echo -e "${YELLOW}提示: 编号 1-${#ALL_MODULES[@]} 按模块名称排序。完成后请选择 ${idx} 退出。${NC}"
+    echo -e "${YELLOW}提示: 编号 1-${#ALL_MODULES[@]} 按抗 DPI 能力从高到低排序。完成后请选择 ${idx} 退出。${NC}"
     read -r -p "请选择要部署的服务: " choice
 }
 

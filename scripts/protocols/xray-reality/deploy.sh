@@ -18,9 +18,9 @@ install_xray() {
     log_info "安装 Xray..."
     xray_version="${EASYNET_XRAY_VERSION:-1.8.4}"
     run_downloaded_script \
-        "https://github.com/XTLS/Xray-install/raw/v${xray_version}/install-release.sh" \
+        "https://github.com/XTLS/Xray-install/raw/main/install-release.sh" \
         "${EASYNET_XRAY_INSTALL_SHA256:-}" \
-        install
+        install --version "v${xray_version}"
 }
 
 configure_reality() {

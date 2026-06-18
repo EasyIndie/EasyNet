@@ -25,6 +25,19 @@ discovery_list_modules() {
     done | sort
 }
 
+# List all discovered modules sorted by MODULE_SECURITY_RANK (ascending).
+# Lower rank = stronger anti-DPI. This is the canonical sort order for
+# all protocol display across the project — use this instead of
+# discovery_list_modules when order matters for user-facing output.
+discovery_list_modules_by_security() {
+    local mod rank
+    while IFS= read -r mod; do
+        [ -z "$mod" ] && continue
+        rank=$(discovery_get_manifest_value "$mod" "MODULE_SECURITY_RANK") || rank=99
+        printf '%d\t%s\n' "$rank" "$mod"
+    done < <(discovery_list_modules) | sort -n -k1,1 | cut -f2-
+}
+
 # Check if a module name has a valid manifest
 discovery_module_exists() {
     local module_name="$1"
