@@ -191,19 +191,21 @@ setup_edge_nginx() {
     write_edge_http_site
     ln -sf /etc/nginx/sites-available/easynet-edge /etc/nginx/sites-enabled/
     systemctl enable nginx
-    nginx -t && systemctl restart nginx || {
+    if ! nginx -t; then
         log_error "Nginx HTTP 配置测试失败，请检查语法错误。"
         return 1
-    }
+    fi
+    systemctl restart nginx
 
     issue_edge_certificate
     maintenance_configure_nginx_logrotate
     write_edge_subscription_routes
     write_edge_https_site
-    nginx -t && systemctl restart nginx || {
+    if ! nginx -t; then
         log_error "Nginx HTTPS 配置测试失败，请检查语法错误。"
         return 1
-    }
+    fi
+    systemctl restart nginx
 
     if command -v ufw &>/dev/null; then
         ufw allow "${EDGE_HTTP_PORT}/tcp" >/dev/null 2>&1 || true
