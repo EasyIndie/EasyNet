@@ -100,7 +100,10 @@ EOF
 create_systemd_service() {
     log_info "创建 systemd 服务..."
 
-    cat > /etc/systemd/system/shadowsocks-rust-server.service << 'EOF'
+    # shadowsocks-rust >=1.24.0 requires --encrypt-method and --server-addr
+    # even when --config is provided. METHOD is set by configure_shadowsocks().
+    # shellcheck disable=SC2086
+    cat > /etc/systemd/system/shadowsocks-rust-server.service << EOF
 [Unit]
 Description=Shadowsocks-rust Server (2022 Edition)
 After=network.target nss-lookup.target
@@ -114,7 +117,7 @@ ProtectHome=yes
 PrivateTmp=yes
 NoNewPrivileges=yes
 CapabilityBoundingSet=~
-ExecStart=/usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json -U
+ExecStart=/usr/local/bin/ssserver -c /etc/shadowsocks-rust/config.json -U --encrypt-method ${METHOD} --server-addr 0.0.0.0
 Restart=on-failure
 RestartSec=5
 
