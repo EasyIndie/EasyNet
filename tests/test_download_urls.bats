@@ -51,19 +51,19 @@ check_network() {
 # Shadowsocks
 # ============================================================
 
-@test "Shadowsocks release page (v1.22.0) URL 可达" {
+@test "Shadowsocks release page (v1.24.0) URL 可达" {
     check_network
-    url_ok "https://github.com/shadowsocks/shadowsocks-rust/releases/tag/v1.22.0"
+    url_ok "https://github.com/shadowsocks/shadowsocks-rust/releases/tag/v1.24.0"
 }
 
 @test "Shadowsocks binary (x86_64) URL 可达" {
     check_network
-    url_ok "https://github.com/shadowsocks/shadowsocks-rust/releases/download/v1.22.0/shadowsocks-v1.22.0.x86_64-unknown-linux-gnu.tar.xz"
+    url_ok "https://github.com/shadowsocks/shadowsocks-rust/releases/download/v1.24.0/shadowsocks-v1.24.0.x86_64-unknown-linux-gnu.tar.xz"
 }
 
 @test "Shadowsocks binary (aarch64) URL 可达" {
     check_network
-    url_ok "https://github.com/shadowsocks/shadowsocks-rust/releases/download/v1.22.0/shadowsocks-v1.22.0.aarch64-unknown-linux-gnu.tar.xz"
+    url_ok "https://github.com/shadowsocks/shadowsocks-rust/releases/download/v1.24.0/shadowsocks-v1.24.0.aarch64-unknown-linux-gnu.tar.xz"
 }
 
 # ============================================================

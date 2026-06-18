@@ -12,7 +12,7 @@ source "$CORE_DIR/crypto.sh"
 
 CONFIG_DIR="${SHADOWSOCKS_CONFIG_DIR:-/etc/shadowsocks-rust}"
 SS_BIN="${SS_BIN:-/usr/local/bin/ssserver}"
-SS_VERSION="${SS_VERSION:-1.22.0}"
+SS_VERSION="${SS_VERSION:-1.24.0}"
 
 install_shadowsocks() {
     if command -v ssserver &>/dev/null; then
