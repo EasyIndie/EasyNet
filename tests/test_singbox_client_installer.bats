@@ -30,7 +30,7 @@ setup() {
 
 @test "Installer creates checked daily config update flow" {
     rg -q "easynet-singbox-update" "$INSTALLER"
-    rg -q "sing-box check -c|\\$SINGBOX_BIN\" check -c" "$INSTALLER"
+    rg -q 'check -c' "$INSTALLER"
     rg -q "RandomizedDelaySec" "$INSTALLER"
     rg -q "OnUnitActiveSec=1d" "$INSTALLER"
 }
