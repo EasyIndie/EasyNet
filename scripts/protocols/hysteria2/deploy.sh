@@ -12,12 +12,12 @@ source "$CORE_DIR/display.sh"
 source "$CORE_DIR/crypto.sh"
 
 HYSTERIA2_CONFIG_DIR="${HYSTERIA2_CONFIG_DIR:-/etc/hysteria}"
-HYSTERIA2_CONFIG_FILE="${HYSTERIA2_CONFIG_FILE:-$HYSTERIA2_CONFIG_DIR/config.yaml}"
-HYSTERIA2_ENV_FILE="${HYSTERIA2_ENV_FILE:-$HYSTERIA2_CONFIG_DIR/easynet.env}"
+HYSTERIA2_CONFIG_FILE="${HYSTERIA2_CONFIG_FILE:-${HYSTERIA2_CONFIG_DIR:-}/config.yaml}"
+HYSTERIA2_ENV_FILE="${HYSTERIA2_ENV_FILE:-${HYSTERIA2_CONFIG_DIR:-}/easynet.env}"
 HYSTERIA2_SERVICE="${HYSTERIA2_SERVICE:-hysteria-server.service}"
 HYSTERIA2_CERT_DIR="${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}"
-HYSTERIA2_CERT_FILE="${EASYNET_HYSTERIA2_CERT_FILE:-$HYSTERIA2_CERT_DIR/fullchain.crt}"
-HYSTERIA2_KEY_FILE="${EASYNET_HYSTERIA2_KEY_FILE:-$HYSTERIA2_CERT_DIR/private.key}"
+HYSTERIA2_CERT_FILE="${EASYNET_HYSTERIA2_CERT_FILE:-${HYSTERIA2_CERT_DIR:-}/fullchain.crt}"
+HYSTERIA2_KEY_FILE="${EASYNET_HYSTERIA2_KEY_FILE:-${HYSTERIA2_CERT_DIR:-}/private.key}"
 
 install_hysteria2() {
     if command -v hysteria &>/dev/null; then
@@ -48,21 +48,21 @@ require_domain() {
 }
 
 require_tls_certificate() {
-    if [ -f "$HYSTERIA2_CERT_FILE" ] && [ -f "$HYSTERIA2_KEY_FILE" ]; then
+    if [ -f "${HYSTERIA2_CERT_FILE:-}" ] && [ -f "${HYSTERIA2_KEY_FILE:-}" ]; then
         return 0
     fi
 
-    log_error "未找到 Hysteria2 TLS 证书：$HYSTERIA2_CERT_FILE / $HYSTERIA2_KEY_FILE"
+    log_error "未找到 Hysteria2 TLS 证书：${HYSTERIA2_CERT_FILE:-} / ${HYSTERIA2_KEY_FILE:-}"
     log_error "请先部署 Edge Gateway 生成统一证书，或设置 EASYNET_HYSTERIA2_CERT_FILE 与 EASYNET_HYSTERIA2_KEY_FILE。"
     exit 1
 }
 
 write_env_var() {
-    printf '%s=%q\n' "$1" "$2" >> "$HYSTERIA2_ENV_FILE"
+    printf '%s=%q\n' "$1" "$2" >> "${HYSTERIA2_ENV_FILE:-}"
 }
 
 hysteria2_service_user() {
-    systemctl cat "$HYSTERIA2_SERVICE" 2>/dev/null |
+    systemctl cat "${HYSTERIA2_SERVICE:-}" 2>/dev/null |
         awk -F= '/^[[:space:]]*User=/{ gsub(/[[:space:]]/, "", $2); print $2; exit }'
 }
 
@@ -73,31 +73,31 @@ set_hysteria2_file_permissions() {
     service_user="${service_user:-root}"
 
     if [ "$service_user" = "root" ]; then
-        chmod 600 "$HYSTERIA2_CONFIG_FILE" "$HYSTERIA2_ENV_FILE"
-        chmod 644 "$HYSTERIA2_CERT_FILE"
-        chmod 600 "$HYSTERIA2_KEY_FILE"
+        chmod 600 "${HYSTERIA2_CONFIG_FILE:-}" "${HYSTERIA2_ENV_FILE:-}"
+        chmod 644 "${HYSTERIA2_CERT_FILE:-}"
+        chmod 600 "${HYSTERIA2_KEY_FILE:-}"
         return
     fi
 
     if ! id "$service_user" >/dev/null 2>&1; then
         log_warn "未找到 Hysteria2 systemd 用户 $service_user，暂时仅设置 root 可读权限。"
-        chmod 600 "$HYSTERIA2_CONFIG_FILE" "$HYSTERIA2_ENV_FILE" "$HYSTERIA2_KEY_FILE"
-        chmod 644 "$HYSTERIA2_CERT_FILE"
+        chmod 600 "${HYSTERIA2_CONFIG_FILE:-}" "${HYSTERIA2_ENV_FILE:-}" "${HYSTERIA2_KEY_FILE:-}"
+        chmod 644 "${HYSTERIA2_CERT_FILE:-}"
         return
     fi
 
     chown root:"$service_user" \
-        "$HYSTERIA2_CONFIG_FILE" \
-        "$HYSTERIA2_ENV_FILE" \
-        "$HYSTERIA2_CERT_FILE" \
-        "$HYSTERIA2_KEY_FILE"
-    chmod 750 "$HYSTERIA2_CERT_DIR"
-    chown root:"$service_user" "$HYSTERIA2_CERT_DIR"
+        "${HYSTERIA2_CONFIG_FILE:-}" \
+        "${HYSTERIA2_ENV_FILE:-}" \
+        "${HYSTERIA2_CERT_FILE:-}" \
+        "${HYSTERIA2_KEY_FILE:-}"
+    chmod 750 "${HYSTERIA2_CERT_DIR:-}"
+    chown root:"$service_user" "${HYSTERIA2_CERT_DIR:-}"
     chmod 640 \
-        "$HYSTERIA2_CONFIG_FILE" \
-        "$HYSTERIA2_ENV_FILE" \
-        "$HYSTERIA2_CERT_FILE" \
-        "$HYSTERIA2_KEY_FILE"
+        "${HYSTERIA2_CONFIG_FILE:-}" \
+        "${HYSTERIA2_ENV_FILE:-}" \
+        "${HYSTERIA2_CERT_FILE:-}" \
+        "${HYSTERIA2_KEY_FILE:-}"
 }
 
 configure_hysteria2() {
@@ -112,15 +112,15 @@ configure_hysteria2() {
     hop_interval="${EASYNET_HYSTERIA2_PORT_HOP_INTERVAL:-30s}"
 
     log_info "配置 Hysteria2..."
-    mkdir -p "$HYSTERIA2_CONFIG_DIR"
+    mkdir -p "${HYSTERIA2_CONFIG_DIR:-}"
     require_tls_certificate
 
-    cat > "$HYSTERIA2_CONFIG_FILE" <<EOF
+    cat > "${HYSTERIA2_CONFIG_FILE:-}" <<EOF
 listen: :$port
 
 tls:
-  cert: $HYSTERIA2_CERT_FILE
-  key: $HYSTERIA2_KEY_FILE
+  cert: ${HYSTERIA2_CERT_FILE:-}
+  key: ${HYSTERIA2_KEY_FILE:-}
 
 auth:
   type: password
@@ -140,7 +140,7 @@ EOF
 
     # Append port hopping config if enabled
     if [ -n "$port_hopping" ]; then
-        cat >> "$HYSTERIA2_CONFIG_FILE" <<EOF
+        cat >> "${HYSTERIA2_CONFIG_FILE:-}" <<EOF
 
 portHopping:
   interval: $hop_interval
@@ -150,7 +150,7 @@ EOF
         log_info "Port Hopping 已启用: $port_hopping (间隔 $hop_interval)"
     fi
 
-    : > "$HYSTERIA2_ENV_FILE"
+    : > "${HYSTERIA2_ENV_FILE:-}"
     write_env_var HYSTERIA2_DOMAIN "$domain"
     write_env_var HYSTERIA2_PORT "$port"
     write_env_var HYSTERIA2_PASSWORD "$password"
@@ -166,17 +166,17 @@ EOF
 
 restart_hysteria2() {
     log_info "启动 Hysteria2 服务..."
-    systemctl enable "$HYSTERIA2_SERVICE"
-    systemctl restart "$HYSTERIA2_SERVICE"
+    systemctl enable "${HYSTERIA2_SERVICE:-}"
+    systemctl restart "${HYSTERIA2_SERVICE:-}"
 }
 
 show_config() {
     local domain port config_url
 
     # shellcheck disable=SC1090
-    source "$HYSTERIA2_ENV_FILE"
-    domain="$HYSTERIA2_DOMAIN"
-    port="$HYSTERIA2_PORT"
+    source "${HYSTERIA2_ENV_FILE:-}"
+    domain="${HYSTERIA2_DOMAIN:-}"
+    port="${HYSTERIA2_PORT:-}"
 
     echo ""
     echo "========================================"

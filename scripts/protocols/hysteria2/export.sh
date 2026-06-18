@@ -14,7 +14,7 @@ HYSTERIA2_ENV_FILE="${HYSTERIA2_ENV_FILE:-$HYSTERIA2_CONFIG_DIR/easynet.env}"
 export_hysteria2_metadata() {
     metadata_require_jq
 
-    if [ -f "$HYSTERIA2_ENV_FILE" ]; then
+    if [ -f "${HYSTERIA2_ENV_FILE:-}" ]; then
         # shellcheck disable=SC1090
         source "$HYSTERIA2_ENV_FILE"
     fi

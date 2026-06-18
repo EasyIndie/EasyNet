@@ -119,7 +119,7 @@ install_packages() {
 
 resolve_singbox_url() {
     local asset_arch
-    [ -n "$SINGBOX_URL" ] && return 0
+    [ -n "${SINGBOX_URL:-}" ] && return 0
 
     asset_arch="$(detect_asset_arch)"
     SINGBOX_URL="$(
@@ -127,7 +127,7 @@ resolve_singbox_url() {
             | sed -n "s/.*\"browser_download_url\": \"\\([^\"]*sing-box-[^\"]*-${asset_arch}\\.tar\\.gz\\)\".*/\\1/p" \
             | head -n 1
     )"
-    [ -n "$SINGBOX_URL" ] || die "无法自动找到 sing-box ${asset_arch} 下载地址，请使用 --sing-box-url 指定。"
+    [ -n "${SINGBOX_URL:-}" ] || die "无法自动找到 sing-box ${asset_arch} 下载地址，请使用 --sing-box-url 指定。"
 }
 
 install_singbox_binary() {
@@ -147,8 +147,8 @@ install_singbox_binary() {
     trap 'rm -rf "${tmp_dir:-}"' RETURN
     tarball="$tmp_dir/sing-box.tar.gz"
 
-    log "下载 sing-box: $SINGBOX_URL"
-    curl -fL "$SINGBOX_URL" -o "$tarball"
+    log "下载 sing-box: ${SINGBOX_URL:-}"
+    curl -fL "${SINGBOX_URL:-}" -o "$tarball"
 
     # Verify SHA256 if provided
     if [ -n "${EASYNET_SINGBOX_INSTALL_SHA256:-}" ]; then
@@ -217,7 +217,7 @@ mode_file="$(mktemp /tmp/easynet-singbox-mode.XXXXXX)"
 cleanup() { rm -f "$tmp_file" "$mode_file"; }
 trap cleanup EXIT
 
-curl -fL "$SINGBOX_CONFIG_URL" -o "$tmp_file"
+curl -fL "${SINGBOX_CONFIG_URL:-}" -o "$tmp_file"
 
 case "${SINGBOX_MODE:-mixed}" in
     mixed)
@@ -303,8 +303,8 @@ case "${SINGBOX_MODE:-mixed}" in
         ;;
 esac
 
-"$SINGBOX_BIN" check -c "$mode_file"
-install -m 0644 "$mode_file" "$SINGBOX_CONFIG_FILE"
+"${SINGBOX_BIN:-}" check -c "$mode_file"
+install -m 0644 "$mode_file" "${SINGBOX_CONFIG_FILE:-}"
 EOF
     chmod 0755 "$INSTALL_DIR/easynet-singbox-update"
 }
