@@ -10,7 +10,7 @@
         server_port: $c.port,
         uuid: $c.uuid,
         flow: ($c.flow // ""),
-        network: "xhttp",
+        network: "tcp",
         tls: {
             enabled: true,
             server_name: $c.servername,
@@ -28,7 +28,7 @@
         server_port: $c.port,
         uuid: $c.uuid,
         flow: ($c.flow // ""),
-        network: "xhttp",
+        network: "tcp",
         tls: {
             enabled: true,
             server_name: $c.servername,
