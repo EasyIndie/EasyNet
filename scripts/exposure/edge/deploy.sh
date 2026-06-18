@@ -71,6 +71,21 @@ write_edge_state() {
 
 write_edge_subscription_routes() {
     easynet_write_subscription_routes "$EDGE_ROUTES_DIR/subscription.conf" "$WEB_ROOT" "$EDGE_SUBSCRIPTION_PATH_PREFIX"
+
+    # Also write direct-path routes (e.g. /sub, /clash, /singbox) for convenience
+    # Enabled via EASYNET_SUBSCRIPTION_DIRECT_PATHS=true
+    if [ "${EASYNET_SUBSCRIPTION_DIRECT_PATHS:-false}" = "true" ]; then
+        while IFS='|' read -r endpoint file_name content_type; do
+            [ -z "$endpoint" ] && continue
+            cat >> "$EDGE_ROUTES_DIR/subscription.conf" <<EOF
+location = /${endpoint} {
+    alias ${WEB_ROOT}/${file_name};
+    default_type ${content_type};
+}
+
+EOF
+        done < <(easynet_subscription_endpoint_specs)
+    fi
 }
 
 write_edge_http_site() {

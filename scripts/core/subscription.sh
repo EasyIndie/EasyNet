@@ -91,7 +91,10 @@ easynet_subscription_endpoint() {
     local path_prefix
     path_prefix="$(easynet_subscription_path_prefix)"
 
-    if [ -n "$path_prefix" ]; then
+    if [ "${EASYNET_SUBSCRIPTION_DIRECT_PATHS:-false}" = "true" ]; then
+        # Direct paths: /sub, /clash, /singbox
+        echo "/${endpoint#/}"
+    elif [ -n "$path_prefix" ]; then
         echo "${path_prefix}/${endpoint#/}"
     else
         echo "/${endpoint#/}"
