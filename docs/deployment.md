@@ -84,6 +84,9 @@ EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000
 EASYNET_WIREGUARD_OBFS=true
 ```
 
+> **⚠️ XHTTP 与 Fragment 不兼容：** `EASYNET_REALITY_FRAGMENT`（包分片）只能在 `EASYNET_REALITY_TRANSPORT=tcp` 时生效。  
+> 如果 `TRANSPORT=xhttp`，系统会自动跳过 Fragment 设置并在日志中提示。切换传输方式后，无需手动删除对方的环境变量。
+
 ## 快速部署
 
 ### 1. 登录服务器
@@ -357,10 +360,10 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_REALITY_PORT` | Xray 监听端口 | `8443` |
 | `EASYNET_REALITY_DEST` | REALITY 目标/伪装服务器地址 | `www.microsoft.com:443` |
 | `EASYNET_REALITY_SERVER_NAME` | 逗号分隔的 SNI 名称列表 | `www.microsoft.com,cloudflare.com,www.apple.com` |
-| `EASYNET_REALITY_TRANSPORT` | 传输层协议：`tcp` 或 `xhttp`（HTTP/3 伪装） | `tcp` |
+| `EASYNET_REALITY_TRANSPORT` | 传输层协议：`tcp` 或 `xhttp`（HTTP/3 伪装）；与 Fragment 包分片互斥 | `tcp` |
 | `EASYNET_REALITY_XHTTP_MODE` | XHTTP 多路复用模式：`auto` / `stream-one` / `stream-up` / `packet-up` | `auto` |
 | `EASYNET_REALITY_XMUX_CONCURRENCY` | XMUX 多路复用并发数（`0` = 禁用） | `0` |
-| `EASYNET_REALITY_FRAGMENT` | Finalmask 包分片混淆（空值禁用） | `tlshello` |
+| `EASYNET_REALITY_FRAGMENT` | Finalmask 包分片混淆（仅 TCP 传输有效；与 XHTTP 不兼容，设值但传输为 xhttp 时自动跳过） | `tlshello` |
 | `EASYNET_REALITY_FRAGMENT_LENGTH` | 分片长度范围（字节） | `100-200` |
 | `EASYNET_REALITY_FRAGMENT_INTERVAL` | 分片间隔（毫秒） | `10-20` |
 | `EASYNET_XRAY_INSTALL_SHA256` | Xray 安装脚本 SHA256 校验（可选） | 未设置（不校验） |
