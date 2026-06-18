@@ -5,6 +5,16 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.4] - 2026-06-19
+
+### 优化
+- **CI 加速**：shellcheck 二进制缓存（`actions/cache@v4`），去掉 integration-test 不需要的 nginx 依赖，apt 安装使用 `--no-install-recommends`，平均每个 job 节省 20-30s
+- **VERSION 文件移除**：发布流程全自动化，不再需要手动更新 VERSION 文件。打 tag → push → CI 测试通过后自动 Release
+
+### 文档
+- CONTRIBUTING.md 发布检查清单移除 VERSION 相关步骤
+- README.md 目录树移除 VERSION 条目
+
 ## [0.0.3] - 2026-06-19
 
 ### 架构重构
@@ -77,6 +87,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.4]: https://github.com/EasyIndie/EasyNet/compare/0.0.3...0.0.4
 [0.0.3]: https://github.com/EasyIndie/EasyNet/compare/0.0.2...0.0.3
 [0.0.2]: https://github.com/EasyIndie/EasyNet/compare/0.0.1...0.0.2
 [0.0.1]: https://github.com/EasyIndie/EasyNet/releases/tag/0.0.1
