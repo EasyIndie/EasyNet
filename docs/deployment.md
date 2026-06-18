@@ -6,7 +6,7 @@
 
 ## 部署前准备
 
-- **VPS**：1 核、1 GB 内存、20 GB SSD 起步 👉 [可选 VPS 提供商列表](./vps-providers.md)
+- **VPS**：1 核、1 GB 内存、20 GB SSD 起步（参考：[RackNerd] $1.5/月～、[CloudCone] $2.5/月、[BandwagonHOST] $3/月 CN2 GIA、[Vultr] $5/月、[Alice Networks] $5/月 台北）
 - **系统**：Ubuntu 22.04+ 或 Debian 11+
 - **位置**：优先香港、日本、新加坡
 - **域名**：Hysteria2 需要域名；订阅链接也需要域名，可与 Hysteria2 共用
@@ -109,18 +109,13 @@ cd EasyNet
 ./scripts/deploy.sh
 ```
 
-部署菜单中的编号由协议自动发现生成，按 **抗 DPI 能力从高到低**（即 `MODULE_SECURITY_RANK` 升序）排列，当前顺序如下：
+部署菜单中的编号由协议自动发现生成，按 **抗 DPI 能力从高到低**（`MODULE_SECURITY_RANK` 升序）排列：
 
-| 编号 | 模块 | 说明 | 安全等级 |
-|------|------|------|:--------:|
-| `0` | 全部部署 | 部署当前所有已发现模块 | — |
-| `1` | `xray-reality` | Xray+Reality（最高抗 DPI） | 10 |
-| `2` | `hysteria2` | Hysteria2 QUIC/UDP | 20 |
-| `3` | `shadowsocks` | Shadowsocks 2022 | 40 |
-| `4` | `wireguard` | WireGuard (+Amnezia obfs) | 60 |
-| `5` | 退出 | 结束部署脚本 | — |
+- `0`=全部部署
+- `1`=`xray-reality`（安全等级 10）→ `2`=`hysteria2`（20）→ `3`=`shadowsocks`（40）→ `4`=`wireguard`（60）
+- `N+1`=退出
 
-> 增加协议模块后按安全等级自动插入正确位置，编号随之变化。交互菜单仅在无自动化变量时显示；使用环境变量自动部署则执行一次后退出。
+> 新增模块后按安全等级自动插入，编号随之变化。菜单仅在无自动化变量时显示；环境变量自动部署则执行一次后退出。
 
 说明：各协议模块部署后会导出标准 metadata，订阅生成器只读取 metadata。部署入口统一走 `scripts/protocols/*/` 与 `scripts/exposure/edge/`。订阅链接只在存在 Edge Gateway 域名时打印。
 
@@ -203,17 +198,11 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 ./scripts/uninstall.sh
 ```
 
-卸载菜单中的编号由协议模块 + Edge Gateway 自动发现生成，按 **模块目录名字母序** 排列（`edge` < `hysteria2` < `shadowsocks` < `wireguard` < `xray-reality`），当前顺序如下：
+卸载菜单中的编号按模块目录名字母序排列，当前顺序如下（新增模块后顺延）：
 
-| 编号 | 模块 | 说明 |
-|------|------|------|
-| `0` | 卸载全部 | 卸载全部模块（含 Edge Gateway） |
-| `1` | `edge` | 仅清理 Edge Gateway 与订阅文件 |
-| `2` | `hysteria2` | 卸载 Hysteria2 |
-| `3` | `shadowsocks` | 卸载 Shadowsocks 2022 |
-| `4` | `wireguard` | 卸载 WireGuard |
-| `5` | `xray-reality` | 卸载 Xray+Reality |
-| `6` | 退出 | 结束卸载脚本 |
+- `0`=卸载全部（含 Edge Gateway）
+- `1`=`edge` → `2`=`hysteria2` → `3`=`shadowsocks` → `4`=`wireguard` → `5`=`xray-reality`
+- `N+1`=退出
 
 自动化卸载：
 

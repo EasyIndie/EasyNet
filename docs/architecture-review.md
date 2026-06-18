@@ -133,7 +133,7 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 ### 4.2 测试质量问题
 
 - `test_path_generation.bats` 在测试文件中**重新定义了 `generate_random_path()`**，测试的是自己的逻辑而非真实代码——真实函数坏了测试照样过
-- CONTRIBUTING.md 中记载的 `test_start`/`test_end` API 在迁移到 bats 后已不存在
+- ~~CONTRIBUTING.md 中记载的 `test_start`/`test_end` API 在迁移到 bats 后已不存在~~ ✅ **已修复**（已更新为 bats 原生 API）
 
 ---
 
@@ -162,7 +162,7 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 | # | 建议 | 工作量 |
 |---|------|--------|
 | 9 | 为 `test_path_generation.bats` 改为 source 真实函数 | 极小 |
-| 10 | 清洁 CONTRIBUTING.md 中过期 API 引用 | 极小 |
+| 10 | ~~清洁 CONTRIBUTING.md 中过期 API 引用~~ ✅ 已修复 | 极小 |
 | 11 | 为协议 deploy.sh 添加基本的行为测试（mock 模式下运行） | 中 |
 | 12 | 添加 render_clash.sh / render_singbox.jq 单元测试 | 中 |
 
