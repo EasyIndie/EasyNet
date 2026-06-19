@@ -12,6 +12,7 @@
 - **VERSION 文件移除**：发布流程全自动化，不再需要手动更新 VERSION 文件。打 tag → push → CI 测试通过后自动 Release
 
 ### 文档
+- **.env.example 默认 TCP Reality**：Reality 传输方式默认配置从 `xhttp` 调整为 `tcp`，与 CI 测试配置保持一致
 - CONTRIBUTING.md 发布检查清单移除 VERSION 相关步骤
 - README.md 目录树移除 VERSION 条目
 
@@ -39,6 +40,7 @@
 - **抗 DPI 默认调优**：`.env.example` 默认启用 XHTTP + Fragment + Port Hopping 配置
 
 ### CI 与测试
+- **actions/cache v4→v5**：升级缓存 action 消除 Node.js 20 deprecation 警告
 - **BATS 测试框架迁移**：从自定义 test_helper.bash（73 行）迁移至 bats-core，测试用例从 13 增至 262（23 测试文件）
 - **ShellCheck 强制 `--severity=style`**：全量清理 SC2188/SC2155/SC2005/SC2162/SC2034/SC2317 等 40+ 项警告
 - **新增端到端测试**：订阅输出（22 用例）、URL 探活（12 用例）、配置生成 dry-run、unbound variable lint
@@ -46,6 +48,7 @@
 - **Release 流水线**：合并至测试工作流，强制测试通过后方可 Release
 
 ### 修复
+- **sing-box Reality xhttp 修复**：客户端 `network` 字段应设为 `tcp` 而非 `xhttp`，修复 xhttp 模式下客户端无法连接的问题
 - **UFW SSH 锁死防护**：自动探测 sshd 非标准端口并注入防火墙白名单；UFW 端口范围规则格式修复
 - **Xray 配置竞条件**：合并多次 jq 写入为单次原子调用，消除中间状态不一致窗口
 - **xhttp 不兼容处理**：XTLS Vision flow（与 HTTP/2 多路复用冲突）和 Fragment 分片在 xhttp 模式下自动跳过
