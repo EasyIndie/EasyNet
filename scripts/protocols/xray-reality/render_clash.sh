@@ -32,13 +32,18 @@ cat << EOF
     network: "$(yaml_escape "$network")"
     udp: true
     tls: true
-    flow: "$(yaml_escape "$flow")"
     servername: "$(yaml_escape "$servername")"
     client-fingerprint: "$(yaml_escape "$client_fingerprint")"
     reality-opts:
       public-key: "$(yaml_escape "$public_key")"
       short-id: "$(yaml_escape "$short_id")"
 EOF
+
+if [ -n "$flow" ]; then
+    cat << EOF
+    flow: "$(yaml_escape "$flow")"
+EOF
+fi
 
 if [ -n "$xhttp_mode" ]; then
     cat << EOF

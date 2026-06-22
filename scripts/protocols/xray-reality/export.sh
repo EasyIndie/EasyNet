@@ -42,13 +42,20 @@ export_xray_reality_metadata() {
     fi
 
     # Build URI
+    # Note: xtls-rprx-vision flow only works with TCP transport, not XHTTP.
+    # XHTTP uses HTTP/2 framing which conflicts with XTLS direct passthrough.
     if [ "$transport" = "xhttp" ]; then
-        uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&flow=xtls-rprx-vision&mode=$xhttp_mode#EasyNet-Reality"
+        uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode#EasyNet-Reality"
     else
         uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
     fi
 
     # Build Clash metadata; include xhttp-opts when using XHTTP transport
+    # Note: flow=xtls-rprx-vision only for TCP; XHTTP conflicts with Vision flow
+    local flow_arg="xtls-rprx-vision"
+    if [ "$transport" = "xhttp" ]; then
+        flow_arg=""
+    fi
     local clash_json
     clash_json=$(jq -n \
         --arg server "$public_ip" \
@@ -57,6 +64,7 @@ export_xray_reality_metadata() {
         --arg public_key "$public_key" \
         --arg short_id "$short_id" \
         --arg network "$transport" \
+        --arg flow "$flow_arg" \
         --argjson port "$port" \
         '{
             name: "EasyNet-Reality",
@@ -67,14 +75,13 @@ export_xray_reality_metadata() {
             network: $network,
             udp: true,
             tls: true,
-            flow: "xtls-rprx-vision",
             servername: $sni,
             "client-fingerprint": "chrome",
             "reality-opts": {
                 "public-key": $public_key,
                 "short-id": $short_id
             }
-        }')
+        } | if $flow != "" then .flow = $flow else . end')
 
     # Attach xhttp-opts when transport is xhttp
     if [ "$transport" = "xhttp" ]; then

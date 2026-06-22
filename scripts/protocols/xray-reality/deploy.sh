@@ -39,7 +39,7 @@ write_xray_config_template() {
                 "clients": [
                     {
                         "id": "$uuid",
-                        "flow": "xtls-rprx-vision"
+                        "flow": ""
                     }
                 ],
                 "decryption": "none"
@@ -278,7 +278,7 @@ show_config() {
     echo ""
 
     if [ "$transport" = "xhttp" ]; then
-        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&flow=xtls-rprx-vision&mode=$xhttp_mode#EasyNet-Reality"
+        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode#EasyNet-Reality"
     else
         echo "流控: xtls-rprx-vision"
         config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
