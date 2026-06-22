@@ -93,7 +93,6 @@ sudo bash easynet-singbox-client.sh doctor
 |----------|--------------|
 | Shadowsocks 2022 (BLAKE3) | Clash Verge Rev ≥1.6, Shadowrocket ≥2.2.38, sing-box ≥1.8 |
 | Xray XHTTP 传输 | Clash Verge Rev ≥1.7, sing-box ≥1.11 |
-| Xray Fragment 混淆 | 客户端自动适配（服务端配置） |
 | Hysteria2 Port Hopping | 需客户端支持 `port_hopping` 参数 |
 | WireGuard AmneziaWG | Clash Verge Rev (支持 jc/jmin/jmax), AmneziaWG 客户端 |
 

@@ -5,6 +5,23 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.5] - 2026-06-22
+
+### 移除
+- **Xray Reality Fragment 包分片**：`EASYNET_REALITY_FRAGMENT` 及相关环境变量全部移除。Fragment 与
+  `flow: xtls-rprx-vision` 存在已知冲突（两者同时修改 TLS Client Hello 导致间歇性连接失败），且
+  Vision 的 uTLS 指纹伪装 + padding 已完整覆盖抗 DPI 功能，Fragment 不再需要。
+
+### 修复
+- **Xray Reality XHTTP 配置修复**：XHTTP 传输现在正确添加 `flow: xtls-rprx-vision` 和
+  `encryption: none`（VLESS Encryption），消除 Xray-core v26.1.18+ 的 "VLESS without flow is
+  deprecated" 警告。
+- **XHTTP 默认 mode 改为 `stream-one`**：纯 TCP HTTP/2，避免 `mode=auto` 默认走 UDP/QUIC 被云商 QoS 限速。
+- **XMUX connIdleTime 可配置**：新增 `EASYNET_REALITY_XMUX_CONN_IDLE` 环境变量（默认 60 秒），替代硬编码值。
+
+### 文档
+- 清理所有 Fragment 环境变量、配置示例、兼容性表格、诊断命令等文档。
+
 ## [0.0.4] - 2026-06-19
 
 ### 优化

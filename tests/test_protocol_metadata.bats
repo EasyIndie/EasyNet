@@ -126,12 +126,12 @@ JSON
     [[ "$output" == *"type=xhttp"* ]]
     run jq -r '.client.clash.network' "$meta"
     [ "$output" = "xhttp" ]
-    # xhttp URI must NOT contain flow=xtls-rprx-vision
+    # xhttp URI must contain flow=xtls-rprx-vision
     run jq -r '.client.uri' "$meta"
-    [[ "$output" != *"flow="* ]]
-    # xhttp Clash config must NOT have flow field
+    [[ "$output" == *"flow=xtls-rprx-vision"* ]]
+    # xhttp Clash config must have flow field
     run jq -r '.client.clash.flow // empty' "$meta"
-    [ -z "$output" ]
+    [ "$output" = "xtls-rprx-vision" ]
 }
 
 # --- Shadowsocks ---
