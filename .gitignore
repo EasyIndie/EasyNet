@@ -29,6 +29,11 @@ Thumbs.db
 ehthumbs.db
 .vscode/
 .idea/
+
+# Claude Code – local/user files
+.claude/
+# But allow project-wide Claude Code settings (if added later)
+!.claude/settings.json
 *.swp
 *~
 .project
