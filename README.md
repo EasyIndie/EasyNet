@@ -11,11 +11,11 @@
 ## 核心特性
 
 - 🚀 支持 4 种代理协议，全部内置混淆对抗 DPI：
-  - **Xray+Reality** — TLS 指纹模仿 + XHTTP/HTTP3 传输 + Fragment 包分片 + XMUX 多路复用
+  - **Xray+Reality** — TLS 指纹模仿 + XHTTP/HTTP3 传输 + XMUX 多路复用
   - **Hysteria2** — QUIC/UDP + Salamander 混淆 + Port Hopping 端口跳变
   - **Shadowsocks 2022** — BLAKE3-AES-256-GCM 加密，完整重放保护
   - **WireGuard (+Amnezia obfs)** — 默认启用 Jc/Jmin/Jmax 垃圾包填充消除 UDP 指纹
-- 🔒 强安全架构：REALITY 无证书 TLS、Finalmask Fragment、Edge Gateway 反代伪装
+- 🔒 强安全架构：REALITY 无证书 TLS、Edge Gateway 反代伪装
 - ⚡ 性能优化：BBR 拥塞控制、XHTTP 多路复用 (XMUX)、QUIC 0-RTT
 - 🔄 自动化运维：系统更新、证书续期 hook（自动修正权限并重启服务）、日志限额与 logrotate
 - 🤖 无交互部署：支持 `.env` 或环境变量进行一键安装
@@ -36,7 +36,7 @@
 
 | 协议 | 传输/混淆 | 优点 | 防探测等级 |
 |------|-----------|------|-----------|
-| **Xray+Reality** | TCP/XHTTP + REALITY + Fragment + XMUX | 无需域名，TLS 指纹模仿，包分片抗 ML，多路复用 | 🥇 极高（推荐） |
+| **Xray+Reality** | TCP/XHTTP + REALITY + XMUX | 无需域名，TLS 指纹模仿，包分片抗 ML，多路复用 | 🥇 极高（推荐） |
 | **Hysteria2** | QUIC/UDP + Salamander + Port Hopping | 端口跳变抗封锁，HTTP/3 伪装 | 🥇 高（推荐补充） |
 | **Shadowsocks 2022** | TCP+UDP / BLAKE3-AES-256-GCM | 2022 Edition 强加密，重放保护 | 🥈 中等+ |
 | **WireGuard (+Amnezia obfs)** | UDP + Jc/Jmin/Jmax 垃圾包 | 可启用混淆消除 UDP 指纹 | 🥈 中等（启用混淆后） |
@@ -158,7 +158,6 @@ EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
 EASYNET_PROFILE=balanced \
   EASYNET_DOMAIN=proxy.example.com \
   EASYNET_REALITY_TRANSPORT=xhttp \
-  EASYNET_REALITY_FRAGMENT=tlshello \
   EASYNET_REALITY_XMUX_CONCURRENCY=4 \
   EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000 \
   EASYNET_WIREGUARD_OBFS=true \

@@ -43,7 +43,7 @@ export_xray_reality_metadata() {
 
     # Build URI
     if [ "$transport" = "xhttp" ]; then
-        uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode#EasyNet-Reality"
+        uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&flow=xtls-rprx-vision&mode=$xhttp_mode#EasyNet-Reality"
     else
         uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
     fi
@@ -93,8 +93,6 @@ export_xray_reality_metadata() {
                 '.["xhttp-opts"].xmux = { concurrency: $xmux_cc }')
         fi
         clash_json=$(echo "$clash_json" | jq -s '.[0] * .[1]' - <(echo "$xhttp_opts"))
-        # flow: xtls-rprx-vision only works with tcp transport — remove from xhttp
-        clash_json=$(echo "$clash_json" | jq 'del(.flow)')
     fi
 
     metadata_json=$(jq -n \
