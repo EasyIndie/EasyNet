@@ -52,6 +52,53 @@
 | systemd 服务名 | `xray` | `hysteria-server.service` | `shadowsocks-rust-server` | `wg-quick@wg0` |
 | 所属策略 | strict, balanced, compat | balanced, compat | compat | compat |
 
+### 域名要求
+
+**只有 Hysteria2 和 Edge Gateway 需要域名**，其余协议独立运行。下表帮助判断"不设域名能不能用"以及"部署中断是否因域名缺失"。
+
+| 组件 | 必须域名？ | 无域名时的行为 | 原因 |
+|------|:----------:|---------------|------|
+| **Xray+Reality** | ❌ 不需要 | 正常运行，无影响 | REALITY 是"无证书 TLS"，无需真实域名 |
+| **Hysteria2** | ✅ **必填** | **部署中断**，交互式部署会提示输入域名；自动化部署因 `EASYNET_DOMAIN` 未设而报错退出 | `shared_tls` 模式需要 Edge TLS 证书 |
+| **Shadowsocks 2022** | ❌ 不需要 | 正常运行，无影响 | AEAD 加密，无 TLS 依赖 |
+| **WireGuard** | ❌ 不需要 | 正常运行，无影响 | UDP 隧道，无 TLS 依赖 |
+| **Edge Gateway**（订阅分发） | ✅ **必填** | 跳过部署，**不生成外部可访问的订阅链接**；`show_subscription.sh` 仍可打印本地配置 | acme.sh 需要域名签发 Let's Encrypt 证书 |
+| **Edge Gateway**（TLS 伪装站） | ✅ **必填** | 跳过部署，**Nginx 反代伪装不生效** | Nginx `server_name` 需要域名 |
+
+> **故障判断**：部署过程中 Hysteria2 提示"请输入 Hysteria2 绑定域名"或报错"未找到 Hysteria2 TLS 证书" → 这是域名未设置导致的预期行为，不是脚本异常。
+
+#### 无域名部署方案
+
+如果手头没有域名，推荐以下方式：
+
+**方案 A — 仅部署 Xray+Reality（最简）**
+```bash
+EASYNET_PROFILE=strict ./scripts/deploy.sh
+```
+Xray+Reality 是抗 DPI 能力最强的协议，无域名时首选。
+
+**方案 B — 部署多个协议，跳过 Hysteria2**
+```bash
+# 从交互菜单中选择 xray-reality、shadowsocks、wireguard（跳过 hysteria2）
+./scripts/deploy.sh
+```
+或通过环境变量单模块部署：
+```bash
+EASYNET_MODULE=xray-reality ./scripts/deploy.sh
+EASYNET_MODULE=shadowsocks ./scripts/deploy.sh
+EASYNET_MODULE=wireguard ./scripts/deploy.sh
+```
+
+**方案 C — 先无域名部署，后续补充域名**
+```bash
+# 第一次：无域名部署
+EASYNET_PROFILE=strict ./scripts/deploy.sh
+
+# 后续有了域名：补充部署 Edge Gateway + Hysteria2
+EASYNET_DOMAIN=proxy.example.com EASYNET_MODULE=hysteria2 ./scripts/deploy.sh
+```
+注意：补充部署时需确保域名已 A 记录解析到服务器，且防火墙放行 `80/tcp`（acme 证书挑战用）和 `443/tcp+udp`。
+
 ### 协议混淆能力速览
 
 | 能力 | Xray+Reality | Hysteria2 | Shadowsocks | WireGuard |
