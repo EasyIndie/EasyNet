@@ -133,13 +133,17 @@ resolve_singbox_url() {
 install_singbox_binary() {
     local tmp_dir="" tarball binary_path existing_binary
 
-    if command -v sing-box >/dev/null 2>&1; then
+    # Always download the latest sing-box from GitHub to ensure XHTTP etc. support.
+    # Debian/Ubuntu apt repositories carry very old versions that may not support
+    # modern transports (XHTTP, etc.).
+    # If the user has a manually installed version at the target path, skip download.
+    if [ -f "$INSTALL_DIR/sing-box" ] && command -v sing-box >/dev/null 2>&1; then
         existing_binary="$(command -v sing-box)"
-        log "检测到已安装 sing-box: $existing_binary"
-        if [ "$existing_binary" != "$INSTALL_DIR/sing-box" ]; then
-            install -m 0755 "$existing_binary" "$INSTALL_DIR/sing-box"
+        if [ "$existing_binary" = "$INSTALL_DIR/sing-box" ]; then
+            log "检测到已安装最新版 sing-box: $existing_binary"
+            return 0
         fi
-        return 0
+        log "检测到旧版 sing-box: $existing_binary，将更新到最新版..."
     fi
 
     resolve_singbox_url
