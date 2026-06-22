@@ -255,9 +255,9 @@ source_protocol() {
     [ "$output" = "xhttp" ]
     run jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // empty' "$config"
     [ "$output" = "stream-one" ]
-    # flow must exist for xhttp+vision
+    # flow must be empty for xhttp (xtls-rprx-vision is TCP-only)
     run jq -r '.inbounds[0].settings.clients[0].flow // empty' "$config"
-    [ "$output" = "xtls-rprx-vision" ]
+    [ -z "$output" ]
 }
 
 @test "Xray: transport switch from tcp to xhttp preserves UUID and keys" {
@@ -323,9 +323,9 @@ source_protocol() {
     # xhttpSettings should exist
     run jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // empty' "$XRAY_DIR/config.json"
     [ "$output" = "stream-one" ]
-    # flow must persist after switch to xhttp
+    # flow must be cleared after switch to xhttp (xtls-rprx-vision is TCP-only)
     run jq -r '.inbounds[0].settings.clients[0].flow // empty' "$XRAY_DIR/config.json"
-    [ "$output" = "xtls-rprx-vision" ]
+    [ -z "$output" ]
 }
 
 # -------------------------------------------------------------------------
