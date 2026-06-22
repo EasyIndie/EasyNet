@@ -174,5 +174,4 @@ ss -ltnup
 wg show
 ufw status verbose
 jq '.inbounds[0].streamSettings.network' /usr/local/etc/xray/config.json
-jq '.inbounds[0].streamSettings.fragmentSettings' /usr/local/etc/xray/config.json
 ```

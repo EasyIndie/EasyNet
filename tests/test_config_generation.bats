@@ -205,9 +205,6 @@ source_protocol() {
     [ "$output" = "xtls-rprx-vision" ]
     run jq -r '.inbounds[0].port' "$config"
     [ "$output" = "8443" ]
-    # Verify default TCP transport also includes fragmentSettings
-    run jq -r '.inbounds[0].streamSettings.fragmentSettings.packets // empty' "$config"
-    [ "$output" = "tlshello" ]
     # Verify xhttpSettings not present in tcp mode
     run jq '.inbounds[0].streamSettings.xhttpSettings // empty' "$config"
     [ -z "$output" ]
@@ -236,7 +233,7 @@ source_protocol() {
     [ "$output" = "deadbeefdeadbeef" ]
 }
 
-@test "Xray: xhttp transport generates config with xhttpSettings and no fragment" {
+@test "Xray: xhttp transport generates config with xhttpSettings" {
     export EASYNET_REALITY_TRANSPORT=xhttp
     source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
 
@@ -257,43 +254,10 @@ source_protocol() {
     run jq -r '.inbounds[0].streamSettings.network' "$config"
     [ "$output" = "xhttp" ]
     run jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // empty' "$config"
-    [ "$output" = "auto" ]
-    # fragmentSettings must NOT exist in xhttp mode
-    run jq '.inbounds[0].streamSettings.fragmentSettings // empty' "$config"
-    [ -z "$output" ]
-    # flow must NOT exist (xtls-rprx-vision only works with tcp)
-    run jq '.inbounds[0].settings.clients[0].flow // empty' "$config"
-    [ -z "$output" ]
-}
-
-@test "Xray: xhttp transport with fragment env var set skips fragmentSettings" {
-    export EASYNET_REALITY_TRANSPORT=xhttp
-    export EASYNET_REALITY_FRAGMENT=tlshello
-    export EASYNET_REALITY_FRAGMENT_LENGTH=40-120
-    export EASYNET_REALITY_FRAGMENT_INTERVAL=5-15
-    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
-
-    eval 'openssl() {
-        if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"
-        else command openssl "$@"; fi
-    }'
-    export -f openssl
-    export XRAY_BIN="xray"
-
-    run configure_reality
-    [ "$status" -eq 0 ] || { echo "# configure_reality failed: $output" >&3; return 1; }
-
-    local config="${XRAY_DIR:-$TMP_DIR/xray}/config.json"
-    [ -f "$config" ] || { echo "# config.json not found" >&3; return 1; }
-
-    run jq -r '.inbounds[0].streamSettings.network' "$config"
-    [ "$output" = "xhttp" ]
-    # fragmentSettings must be absent even though var is set
-    run jq '.inbounds[0].streamSettings.fragmentSettings // empty' "$config"
-    [ -z "$output" ]
-    # flow must NOT exist (xtls-rprx-vision only works with tcp)
-    run jq '.inbounds[0].settings.clients[0].flow // empty' "$config"
-    [ -z "$output" ]
+    [ "$output" = "stream-one" ]
+    # flow must exist for xhttp+vision
+    run jq -r '.inbounds[0].settings.clients[0].flow // empty' "$config"
+    [ "$output" = "xtls-rprx-vision" ]
 }
 
 @test "Xray: transport switch from tcp to xhttp preserves UUID and keys" {
@@ -356,16 +320,12 @@ source_protocol() {
     run cat "$XRAY_DIR/public.key"
     [[ "$output" == *"PublicKeyBase64"* ]]
 
-    # fragmentSettings must not exist after switching to xhttp
-    run jq '.inbounds[0].streamSettings.fragmentSettings // empty' "$XRAY_DIR/config.json"
-    [ -z "$output" ]
-
     # xhttpSettings should exist
     run jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // empty' "$XRAY_DIR/config.json"
-    [ "$output" = "auto" ]
-    # flow must NOT exist after switch (xtls-rprx-vision only works with tcp)
-    run jq '.inbounds[0].settings.clients[0].flow // empty' "$XRAY_DIR/config.json"
-    [ -z "$output" ]
+    [ "$output" = "stream-one" ]
+    # flow must persist after switch to xhttp
+    run jq -r '.inbounds[0].settings.clients[0].flow // empty' "$XRAY_DIR/config.json"
+    [ "$output" = "xtls-rprx-vision" ]
 }
 
 # -------------------------------------------------------------------------

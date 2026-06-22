@@ -38,7 +38,8 @@ write_xray_config_template() {
             "settings": {
                 "clients": [
                     {
-                        "id": "$uuid"
+                        "id": "$uuid",
+                        "flow": "xtls-rprx-vision"
                     }
                 ],
                 "decryption": "none"
@@ -134,11 +135,9 @@ configure_reality() {
     mkdir -p "$XRAY_DIR"
 
     local transport="${EASYNET_REALITY_TRANSPORT:-tcp}"
-    local xhttp_mode="${EASYNET_REALITY_XHTTP_MODE:-auto}"
+    local xhttp_mode="${EASYNET_REALITY_XHTTP_MODE:-stream-one}"
     local xmux_concurrency="${EASYNET_REALITY_XMUX_CONCURRENCY:-0}"
-    local fragment="${EASYNET_REALITY_FRAGMENT:-tlshello}"
-    local fragment_length="${EASYNET_REALITY_FRAGMENT_LENGTH:-100-200}"
-    local fragment_interval="${EASYNET_REALITY_FRAGMENT_INTERVAL:-10-20}"
+    local xmux_conn_idle="${EASYNET_REALITY_XMUX_CONN_IDLE:-60}"
 
     if [ -f "$XRAY_DIR/config.json" ] && grep -q "privateKey" "$XRAY_DIR/config.json"; then
         log_info "检测到已有的 Xray 配置，跳过生成新密钥，直接使用现有配置。"
@@ -162,20 +161,15 @@ configure_reality() {
 
             write_xray_config_template "$transport" "$UUID" "$PORT" "$existing_dest" "$existing_server_names_arr" "$xhttp_mode"
 
-            # Inject preserved keys + optional fragment/xmux
+            # Inject preserved keys + optional xmux
             JQ_ARGS=(--arg pk "$existing_private_key" --arg sid "$existing_short_id")
             # shellcheck disable=SC2016  # $pk, $sid etc. are jq --arg vars, not bash
             JQ_FILTER='.inbounds[0].streamSettings.realitySettings.privateKey = $pk |
                          .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid'
-            if [ -n "$fragment" ] && [ "$transport" = "tcp" ]; then
-                JQ_ARGS+=(--arg f_packets "$fragment" --arg f_length "$fragment_length" --arg f_interval "$fragment_interval")
-                # shellcheck disable=SC2016  # $f_* are jq --arg vars
-                JQ_FILTER+=' | .inbounds[0].streamSettings.fragmentSettings = { "packets": $f_packets, "length": $f_length, "interval": $f_interval }'
-            fi
             if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
-                JQ_ARGS+=(--argjson xmux_cc "$xmux_concurrency")
-                # shellcheck disable=SC2016  # $xmux_cc is a jq --argjson var
-                JQ_FILTER+=' | .inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $xmux_cc, "connIdleTime": 60 }'
+                JQ_ARGS+=(--argjson xmux_cc "$xmux_concurrency" --argjson xmux_idle "$xmux_conn_idle")
+                # shellcheck disable=SC2016  # $xmux_cc, $xmux_idle are jq --argjson vars
+                JQ_FILTER+=' | .inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $xmux_cc, "connIdleTime": $xmux_idle }'
             fi
             jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && \
                 mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
@@ -185,20 +179,6 @@ configure_reality() {
             return  # Skip subsequent logic (already fully handled)
         fi
 
-        # Update Fragment settings on existing config (only applies to tcp transport)
-        if [ -n "$fragment" ]; then
-            if [ "$transport" = "tcp" ]; then
-                jq --arg packets "$fragment" \
-                   --arg length "$fragment_length" \
-                   --arg interval "$fragment_interval" \
-                   '.inbounds[0].streamSettings.fragmentSettings = { "packets": $packets, "length": $length, "interval": $interval }' \
-                   "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
-                log_info "Fragment 混淆已启用: packets=$fragment length=$fragment_length interval=$fragment_interval"
-                systemctl restart xray
-            else
-                log_info "注意: Fragment 不适用于 $transport 传输方式，已跳过（仅支持 tcp）"
-            fi
-        fi
     else
         UUID=$(generate_uuid)
         DEST="${EASYNET_REALITY_DEST:-www.microsoft.com:443}"
@@ -229,34 +209,22 @@ configure_reality() {
 
         SHORT_ID=$(openssl rand -hex 8)
 
-        # Single combined jq — inject privateKey, shortId, optional fragment, optional xmux
+        # Single combined jq — inject privateKey, shortId, optional xmux
         JQ_ARGS=(--arg pk "$PRIVATE_KEY" --arg sid "$SHORT_ID")
         # shellcheck disable=SC2016  # $pk, $sid etc. are jq --arg vars, not bash
         JQ_FILTER='.inbounds[0].streamSettings.realitySettings.privateKey = $pk |
                      .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid'
 
-        if [ -n "$fragment" ] && [ "$transport" = "tcp" ]; then
-            JQ_ARGS+=(--arg f_packets "$fragment" --arg f_length "$fragment_length" --arg f_interval "$fragment_interval")
-            # shellcheck disable=SC2016  # $f_* are jq --arg vars
-            JQ_FILTER+=' | .inbounds[0].streamSettings.fragmentSettings = { "packets": $f_packets, "length": $f_length, "interval": $f_interval }'
-        fi
         if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
-            JQ_ARGS+=(--argjson xmux_cc "$xmux_concurrency")
-            # shellcheck disable=SC2016  # $xmux_cc is a jq --argjson var
-            JQ_FILTER+=' | .inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $xmux_cc, "connIdleTime": 60 }'
+            JQ_ARGS+=(--argjson xmux_cc "$xmux_concurrency" --argjson xmux_idle "$xmux_conn_idle")
+            # shellcheck disable=SC2016  # $xmux_cc, $xmux_idle are jq --argjson vars
+            JQ_FILTER+=' | .inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $xmux_cc, "connIdleTime": $xmux_idle }'
         fi
 
         jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$XRAY_DIR/config.json" > "${XRAY_DIR}/config.json.tmp" && \
             mv "${XRAY_DIR}/config.json.tmp" "$XRAY_DIR/config.json"
 
         log_info "配置文件已生成 (transport=$transport)"
-        if [ -n "$fragment" ]; then
-            if [ "$transport" = "tcp" ]; then
-                log_info "Fragment 混淆已启用: packets=$fragment length=$fragment_length interval=$fragment_interval"
-            else
-                log_info "注意: Fragment 不适用于 $transport 传输方式，已跳过（仅支持 tcp）"
-            fi
-        fi
         if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
             log_info "XMUX 多路复用已启用: concurrency=$xmux_concurrency"
         fi
@@ -291,8 +259,6 @@ show_config() {
     public_ip=$(get_public_ip)
     transport=$(jq -r '.inbounds[0].streamSettings.network // "tcp"' "$config_file")
     xhttp_mode=$(jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // "auto"' "$config_file")
-    fragment_packets=$(jq -r '.inbounds[0].streamSettings.fragmentSettings.packets // empty' "$config_file")
-    fragment_length=$(jq -r '.inbounds[0].streamSettings.fragmentSettings.length // empty' "$config_file")
 
     echo ""
     echo "========================================"
@@ -307,14 +273,12 @@ show_config() {
     echo "传输方式: $transport"
     if [ "$transport" = "xhttp" ]; then
         echo "XHTTP 模式: $xhttp_mode"
-    fi
-    if [ -n "$fragment_packets" ]; then
-        echo "Fragment 混淆: $fragment_packets / $fragment_length"
+        echo "流控: xtls-rprx-vision"
     fi
     echo ""
 
     if [ "$transport" = "xhttp" ]; then
-        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode#EasyNet-Reality"
+        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&flow=xtls-rprx-vision&mode=$xhttp_mode#EasyNet-Reality"
     else
         echo "流控: xtls-rprx-vision"
         config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"

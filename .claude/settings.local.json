@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:xtls.github.io)",
+      "WebFetch(domain:deepwiki.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(bats tests/test_config_generation.bats)",
+      "Bash(npx *)",
+      "Bash(wsl.exe *)",
+      "PowerShell(wsl -u root -e bash -c \"apt install -y jq 2>&1 | tail -3\")",
+      "PowerShell(wsl -u root -e bash -c \"apt install -y shellcheck 2>&1 | tail -3\")"
+    ]
+  }
+}
