@@ -1,6 +1,6 @@
 # EasyNet 架构与代码质量评估报告
 
-**评估日期：** 2026-06-18
+**评估日期：** 2026-06-18（本文档为快照审计，以下标记 ✅ 的条目已在后续提交中修复）
 **评估范围：** 全部 Shell 脚本、测试、文档、CI/CD
 **评估方法：** 静态分析 + 代码审查 + 测试运行
 
@@ -12,7 +12,7 @@
 |------|------|------|
 | **架构设计** | ⭐⭐⭐⭐ | 四层分离清晰，metadata 状态模式优秀，插件系统简洁 |
 | **代码质量** | ⭐⭐⭐⭐ | ShellCheck 仅 2 个警告，引用规范，无遗留语法 |
-| **测试覆盖** | ⭐⭐⭐ | 262 测试全通过，核心逻辑覆盖好，但部署脚本无测试 |
+| **测试覆盖** | ⭐⭐⭐ | 267 测试全通过，核心逻辑覆盖好，但部署脚本无测试 |
 | **文档** | ⭐⭐⭐⭐ | README/CONTRIBUTING/CHANGELOG 完善，但缺架构文档 |
 | **CI/CD** | ⭐⭐⭐⭐ | ShellCheck + bats + 集成测试 三层 CI |
 | **安全性** | ⭐⭐⭐⭐ | 审计后已修复大部分问题，剩余 6 项低风险未处理 |
@@ -98,15 +98,15 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 
 | 重复内容 | 出现次数 | 建议 |
 |---------|---------|------|
-| `yaml_escape()` | **5 次** | 协议 `render_clash.sh` 各定义一份，应复用 `core/subscription_clash.sh` 的版本 |
-| `get_public_ip()` | **5 次** | 各协议 deploy/export.sh 各一份，签名不完全一致 |
-| `qrencode` + fallback 模式 | **6+ 次** | 应提取为 `core/display.sh` 的 `show_qrcode()` |
-| `random_secret()` / `generate_uuid()` / `generate_psk()` | 各 1-2 次 | 可合并为 `core/crypto.sh` |
+| ~`yaml_escape()`~ | ~~**5 次**~~ | ✅ 已合并到 `core/subscription_clash.sh`，各协议 `render_clash.sh` source 复用 |
+| ~`get_public_ip()`~ | ~~**5 次**~~ | ✅ 已合并到 `core/network.sh`，各协议脚本 source 调用 |
+| ~`qrencode` + fallback 模式~ | ~~**6+ 次**~~ | ✅ 已提取为 `core/display.sh` 的 `show_qrcode()` |
+| `random_secret()` / `generate_uuid()` / `generate_psk()` | 各 1-2 次 | 已集中到 `core/crypto.sh`，各协议直接调用 |
 
 ### 3.3 潜在 Bug
 
-1. **`discovery_uninstall_entrypoint()` 被定义两次**（`discovery.sh:148` 和 `discovery.sh:232`）——第一次定义被第二次静默覆盖，属死代码
-2. **`for m in $modules`**（`profiles.sh:78`）——未引用的变量同时受 word splitting 和 pathname expansion 影响
+1. ~~**`discovery_uninstall_entrypoint()` 被定义两次**~~ ✅ 已修复——现在只有一个定义（`discovery.sh:244`）
+2. **`for m in $modules`**（`profiles.sh:86`）——未引用的变量同时受 word splitting 和 pathname expansion 影响
 3. **协议脚本无 `set -u`**——未定义变量引用静默展开为空字符串
 
 ---
@@ -116,7 +116,7 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 ### 4.1 覆盖总结
 
 ```
-23 个测试文件, 262 个测试, 0 失败
+23 个测试文件, 267 个测试, 0 失败
 ```
 
 | 覆盖良好 | 覆盖缺失 |
@@ -143,19 +143,19 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 
 | # | 建议 | 涉及文件 | 工作量 |
 |---|------|---------|--------|
-| 1 | 从 `deploy.sh main()` 中提取系统初始化（系统更新、依赖、BBR、自动更新）到 `core/bootstrap.sh` | `deploy.sh:348-368` | 小 |
-| 2 | 合并 `get_public_ip()` 到 `core/network.sh` | 跨 5 个协议文件 | 小 |
-| 3 | 移除部署循环前的冗余 `setup_firewall` 调用 | `deploy.sh:356` | 极小 |
-| 4 | 让 `export.sh` 调用由编排器负责，而非每个协议内部 | `deploy.sh + 4 个协议` | 中 |
+| ~1~ | ~~从 `deploy.sh main()` 中提取系统初始化到 `core/bootstrap.sh`~~ ✅ 已修复 | `deploy.sh` → `core/bootstrap.sh` | 小 |
+| ~2~ | ~~合并 `get_public_ip()` 到 `core/network.sh`~~ ✅ 已修复 | `core/network.sh` | 小 |
+| ~3~ | ~~移除部署循环前的冗余 `setup_firewall` 调用~~ ✅ 已修复 | `deploy.sh:366` | 极小 |
+| ~4~ | ~~让 `export.sh` 调用由编排器负责~~ ✅ 已修复 | `deploy_module()` | 中 |
 
 ### P1 — 代码质量
 
 | # | 建议 | 涉及文件 | 工作量 |
 |---|------|---------|--------|
-| 5 | 修复 `discovery_uninstall_entrypoint()` 重复定义 | `core/discovery.sh:148` | 极小 |
+| ~5~ | ~~修复 `discovery_uninstall_entrypoint()` 重复定义~~ ✅ 已修复 | `core/discovery.sh:244` | 极小 |
 | 6 | 协议脚本增加 `set -uo pipefail` | 协议 `deploy.sh`/`export.sh`/`uninstall.sh` | 小 |
-| 7 | 合并 5 个 `yaml_escape()` 到 `subscription_clash.sh` | `protocols/*/render_clash.sh` | 小 |
-| 8 | 添加 `core/display.sh`，统一 qrencode 输出 | 跨 6+ 文件 | 小 |
+| ~7~ | ~~合并 5 个 `yaml_escape()` 到 `subscription_clash.sh`~~ ✅ 已修复 | `core/subscription_clash.sh` | 小 |
+| ~8~ | ~~添加 `core/display.sh`，统一 qrencode 输出~~ ✅ 已修复 | `core/display.sh` | 小 |
 
 ### P2 — 测试
 

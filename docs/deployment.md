@@ -9,7 +9,7 @@
 - **VPS**：1 核、1 GB 内存、20 GB SSD 起步（参考：[RackNerd] $1.5/月～、[CloudCone] $2.5/月、[BandwagonHOST] $3/月 CN2 GIA、[Vultr] $5/月、[Alice Networks] $5/月 台北）
 - **系统**：Ubuntu 22.04+ 或 Debian 11+
 - **位置**：优先香港、日本、新加坡
-- **域名**：Hysteria2 需要域名；订阅链接也需要域名，可与 Hysteria2 共用
+- **域名**：Hysteria2 需要域名；订阅链接也需要域名，可与 Hysteria2 共用同一个域名
 - **端口**：至少放行以下入站端口：
 
 | 用途 | 端口 | 协议 |
@@ -323,6 +323,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_SUBSCRIPTION_SCHEME` | 订阅 URL 协议 | `https` |
 | `EASYNET_SUBSCRIPTION_URL_PORT` | 订阅 URL 端口号 | 回退到 Edge 状态文件中的端口（`443`） |
 | `EASYNET_SUBSCRIPTION_ROTATION_GRACE` | 订阅轮换时保留旧入口（同 `--grace` 参数） | `false` |
+| `EASYNET_SKIP_NGINX_RELOAD` | 订阅轮换或重生成后跳过 Nginx 重载 | `false` |
 
 #### 状态与输出目录
 

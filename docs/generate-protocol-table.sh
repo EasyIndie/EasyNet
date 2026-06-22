@@ -50,7 +50,7 @@ generate_table() {
 
         printf '| %s | %s | %s | %s | %s |\n' \
             "$name" "$rank" "$port" "$edge_label" "$profile_labels"
-    done < <(discovery_list_modules)
+    done < <(discovery_list_modules_by_security)
 }
 
 generate_document() {

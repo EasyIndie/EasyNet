@@ -10,7 +10,7 @@ EasyNet is a Bash-based server deployment tool that installs and manages proxy p
 
 | Command | Description |
 |---------|-------------|
-| `bats tests/*.bats` | Run all 262 tests (23 test files) |
+| `bats tests/*.bats` | Run all 267 tests (23 test files) |
 | `bats tests/test_protocol_metadata.bats` | Run a single test file |
 | `bats --formatter tap tests/` | TAP output (used in CI) |
 | `shellcheck --rcfile=.shellcheckrc --shell=bash --severity=style scripts/` | Lint all scripts |
@@ -23,6 +23,10 @@ CI runs both shellcheck and bats on push/PR to `main` (see `.github/workflows/te
 ```
 scripts/
   deploy.sh / uninstall.sh     ← Main orchestrators
+  generate_subscription.sh/
+  show_subscription.sh/
+  rotate_subscription.sh/
+  smoke_test.sh                ← Subscription management & smoke test
   core/                         ← Shared infrastructure (19 files)
     discovery.sh                ←   Plugin system (manifest loading, validation)
     metadata.sh                 ←   metadata.json write/validate (chmod 600)

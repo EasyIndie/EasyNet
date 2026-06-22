@@ -111,6 +111,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.5]: https://github.com/EasyIndie/EasyNet/compare/0.0.4...0.0.5
 [0.0.4]: https://github.com/EasyIndie/EasyNet/compare/0.0.3...0.0.4
 [0.0.3]: https://github.com/EasyIndie/EasyNet/compare/0.0.2...0.0.3
 [0.0.2]: https://github.com/EasyIndie/EasyNet/compare/0.0.1...0.0.2

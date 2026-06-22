@@ -4,6 +4,10 @@
 **审计范围：** 全部 Shell 脚本、配置文件、文档
 **审计方法：** 静态代码分析
 **注意：** 本报告为特定日期的快照审计。引用的行号可能因后续代码变更而偏移，但描述的问题性质仍具参考价值。
+**更新说明：** 以下项目已在后续提交中修复或改进：
+- C1 部分修复：`install_singbox_client.sh` 已添加 `EASYNET_SINGBOX_INSTALL_SHA256` 可选校验机制，`.env.example` 已包含该变量
+- H1a/H1b 修复：`shadowsocks/deploy.sh` 和 `xray-reality/deploy.sh` 的 `config.json` 已添加 `chmod` 权限设置（xray 为 `chmod 600`）
+- H2 部分修复：shadowsocks 和 sing-box 客户端 systemd 服务已添加 `ProtectSystem`、`PrivateTmp`、`NoNewPrivileges` 等加固指令
 
 ---
 
