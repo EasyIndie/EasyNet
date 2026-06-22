@@ -1,0 +1,55 @@
+# EasyNet .gitattributes
+# 确保跨平台（Windows / macOS / Linux）开发一致性
+#
+# 此文件强制以下规则（优先级高于 core.autocrlf / core.filemode）：
+#   1. 所有文本文件使用 LF 换行（bash 脚本必须 LF）
+#   2. 二进制文件不会被 git 修改
+#   3. .sh 脚本必须保持可执行权限（由 CI 验证）
+
+# ── 全局设置 ──────────────────────────────────────────────
+# 自动检测文本/二进制；文本文件统一使用 LF（符合 .editorconfig）
+# 注意：Windows 上检出时也会得到 LF，与 WSL/Linux 一致
+* text=auto eol=lf
+
+# ── Shell / Bash ──────────────────────────────────────────
+# bash 需要 LF（CRLF 会导致 /bin/sh^M 错误）
+*.sh    text eol=lf
+*.bash  text eol=lf
+*.bats  text eol=lf
+
+# ── 配置与模板 ────────────────────────────────────────────
+*.json  text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.jq    text eol=lf
+*.conf  text eol=lf
+*.env   text eol=lf
+.env.example  text eol=lf
+
+# ── 文档 ──────────────────────────────────────────────────
+*.md          text eol=lf
+*.txt         text eol=lf
+LICENSE       text eol=lf
+CHANGELOG.md  text eol=lf
+
+# ── Python ────────────────────────────────────────────────
+*.py  text eol=lf
+
+# ── 仓库元文件 ────────────────────────────────────────────
+.gitattributes  text eol=lf
+.gitignore      text eol=lf
+.editorconfig   text eol=lf
+.shellcheckrc   text eol=lf
+
+# ── 二进制文件（不要修改） ─────────────────────────────────
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.svg   binary
+*.woff  binary
+*.woff2 binary
+*.zip   binary
+*.tar.gz binary
+*.gz    binary

@@ -111,6 +111,49 @@ git clone https://github.com/EasyIndie/EasyNet.git
 cd EasyNet
 ```
 
+### 跨平台开发环境配置
+
+项目包含 `.gitattributes` 和 `.editorconfig`，提交代码时自动将换行符统一为 **LF**。
+不同平台需额外注意以下几点：
+
+#### Windows (WSL)
+
+WSL 的 drvfs（`/mnt/c/` 跨文件系统）可能无法正确追踪可执行权限，
+导致 `git status` 中出现大量非预期的 mode 变更（`100755 → 100644`）。
+
+**推荐做法**：在 WSL 的 `/etc/wsl.conf` 中添加 `metadata` 选项：
+
+```ini
+[automount]
+options = "metadata,umask=22,fmask=11"
+```
+
+保存后重启 WSL（`wsl --shutdown` 再重新打开），
+重新克隆仓库即可正确保留可执行权限。
+这是解决 Windows 下 `.sh` 文件 mode 问题的最彻底方案。
+
+如果无法配置 `wsl.conf`，则需避免使用 `git add -A` / `git add .`，
+改用显式指定文件路径的方式提交，例如：
+
+```bash
+git add scripts/protocols/xray-reality/deploy.sh
+git add --chmod=+x scripts/protocols/xray-reality/deploy.sh  # 修复可执行位
+```
+
+#### macOS
+
+macOS 原生支持 Unix 权限，通常无需额外配置。
+如果遇到换行符问题，确认 `git config core.autocrlf` 为 `input`：
+
+```bash
+git config core.autocrlf input
+```
+
+#### Linux
+
+无需额外配置。`.gitattributes` 会自动处理换行符一致性。
+CI 中会检查所有 `.sh` 文件的 git mode 是否为 `100755`。
+
 ---
 
 ## 运行测试

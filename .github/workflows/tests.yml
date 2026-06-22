@@ -53,6 +53,19 @@ jobs:
           find scripts tests -type f \( -name "*.sh" -o -name "*.bash" \) \
             -exec shellcheck --rcfile=.shellcheckrc --shell=bash --severity=style {} +
 
+      - name: Check script file permissions
+        run: |
+          fail=0
+          while IFS= read -r file; do
+            mode=$(git ls-files --stage "$file" | awk '{print $1}')
+            case "$mode" in
+              100755) ;;  # executable — ok
+              100644) echo "FAIL: $file is not executable (mode=$mode)"; fail=1 ;;
+              *)     echo "WARN: $file has unexpected mode=$mode" ;;
+            esac
+          done < <(find scripts tests -name '*.sh' -type f | sort)
+          exit $fail
+
       - name: Run all tests
         run: bats --timing --formatter tap tests/*.bats
 
