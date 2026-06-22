@@ -5,7 +5,7 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-## [0.0.5] - 2026-06-22
+## [0.0.5] - 2026-06-23
 
 ### 移除
 - **Xray Reality Fragment 包分片**：`EASYNET_REALITY_FRAGMENT` 及相关环境变量全部移除。Fragment 与
@@ -17,10 +17,25 @@
   `encryption: none`（VLESS Encryption），消除 Xray-core v26.1.18+ 的 "VLESS without flow is
   deprecated" 警告。
 - **XHTTP 默认 mode 改为 `stream-one`**：纯 TCP HTTP/2，避免 `mode=auto` 默认走 UDP/QUIC 被云商 QoS 限速。
+- **XHTTP 移除 xtls-rprx-vision flow**：XTLS Vision flow 与 HTTP/2 多路复用存在底层不兼容，
+  现仅保留 `encryption: none`，不再设置 `flow` 字段。
+- **sing-box 不支持 XHTTP transport**：sing-box 客户端降级为 TCP Reality 配置，消除 XHTTP
+  模式下客户端无法连接的兼容性错误。
 - **XMUX connIdleTime 可配置**：新增 `EASYNET_REALITY_XMUX_CONN_IDLE` 环境变量（默认 60 秒），替代硬编码值。
+- **CI 脚本权限检查跳过 library 文件**：`.sh` 可执行权限检查现在排除 `clients/library/` 目录，
+  避免跨平台开发中的误报。
+- **测试用例同步**：更新测试用例以匹配 XHTTP 无 flow 的新行为，修复测试断言。
+- **xray-reality 脚本可执行权限**：修复 deploy.sh/export.sh 在部分环境中缺少可执行位的问题。
+
+### 架构
+- **跨平台开发一致性**：添加 `.gitattributes` + `.editorconfig`，统一换行符为 LF，提交时自动规范化。
 
 ### 文档
 - 清理所有 Fragment 环境变量、配置示例、兼容性表格、诊断命令等文档。
+- 全量文档审查更新：README/CONTRIBUTING/CLAUDE.md 同步 267 条测试计数、协议表按安全排序、
+  架构评审文档标注已修复条目、安全审计更新修复状态。
+- 新增域名要求对比表及无域名部署方案：说明哪些协议/功能需要域名、无域名时的行为表现、三种
+  部署策略（strict 免域名 / 跳过 Hysteria2 / 后续补域名）。
 
 ## [0.0.4] - 2026-06-19
 
