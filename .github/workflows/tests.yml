@@ -55,14 +55,17 @@ jobs:
 
       - name: Check script file permissions
         run: |
+          # Fail if any .sh file with an entrypoint guard (BASH_SOURCE[0] == $0)
+          # is not tracked as executable. Library files without this guard
+          # (sourced by other scripts) are intentionally 100644.
           fail=0
           while IFS= read -r file; do
             mode=$(git ls-files --stage "$file" | awk '{print $1}')
-            case "$mode" in
-              100755) ;;  # executable — ok
-              100644) echo "FAIL: $file is not executable (mode=$mode)"; fail=1 ;;
-              *)     echo "WARN: $file has unexpected mode=$mode" ;;
-            esac
+            [ "$mode" = "100755" ] && continue
+            if grep -qE 'BASH_SOURCE\[0\].*==.*\$0' "$file" 2>/dev/null; then
+              echo "FAIL: $file has entrypoint guard but is not executable (mode=$mode)"
+              fail=1
+            fi
           done < <(find scripts tests -name '*.sh' -type f | sort)
           exit $fail
 
