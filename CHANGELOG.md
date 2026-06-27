@@ -5,6 +5,35 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.6] - 2026-06-27
+
+### 增强
+- **Xray Reality 抗 DPI 增强**：
+  - 新增 `EASYNET_REALITY_FINGERPRINT` 可配置 TLS 指纹
+    (`chrome`/`firefox`/`ios`/`edge`/`random`)，默认 `chrome`
+  - 新增 `EASYNET_REALITY_MAX_TIME_DIFF` 时间偏移检查（默认 30 分钟），设为 0 可禁用
+  - 默认伪装域名从 `www.microsoft.com` 更换为 `www.bing.com`
+  - URI/Clash 元数据中 `fp` 参数动态读取，不再硬编码 `chrome`
+  - Xray-core 默认版本升级至 v26.3.27（修复 Aparecium NewSessionTicket gap，
+    CVE-2026-26995 缺省填充检测，CVE-2026-27017 ECH/GREASE 指纹匹配）
+  - Xray 安装脚本 SHA256 为空时显示安全警告，提示设置完整性验证
+  - sing-box 渲染器添加 XHTTP 降级警告注释
+- **密码学增强**：`random_secret()` 熵值从 128 位升级到 256 位（Hysteria2 密码与
+  obfs 密码共享调用路径）
+
+### 架构
+- **卸载模块按安全等级排序**：`discovery_list_uninstallable_modules()` 改为调用
+  `discovery_list_modules_by_security()`，使 `EASYNET_SERVICE_CHOICE`（部署菜单）
+  与 `EASYNET_UNINSTALL_CHOICE`（卸载菜单）编号完全一致，避免用户混淆
+
+### 文档
+- **安全审计文档合并**：将 `SECURITY_AUDIT.md` + `SECURITY_AUDIT_2026.md`
+  合并为 `docs/security-audit.md`，保留 `SECURITY.md`（漏洞报告策略）
+- **`.env.example` 维护**：去重条目、补全缺失变量、合并章节、更新编号说明
+
+### CI
+- **`actions/cache` 升级至 v6**：依赖升级以消除 Node.js deprecation 警告
+
 ## [0.0.5] - 2026-06-23
 
 ### 移除
@@ -126,6 +155,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.6]: https://github.com/EasyIndie/EasyNet/compare/0.0.5...0.0.6
 [0.0.5]: https://github.com/EasyIndie/EasyNet/compare/0.0.4...0.0.5
 [0.0.4]: https://github.com/EasyIndie/EasyNet/compare/0.0.3...0.0.4
 [0.0.3]: https://github.com/EasyIndie/EasyNet/compare/0.0.2...0.0.3
