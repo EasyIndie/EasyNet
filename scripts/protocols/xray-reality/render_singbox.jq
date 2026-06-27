@@ -1,9 +1,14 @@
 # EasyNet Xray+Reality sing-box outbound renderer
 # Usage: jq -c -f render_singbox.jq <metadata.json>
-# Note: sing-box does NOT support xhttp transport (Xray-only).
-# For TCP Reality (standard) the config has no transport block.
+#
+# WARNING: sing-box does NOT support xhttp transport (Xray-only feature).
+# When the server uses xhttp transport, this renderer silently downgrades
+# the network to "tcp" and drops xhttp mode/mux settings.
+# The generated sing-box config will work, but without XHTTP-specific features.
+# Consider using sing-box's built-in Reality support as an alternative.
 .client.clash as $c
 | ($c.name // .module) as $tag
+# xhttp + xmux: downgrade to tcp, keep xmux concurrency
 | if $c.network == "xhttp" and ($c["xhttp-opts"].xmux.concurrency | type == "number" and . > 0) then
     {
         type: "vless",
@@ -21,6 +26,7 @@
         },
         xmux: { concurrency: $c["xhttp-opts"].xmux.concurrency }
     }
+  # xhttp without xmux: downgrade to tcp, no xmux
   elif $c.network == "xhttp" then
     {
         type: "vless",
@@ -37,6 +43,7 @@
             reality: { enabled: true, public_key: $c["reality-opts"]["public-key"], short_id: $c["reality-opts"]["short-id"] }
         }
     }
+  # TCP: standard Reality config, no change needed
   else
     {
         type: "vless",

@@ -17,7 +17,8 @@ generate_psk() {
 }
 
 random_secret() {
-    openssl rand -hex 16
+    # 256-bit (32 bytes) random secret — used by Hysteria2 for password & obfs password
+    openssl rand -hex 32
 }
 
 # Normalize architecture name: returns "x86_64" | "aarch64" | "armv7l" | "unknown"

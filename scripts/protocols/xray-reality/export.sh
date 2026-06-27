@@ -25,7 +25,7 @@ export_xray_reality_metadata() {
         return 1
     fi
 
-    local uuid port sni short_id public_key public_ip transport xhttp_mode xmux_concurrency uri metadata_json
+    local uuid port sni short_id public_key public_ip transport xhttp_mode xmux_concurrency fingerprint uri metadata_json
     uuid=$(jq -r '.inbounds[0].settings.clients[0].id // empty' "$config_file")
     port=$(jq -r '.inbounds[0].port // empty' "$config_file")
     sni=$(jq -r '.inbounds[0].streamSettings.realitySettings.serverNames[0] // empty' "$config_file")
@@ -35,8 +35,9 @@ export_xray_reality_metadata() {
     transport=$(jq -r '.inbounds[0].streamSettings.network // "tcp"' "$config_file")
     xhttp_mode=$(jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // "auto"' "$config_file")
     xmux_concurrency=$(jq -r '.inbounds[0].streamSettings.xhttpSettings.xmux.concurrency // 0' "$config_file")
+    fingerprint=$(jq -r '.inbounds[0].streamSettings.realitySettings.fingerprint // "chrome"' "$config_file")
 
-    if [ -z "$uuid" ] || [ -z "$port" ] || [ -z "$sni" ] || [ -z "$public_key" ] || [ -z "$public_ip" ]; then
+    if [ -z "$uuid" ] || [ -z "$port" ] || [ -z "$sni" ] || [ -z "$public_key" ] || [ -z "$public_ip" ] || [ -z "$short_id" ]; then
         echo "Xray Reality metadata is incomplete" >&2
         return 1
     fi
@@ -45,9 +46,9 @@ export_xray_reality_metadata() {
     # Note: xtls-rprx-vision flow only works with TCP transport, not XHTTP.
     # XHTTP uses HTTP/2 framing which conflicts with XTLS direct passthrough.
     if [ "$transport" = "xhttp" ]; then
-        uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode#EasyNet-Reality"
+        uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=$fingerprint&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode#EasyNet-Reality"
     else
-        uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
+        uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=$fingerprint&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
     fi
 
     # Build Clash metadata; include xhttp-opts when using XHTTP transport
@@ -65,6 +66,7 @@ export_xray_reality_metadata() {
         --arg short_id "$short_id" \
         --arg network "$transport" \
         --arg flow "$flow_arg" \
+        --arg fingerprint "$fingerprint" \
         --argjson port "$port" \
         '{
             name: "EasyNet-Reality",
@@ -76,7 +78,7 @@ export_xray_reality_metadata() {
             udp: true,
             tls: true,
             servername: $sni,
-            "client-fingerprint": "chrome",
+            "client-fingerprint": $fingerprint,
             "reality-opts": {
                 "public-key": $public_key,
                 "short-id": $short_id

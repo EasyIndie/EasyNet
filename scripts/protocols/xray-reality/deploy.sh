@@ -14,12 +14,24 @@ XRAY_DIR="${XRAY_DIR:-/usr/local/etc/xray}"
 XRAY_BIN="${XRAY_BIN:-/usr/local/bin/xray}"
 
 install_xray() {
-    local xray_version
+    local xray_version xray_sha256
     log_info "安装 Xray..."
+
+    # 2026-06: v26.3.27 is the minimum safe version (fixes Aparecium NewSessionTicket gap).
+    # Check https://github.com/XTLS/Xray-core/releases for the latest release.
+    # v26.3.27+ bundles uTLS v1.8.2+ which fixes CVE-2026-26995 (missing padding) and
+    # CVE-2026-27017 (ECH/GREASE mismatch) that allow TLS fingerprint detection.
     xray_version="${EASYNET_XRAY_VERSION:-26.3.27}"
+
+    xray_sha256="${EASYNET_XRAY_INSTALL_SHA256:-}"
+    if [ -z "$xray_sha256" ]; then
+        log_warn "EASYNET_XRAY_INSTALL_SHA256 未设置，将跳过安装脚本的完整性验证"
+        log_warn "建议设置此变量以防止供应链攻击: export EASYNET_XRAY_INSTALL_SHA256=<sha256>"
+    fi
+
     run_downloaded_script \
         "https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh" \
-        "${EASYNET_XRAY_INSTALL_SHA256:-}" \
+        "$xray_sha256" \
         install --version "v${xray_version}"
 }
 
@@ -53,9 +65,10 @@ write_xray_config_template() {
                     "xver": 0,
                     "serverNames": $server_names_arr,
                     "privateKey": "",
+                    "fingerprint": "",
                     "minClientVer": "",
                     "maxClientVer": "",
-                    "maxTimeDiff": 0,
+                    "maxTimeDiff": 1800000,
                     "shortIds": [
                         ""
                     ]
@@ -104,9 +117,10 @@ EOF
                     "xver": 0,
                     "serverNames": $server_names_arr,
                     "privateKey": "",
+                    "fingerprint": "",
                     "minClientVer": "",
                     "maxClientVer": "",
-                    "maxTimeDiff": 0,
+                    "maxTimeDiff": 1800000,
                     "shortIds": [
                         ""
                     ]
@@ -138,6 +152,15 @@ configure_reality() {
     local xhttp_mode="${EASYNET_REALITY_XHTTP_MODE:-stream-one}"
     local xmux_concurrency="${EASYNET_REALITY_XMUX_CONCURRENCY:-0}"
     local xmux_conn_idle="${EASYNET_REALITY_XMUX_CONN_IDLE:-60}"
+    local fingerprint="${EASYNET_REALITY_FINGERPRINT:-chrome}"
+    # maxTimeDiff in milliseconds: 1800000 = 30 minutes. Set to 0 to disable.
+    local max_time_diff="${EASYNET_REALITY_MAX_TIME_DIFF:-1800000}"
+
+    # Warn about XHTTP + sing-box incompatibility
+    if [ "$transport" = "xhttp" ]; then
+        log_warn "XHTTP 传输仅 Xray-core 支持，sing-box 客户端将自动降级为 TCP"
+        log_warn "如需 sing-box 客户端支持，请使用 TCP 传输 (EASYNET_REALITY_TRANSPORT=tcp)"
+    fi
 
     if [ -f "$XRAY_DIR/config.json" ] && grep -q "privateKey" "$XRAY_DIR/config.json"; then
         log_info "检测到已有的 Xray 配置，跳过生成新密钥，直接使用现有配置。"
@@ -161,11 +184,13 @@ configure_reality() {
 
             write_xray_config_template "$transport" "$UUID" "$PORT" "$existing_dest" "$existing_server_names_arr" "$xhttp_mode"
 
-            # Inject preserved keys + optional xmux
-            JQ_ARGS=(--arg pk "$existing_private_key" --arg sid "$existing_short_id")
-            # shellcheck disable=SC2016  # $pk, $sid etc. are jq --arg vars, not bash
+            # Inject preserved keys + fingerprint + optional xmux
+            JQ_ARGS=(--arg pk "$existing_private_key" --arg sid "$existing_short_id" --arg fp "$fingerprint" --argjson mtd "$max_time_diff")
+            # shellcheck disable=SC2016  # $pk, $sid, $fp, $mtd etc. are jq --arg/--argjson vars, not bash
             JQ_FILTER='.inbounds[0].streamSettings.realitySettings.privateKey = $pk |
-                         .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid'
+                         .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid |
+                         .inbounds[0].streamSettings.realitySettings.fingerprint = $fp |
+                         .inbounds[0].streamSettings.realitySettings.maxTimeDiff = $mtd'
             if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
                 JQ_ARGS+=(--argjson xmux_cc "$xmux_concurrency" --argjson xmux_idle "$xmux_conn_idle")
                 # shellcheck disable=SC2016  # $xmux_cc, $xmux_idle are jq --argjson vars
@@ -181,8 +206,20 @@ configure_reality() {
 
     else
         UUID=$(generate_uuid)
-        DEST="${EASYNET_REALITY_DEST:-www.microsoft.com:443}"
-        SERVER_NAMES="${EASYNET_REALITY_SERVER_NAME:-www.microsoft.com,cloudflare.com}"
+        # SECURITY: 默认伪装目标 www.bing.com 相比 www.microsoft.com 受到的DPI监控较少。
+        # 最佳实践: 使用 EASYNET_REALITY_DEST 设置与你 VPS 同机房/同ASN 的低调域名。
+        # 使用 bgp.tools 查找邻居域名，要求: TLS 1.3 + X25519 + HTTP/2, 非 Cloudflare, 中国可访问。
+        # 避免使用: apple.com, google.com, microsoft.com, icloud.com（已被重点监控）。
+        DEST="${EASYNET_REALITY_DEST:-www.bing.com:443}"
+        SERVER_NAMES="${EASYNET_REALITY_SERVER_NAME:-www.bing.com,www.cloudflare.com}"
+
+        # Warn if using default camouflage domain (widely shared, easier to fingerprint)
+        if [ -z "${EASYNET_REALITY_DEST:-}" ] && [ -z "${EASYNET_REALITY_SERVER_NAME:-}" ]; then
+            log_warn "使用默认伪装域名 www.bing.com — 多个 EasyNet 实例共享同一伪装目标"
+            log_warn "建议设置 EASYNET_REALITY_DEST 为同机房邻居域名，提高抗检测能力"
+            log_warn "使用 bgp.tools 查找同 ASN 域名: https://bgp.tools"
+            log_warn "要求: TLS 1.3 + X25519 + HTTP/2, 非 Cloudflare, 从中国可访问"
+        fi
         # Build JSON array from comma-separated server names using jq
         SERVER_NAMES_ARR=$(jq -Rn --arg names "$SERVER_NAMES" '
             $names | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))
@@ -209,11 +246,13 @@ configure_reality() {
 
         SHORT_ID=$(openssl rand -hex 8)
 
-        # Single combined jq — inject privateKey, shortId, optional xmux
-        JQ_ARGS=(--arg pk "$PRIVATE_KEY" --arg sid "$SHORT_ID")
-        # shellcheck disable=SC2016  # $pk, $sid etc. are jq --arg vars, not bash
+        # Single combined jq — inject privateKey, shortId, fingerprint, maxTimeDiff, optional xmux
+        JQ_ARGS=(--arg pk "$PRIVATE_KEY" --arg sid "$SHORT_ID" --arg fp "$fingerprint" --argjson mtd "$max_time_diff")
+        # shellcheck disable=SC2016  # $pk, $sid, $fp, $mtd etc. are jq --arg/--argjson vars, not bash
         JQ_FILTER='.inbounds[0].streamSettings.realitySettings.privateKey = $pk |
-                     .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid'
+                     .inbounds[0].streamSettings.realitySettings.shortIds[0] = $sid |
+                     .inbounds[0].streamSettings.realitySettings.fingerprint = $fp |
+                     .inbounds[0].streamSettings.realitySettings.maxTimeDiff = $mtd'
 
         if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
             JQ_ARGS+=(--argjson xmux_cc "$xmux_concurrency" --argjson xmux_idle "$xmux_conn_idle")
@@ -250,7 +289,7 @@ ensure_short_id() {
 
 show_config() {
     local config_file="$XRAY_DIR/config.json"
-    local uuid public_key short_id server_names public_ip config_url transport xhttp_mode
+    local uuid public_key short_id server_names public_ip config_url transport xhttp_mode fingerprint max_time_diff
 
     uuid=$(jq -r '.inbounds[0].settings.clients[0].id // empty' "$config_file")
     public_key=$(cat "$XRAY_DIR/public.key" 2>/dev/null)
@@ -259,6 +298,8 @@ show_config() {
     public_ip=$(get_public_ip)
     transport=$(jq -r '.inbounds[0].streamSettings.network // "tcp"' "$config_file")
     xhttp_mode=$(jq -r '.inbounds[0].streamSettings.xhttpSettings.mode // "auto"' "$config_file")
+    fingerprint=$(jq -r '.inbounds[0].streamSettings.realitySettings.fingerprint // "chrome"' "$config_file")
+    max_time_diff=$(jq -r '.inbounds[0].streamSettings.realitySettings.maxTimeDiff // 0' "$config_file")
 
     echo ""
     echo "========================================"
@@ -271,6 +312,8 @@ show_config() {
     echo "Short ID: $short_id"
     echo "目标网站: $server_names"
     echo "传输方式: $transport"
+    echo "TLS 指纹: $fingerprint"
+    echo "时间偏移限制: ${max_time_diff}ms"
     if [ "$transport" = "xhttp" ]; then
         echo "XHTTP 模式: $xhttp_mode"
         echo "流控: xtls-rprx-vision"
@@ -278,10 +321,10 @@ show_config() {
     echo ""
 
     if [ "$transport" = "xhttp" ]; then
-        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode#EasyNet-Reality"
+        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=$fingerprint&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode#EasyNet-Reality"
     else
         echo "流控: xtls-rprx-vision"
-        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
+        config_url="vless://$uuid@$public_ip:$PORT?encryption=none&security=reality&sni=$server_names&fp=$fingerprint&pbk=$public_key&sid=$short_id&type=tcp&flow=xtls-rprx-vision#EasyNet-Reality"
     fi
     echo "客户端配置:"
     echo "$config_url"

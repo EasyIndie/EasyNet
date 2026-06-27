@@ -200,12 +200,14 @@ discovery_list_exposure_modules() {
     done | sort
 }
 
-# Combined list for uninstall — merged and sorted alphabetically
+# Combined list for uninstall — protocols by security rank, then exposure modules alphabetically.
+# This ordering matches deploy.sh's menu (discovery_list_modules_by_security), ensuring
+# EASYNET_SERVICE_CHOICE and EASYNET_UNINSTALL_CHOICE use consistent numeric indices.
 discovery_list_uninstallable_modules() {
-    {
-        discovery_list_modules
-        discovery_list_exposure_modules
-    } | sort
+    # Protocol modules sorted by security rank (same order as deploy menu: 1=xray-reality, 2=hysteria2, ...)
+    discovery_list_modules_by_security
+    # Exposure modules (e.g. edge) sorted alphabetically, appended after protocol modules
+    discovery_list_exposure_modules | sort
 }
 
 # Load an exposure module's manifest (analogous to discovery_load_manifest)
