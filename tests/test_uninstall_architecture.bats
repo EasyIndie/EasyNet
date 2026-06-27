@@ -7,10 +7,10 @@ setup() {
     PROJECT_ROOT="$(cd "$DIR/.." && pwd)"
 }
 
-@test "Uninstall menu 1 resolves to Edge Gateway (alphabetically first)" {
+@test "Uninstall menu 1 resolves to Xray+Reality (security rank order)" {
     source "$PROJECT_ROOT/scripts/uninstall.sh"
     run resolve_uninstall_modules 1
-    [ "$output" = "edge" ]
+    [ "$output" = "xray-reality" ]
 }
 
 @test "Uninstall menu 2 resolves to Hysteria2" {
@@ -31,10 +31,10 @@ setup() {
     [ "$output" = "wireguard" ]
 }
 
-@test "Uninstall menu 5 resolves to Xray+Reality (alphabetically last)" {
+@test "Uninstall menu 5 resolves to Edge Gateway (appended after protocols)" {
     source "$PROJECT_ROOT/scripts/uninstall.sh"
     run resolve_uninstall_modules 5
-    [ "$output" = "xray-reality" ]
+    [ "$output" = "edge" ]
 }
 
 @test "Uninstall menu 6 resolves to exit sentinel" {
@@ -43,10 +43,10 @@ setup() {
     [ "$output" = "__exit__" ]
 }
 
-@test "Uninstall menu 0 removes all modules (alphabetical order, includes Edge Gateway)" {
+@test "Uninstall menu 0 removes all modules (protocols by security rank, then exposure)" {
     source "$PROJECT_ROOT/scripts/uninstall.sh"
     run resolve_uninstall_modules 0
-    [ "$(echo "$output" | xargs)" = "edge hysteria2 shadowsocks wireguard xray-reality" ]
+    [ "$(echo "$output" | xargs)" = "xray-reality hysteria2 shadowsocks wireguard edge" ]
 }
 
 @test "Xray Reality has isolated uninstall entrypoint" {
