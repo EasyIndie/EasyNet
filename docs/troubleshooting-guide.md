@@ -9,10 +9,72 @@
 3. **端口监听**：`ss -ltnup`
 4. **防火墙**：`ufw status verbose`
 5. **订阅**：重新导入最新订阅，避免混用旧配置
+6. **链路可达性**：服务都正常但客户端连不上时，先排除「VPS 公网 IP 被 GFW/运营商拦截」——见下文《服务器 IP 被 GFW/运营商拦截》
 
 服务名（按安全等级降序）：`xray` → `hysteria-server.service` → `shadowsocks-rust-server` → `wg-quick@wg0`
 
+## 服务器 IP 被 GFW/运营商拦截（服务正常但客户端连不上）
+
+> ⚠️ VPS 提供商创建实例时分配的公网 IP **可能已被 GFW 或运营商拉黑**。这是环境问题，不是 EasyNet 配置问题；IP 级封锁下任何协议都建不起 TCP/UDP 握手，重装 EasyNet 无效。
+
+### 现象
+
+- VPS 上 `nginx` / `xray` / `hysteria-server.service` 都是 `active`，服务器本机 `curl` 订阅正常；
+- 客户端（手机/电脑）打不开订阅链接，也连不上任何节点（超时）；
+- 用第三方多地探测（如 check-host.net）却返回 200；
+- 关掉客户端代理后在浏览器直接打开 `https://<域名>/sub` 也超时。
+
+### 典型原因
+
+- 提供商分配的 IP 被 GFW/运营商列入黑名单，**回程（服务器→大陆）丢包**；
+- 表现为：客户端 SYN 到达服务器、服务器回了 SYN-ACK，但客户端收不到，于是反复重传 SYN，TCP 三次握手永远完不成。
+
+### 自动化诊断
+
+在 VPS 上运行：
+
+```bash
+bash scripts/diagnose_reachability.sh
+```
+
+脚本会自动检查本机服务/监听端口，并通过 check-host.net 从多地探测公网可达性。
+
+若要**确诊回程丢包**，先在客户端拿到公网 IP（浏览器搜索“我的 IP”或在服务器 `who` 里看 SSH 来源），然后：
+
+```bash
+EASYNET_DIAG_CLIENT_IP=<客户端公网IP> bash scripts/diagnose_reachability.sh
+# 脚本会开一个抓包窗口（默认 60s）：请在窗口内从客户端尝试连接 TCP 443/8443 或打开订阅链接
+```
+
+可用环境变量：`EASYNET_DOMAIN`（全局 HTTP 探测）、`EASYNET_DIAG_CAPTURE_SECONDS`（抓包窗口，默认 60）、`EASYNET_DIAG_SKIP_GLOBAL=1`（跳过外部探测）。
+
+### 判定与处理
+
+| 抓包结果 | 结论 | 处理 |
+|---------|------|------|
+| 捕获到客户端 ACK | 链路可达 | 握手完成，转查协议/客户端配置 |
+| 有客户端 SYN + 服务器 SYN-ACK、无 ACK 且 SYN 反复重传 | **回程被拦（GFW/运营商）** | 更换公网 IP 或更换机房/线路 |
+| 只有客户端 SYN、无 SYN-ACK | 服务器未回应 | 查服务监听与服务器/云防火墙（非墙问题） |
+| 完全没有 SYN | 客户端未发起或去程被拦 | 查客户端是否真在连接、本地网络限制 |
+
+处理建议：
+
+- **更换 VPS 公网 IP**：多数提供商支持更换/重建实例拿到新 IP；创建后先用 `nc -vz <新IP> 22` 从客户端直连验证；
+- **更换地区/线路**：对国内运营商友好的线路通常比同地区换 IP 更稳；
+- 拿到可用 IP 后重新部署（`EASYNET_DOMAIN=<域名> bash install.sh`），并更新订阅；
+- 域名 A 记录变更后 TTL 通常 300s，客户端如仍解析旧 IP，切换飞行模式/重开 App 或刷新本机 DNS 缓存（macOS：`sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`）。
+
 ## 通用问题
+
+### 客户端订阅更新超时
+
+现象：
+- 手机/电脑上更新订阅提示超时，但服务器上本机访问订阅正常
+
+处理：
+- 先确认客户端**没有用代理去更新订阅**（Shadowrocket：先断开 VPN，或把“全局路由”设为直连，再更新；否则会“用坏节点拉订阅”形成死循环）
+- 用浏览器直接打开 `https://<域名>/sub`：若同样超时，大概率是 IP 被墙，见《服务器 IP 被 GFW/运营商拦截》
+- 若域名刚换过 IP，刷新客户端 DNS（切飞行模式/重开 App）；macOS 可执行 `sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`
 
 ### Edge 证书申请失败
 

@@ -95,6 +95,7 @@ EasyNet/
 │   ├── generate_subscription.sh# 订阅文件重新生成
 │   ├── show_subscription.sh    # 重新显示订阅链接和二维码
 │   ├── rotate_subscription.sh  # 轮换订阅入口（支持 --grace 迁移宽限）
+│   ├── diagnose_reachability.sh # 公网可达性 / IP 封锁诊断
 │   └── smoke_test.sh           # 部署后快速检查
 ├── tests/                      # 单元测试（25 个 bats 套件，294 个用例）
 ├── docs/                       # 文档目录

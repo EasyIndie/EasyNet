@@ -5,6 +5,17 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [Unreleased]
+
+### 新增
+- `scripts/diagnose_reachability.sh`：公网可达性 / IP 封锁自动诊断——检查本机服务与监听端口、
+  通过 check-host.net 多地探测公网可达性；设置 `EASYNET_DIAG_CLIENT_IP` 后可抓包自动判定
+  「可达 / 回程被拦（GFW/运营商）/ 服务器未响应 / 客户端未发起」。
+
+### 文档
+- 故障排查指南新增《服务器 IP 被 GFW/运营商拦截》与《客户端订阅更新超时》：说明 VPS 分配的
+  公网 IP 可能已被墙、自动化诊断用法、判定表与处理建议（更换 IP/机房，勿重装）。
+
 ## [0.0.8] - 2026-09-26
 
 ### 新增
