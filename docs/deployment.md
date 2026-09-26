@@ -58,7 +58,7 @@
 
 | 组件 | 必须域名？ | 无域名时的行为 | 原因 |
 |------|:----------:|---------------|------|
-| **Xray+Reality** | ❌ 不需要 | 正常运行，无影响 | REALITY 是"无证书 TLS"，无需真实域名 |
+| **Xray+Reality** | ❌ 不需要 | 正常运行；无域名时自动回退「借用外部站点」模式 | REALITY 是“无证书 TLS”；设置域名可启用「自偷」以对抗 SNI→DNS 一致性检查 |
 | **Hysteria2** | ✅ **必填** | **部署中断**，交互式部署会提示输入域名；自动化部署因 `EASYNET_DOMAIN` 未设而报错退出 | `shared_tls` 模式需要 Edge TLS 证书 |
 | **Shadowsocks 2022** | ❌ 不需要 | 正常运行，无影响 | AEAD 加密，无 TLS 依赖 |
 | **WireGuard** | ❌ 不需要 | 正常运行，无影响 | UDP 隧道，无 TLS 依赖 |
@@ -95,7 +95,7 @@ EASYNET_MODULE=wireguard ./scripts/deploy.sh
 EASYNET_PROFILE=strict ./scripts/deploy.sh
 
 # 后续有了域名：补充部署 Edge Gateway + Hysteria2
-EASYNET_DOMAIN=proxy.example.com EASYNET_MODULE=hysteria2 ./scripts/deploy.sh
+EASYNET_DOMAIN=world.example.com EASYNET_MODULE=hysteria2 ./scripts/deploy.sh
 ```
 注意：补充部署时需确保域名已 A 记录解析到服务器，且防火墙放行 `80/tcp`（acme 证书挑战用）和 `443/tcp+udp`。
 
@@ -104,6 +104,7 @@ EASYNET_DOMAIN=proxy.example.com EASYNET_MODULE=hysteria2 ./scripts/deploy.sh
 | 能力 | Xray+Reality | Hysteria2 | Shadowsocks | WireGuard |
 |------|:---:|:---:|:---:|:---:|
 | TLS 指纹模仿 (REALITY) | ✅ | — | — | — |
+| REALITY 自偷（抗 SNI→DNS 检查） | ✅ | — | — | — |
 | HTTP/3 伪装 (XHTTP) | ✅ | ✅ (QUIC) | — | — |
 | XMUX 多路复用 | ✅ | — | — | — |
 | QUIC 混淆 (Salamander) | — | ✅ | — | — |
@@ -116,7 +117,9 @@ EASYNET_DOMAIN=proxy.example.com EASYNET_MODULE=hysteria2 ./scripts/deploy.sh
 协议混淆增强（AmneziaWG 默认已启用，以下为显式配置示例）：
 
 ```bash
-# Xray+Reality: XHTTP/HTTP3 传输（需客户端支持，默认 tcp）
+# Xray+Reality: 自偷模式（用自有域名当 SNI，抗 SNI→DNS 一致性检查；默认 auto）
+EASYNET_REALITY_MODE=self
+# Xray+Reality: XHTTP/HTTP3 传输（仅 Xray 客户端支持，默认 tcp）
 EASYNET_REALITY_TRANSPORT=xhttp
 # Xray+Reality: XMUX 多路复用并发数（0 = 禁用，默认）
 EASYNET_REALITY_XMUX_CONCURRENCY=4
@@ -127,6 +130,11 @@ EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000
 # WireGuard: AmneziaWG 垃圾包填充（默认 true，设 false 禁用）
 EASYNET_WIREGUARD_OBFS=true
 ```
+
+> **Reality 自偷（`EASYNET_REALITY_MODE=self` / `auto`）**：2026 年审查者开始做「SNI→DNS 一致性检查」——
+> 记录 `(SNI, 目的IP)` 后对 SNI 做 DNS 解析，若解析结果不等于目的 IP 即判定可疑（开源 DPI 库 nDPI 已实现）。
+> 借用同机房邻居域名因此失效。自偷即把 `SNI` 设为**解析到本机的自有域名**、`dest` 指向本机 Edge 站点，
+> 使 SNI 与 DNS 一致。`auto`（默认）会在检测到本机 Edge 证书时自动启用。
 
 
 ## 快速部署
@@ -150,7 +158,7 @@ sudo bash install.sh
 自动化部署（`EASYNET_*` 变量原样透传给 `deploy.sh`）：
 
 ```bash
-sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com bash install.sh
+sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com bash install.sh
 ```
 
 指定版本：`sudo EASYNET_VERSION=0.0.8 bash install.sh`。
@@ -187,14 +195,14 @@ cp .env.example .env
 方式二：按编号部署
 
 ```bash
-EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
+EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=world.example.com ./scripts/deploy.sh
 ```
 
 方式三：按模块部署
 
 ```bash
 EASYNET_MODULE=xray-reality ./scripts/deploy.sh
-EASYNET_MODULE=hysteria2 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
+EASYNET_MODULE=hysteria2 EASYNET_DOMAIN=world.example.com ./scripts/deploy.sh
 EASYNET_MODULE=shadowsocks ./scripts/deploy.sh
 EASYNET_MODULE=wireguard ./scripts/deploy.sh
 ```
@@ -203,7 +211,7 @@ EASYNET_MODULE=wireguard ./scripts/deploy.sh
 
 ```bash
 EASYNET_PROFILE=strict ./scripts/deploy.sh
-EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
+EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com ./scripts/deploy.sh
 EASYNET_PROFILE=compat ./scripts/deploy.sh
 ```
 
@@ -451,9 +459,10 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | 变量 | 作用 | 默认值 |
 |------|------|--------|
 | `EASYNET_REALITY_PORT` | Xray 监听端口 | `8443` |
-| `EASYNET_REALITY_DEST` | REALITY 目标/伪装服务器地址 | `www.microsoft.com:443` |
-| `EASYNET_REALITY_SERVER_NAME` | 逗号分隔的 SNI 名称列表 | `www.microsoft.com,cloudflare.com,www.apple.com` |
-| `EASYNET_REALITY_TRANSPORT` | 传输层协议：`tcp` 或 `xhttp`（HTTP/3 伪装） | `tcp` |
+| `EASYNET_REALITY_MODE` | 伪装模式：`auto` / `self`（自偷）/ `borrow`（借用外部站点） | `auto` |
+| `EASYNET_REALITY_DEST` | REALITY 目标/伪装服务器地址（仅 `borrow` 模式） | `www.bing.com:443` |
+| `EASYNET_REALITY_SERVER_NAME` | 逗号分隔的 SNI 名称列表（仅 `borrow` 模式） | `www.bing.com,www.cloudflare.com` |
+| `EASYNET_REALITY_TRANSPORT` | 传输层协议：`tcp` 或 `xhttp`（HTTP/3 伪装，仅 Xray 客户端） | `tcp` |
 | `EASYNET_REALITY_XHTTP_MODE` | XHTTP 多路复用模式：`stream-one` / `auto` / `stream-up` / `packet-up` | `stream-one` |
 | `EASYNET_REALITY_XMUX_CONCURRENCY` | XMUX 多路复用并发数（`0` = 禁用） | `0` |
 | `EASYNET_REALITY_XMUX_CONN_IDLE` | XMUX 空闲连接超时（秒） | `60` |

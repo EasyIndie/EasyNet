@@ -7,9 +7,24 @@
 
 ## [Unreleased]
 
+### 新增
+- **Xray+Reality「自偷」伪装模式**（`EASYNET_REALITY_MODE=auto|self|borrow`）：复用解析到本机的
+  自有域名作为 Reality SNI，回退到本机 Edge 站点，以对抗 2026 年出现的「SNI→DNS 一致性检查」
+  （审查者记录 (SNI, 目的IP) 后解析 SNI，若不一致即判定可疑；开源 DPI 库 nDPI 已实现）。
+  `auto`（默认）检测到本机 Edge 证书时自动启用，否则回退「借用外部站点」。
+
+### 改进
+- Reality 配置改为**幂等渲染**：先在临时文件生成目标配置，与现有配置一致时跳过写入与重启；
+  支持在不改动 UUID/私钥/Short ID 的前提下切换传输方式与伪装模式。
+
 ### 文档
 - 新增 `docs/singbox-unification-analysis.md`：评估是否将多协议收敛为统一 sing-box 实现，
   含能力对照、收益/代价、趋势判断与建议路线；本轮结论为「维持现状」。
+- 文档与示例域名改用语义中性的 `world.example.com`，补充避开 GFW 关键词与 Reality 自偷的指引。
+
+### 测试
+- `tests/test_config_generation.bats` 新增 6 个 Reality 自偷用例（模式解析 / 自动切换 / 密钥保留 /
+  幂等跳过重启）；测试总数 314 → 320。
 
 ## [0.0.10] - 2026-09-26
 

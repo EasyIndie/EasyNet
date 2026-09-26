@@ -331,6 +331,121 @@ source_protocol() {
 }
 
 # -------------------------------------------------------------------------
+# Xray Reality self-steal
+# -------------------------------------------------------------------------
+
+@test "Xray: self-steal mode uses local Edge target and own-domain SNI" {
+    export EASYNET_REALITY_MODE=self
+    export EASYNET_DOMAIN="world.example.com"
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+
+    eval 'openssl() {
+        if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"
+        else command openssl "$@"; fi
+    }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -eq 0 ] || { echo "# configure_reality failed: $output" >&3; return 1; }
+
+    local config="${XRAY_DIR:-$TMP_DIR/xray}/config.json"
+    run jq -r '.inbounds[0].streamSettings.realitySettings.dest' "$config"
+    [ "$output" = "127.0.0.1:443" ]
+    run jq -r '.inbounds[0].streamSettings.realitySettings.serverNames[0]' "$config"
+    [ "$output" = "world.example.com" ]
+}
+
+@test "Xray: auto mode self-steals when domain and Edge certificate are present" {
+    export EASYNET_REALITY_MODE=auto
+    export EASYNET_DOMAIN="world.example.com"
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+    eval 'openssl() { if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"; else command openssl "$@"; fi }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -eq 0 ]
+
+    local config="${XRAY_DIR:-$TMP_DIR/xray}/config.json"
+    run jq -r '.inbounds[0].streamSettings.realitySettings.dest' "$config"
+    [ "$output" = "127.0.0.1:443" ]
+}
+
+@test "Xray: auto mode borrows an external site when no domain is set" {
+    unset EASYNET_DOMAIN
+    export EASYNET_REALITY_MODE=auto
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+    eval 'openssl() { if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"; else command openssl "$@"; fi }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -eq 0 ]
+
+    local config="${XRAY_DIR:-$TMP_DIR/xray}/config.json"
+    run jq -r '.inbounds[0].streamSettings.realitySettings.dest' "$config"
+    [ "$output" = "www.bing.com:443" ]
+}
+
+@test "Xray: self-steal mode without a domain fails" {
+    unset EASYNET_DOMAIN
+    export EASYNET_REALITY_MODE=self
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+    eval 'openssl() { if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"; else command openssl "$@"; fi }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -ne 0 ]
+}
+
+@test "Xray: switching borrow to self updates target and preserves keys" {
+    export XRAY_DIR="$TMP_DIR/xray-self"
+    mkdir -p "$XRAY_DIR"
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+    eval 'openssl() { if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"; else command openssl "$@"; fi }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    export EASYNET_REALITY_MODE=borrow
+    run configure_reality
+    [ "$status" -eq 0 ]
+    local pk_before sid_before
+    pk_before=$(jq -r '.inbounds[0].streamSettings.realitySettings.privateKey' "$XRAY_DIR/config.json")
+    sid_before=$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[0]' "$XRAY_DIR/config.json")
+    run jq -r '.inbounds[0].streamSettings.realitySettings.dest' "$XRAY_DIR/config.json"
+    [ "$output" = "www.bing.com:443" ]
+
+    export EASYNET_REALITY_MODE=self
+    export EASYNET_DOMAIN="world.example.com"
+    run configure_reality
+    [ "$status" -eq 0 ]
+
+    run jq -r '.inbounds[0].streamSettings.realitySettings.dest' "$XRAY_DIR/config.json"
+    [ "$output" = "127.0.0.1:443" ]
+    run jq -r '.inbounds[0].streamSettings.realitySettings.serverNames[0]' "$XRAY_DIR/config.json"
+    [ "$output" = "world.example.com" ]
+    [ "$(jq -r '.inbounds[0].streamSettings.realitySettings.privateKey' "$XRAY_DIR/config.json")" = "$pk_before" ]
+    [ "$(jq -r '.inbounds[0].streamSettings.realitySettings.shortIds[0]' "$XRAY_DIR/config.json")" = "$sid_before" ]
+}
+
+@test "Xray: re-running an unchanged config skips restart" {
+    export XRAY_DIR="$TMP_DIR/xray-idem"
+    mkdir -p "$XRAY_DIR"
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+    eval 'openssl() { if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"; else command openssl "$@"; fi }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -eq 0 ]
+    run configure_reality
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"配置未变化，跳过重启"* ]]
+}
+
+# -------------------------------------------------------------------------
 # Shadowsocks
 # -------------------------------------------------------------------------
 

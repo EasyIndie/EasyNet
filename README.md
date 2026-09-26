@@ -11,7 +11,7 @@
 ## 核心特性
 
 - 🚀 支持 4 种代理协议，全部内置混淆对抗 DPI：
-  - **Xray+Reality** — TLS 指纹模仿 + XHTTP/HTTP3 传输 + XMUX 多路复用
+  - **Xray+Reality** — TLS 指纹模仿 + REALITY 自偷（对抗 SNI→DNS 一致性检查）+ XHTTP/HTTP3 + XMUX
   - **Hysteria2** — QUIC/UDP + Salamander 混淆 + Port Hopping 端口跳变
   - **Shadowsocks 2022** — BLAKE3-AES-256-GCM 加密，完整重放保护
   - **WireGuard (+Amnezia obfs)** — 默认启用 Jc/Jmin/Jmax 垃圾包填充消除 UDP 指纹
@@ -22,7 +22,7 @@
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5–$15/月）
-- 🛡️ 安全稳定，自带 314 个测试用例（27 套件）保护核心逻辑
+- 🛡️ 安全稳定，自带 320 个测试用例（27 套件）保护核心逻辑
 
 ## 协议对比与防探测等级
 
@@ -36,7 +36,7 @@
 
 | 协议 | 传输/混淆 | 优点 | 防探测等级 |
 |------|-----------|------|-----------|
-| **Xray+Reality** | TCP/XHTTP + REALITY + XMUX | 无需域名，TLS 指纹模仿，包分片抗 ML，多路复用 | 🥇 极高（推荐） |
+| **Xray+Reality** | TCP/XHTTP + REALITY(自偷) + XMUX | 复用自有域名伪装（抗 SNI→DNS 检查），TLS 指纹模仿，多路复用 | 🥇 极高（推荐） |
 | **Hysteria2** | QUIC/UDP + Salamander + Port Hopping | 端口跳变抗封锁，HTTP/3 伪装 | 🥇 高（推荐补充） |
 | **Shadowsocks 2022** | TCP+UDP / BLAKE3-AES-256-GCM | 2022 Edition 强加密，重放保护 | 🥈 中等+ |
 | **WireGuard (+Amnezia obfs)** | UDP + Jc/Jmin/Jmax 垃圾包 | 可启用混淆消除 UDP 指纹 | 🥈 中等（启用混淆后） |
@@ -99,7 +99,7 @@ EasyNet/
 │   ├── diagnose_reachability.sh # 公网可达性 / IP 封锁诊断
 │   ├── acceptance_test.sh      # VPS 一键验收脚本
 │   └── smoke_test.sh           # 部署后快速检查
-├── tests/                      # 单元测试（27 个 bats 套件，314 个用例）
+├── tests/                      # 单元测试（27 个 bats 套件，320 个用例）
 ├── docs/                       # 文档目录
 │   ├── deployment.md           #   部署、协议选择、订阅承载、完整配置项
 │   ├── clients.md              #   全平台客户端说明与常见问题
@@ -139,7 +139,7 @@ sudo bash install.sh
 自动化部署（`EASYNET_*` 变量原样透传给 `deploy.sh`）：
 
 ```bash
-sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com bash install.sh
+sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com bash install.sh
 ```
 
 指定版本或安装目录：
@@ -176,17 +176,18 @@ cd EasyNet
 
 ```bash
 # 按策略部署（推荐）
-EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
+EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com ./scripts/deploy.sh
 
 # 按模块名称部署
 EASYNET_MODULE=xray-reality ./scripts/deploy.sh
 
 # 按编号部署（0 = 全部）
-EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=proxy.example.com ./scripts/deploy.sh
+EASYNET_SERVICE_CHOICE=0 EASYNET_DOMAIN=world.example.com ./scripts/deploy.sh
 
-# 最强抗 DPI 配置示例
+# 最强抗 DPI 配置示例（Reality 自偷 + 端口跳变）
 EASYNET_PROFILE=balanced \
-  EASYNET_DOMAIN=proxy.example.com \
+  EASYNET_DOMAIN=world.example.com \
+  EASYNET_REALITY_MODE=self \
   EASYNET_REALITY_TRANSPORT=xhttp \
   EASYNET_REALITY_XMUX_CONCURRENCY=4 \
   EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000 \

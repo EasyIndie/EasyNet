@@ -9,7 +9,7 @@
 #   sudo bash install.sh
 #
 # 自动化部署（其余 EASYNET_* 变量原样透传给 deploy.sh）：
-#   sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com bash install.sh
+#   sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com bash install.sh
 
 set -euo pipefail
 
@@ -54,7 +54,7 @@ EasyNet 自举安装器 — 无需 git clone 的一键部署
   EASYNET_RELEASE_BASE_URL Releases 基础 URL（默认 GitHub）
 
 其余 EASYNET_* 变量会原样传给 deploy.sh，例如:
-  sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com bash install.sh
+  sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com bash install.sh
 
 参数:
   -h, --help    显示本帮助
