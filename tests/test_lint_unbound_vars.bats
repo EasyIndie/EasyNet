@@ -34,10 +34,10 @@ readonly EXTRA_LIBS=(
     local errors=0
     local all_files=()
 
-    # Collect set -u scripts
-    while IFS= read -r -d '' f; do
-        all_files+=("$f")
-    done < <(grep -rlZ 'set.*\-[a-z]*u' "$script_dir" 2>/dev/null || true)
+    # Collect set -u scripts (newline-separated so it works with both GNU and BSD grep)
+    while IFS= read -r f; do
+        [ -n "$f" ] && all_files+=("$f")
+    done < <(grep -rl 'set.*\-[a-z]*u' "$script_dir" 2>/dev/null || true)
 
     # Add extra libs
     for lib in "${EXTRA_LIBS[@]}"; do
@@ -68,7 +68,7 @@ readonly EXTRA_LIBS=(
             while IFS= read -r line; do
                 echo "#   $line" >&3
             done <<< "$matches"
-            ((errors++))
+            errors=$((errors + 1))
         fi
     done
 

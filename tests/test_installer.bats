@@ -66,12 +66,12 @@ build_fake_release() {
 @test "Installer preserves an existing .env on reinstall" {
     run rg -q "保留现有配置" "$INSTALLER"
     [ "$status" -eq 0 ]
-    run rg -q 'cp "\$EASYNET_INSTALL_DIR/.env"' "$INSTALLER"
+    run rg -q 'cp "\$INSTALL_DIR/.env"' "$INSTALLER"
     [ "$status" -eq 0 ]
 }
 
 @test "Installer delegates to scripts/deploy.sh and forwards arguments" {
-    run rg -q 'exec bash "\$EASYNET_INSTALL_DIR/scripts/deploy.sh" "\$@"' "$INSTALLER"
+    run rg -q 'exec bash "\$INSTALL_DIR/scripts/deploy.sh" "\$@"' "$INSTALLER"
     [ "$status" -eq 0 ]
 }
 
