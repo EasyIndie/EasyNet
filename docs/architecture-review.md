@@ -12,7 +12,7 @@
 |------|------|------|
 | **架构设计** | ⭐⭐⭐⭐ | 四层分离清晰，metadata 状态模式优秀，插件系统简洁 |
 | **代码质量** | ⭐⭐⭐⭐ | ShellCheck 仅 2 个警告，引用规范，无遗留语法 |
-| **测试覆盖** | ⭐⭐⭐ | 294 测试全通过，核心逻辑覆盖好，但部署脚本无测试 |
+| **测试覆盖** | ⭐⭐⭐ | 306 测试全通过，核心逻辑覆盖好，但部署脚本无测试 |
 | **文档** | ⭐⭐⭐⭐ | README/CONTRIBUTING/CHANGELOG 完善，但缺架构文档 |
 | **CI/CD** | ⭐⭐⭐⭐ | ShellCheck + bats + 集成测试 三层 CI |
 | **安全性** | ⭐⭐⭐⭐ | 审计后已修复大部分问题，剩余 6 项低风险未处理 |
@@ -116,7 +116,7 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 ### 4.1 覆盖总结
 
 ```
-25 个测试文件, 294 个测试, 0 失败
+26 个测试文件, 306 个测试, 0 失败
 ```
 
 | 覆盖良好 | 覆盖缺失 |
@@ -186,7 +186,8 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 
 - 新增 `scripts/install.sh`：自包含自举安装器，下载 release 包 → 校验 SHA256 → 解压到持久目录（默认 `/opt/easynet`）→ 执行 `scripts/deploy.sh`。失败即中止，遵循「无 `curl | bash`」规范；重复运行 = 原地升级脚本（保留已有 `.env`，状态目录 `/var/lib/easynet` 不受影响）。
 - CI release job 新增产物：`easynet.tar.gz`、`easynet.tar.gz.sha256`、`easynet-install.sh`（固定名，`latest/download/` 稳定可拉）。
-- 新增 `tests/test_installer.bats`（12 用例），覆盖校验失败中止、缺校验文件拒绝、`.env` 保留、参数透传等。
+- 新增 `tests/test_installer.bats`（15 用例），覆盖校验失败中止、缺校验文件拒绝、`.env` 保留、参数透传、`EASYNET_INSTALL_ONLY`、os-release 不污染版本变量等。
+- 新增 `scripts/acceptance_test.sh`：VPS 一键验收（校验中止 / 一键安装 / `.env` 保留升级 / balanced 真实部署 / 订阅生成 / 全卸载），支持本地 tarball 初步验收模式。
 
 ### 7.2 架构收尾
 
@@ -204,4 +205,12 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 ### 7.4 本次未做（后续迭代）
 
 - 协议演进：Xray Finalmask、Hysteria2 ECH/Realms、shadowsocks-rust 升级。
-- 安全加固：Nginx TLS 密码套件/HSTS/OCSP、公网 IP 检测改 HTTPS。
+
+> 安全审计中的 Nginx TLS 密码套件/HSTS/OCSP、公网 IP 检测改 HTTPS 等项，经核对**代码中已实现**，已在 `security-audit.md` 更新状态。
+
+### 7.5 0.0.8 后修复与补充（2026-09-26）
+
+- **CI 暴露 lint 测试缺陷**：`test_lint_unbound_vars.bats` 的 `grep -Z` 在 macOS（BSD grep）空跑假绿、`((errors++))` 在 `errors=0` 时中断；已跨平台化并修复算术。据此把 `install.sh` 内部 `EASYNET_*` 改为非前缀内部变量。
+- **正式验收暴露回归**：`check_os()` 中 `. /etc/os-release` 会用其 `VERSION` 覆盖内部下载版本变量，导致 release URL 非法；已改为子 shell 读取并重命名内部变量为 `RELEASE_VERSION`，补 2 条回归测试。
+- **新增 `scripts/diagnose_reachability.sh`**：判断“服务正常但客户端连不上”是否为 VPS 公网 IP 被 GFW/运营商拦截（回程丢包）。含本机服务/监听检查、check-host.net 多地探测，以及设置 `EASYNET_DIAG_CLIENT_IP` 后的抓包自动判定。
+- 排障文档新增《服务器 IP 被 GFW/运营商拦截》《客户端订阅更新超时》。

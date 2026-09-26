@@ -10,23 +10,31 @@ EasyNet is a Bash-based server deployment tool that installs and manages proxy p
 
 | Command | Description |
 |---------|-------------|
-| `bats tests/*.bats` | Run all 294 tests (25 test files) |
+| `bats tests/*.bats` | Run all 306 tests (26 test files) |
 | `bats tests/test_protocol_metadata.bats` | Run a single test file |
 | `bats --formatter tap tests/` | TAP output (used in CI) |
 | `shellcheck --rcfile=.shellcheckrc --shell=bash --severity=style scripts/` | Lint all scripts |
 | `bash scripts/deploy.sh` | Start deployment (must run as root on target VPS) |
+| `EASYNET_DOMAIN=... bash scripts/acceptance_test.sh` | VPS acceptance harness (root, real VPS) |
+| `bash scripts/diagnose_reachability.sh` | Diagnose public reachability / IP blocking |
 
 CI runs both shellcheck and bats on push/PR to `main` (see `.github/workflows/tests.yml`). All tests use temp directories (`mktemp`) and are fully isolated — no real VPS needed.
+
+One-command install (no `git clone`): releases publish `easynet-install.sh`, which downloads the release tarball, verifies SHA256, extracts to `/opt/easynet`, then runs `scripts/deploy.sh`.
 
 ## Architecture
 
 ```
 scripts/
+  install.sh                   ← Bootstrap installer (release tarball + SHA256 + deploy)
   deploy.sh / uninstall.sh     ← Main orchestrators
   generate_subscription.sh/
   show_subscription.sh/
   rotate_subscription.sh/
-  smoke_test.sh                ← Subscription management & smoke test
+  generate_singbox_rules.sh    ← Build sing-box .srs rule sets
+  smoke_test.sh                ← Post-deploy smoke check
+  diagnose_reachability.sh     ← Public reachability / IP-block diagnosis
+  acceptance_test.sh           ← VPS acceptance harness (verify deploy/uninstall)
   core/                         ← Shared infrastructure (19 files)
     discovery.sh                ←   Plugin system (manifest loading, validation)
     metadata.sh                 ←   metadata.json write/validate (chmod 600)

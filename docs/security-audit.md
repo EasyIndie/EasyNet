@@ -1,6 +1,6 @@
 # EasyNet 安全审计报告
 
-> **最后更新**: 2026-06-27
+> **最后更新**: 2026-09-26
 > **审计范围**: 全部 Shell 脚本、协议实现、系统配置
 > **漏洞报告**: 参见项目根目录 [SECURITY.md](../SECURITY.md)
 
@@ -68,24 +68,24 @@
 |------|------|
 | Shadowsocks systemd: `User=nobody`, `ProtectSystem=full`, `NoNewPrivileges=yes` | ✅ 已加固 |
 | Hysteria2/Xray 服务: 依赖上游安装脚本生成 | ⚠️ 不可控 |
-| sing-box 客户端: `mixed` 模式仍以 root 运行 | 🟡 建议添加 `DynamicUser=yes` |
+| sing-box 客户端: `mixed` 模式仍以 root 运行 | ✅ 已加固（systemd unit 使用 `DynamicUser=yes`） |
 | WireGuard: 需要 `CAP_NET_ADMIN`，以 root 运行 | ⚠️ 协议限制 |
 
 ### 2.4 TLS 与 Web 安全
 
 | 问题 | 状态 |
 |------|------|
-| Nginx 缺少显式 `ssl_ciphers`、HSTS、OCSP Stapling | 🟠 待修复 |
-| 订阅文件仅靠 128 位随机路径保护，无第二层认证 | 🟡 建议添加 Basic Auth |
-| 公网 IP 检测使用 HTTP（可被MITM注入） | 🔵 建议改用 HTTPS |
+| Nginx 缺少显式 `ssl_ciphers`、HSTS、OCSP Stapling | ✅ 已修复（`exposure/edge/deploy.sh` 已配置显式密码套件、HSTS、OCSP Stapling） |
+| 订阅文件仅靠 128 位随机路径保护，无第二层认证 | 🟡 仍为单层路径保护（可选 Basic Auth） |
+| 公网 IP 检测使用 HTTP（可被MITM注入） | ✅ 已修复（`core/network.sh` 全部使用 HTTPS 端点） |
 
 ### 2.5 输入验证
 
 | 问题 | 状态 |
 |------|------|
-| 域名输入仅判空，无格式校验 | 🟡 建议添加正则验证 |
+| 域名输入仅判空，无格式校验 | ✅ 已修复（`deploy.sh ensure_edge_domain` 已加域名正则校验） |
 | JSON 通过字符串拼接构建（部分旧代码） | 🟡 已迁移至 `jq --arg` |
-| 备份文件使用 `/tmp` + `date +%s`（TOCTOU风险） | 🟡 建议改用 `mktemp` + 专用目录 |
+| 备份文件使用 `/tmp` + `date +%s`（TOCTOU风险） | ✅ 已修复（`deploy.sh` 使用 `mktemp` + `/var/lib/easynet/backups` 专用目录） |
 
 ---
 
@@ -100,12 +100,12 @@
 
 ### 待改进项（按优先级）
 
-| 优先级 | 问题 | 分类 |
-|:--:|------|------|
-| 🔴 P0 | Nginx 缺 TLS 密码套件 + HSTS + OCSP Stapling | TLS安全 |
-| 🟠 P1 | sing-box mixed 模式以 root 运行 | 权限最小化 |
-| 🟠 P2 | WireGuard 私钥嵌入 URI（已知设计妥协） | 凭据泄露 |
-| 🟡 P3 | 订阅文件单层路径保护 | 访问控制 |
-| 🟡 P4 | 备份文件 TOCTOU 风险 | 文件安全 |
-| 🟡 P5 | 域名输入无格式校验 | 输入验证 |
-| 🟡 P6 | 公网IP检测使用HTTP | 传输安全 |
+| 优先级 | 问题 | 分类 | 状态 |
+|:--:|------|------|------|
+| 🔴 P0 | Nginx 缺 TLS 密码套件 + HSTS + OCSP Stapling | TLS安全 | ✅ 已修复 |
+| 🟠 P1 | sing-box mixed 模式以 root 运行 | 权限最小化 | ✅ 已修复（DynamicUser） |
+| 🟠 P2 | WireGuard 私钥嵌入 URI（已知设计妥协） | 凭据泄露 | ⏳ 未改（协议约定） |
+| 🟡 P3 | 订阅文件单层路径保护 | 访问控制 | ⏳ 未改（可选 Basic Auth） |
+| 🟡 P4 | 备份文件 TOCTOU 风险 | 文件安全 | ✅ 已修复（mktemp + 专用目录） |
+| 🟡 P5 | 域名输入无格式校验 | 输入验证 | ✅ 已修复 |
+| 🟡 P6 | 公网IP检测使用HTTP | 传输安全 | ✅ 已修复（改用 HTTPS） |

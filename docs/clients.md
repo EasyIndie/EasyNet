@@ -98,6 +98,12 @@ sudo bash easynet-singbox-client.sh doctor
 
 ## 常见问题
 
+### 订阅更新超时 / 导入失败
+
+- 先确认客户端**没有用代理去更新订阅**（Shadowrocket 先断开 VPN，或把“全局路由”设为直连，再更新）
+- 用浏览器直接打开 `https://<域名>/sub` 验证；若同样超时，多半是服务器 IP 被墙，见[故障排查指南](./troubleshooting-guide.md)中的《服务器 IP 被 GFW/运营商拦截》
+- 域名刚换过 IP 时，刷新客户端 DNS（切飞行模式/重开 App）
+
 ### Clash Verge Rev 导入失败
 
 - 你可能导入了 URI 订阅 `sub`，Clash/Mihomo 应使用 `clash`

@@ -22,7 +22,7 @@
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5–$15/月）
-- 🛡️ 安全稳定，自带 294 个测试用例（25 套件）保护核心逻辑
+- 🛡️ 安全稳定，自带 306 个测试用例（26 套件）保护核心逻辑
 
 ## 协议对比与防探测等级
 
@@ -95,14 +95,17 @@ EasyNet/
 │   ├── generate_subscription.sh# 订阅文件重新生成
 │   ├── show_subscription.sh    # 重新显示订阅链接和二维码
 │   ├── rotate_subscription.sh  # 轮换订阅入口（支持 --grace 迁移宽限）
+│   ├── generate_singbox_rules.sh # sing-box 分流规则集（.srs）生成
 │   ├── diagnose_reachability.sh # 公网可达性 / IP 封锁诊断
+│   ├── acceptance_test.sh      # VPS 一键验收脚本
 │   └── smoke_test.sh           # 部署后快速检查
-├── tests/                      # 单元测试（25 个 bats 套件，294 个用例）
+├── tests/                      # 单元测试（26 个 bats 套件，306 个用例）
 ├── docs/                       # 文档目录
 │   ├── deployment.md           #   部署、协议选择、订阅承载、完整配置项
 │   ├── clients.md              #   全平台客户端说明与常见问题
 │   ├── troubleshooting-guide.md#   故障排查指南
 │   ├── architecture-review.md  #   架构与代码质量评估报告
+│   ├── security-audit.md       #   安全审计报告
 │   └── generate-protocol-table.sh  # 协议支持表自动生成工具
 ├── tools/                      # 辅助工具（二维码生成等）
 ├── .env.example                # 环境变量配置模板
@@ -211,6 +214,7 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 - [客户端说明](./docs/clients.md) — 全平台客户端安装、导入与常见问题
 - [故障排查指南](./docs/troubleshooting-guide.md) — 分协议、分场景的排障流程
 - [架构评估报告](./docs/architecture-review.md) — 代码质量与架构改进建议
+- [安全审计报告](./docs/security-audit.md) — 协议抗 DPI 与实现层安全评估
 
 ## 贡献指南
 

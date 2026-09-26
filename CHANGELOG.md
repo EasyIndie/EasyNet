@@ -5,16 +5,20 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-## [Unreleased]
+## [0.0.9] - 2026-09-26
 
 ### 新增
-- `scripts/diagnose_reachability.sh`：公网可达性 / IP 封锁自动诊断——检查本机服务与监听端口、
+- **公网可达性 / IP 封锁诊断**：`scripts/diagnose_reachability.sh`——检查本机服务与监听端口、
   通过 check-host.net 多地探测公网可达性；设置 `EASYNET_DIAG_CLIENT_IP` 后可抓包自动判定
   「可达 / 回程被拦（GFW/运营商）/ 服务器未响应 / 客户端未发起」。
+- 新增 `tests/test_diagnose_reachability.bats`（9 用例：静态 + 抓包分类逻辑）。
 
 ### 文档
 - 故障排查指南新增《服务器 IP 被 GFW/运营商拦截》与《客户端订阅更新超时》：说明 VPS 分配的
   公网 IP 可能已被墙、自动化诊断用法、判定表与处理建议（更换 IP/机房，勿重装）。
+- 全面清理过时描述：同步测试计数（306 用例 / 26 套件）；`security-audit.md` 更新已实现项
+  （Nginx TLS 加固、sing-box `DynamicUser`、公网 IP 检测改 HTTPS、域名校验、备份用 `mktemp`）；
+  `architecture-review.md` 补充 0.0.8 后的修复与诊断脚本；README/CLAUDE 结构树与文档链接补全。
 
 ## [0.0.8] - 2026-09-26
 
@@ -226,6 +230,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.9]: https://github.com/EasyIndie/EasyNet/compare/0.0.8...0.0.9
 [0.0.8]: https://github.com/EasyIndie/EasyNet/compare/0.0.7...0.0.8
 [0.0.7]: https://github.com/EasyIndie/EasyNet/compare/0.0.6...0.0.7
 [0.0.6]: https://github.com/EasyIndie/EasyNet/compare/0.0.5...0.0.6

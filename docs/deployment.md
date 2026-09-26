@@ -307,6 +307,14 @@ sysctl net.ipv4.tcp_congestion_control
 ./scripts/smoke_test.sh
 ```
 
+若服务都正常但客户端连不上，先用诊断脚本判断是否 VPS 公网 IP 被 GFW/运营商拦截：
+
+```bash
+bash scripts/diagnose_reachability.sh
+# 确诊回程丢包（先在客户端拿到公网 IP）：
+EASYNET_DIAG_CLIENT_IP=<客户端公网IP> bash scripts/diagnose_reachability.sh
+```
+
 `smoke_test.sh` 会读取 metadata，快速检查服务状态、关键端口、防火墙规则和当前订阅入口，适合真实 VPS 部署后做第一轮回归验证。
 
 ### 长期运行检查
