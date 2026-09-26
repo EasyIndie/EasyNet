@@ -462,3 +462,21 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 
 - 客户端导入与平台差异：[客户端说明](./clients.md)
 - 出现故障时：[故障排查指南](./troubleshooting-guide.md)
+
+## sing-box 分流规则集
+
+`/singbox` 订阅默认自带分流规则（私有网段直连、CN 域名/IP 直连、广告拒绝，其余仍走代理）。
+规则集是 edge 上的静态文件，由下面的脚本从官方数据库生成：
+
+```bash
+./scripts/generate_singbox_rules.sh              # 生成并发布到 ${EASYNET_WEB_ROOT}/rules/
+./scripts/generate_singbox_rules.sh --dry-run    # 只打印不写文件
+```
+
+- 类别清单：`scripts/core/singbox-rules.conf`（`tag|source|category|action`，加类别只改一行）；
+- 生成物：`rules/<tag>.srs` 与 `rules/manifest.json`（含每个文件的 sha256）——属构建产物，**不进版本库**；
+- 订阅里 `route.rule_set` 用 `remote` 指向这些文件；**客户端安装器会下载到本地并改写为 `local`**
+  （远程规则集启动时拉不到会让 sing-box 起不来），因此客户端启动不依赖网络；
+- 建议每周跑一次（官方 geosite 每天更新）。客户端每天更新时会按 `manifest.json` 的 sha256
+  判断是否需要重新下载，只有真的变化才重启 sing-box。
+

@@ -5,6 +5,28 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.7] - 2026-09-26
+
+### 增强
+- **sing-box 客户端分流规则（新）**：
+  - 新增 `scripts/generate_singbox_rules.sh`：把官方 GeoIP/Geosite 数据库转成二进制规则集（`.srs`），
+    发布到 edge 的 `rules/` 目录，并生成带 sha256 的 `manifest.json`。数据库与构建用 sing-box
+    都从官方 release 下载并校验（GitHub API 的 digest 字段）。
+  - 新增 `scripts/core/singbox-rules.conf`：规则类别清单（`tag|source|category|action`），加类别只改一行。
+  - `/singbox` 订阅现在自带 `route.rule_set`（指向 edge 发布的 `.srs`）与分流规则：
+    **私有/回环 → 直连；CN 域名/IP → 直连；广告 → 拒绝；其余仍走代理**（`final` 保持 `Proxy` 不变）。
+  - 客户端安装器会把规则集下载到本地并把 `remote` 改写为 `local`：
+    **sing-box 启动不再依赖网络拉规则**（实测：远程规则集拉不到会让 sing-box 直接起不来）；
+    某类规则集获取失败时自动摘除该类，保证配置始终可启动。
+- **客户端每日更新后会重启 sing-box**：此前定时更新只覆盖配置文件、不重启进程，
+  新配置（含规则）不会生效。现在仅当配置内容真的变化且服务在运行时才重启。
+- 客户端更新新增两道保护：配置**形状守卫**（缺少 `outbounds` 即放弃安装）、
+  已应用规则清单留档（`<配置目录>/rules/.manifest.json`，供 `doctor` 查看新鲜度）。
+
+### 文档
+- `docs/deployment.md`：新增"sing-box 分流规则集"一节。
+- `docs/clients.md`：补充"规则不生效"的排查步骤。
+
 ## [0.0.6] - 2026-06-27
 
 ### 增强

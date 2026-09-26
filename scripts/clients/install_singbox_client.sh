@@ -307,8 +307,95 @@ case "${SINGBOX_MODE:-mixed}" in
         ;;
 esac
 
+# ---- 规则集：下载到本地并把 remote 改写成 local ----
+# 远程规则集在启动时拉不到会让 sing-box 直接起不来，所以这里一律落地成本地文件；
+# 任何一类拉不到就把它（连同引用它的规则）摘掉，保证配置永远能启动。
+config_path="${SINGBOX_CONFIG_FILE:-/etc/sing-box/config.json}"
+config_dir="$(dirname "$config_path")"
+rules_dir="$config_dir/rules"
+rules_base=""
+if [ -n "${SINGBOX_CONFIG_URL:-}" ]; then
+    rules_base="${SINGBOX_CONFIG_URL%/*}"
+fi
+manifest_tmp="$(mktemp /tmp/easynet-rules-manifest.XXXXXX)"
+mkdir -p "$rules_dir"
+manifest_ok="no"
+if [ -n "$rules_base" ] &&
+    curl -fsSL --max-time 30 "${rules_base}/rules/manifest.json" -o "$manifest_tmp" 2>/dev/null &&
+    jq -e '.files | type == "array"' "$manifest_tmp" >/dev/null 2>&1; then
+    manifest_ok="yes"
+    missing_tags=""
+    while IFS=$'\t' read -r rule_tag rule_file rule_sha; do
+        [ -n "$rule_tag" ] || continue
+        rule_target="$rules_dir/${rule_tag}.srs"
+        need_fetch="yes"
+        if [ -f "$rule_target" ] && [ -n "$rule_sha" ] &&
+            [ "$(sha256sum "$rule_target" | awk '{print $1}')" = "$rule_sha" ]; then
+            need_fetch="no"
+        fi
+        if [ "$need_fetch" = "yes" ]; then
+            rule_tmp="$(mktemp /tmp/easynet-rules.XXXXXX)"
+            if curl -fsSL --max-time 60 "${rules_base}/${rule_file}" -o "$rule_tmp" 2>/dev/null &&
+                { [ -z "$rule_sha" ] || [ "$(sha256sum "$rule_tmp" | awk '{print $1}')" = "$rule_sha" ]; } &&
+                "${SINGBOX_BIN:-}" rule-set decompile "$rule_tmp" >/dev/null 2>&1; then
+                install -m 0644 "$rule_tmp" "$rule_target"
+                echo "规则集已更新: ${rule_tag}.srs"
+            else
+                echo "规则集获取失败（沿用本地已有文件）: ${rule_tag}.srs" >&2
+            fi
+            rm -f "$rule_tmp"
+        fi
+        [ -f "$rule_target" ] || missing_tags="$missing_tags $rule_tag"
+    done < <(jq -r '.files[] | [.tag, .file, (.sha256 // "")] | @tsv' "$manifest_tmp")
+    install -m 0644 "$manifest_tmp" "$rules_dir/.manifest.json" 2>/dev/null || true
+fi
+rm -f "$manifest_tmp"
+
+if [ "$manifest_ok" = "yes" ]; then
+    jq --arg dir "$rules_dir" --arg missing "$missing_tags" '
+        ($missing | split(" ") | map(select(length > 0))) as $missing_tags
+        | .route.rule_set = ((.route.rule_set // []) | map(
+              select(type == "object")
+              | if (.tag as $t | ($missing_tags | index($t)) != null) then empty
+                elif .type == "remote"
+                then { type: "local", tag: .tag, format: "binary", path: ($dir + "/" + .tag + ".srs") }
+                else . end))
+        | .route.rules = ((.route.rules // []) | map(
+              if (((.rule_set // []) | map(. as $t | ($missing_tags | index($t)) != null) | any))
+              then empty else . end))
+    ' "$mode_file" > "${mode_file}.localized"
+    mv "${mode_file}.localized" "$mode_file"
+else
+    echo "未能获取规则集清单，本次配置不启用分流规则（服务仍可正常启动）" >&2
+    jq '
+        .route.rule_set = []
+        | .route.rules = ((.route.rules // []) | map(select((.rule_set // []) | length == 0)))
+    ' "$mode_file" > "${mode_file}.norules"
+    mv "${mode_file}.norules" "$mode_file"
+fi
+
+# 形状守卫：确认拿到的确实是 sing-box 配置（防接错端点/被注入页面）
+if ! jq -e '.outbounds | type == "array"' "$mode_file" >/dev/null 2>&1; then
+    echo "配置形状异常（缺少 outbounds），放弃安装以免影响现役服务" >&2
+    exit 1
+fi
+
 "${SINGBOX_BIN:-}" check -c "$mode_file"
-install -m 0644 "$mode_file" "${SINGBOX_CONFIG_FILE:-}"
+
+config_changed="no"
+if ! cmp -s "$mode_file" "$config_path"; then
+    config_changed="yes"
+fi
+install -m 0644 "$mode_file" "$config_path"
+
+# 服务在跑就重启让新配置生效；停着的调用方（switch-mode / update 子命令）自己会起
+if [ "$config_changed" = "yes" ] &&
+    systemctl is-active --quiet "${SINGBOX_SERVICE:-easynet-singbox}.service" 2>/dev/null; then
+    systemctl restart "${SINGBOX_SERVICE:-easynet-singbox}.service"
+    echo "配置已更新并重启服务"
+else
+    echo "配置已更新（内容无变化或服务未运行，未重启）"
+fi
 EOF
     chmod 0755 "$INSTALL_DIR/easynet-singbox-update"
 }
