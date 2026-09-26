@@ -61,6 +61,38 @@ write_env_var() {
     printf '%s=%q\n' "$1" "$2" >> "${HYSTERIA2_ENV_FILE:-}"
 }
 
+# Read a secret persisted by an earlier deploy from HYSTERIA2_ENV_FILE.
+# Returns an empty string when the file or variable is unavailable.
+load_previous_secret() {
+    local var_name="$1"
+    local value=""
+    if [ -f "${HYSTERIA2_ENV_FILE:-}" ]; then
+        # shellcheck disable=SC1090  # 复用上次部署写入的 env 文件
+        value="$(set +u; source "${HYSTERIA2_ENV_FILE:-}" 2>/dev/null; printf '%s' "${!var_name:-}")"
+    fi
+    printf '%s' "$value"
+}
+
+# Resolve a Hysteria2 secret with priority: explicit env > previously deployed
+# value > newly generated random. This keeps re-deploys/upgrades from rotating
+# the password and invalidating existing clients.
+resolve_hysteria2_secret() {
+    local env_value="$1"
+    local var_name="$2"
+    local previous=""
+
+    if [ -n "$env_value" ]; then
+        printf '%s' "$env_value"
+        return 0
+    fi
+    previous="$(load_previous_secret "$var_name")"
+    if [ -n "$previous" ]; then
+        printf '%s' "$previous"
+        return 0
+    fi
+    random_secret
+}
+
 hysteria2_service_user() {
     systemctl cat "${HYSTERIA2_SERVICE:-}" 2>/dev/null |
         awk -F= '/^[[:space:]]*User=/{ gsub(/[[:space:]]/, "", $2); print $2; exit }'
@@ -105,8 +137,8 @@ configure_hysteria2() {
 
     domain="$(require_domain)"
     port="${EASYNET_HYSTERIA2_PORT:-443}"
-    password="${EASYNET_HYSTERIA2_PASSWORD:-$(random_secret)}"
-    obfs_password="${EASYNET_HYSTERIA2_OBFS_PASSWORD:-$(random_secret)}"
+    password="$(resolve_hysteria2_secret "${EASYNET_HYSTERIA2_PASSWORD:-}" HYSTERIA2_PASSWORD)"
+    obfs_password="$(resolve_hysteria2_secret "${EASYNET_HYSTERIA2_OBFS_PASSWORD:-}" HYSTERIA2_OBFS_PASSWORD)"
     masquerade_url="${EASYNET_HYSTERIA2_MASQUERADE_URL:-https://www.bing.com/}"
     port_hopping="${EASYNET_HYSTERIA2_PORT_HOPPING:-}"
     hop_interval="${EASYNET_HYSTERIA2_PORT_HOP_INTERVAL:-30s}"
@@ -205,4 +237,6 @@ main() {
     show_config
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

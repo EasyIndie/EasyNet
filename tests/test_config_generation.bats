@@ -154,10 +154,12 @@ source_protocol() {
 
     tmp=$(mktemp)
     # - Replace self-computed SCRIPT_DIR/CORE_DIR with correct absolute paths
-    # - Remove last line (main "$@")
+    # - Remove entrypoint execution: bare `main "$@"` (last line) or a guarded
+    #   `if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then main "$@"; fi` block
     sed -e "s|^SCRIPT_DIR=.*|SCRIPT_DIR=\"$script_dir\"|" \
         -e "s|^CORE_DIR=.*|CORE_DIR=\"$core_dir\"|" \
-        -e '$d' "$script" > "$tmp"
+        -e '/^main "\$@"$/d' \
+        -e '/BASH_SOURCE\[0\].*==.*\$0/,/^fi$/d' "$script" > "$tmp"
 
     source "$tmp"
     rm -f "$tmp"

@@ -244,6 +244,32 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 - `.env` 只加载 `EASYNET_*` 前缀变量，非 `EASYNET_*` 变量会被忽略（`SS_VERSION` 除外）
 - 远程安装脚本和发布包支持可选 SHA256 校验，变量见 `.env.example`
 
+## 升级到新版本
+
+已用一键安装器部署（脚本在 `/opt/easynet`）时，可**原地升级**，无需全新安装：
+
+```bash
+curl -fsSL https://github.com/EasyIndie/EasyNet/releases/latest/download/easynet-install.sh -o install.sh
+EASYNET_VERSION=<新版本，如 0.0.10> bash install.sh
+```
+
+安装器会替换 `/opt/easynet/scripts` 为新版本、保留 `/opt/easynet/.env`，然后重跑 `deploy.sh`。
+
+升级时各类状态是否保留：
+
+| 项目 | 是否保留 | 说明 |
+|------|:--:|------|
+| `/opt/easynet/.env` | ✅ | 域名/策略等配置延续 |
+| `/var/lib/easynet` 状态 | ✅ | metadata、Edge 状态 |
+| 订阅 URL 路径前缀 | ✅ | 随机路径不变，客户端订阅地址不变 |
+| Edge 证书 | ✅ | acme.sh 复用/续期 |
+| Xray-Reality UUID/密钥 | ✅ | 从现有 `config.json` 保留 |
+| Shadowsocks 密码 | ✅ | 从现有 `config.json` 保留 |
+| WireGuard 服务端密钥/客户端配置 | ✅ | 已存在则跳过生成 |
+| Hysteria2 密码/混淆密码 | ✅（0.0.10+） | 复用 `/etc/hysteria/easynet.env`；0.0.9 及更早版本会轮换 |
+
+> 升级后建议在客户端**更新一次订阅**，确保拿到最新配置。仅想更新脚本、不重新部署时，可用 `EASYNET_INSTALL_ONLY=true bash install.sh`。
+
 ## 卸载部署
 
 新架构下卸载也按模块边界执行。顶层入口只负责选择和编排，每个模块通过自己的 `scripts/*/<module>/uninstall.sh` 清理私有配置、服务文件和 metadata，公共层根据存活模块更新定时重启任务和防火墙规则。

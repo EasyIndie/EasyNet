@@ -5,6 +5,21 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.10] - 2026-09-26
+
+### 改进
+- **Hysteria2 密码在重部署/升级时保留**：密钥解析改为 `显式环境变量 > 上次部署写入的
+  /etc/hysteria/easynet.env > 新随机值`，与 Xray-Reality / Shadowsocks / WireGuard 的保留行为一致。
+  此前每次重跑 `deploy.sh` 都会轮换 Hysteria2 密码，导致客户端必须更新订阅；从 0.0.10 起
+  后续升级不再轮换。
+- `scripts/protocols/hysteria2/deploy.sh` 增加入口守卫，便于单测。
+
+### 测试
+- 新增 `tests/test_hysteria2_secret_preservation.bats`（8 用例）；总数 306 → 314（27 套件）。
+
+### 文档
+- 部署说明新增《升级到新版本》：说明原地升级方式与各项保留行为。
+
 ## [0.0.9] - 2026-09-26
 
 ### 新增
@@ -230,6 +245,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.10]: https://github.com/EasyIndie/EasyNet/compare/0.0.9...0.0.10
 [0.0.9]: https://github.com/EasyIndie/EasyNet/compare/0.0.8...0.0.9
 [0.0.8]: https://github.com/EasyIndie/EasyNet/compare/0.0.7...0.0.8
 [0.0.7]: https://github.com/EasyIndie/EasyNet/compare/0.0.6...0.0.7
