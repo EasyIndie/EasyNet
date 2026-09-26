@@ -17,6 +17,11 @@
 - Reality 配置改为**幂等渲染**：先在临时文件生成目标配置，与现有配置一致时跳过写入与重启；
   支持在不改动 UUID/私钥/Short ID 的前提下切换传输方式与伪装模式。
 
+### 修复
+- **Xray 配置权限**：Xray 以 `nobody` 运行时无法读取 `600 root` 的 `config.json`，导致服务启动失败
+  （`open ... permission denied`）。现按 systemd 服务的实际用户设置权限
+  （`root` → `600`；其他用户 → `640 root:<group>`）。
+
 ### 文档
 - 新增 `docs/singbox-unification-analysis.md`：评估是否将多协议收敛为统一 sing-box 实现，
   含能力对照、收益/代价、趋势判断与建议路线；本轮结论为「维持现状」。

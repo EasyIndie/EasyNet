@@ -198,6 +198,39 @@ resolve_reality_target() {
     printf '%s|%s|%s' "$dest" "$server_names" "$mode"
 }
 
+# Resolve the Xray systemd service user (default: root).
+xray_service_user() {
+    systemctl cat xray 2>/dev/null |
+        awk -F= '/^[[:space:]]*User=/{ gsub(/[[:space:]]/, "", $2); print $2; exit }'
+}
+
+# Make config.json readable by the Xray service user while keeping it private.
+# The config holds the REALITY private key, so we avoid world-readable (644):
+#   - service runs as root      -> 600 root
+#   - service runs as <user>    -> 640 root:<user's group>
+set_xray_config_permissions() {
+    local config_file="$XRAY_DIR/config.json"
+    local service_user group
+
+    [ -f "$config_file" ] || return 0
+    chmod 600 "$config_file"
+
+    service_user="$(xray_service_user)"
+    service_user="${service_user:-root}"
+
+    if [ "$service_user" = "root" ]; then
+        return 0
+    fi
+    if ! id "$service_user" >/dev/null 2>&1; then
+        log_warn "未找到 Xray systemd 用户 $service_user，配置文件将仅 root 可读。"
+        return 0
+    fi
+
+    group="$(id -gn "$service_user")"
+    chown root:"$group" "$config_file"
+    chmod 640 "$config_file"
+}
+
 configure_reality() {
     log_info "配置 Xray+Reality..."
     mkdir -p "$XRAY_DIR"
@@ -298,12 +331,14 @@ configure_reality() {
     # Skip restart when the rendered config is identical to the current one.
     if [ "$have_existing" = true ] && diff <(jq -S . "$config_file") <(jq -S . "$new_config") >/dev/null 2>&1; then
         rm -f "$new_config"
+        set_xray_config_permissions
         log_info "Reality 配置未变化，跳过重启。"
         return 0
     fi
 
     chmod 600 "$new_config"
     mv "$new_config" "$config_file"
+    set_xray_config_permissions
     log_info "配置文件已生成 (transport=$transport, mode=$reality_mode)"
     if [ "$transport" = "xhttp" ] && [ "$xmux_concurrency" -gt 0 ] 2>/dev/null; then
         log_info "XMUX 多路复用已启用: concurrency=$xmux_concurrency"
