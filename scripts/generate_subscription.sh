@@ -69,7 +69,18 @@ generate_singbox_config() {
 
     [ ! -s "$names_file" ] && return 0
 
+    local rule_sets policy_rules
+    rule_sets="$(easynet_singbox_rule_sets_json)"
+    policy_rules="$(easynet_singbox_policy_rules_json)"
+    [ -n "$rule_sets" ] || rule_sets="[]"
+    [ -n "$policy_rules" ] || policy_rules="[]"
+    if [ "$rule_sets" = "[]" ]; then
+        log_warn "未找到 sing-box 分流规则清单（scripts/core/singbox-rules.conf）或其中为空，本次订阅不含分流规则。"
+    fi
+
     jq -n \
+        --argjson rule_sets "$rule_sets" \
+        --argjson policy_rules "$policy_rules" \
         --slurpfile node_outbounds "$outbounds_file" \
         --slurpfile node_endpoints "$endpoints_file" \
         --rawfile names_raw "$names_file" \
@@ -111,16 +122,27 @@ generate_singbox_config() {
                     { type: "block", tag: "REJECT" }
                 ]
             ),
-            route: {
-                rules: [
-                    {
-                        inbound: "mixed-in",
-                        action: "sniff"
-                    }
-                ],
-                auto_detect_interface: true,
-                final: "Proxy"
-            }
+            route: (
+                {
+                    rules: (
+                        [
+                            {
+                                inbound: "mixed-in",
+                                action: "sniff"
+                            },
+                            {
+                                action: "route",
+                                outbound: "DIRECT",
+                                ip_is_private: true
+                            }
+                        ]
+                        + $policy_rules
+                    ),
+                    auto_detect_interface: true,
+                    final: "Proxy"
+                }
+                + (if ($rule_sets | length) > 0 then { rule_set: $rule_sets } else {} end)
+            )
         } + if ($node_endpoints | length) > 0 then { endpoints: $node_endpoints } else {} end)' > "$output_file"
 
     chmod 644 "$output_file"

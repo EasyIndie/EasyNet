@@ -109,3 +109,22 @@ setup() {
     rg -q "RandomizedDelaySec" "$INSTALLER"
     rg -q "Persistent=true" "$INSTALLER"
 }
+
+@test "Installer materializes rule sets locally and rewrites remote to local" {
+    rg -q "rule-set decompile" "$INSTALLER"
+    rg -q 'type: "local"' "$INSTALLER"
+    rg -q "rules/manifest.json" "$INSTALLER"
+    rg -q "sha256sum" "$INSTALLER"
+}
+
+@test "Installer restarts the service after installing a changed config" {
+    rg -q "systemctl restart" "$INSTALLER"
+    rg -q 'SINGBOX_SERVICE:-easynet-singbox' "$INSTALLER"
+    rg -q "cmp -s" "$INSTALLER"
+}
+
+@test "Installer guards config shape and degrades when rules are unavailable" {
+    rg -q "配置形状异常" "$INSTALLER"
+    rg -q 'outbounds \| type == "array"' "$INSTALLER"
+    rg -q "本次配置不启用分流规则" "$INSTALLER"
+}

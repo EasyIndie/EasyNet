@@ -140,3 +140,33 @@ sudo bash easynet-singbox-client.sh doctor
 
 - 确认客户端支持 port hopping 参数
 - 确认云厂商安全组和服务器防火墙已放行跳变端口范围（如 20000-30000/udp）
+
+### 分流规则没生效
+
+1. 看配置里有没有规则：
+
+   ```bash
+   jq '.route.rule_set, (.route.rules | length)' /etc/sing-box/config.json
+   ```
+
+   期望：`rule_set` 是若干 `{"type":"local", ... "path":"/etc/sing-box/rules/<tag>.srs"}`，
+   `route.rules` 里有 sniff、`ip_is_private` 直连以及引用规则集的几条。
+
+2. 看规则集文件与新不新：
+
+   ```bash
+   ls -l /etc/sing-box/rules/
+   jq '.generated_at, (.files[] | {tag, size})' /etc/sing-box/rules/.manifest.json
+   ```
+
+3. 看服务是不是在更新后重启过（**老版本只在文件层面更新、不重启，规则不会生效**）：
+
+   ```bash
+   systemctl status easynet-singbox.service
+   sudo bash /etc/easynet/easynet-singbox-client.sh update   # 手动触发一次"更新+重启"
+   ```
+
+4. 验证分流是否真的生效（出口 IP 对比）：
+   - 经代理访问国内站点，出口应等于本机直连出口；
+   - 经代理访问国外站点，出口应等于代理服务器 IP。
+
