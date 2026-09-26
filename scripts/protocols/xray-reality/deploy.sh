@@ -231,6 +231,38 @@ set_xray_config_permissions() {
     chmod 640 "$config_file"
 }
 
+# Parse a fallback rate-limit spec into a limitFallback JSON object.
+# Spec formats: "<afterBytes>:<bytesPerSec>:<burstBytesPerSec>" or "<bytesPerSec>".
+# Prints "{}" (disabled) when unset, zero, or invalid.
+reality_fallback_limit_json() {
+    local spec="${1:-}"
+    local after bytes burst
+    [ -n "$spec" ] || { printf '{}'; return 0; }
+
+    if [[ "$spec" == *:* ]]; then
+        IFS=':' read -r after bytes burst <<< "$spec"
+    else
+        after=0
+        bytes="$spec"
+        burst="$spec"
+    fi
+    after="${after:-0}"
+    bytes="${bytes:-0}"
+    burst="${burst:-$bytes}"
+
+    if ! [[ "$after" =~ ^[0-9]+$ ]] || ! [[ "$bytes" =~ ^[0-9]+$ ]] || ! [[ "$burst" =~ ^[0-9]+$ ]]; then
+        log_warn "Reality 回退限速格式无效: $spec（应为 afterBytes:bytesPerSec:burstBytesPerSec）"
+        printf '{}'
+        return 0
+    fi
+    if [ "$bytes" -eq 0 ]; then
+        printf '{}'
+        return 0
+    fi
+    jq -n --argjson a "$after" --argjson b "$bytes" --argjson c "$burst" \
+        '{afterBytes: $a, bytesPerSec: $b, burstBytesPerSec: $c}'
+}
+
 configure_reality() {
     log_info "配置 Xray+Reality..."
     mkdir -p "$XRAY_DIR"
@@ -326,6 +358,22 @@ configure_reality() {
         # shellcheck disable=SC2016  # $xmux_cc, $xmux_idle are jq --argjson vars
         JQ_FILTER+=' | .inbounds[0].streamSettings.xhttpSettings.xmux = { "concurrency": $xmux_cc, "connIdleTime": $xmux_idle }'
     fi
+
+    # Optional rate limiting for unverified fallback connections (anti-abuse).
+    local limit_up limit_down
+    limit_up="$(reality_fallback_limit_json "${EASYNET_REALITY_LIMIT_FALLBACK_UPLOAD:-}")"
+    limit_down="$(reality_fallback_limit_json "${EASYNET_REALITY_LIMIT_FALLBACK_DOWNLOAD:-}")"
+    if [ "$limit_up" != "{}" ]; then
+        # shellcheck disable=SC2016  # $limit_up is a jq --argjson var
+        JQ_FILTER+=' | .inbounds[0].streamSettings.realitySettings.limitFallbackUpload = $limit_up'
+        JQ_ARGS+=(--argjson limit_up "$limit_up")
+    fi
+    if [ "$limit_down" != "{}" ]; then
+        # shellcheck disable=SC2016  # $limit_down is a jq --argjson var
+        JQ_FILTER+=' | .inbounds[0].streamSettings.realitySettings.limitFallbackDownload = $limit_down'
+        JQ_ARGS+=(--argjson limit_down "$limit_down")
+    fi
+
     jq "${JQ_ARGS[@]}" "$JQ_FILTER" "$new_config" > "${new_config}.tmp" && mv "${new_config}.tmp" "$new_config"
 
     # Skip restart when the rendered config is identical to the current one.

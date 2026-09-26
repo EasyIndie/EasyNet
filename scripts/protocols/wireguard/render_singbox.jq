@@ -5,10 +5,10 @@
 #   pre_shared_key     → peers[].pre_shared_key
 #   local_address      → address
 #
-# Note: AmneziaWG obfuscation (jc/jmin/jmax) is not included here;
-# mainline sing-box releases do not support these fields in the
-# WireGuard endpoint. The server runs standard WireGuard, so standard
-# WireGuard clients connect fine without them.
+# Note: AmneziaWG obfuscation (jc/jmin/jmax/s1/s2/h1-h4) is not included here;
+# mainline sing-box releases do not support these fields in the WireGuard
+# endpoint. The server runs AmneziaWG, so a plain sing-box WireGuard client
+# will NOT connect. Use Shadowrocket or Clash Verge Rev (mihomo) for this node.
 # Usage: jq -c -f render_singbox.jq <metadata.json>
 .client.clash as $c
 | ($c.name // .module) as $tag

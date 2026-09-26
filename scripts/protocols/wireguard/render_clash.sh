@@ -1,5 +1,5 @@
 #!/bin/bash
-# EasyNet WireGuard (+Amnezia obfs) Clash YAML proxy renderer
+# EasyNet AmneziaWG Clash YAML proxy renderer
 # Usage: bash render_clash.sh <metadata.json>
 set -euo pipefail
 
@@ -18,10 +18,9 @@ private_key=$(jq -r '.client.clash."private-key" // empty' "$METADATA_FILE")
 public_key=$(jq -r '.client.clash."public-key" // empty' "$METADATA_FILE")
 pre_shared_key=$(jq -r '.client.clash."pre-shared-key" // empty' "$METADATA_FILE")
 mtu=$(jq -r '.client.clash.mtu // 1360' "$METADATA_FILE")
-jc=$(jq -r '.client.clash.jc // empty' "$METADATA_FILE")
-jmin=$(jq -r '.client.clash.jmin // empty' "$METADATA_FILE")
-jmax=$(jq -r '.client.clash.jmax // empty' "$METADATA_FILE")
 dns_count=$(jq '.client.clash.dns | length' "$METADATA_FILE")
+
+awg_jc=$(jq -r '.client.clash."amnezia-wg-option".jc // empty' "$METADATA_FILE")
 
 cat << EOF
   - name: "$(yaml_escape "$name")"
@@ -36,11 +35,18 @@ cat << EOF
     mtu: $mtu
 EOF
 
-if [ -n "$jc" ] && [ "$jc" != "null" ]; then
+if [ -n "$awg_jc" ] && [ "$awg_jc" != "null" ]; then
     cat << EOF
-    jc: $jc
-    jmin: $jmin
-    jmax: $jmax
+    amnezia-wg-option:
+      jc: $awg_jc
+      jmin: $(jq -r '.client.clash."amnezia-wg-option".jmin' "$METADATA_FILE")
+      jmax: $(jq -r '.client.clash."amnezia-wg-option".jmax' "$METADATA_FILE")
+      s1: $(jq -r '.client.clash."amnezia-wg-option".s1' "$METADATA_FILE")
+      s2: $(jq -r '.client.clash."amnezia-wg-option".s2' "$METADATA_FILE")
+      h1: "$(jq -r '.client.clash."amnezia-wg-option".h1' "$METADATA_FILE")"
+      h2: "$(jq -r '.client.clash."amnezia-wg-option".h2' "$METADATA_FILE")"
+      h3: "$(jq -r '.client.clash."amnezia-wg-option".h3' "$METADATA_FILE")"
+      h4: "$(jq -r '.client.clash."amnezia-wg-option".h4' "$METADATA_FILE")"
 EOF
 fi
 

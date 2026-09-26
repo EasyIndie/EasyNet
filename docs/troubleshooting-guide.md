@@ -11,7 +11,7 @@
 5. **订阅**：重新导入最新订阅，避免混用旧配置
 6. **链路可达性**：服务都正常但客户端连不上时，先排除「VPS 公网 IP 被 GFW/运营商拦截」——见下文《服务器 IP 被 GFW/运营商拦截》
 
-服务名（按安全等级降序）：`xray` → `hysteria-server.service` → `shadowsocks-rust-server` → `wg-quick@wg0`
+服务名（按安全等级降序）：`xray` → `hysteria-server.service` → `shadowsocks-rust-server` → `awg-quick@wg0`
 
 ## 服务器 IP 被 GFW/运营商拦截（服务正常但客户端连不上）
 
@@ -159,15 +159,15 @@ EASYNET_DIAG_CLIENT_IP=<客户端公网IP> bash scripts/diagnose_reachability.sh
 - 确认服务器和云安全组放行 Shadowsocks 端口，默认 `8388/tcp` 和 `8388/udp`
 - 查看日志：`journalctl -u shadowsocks-rust-server -n 50 --no-pager -l`
 
-### WireGuard 无握手
+### WireGuard/AmneziaWG 无握手
 
 现象：
-- `wg show` 看不到 `latest handshake`
+- `awg show` 看不到 `latest handshake`
 
 处理：
 - 确认 UDP 端口已放行，默认 `51820/udp`
-- 确认服务端已重载最新配置：`systemctl restart wg-quick@wg0`
-- 检查客户端导入的是最新 `client1.conf`
+- 确认服务端已重载最新配置：`systemctl restart awg-quick@wg0`
+- 检查客户端导入的是最新 `client1.conf`（含 AmneziaWG 参数）
 
 ### WireGuard 有握手但不能上网
 
@@ -179,16 +179,16 @@ EASYNET_DIAG_CLIENT_IP=<客户端公网IP> bash scripts/diagnose_reachability.sh
 - 检查 NAT 规则：`iptables -t nat -S`
 - 检查主网卡名称和 `AllowedIPs`
 
-### WireGuard AmneziaWG 混淆不生效
+### AmneziaWG 客户端不支持 / 参数不匹配
 
 现象：
-- 启用了 `EASYNET_WIREGUARD_OBFS=true`，但客户端仍被识别为 WireGuard
+- 服务端为 AmneziaWG，但客户端用标准 WireGuard 或未携带混淆参数，一直无握手
 
 处理：
-- 服务端为标准 WireGuard（无需改动），混淆由客户端完成
-- 确认客户端支持 AmneziaWG（含 jc/jmin/jmax 参数）
-- Clash Verge Rev / Mihomo 通过订阅导入自动包含混淆参数
-- 如使用 WireGuard 原生客户端，需改用 AmneziaWG 客户端版本
+- 服务端已固定使用 AmneziaWG（`/etc/amnezia/amneziawg/wg0.conf`），**不再提供纯 WireGuard**
+- 客户端需支持 AmneziaWG（Clash Verge Rev (mihomo ≥1.19) / Shadowrocket）；**sing-box 暂不支持 AmneziaWG**
+- 确认 Jc/Jmin/Jmax/S1/S2/H1-H4 与服务端一致（订阅会自动携带；手动配置需与服务端 `wg0.conf` 对齐）
+- Clash Verge Rev / Mihomo 通过订阅导入会自动写入 `amnezia-wg-option`
 
 ### Hysteria2 启用 Port Hopping 后连接失败
 
@@ -228,7 +228,7 @@ EASYNET_DIAG_CLIENT_IP=<客户端公网IP> bash scripts/diagnose_reachability.sh
 systemctl status xray --no-pager
 systemctl status hysteria-server.service --no-pager
 systemctl status shadowsocks-rust-server --no-pager
-systemctl status wg-quick@wg0 --no-pager
+systemctl status awg-quick@wg0 --no-pager
 journalctl -u hysteria-server.service -n 100 --no-pager -l
 journalctl -u xray -n 50 --no-pager -l
 journalctl -u shadowsocks-rust-server -n 50 --no-pager -l

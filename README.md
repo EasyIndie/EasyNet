@@ -14,7 +14,7 @@
   - **Xray+Reality** — TLS 指纹模仿 + REALITY 自偷（对抗 SNI→DNS 一致性检查）+ XHTTP/HTTP3 + XMUX
   - **Hysteria2** — QUIC/UDP + Salamander 混淆 + Port Hopping 端口跳变
   - **Shadowsocks 2022** — BLAKE3-AES-256-GCM 加密，完整重放保护
-  - **WireGuard (+Amnezia obfs)** — 默认启用 Jc/Jmin/Jmax 垃圾包填充消除 UDP 指纹
+  - **AmneziaWG** — WireGuard + AmneziaWG 混淆（Jc/Jmin/Jmax/S1/S2/H1-H4），默认启用，消除 UDP 指纹
 - 🔒 强安全架构：REALITY 无证书 TLS、Edge Gateway 反代伪装
 - ⚡ 性能优化：BBR 拥塞控制、XHTTP 多路复用 (XMUX)、QUIC 0-RTT
 - 🔄 自动化运维：系统更新、证书续期 hook（自动修正权限并重启服务）、日志限额与 logrotate
@@ -22,7 +22,7 @@
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5–$15/月）
-- 🛡️ 安全稳定，自带 320 个测试用例（27 套件）保护核心逻辑
+- 🛡️ 安全稳定，自带 323 个测试用例（27 套件）保护核心逻辑
 
 ## 协议对比与防探测等级
 
@@ -30,7 +30,7 @@
 
 - 日常优先 `Xray+Reality`；需要 UDP/QUIC 补充时用 `balanced`
 - 订阅承载与协议部署解耦；配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 后会自动生成订阅链接和订阅二维码
-- `Shadowsocks 2022` 和 `WireGuard` 可通过环境变量启用额外混淆
+- `AmneziaWG` 默认启用混淆（Jc/Jmin/Jmax/S1/S2/H1-H4，随机生成并持久化）
 
 简要对比：
 
@@ -39,7 +39,7 @@
 | **Xray+Reality** | TCP/XHTTP + REALITY(自偷) + XMUX | 复用自有域名伪装（抗 SNI→DNS 检查），TLS 指纹模仿，多路复用 | 🥇 极高（推荐） |
 | **Hysteria2** | QUIC/UDP + Salamander + Port Hopping | 端口跳变抗封锁，HTTP/3 伪装 | 🥇 高（推荐补充） |
 | **Shadowsocks 2022** | TCP+UDP / BLAKE3-AES-256-GCM | 2022 Edition 强加密，重放保护 | 🥈 中等+ |
-| **WireGuard (+Amnezia obfs)** | UDP + Jc/Jmin/Jmax 垃圾包 | 可启用混淆消除 UDP 指纹 | 🥈 中等（启用混淆后） |
+| **AmneziaWG** | UDP + Jc/Jmin/Jmax/S1/S2/H1-H4 | 默认混淆消除 UDP 指纹 | 🥈 中等+ |
 
 
 ## 支持的协议
@@ -51,7 +51,7 @@
 | Xray+Reality | 10 | 8443 | — | strict, balanced, compat |
 | Hysteria2 | 20 | 443 | 共享 TLS | balanced, compat |
 | Shadowsocks 2022 | 40 | 8388 | — | compat |
-| WireGuard (+Amnezia obfs) | 60 | 51820 | — | compat |
+| AmneziaWG | 50 | 51820 | — | compat |
 
 ## 项目结构
 
@@ -99,7 +99,7 @@ EasyNet/
 │   ├── diagnose_reachability.sh # 公网可达性 / IP 封锁诊断
 │   ├── acceptance_test.sh      # VPS 一键验收脚本
 │   └── smoke_test.sh           # 部署后快速检查
-├── tests/                      # 单元测试（27 个 bats 套件，320 个用例）
+├── tests/                      # 单元测试（27 个 bats 套件，323 个用例）
 ├── docs/                       # 文档目录
 │   ├── deployment.md           #   部署、协议选择、订阅承载、完整配置项
 │   ├── clients.md              #   全平台客户端说明与常见问题
@@ -191,7 +191,6 @@ EASYNET_PROFILE=balanced \
   EASYNET_REALITY_TRANSPORT=xhttp \
   EASYNET_REALITY_XMUX_CONCURRENCY=4 \
   EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000 \
-  EASYNET_WIREGUARD_OBFS=true \
   ./scripts/deploy.sh
 ```
 

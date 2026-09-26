@@ -20,7 +20,7 @@
 | Xray+Reality | `8443`（可自定义） | TCP |
 | Hysteria2 | `443`（可自定义） | UDP |
 | Shadowsocks 2022 | `8388`（可自定义） | TCP+UDP |
-| WireGuard | `51820`（可自定义） | UDP |
+| AmneziaWG | `51820`（可自定义） | UDP |
 | Hysteria2 Port Hopping（可选） | `20000-30000`（可自定义） | UDP |
 
 > 基础防火墙（SSH + 80/tcp + 443/tcp）始终放行；各协议的默认端口见下表，可通过环境变量自定义。
@@ -32,24 +32,24 @@
 | Xray+Reality | 高 | REALITY + XHTTP | 抗封锁优先，TLS 指纹模仿 + 包分片抗 ML |
 | Hysteria2 | 高 | Salamander + Port Hopping | UDP/QUIC 场景，端口跳变抗封锁 |
 | Shadowsocks 2022 | 中 | BLAKE3-AES-256-GCM | 兼容性场景，2022 Edition 强加密 |
-| WireGuard (+Amnezia obfs) | 中 | Jc/Jmin/Jmax 垃圾包填充 | 启用混淆后适合中转、低延迟、独立 VPN |
+| AmneziaWG | 中 | Jc/Jmin/Jmax/S1/S2/H1-H4 混淆 | 默认混淆，适合中转、低延迟、独立 VPN |
 
 结论：
 
 - **日常优先**：`Xray+Reality`，需要 UDP/QUIC 补充时加 `Hysteria2`（即 `balanced` 策略）
 - **订阅承载与协议部署解耦**：配置 `EASYNET_DOMAIN` 或 `EASYNET_SUBSCRIPTION_DOMAIN` 后会自动启用 Edge Gateway 并打印订阅链接和二维码
-- `Shadowsocks 2022` 和 `WireGuard` 可通过环境变量启用额外混淆提升防探测能力
+- `AmneziaWG` 默认启用混淆（Jc/Jmin/Jmax/S1/S2/H1-H4，随机生成并持久化）
 
 ### 协议元数据对比（来自各模块 manifest）
 
-| 属性 | Xray+Reality | Hysteria2 | Shadowsocks 2022 | WireGuard |
+| 属性 | Xray+Reality | Hysteria2 | Shadowsocks 2022 | AmneziaWG |
 |------|:---:|:---:|:---:|:---:|
 | Clash 类型 | `vless` | `hysteria2` | `ss` | `wireguard` |
 | sing-box 类型 | `vless` | `hysteria2` | `shadowsocks` | `wireguard` |
-| 安全等级（越小越安全） | 10 | 20 | 40 | 60 |
+| 安全等级（越小越安全） | 10 | 20 | 40 | 50 |
 | 默认端口 | 8443 | 443 | 8388 | 51820 |
 | Edge 模式 | `none` | `shared_tls` | `none` | `none` |
-| systemd 服务名 | `xray` | `hysteria-server.service` | `shadowsocks-rust-server` | `wg-quick@wg0` |
+| systemd 服务名 | `xray` | `hysteria-server.service` | `shadowsocks-rust-server` | `awg-quick@wg0` |
 | 所属策略 | strict, balanced, compat | balanced, compat | compat | compat |
 
 ### 域名要求
@@ -61,7 +61,7 @@
 | **Xray+Reality** | ❌ 不需要 | 正常运行；无域名时自动回退「借用外部站点」模式 | REALITY 是“无证书 TLS”；设置域名可启用「自偷」以对抗 SNI→DNS 一致性检查 |
 | **Hysteria2** | ✅ **必填** | **部署中断**，交互式部署会提示输入域名；自动化部署因 `EASYNET_DOMAIN` 未设而报错退出 | `shared_tls` 模式需要 Edge TLS 证书 |
 | **Shadowsocks 2022** | ❌ 不需要 | 正常运行，无影响 | AEAD 加密，无 TLS 依赖 |
-| **WireGuard** | ❌ 不需要 | 正常运行，无影响 | UDP 隧道，无 TLS 依赖 |
+| **AmneziaWG** | ❌ 不需要 | 正常运行，无影响 | UDP 隧道 + AmneziaWG 混淆，无 TLS 依赖 |
 | **Edge Gateway**（订阅分发） | ✅ **必填** | 跳过部署，**不生成外部可访问的订阅链接**；`show_subscription.sh` 仍可打印本地配置 | acme.sh 需要域名签发 Let's Encrypt 证书 |
 | **Edge Gateway**（TLS 伪装站） | ✅ **必填** | 跳过部署，**Nginx 反代伪装不生效** | Nginx `server_name` 需要域名 |
 
@@ -101,7 +101,7 @@ EASYNET_DOMAIN=world.example.com EASYNET_MODULE=hysteria2 ./scripts/deploy.sh
 
 ### 协议混淆能力速览
 
-| 能力 | Xray+Reality | Hysteria2 | Shadowsocks | WireGuard |
+| 能力 | Xray+Reality | Hysteria2 | Shadowsocks | AmneziaWG |
 |------|:---:|:---:|:---:|:---:|
 | TLS 指纹模仿 (REALITY) | ✅ | — | — | — |
 | REALITY 自偷（抗 SNI→DNS 检查） | ✅ | — | — | — |
@@ -109,12 +109,12 @@ EASYNET_DOMAIN=world.example.com EASYNET_MODULE=hysteria2 ./scripts/deploy.sh
 | XMUX 多路复用 | ✅ | — | — | — |
 | QUIC 混淆 (Salamander) | — | ✅ | — | — |
 | 端口跳变 (Port Hopping) | — | ✅ | — | — |
-| 垃圾包填充 (AmneziaWG) | — | — | — | ✅ |
+| AmneziaWG 混淆 (Jc/Jmin/Jmax/S1/S2/H1-H4) | — | — | — | ✅ |
 | 2022 Edition 板载加密 | — | — | ✅ | — |
 
 ### 协议混淆增强
 
-协议混淆增强（AmneziaWG 默认已启用，以下为显式配置示例）：
+协议混淆增强（AmneziaWG 默认已启用）：
 
 ```bash
 # Xray+Reality: 自偷模式（用自有域名当 SNI，抗 SNI→DNS 一致性检查；默认 auto）
@@ -127,8 +127,7 @@ EASYNET_REALITY_XMUX_CONCURRENCY=4
 # Hysteria2: 端口跳变（默认禁用，需放行防火墙端口范围）
 EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000
 
-# WireGuard: AmneziaWG 垃圾包填充（默认 true，设 false 禁用）
-EASYNET_WIREGUARD_OBFS=true
+# AmneziaWG 默认启用（Jc/Jmin/Jmax/S1/S2/H1-H4 随机生成并持久化，无需配置）
 ```
 
 > **Reality 自偷（`EASYNET_REALITY_MODE=self` / `auto`）**：2026 年审查者开始做「SNI→DNS 一致性检查」——
@@ -223,7 +222,7 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 | `balanced` | `xray-reality` + `hysteria2` | 强安全 + 良好性能，推荐默认 |
 | `compat` | 全部已发现模块 | 最大兼容性，各类客户端 |
 
-> 注意：Shadowsocks 和 WireGuard 仅包含于 `compat` 策略，`balanced` 策略不含这两者。如需部署全部 4 种协议请使用 `compat` 或单独指定模块。
+> 注意：Shadowsocks 和 AmneziaWG 仅包含于 `compat` 策略，`balanced` 策略不含这两者。如需部署全部 4 种协议请使用 `compat` 或单独指定模块。
 
 订阅承载：
 
@@ -245,7 +244,7 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 - 如确需调整 Edge 端口，可使用高级变量 `EASYNET_EDGE_HTTPS_PORT`
 - Edge Gateway 根路径默认反向代理到 `https://www.bing.com` 以消除指纹，可通过 `EASYNET_EDGE_MASQUERADE_URL` 自定义
 - 当前订阅输出保留 **URI、Clash/Mihomo 与 sing-box** 三类入口
-- 订阅文件中的节点顺序 **按安全性从高到低**（manifest 中 `MODULE_SECURITY_RANK`）输出：`Xray+Reality`（10）、`Hysteria2`（20）、`Shadowsocks`（40）、`WireGuard`（60）
+- 订阅文件中的节点顺序 **按安全性从高到低**（manifest 中 `MODULE_SECURITY_RANK`）输出：`Xray+Reality`（10）、`Hysteria2`（20）、`Shadowsocks`（40）、`AmneziaWG`（50）
 
 环境变量：
 
@@ -273,7 +272,7 @@ EASYNET_VERSION=<新版本，如 0.0.10> bash install.sh
 | Edge 证书 | ✅ | acme.sh 复用/续期 |
 | Xray-Reality UUID/密钥 | ✅ | 从现有 `config.json` 保留 |
 | Shadowsocks 密码 | ✅ | 从现有 `config.json` 保留 |
-| WireGuard 服务端密钥/客户端配置 | ✅ | 已存在则跳过生成 |
+| AmneziaWG 服务端密钥/客户端配置/混淆参数 | ✅ | 已存在则跳过生成（含 Jc/S1/S2/H1-H4） |
 | Hysteria2 密码/混淆密码 | ✅（0.0.10+） | 复用 `/etc/hysteria/easynet.env`；0.0.9 及更早版本会轮换 |
 
 > 升级后建议在客户端**更新一次订阅**，确保拿到最新配置。仅想更新脚本、不重新部署时，可用 `EASYNET_INSTALL_ONLY=true bash install.sh`。
@@ -325,7 +324,7 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 systemctl status xray
 systemctl status hysteria-server.service
 systemctl status shadowsocks-rust-server
-systemctl status wg-quick@wg0
+systemctl status awg-quick@wg0
 ```
 
 ### 订阅链接
@@ -466,6 +465,8 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_REALITY_XHTTP_MODE` | XHTTP 多路复用模式：`stream-one` / `auto` / `stream-up` / `packet-up` | `stream-one` |
 | `EASYNET_REALITY_XMUX_CONCURRENCY` | XMUX 多路复用并发数（`0` = 禁用） | `0` |
 | `EASYNET_REALITY_XMUX_CONN_IDLE` | XMUX 空闲连接超时（秒） | `60` |
+| `EASYNET_REALITY_LIMIT_FALLBACK_UPLOAD` | 回退上传限速 `afterBytes:bytesPerSec:burstBytesPerSec` | 未设置（禁用） |
+| `EASYNET_REALITY_LIMIT_FALLBACK_DOWNLOAD` | 回退下载限速（同上） | 未设置（禁用） |
 | `EASYNET_XRAY_INSTALL_SHA256` | Xray 安装脚本 SHA256 校验（可选） | 未设置（不校验） |
 
 #### Hysteria2
@@ -490,17 +491,21 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_SHADOWSOCKS_INSTALL_SHA256` | 发布包 SHA256 校验（可选） | 未设置（不校验） |
 | `SS_VERSION` | shadowsocks-rust 版本（非 `EASYNET_*` 前缀，需显式设置） | `1.24.0` |
 
-#### WireGuard
+#### AmneziaWG
 
 | 变量 | 作用 | 默认值 |
 |------|------|--------|
-| `EASYNET_WIREGUARD_PORT` | WireGuard 监听端口 | `51820` |
-| `EASYNET_WIREGUARD_OBFS` | 启用 AmneziaWG 垃圾包混淆 | `true` |
-| `EASYNET_WIREGUARD_JC` | 垃圾包数量 | `5` |
-| `EASYNET_WIREGUARD_JMIN` | 最小垃圾包大小（字节） | `50` |
-| `EASYNET_WIREGUARD_JMAX` | 最大垃圾包大小（字节） | `1000` |
-| `EASYNET_WIREGUARD_SERVER_IP` | 服务器 WireGuard 子网 | `10.0.0.1/24` |
+| `EASYNET_WIREGUARD_PORT` | AmneziaWG 监听端口 | `51820` |
+| `EASYNET_WIREGUARD_JC` | 垃圾包数量 Jc（1–128） | 随机（4–12） |
+| `EASYNET_WIREGUARD_JMIN` | 最小垃圾包大小 Jmin（字节） | `8` |
+| `EASYNET_WIREGUARD_JMAX` | 最大垃圾包大小 Jmax（字节） | `80` |
+| `EASYNET_WIREGUARD_S1` / `_S2` | 填充大小 S1/S2（15–150） | 随机 |
+| `EASYNET_WIREGUARD_H1`–`_H4` | 魔数头（唯一，5–2147483647） | 随机 |
+| `EASYNET_WIREGUARD_SERVER_IP` | 服务器 AmneziaWG 子网 | `10.0.0.1/24` |
 | `EASYNET_WIREGUARD_CLIENT` | 客户端配置名称 | `client1` |
+
+> AmneziaWG 参数默认随机生成并持久化在 `/etc/amnezia/amneziawg/wg0.conf`；
+> Jc/Jmin/Jmax 可两端不同，S1/S2/H1-H4 必须两端一致（订阅会自动携带）。
 
 #### 安全校验
 

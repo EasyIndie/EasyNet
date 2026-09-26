@@ -39,6 +39,18 @@ esac
 MOCK
     chmod +x "$MOCK_BIN_DIR/wg"
 
+    # awg (AmneziaWG key generation; WireGuard module now uses awg/awg-quick)
+    cat > "$MOCK_BIN_DIR/awg" <<'MOCK'
+#!/bin/bash
+case "${1:-}" in
+    genkey)  echo "mOCKwGPrivateKeyBase64Encoded==" ;;
+    pubkey)  echo "mOCKwGPublicKeyBase64Encoded=="  ;;
+    genpsk)  echo "mOCKwGPresharedKeyBase64Encoded=" ;;
+    *)       echo "mock awg: unknown: $*" >&2; exit 1 ;;
+esac
+MOCK
+    chmod +x "$MOCK_BIN_DIR/awg"
+
     # xray (Reality key generation via x25519)
     cat > "$MOCK_BIN_DIR/xray" <<'MOCK'
 #!/bin/bash
@@ -445,6 +457,39 @@ source_protocol() {
     [[ "$output" == *"配置未变化，跳过重启"* ]]
 }
 
+@test "Xray: fallback rate limiting is applied when configured" {
+    export EASYNET_REALITY_MODE=borrow
+    export EASYNET_REALITY_LIMIT_FALLBACK_UPLOAD="0:1048576:2097152"
+    export EASYNET_REALITY_LIMIT_FALLBACK_DOWNLOAD="10485760:5242880:10485760"
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+    eval 'openssl() { if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"; else command openssl "$@"; fi }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -eq 0 ] || { echo "# configure_reality failed: $output" >&3; return 1; }
+
+    local config="${XRAY_DIR:-$TMP_DIR/xray}/config.json"
+    [ "$(jq -r '.inbounds[0].streamSettings.realitySettings.limitFallbackUpload.bytesPerSec' "$config")" = "1048576" ]
+    [ "$(jq -r '.inbounds[0].streamSettings.realitySettings.limitFallbackUpload.burstBytesPerSec' "$config")" = "2097152" ]
+    [ "$(jq -r '.inbounds[0].streamSettings.realitySettings.limitFallbackDownload.afterBytes' "$config")" = "10485760" ]
+    [ "$(jq -r '.inbounds[0].streamSettings.realitySettings.limitFallbackDownload.bytesPerSec' "$config")" = "5242880" ]
+}
+
+@test "Xray: fallback rate limiting is absent by default" {
+    export EASYNET_REALITY_MODE=borrow
+    source_protocol "$PROJECT_ROOT/scripts/protocols/xray-reality/deploy.sh"
+    eval 'openssl() { if [ "$1" = "rand" ] && [ "$2" = "-hex" ]; then echo "aabbccddeeff0011"; else command openssl "$@"; fi }'
+    export -f openssl
+    export XRAY_BIN="xray"
+
+    run configure_reality
+    [ "$status" -eq 0 ]
+
+    local config="${XRAY_DIR:-$TMP_DIR/xray}/config.json"
+    [ "$(jq '.inbounds[0].streamSettings.realitySettings.limitFallbackUpload // empty' "$config")" = "" ]
+}
+
 # -------------------------------------------------------------------------
 # Shadowsocks
 # -------------------------------------------------------------------------
@@ -492,6 +537,10 @@ source_protocol() {
     grep -q "\[Interface\]" "$config" || { echo "# missing [Interface]"; return 1; }
     grep -q "PrivateKey" "$config"     || { echo "# missing PrivateKey"; return 1; }
     grep -q "ListenPort" "$config"     || { echo "# missing ListenPort"; return 1; }
+    # AmneziaWG obfuscation parameters must be present
+    grep -q "^Jc = " "$config"         || { echo "# missing Jc"; return 1; }
+    grep -q "^S1 = " "$config"         || { echo "# missing S1"; return 1; }
+    grep -q "^H4 = " "$config"         || { echo "# missing H4"; return 1; }
 
     run grep "ListenPort" "$config" | awk '{print $3}'
     [ "$output" = "51820" ]
@@ -520,8 +569,43 @@ source_protocol() {
         echo "# missing Interface or Peer sections"; return 1
     }
     grep -q "Endpoint" "$client_conf" || { echo "# missing Endpoint"; return 1; }
+    # AmneziaWG params must be copied into the client config (server/client must match)
+    local server_jc client_jc
+    server_jc=$(grep "^Jc = " "${WG_CONFIG:-$WG_DIR/wg0.conf}" | awk '{print $3}')
+    client_jc=$(grep "^Jc = " "$client_conf" | awk '{print $3}')
+    [ -n "$client_jc" ] && [ "$server_jc" = "$client_jc" ] || { echo "# Jc mismatch ($server_jc vs $client_jc)"; return 1; }
     run grep "Endpoint" "$client_conf" | sed 's/.*= *//'
     [[ "$output" == *"203.0.113.10"* ]]
+}
+
+@test "AmneziaWG: generated obfuscation parameters are valid and unique" {
+    export WG_DIR="$TMP_DIR/wg-params"
+    export CLIENT_CONFIG_DIR="$WG_DIR/clients"
+    source_protocol "$PROJECT_ROOT/scripts/protocols/wireguard/deploy.sh"
+
+    run configure_server
+    [ "$status" -eq 0 ] || { echo "# configure_server failed: $output" >&3; return 1; }
+
+    local config="${WG_CONFIG:-$WG_DIR/wg0.conf}"
+    local jc jmin jmax s1 s2 values unique h
+    jc=$(awk -F' = ' '/^Jc = /{print $2}' "$config")
+    jmin=$(awk -F' = ' '/^Jmin = /{print $2}' "$config")
+    jmax=$(awk -F' = ' '/^Jmax = /{print $2}' "$config")
+    s1=$(awk -F' = ' '/^S1 = /{print $2}' "$config")
+    s2=$(awk -F' = ' '/^S2 = /{print $2}' "$config")
+
+    [ "$jc" -ge 1 ] && [ "$jc" -le 128 ] || { echo "# Jc out of range: $jc"; return 1; }
+    [ "$jmin" -lt "$jmax" ] && [ "$jmax" -le 1280 ] || { echo "# Jmin/Jmax invalid: $jmin/$jmax"; return 1; }
+    [ "$s1" -ge 15 ] && [ "$s1" -le 150 ] || { echo "# S1 out of range: $s1"; return 1; }
+    [ "$s2" -ge 15 ] && [ "$s2" -le 150 ] || { echo "# S2 out of range: $s2"; return 1; }
+    [ "$((s1 + 56))" -ne "$s2" ] || { echo "# S1+56 == S2 violates AmneziaWG"; return 1; }
+
+    values=$(awk -F' = ' '/^H[1-4] = /{print $2}' "$config")
+    unique=$(printf '%s\n' "$values" | sort -u | wc -l | tr -d ' ')
+    [ "$unique" = "4" ] || { echo "# H1-H4 not unique: $values"; return 1; }
+    while IFS= read -r h; do
+        [ "$h" -ge 5 ] && [ "$h" -le 2147483647 ] || { echo "# H out of range: $h"; return 1; }
+    done <<< "$values"
 }
 
 # -------------------------------------------------------------------------

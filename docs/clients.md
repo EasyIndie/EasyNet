@@ -94,7 +94,7 @@ sudo bash easynet-singbox-client.sh doctor
 | Shadowsocks 2022 (BLAKE3) | Clash Verge Rev ≥1.6, Shadowrocket ≥2.2.38, sing-box ≥1.8 |
 | Xray XHTTP 传输 | Clash Verge Rev ≥1.7, sing-box ≥1.11 |
 | Hysteria2 Port Hopping | 需客户端支持 `port_hopping` 参数 |
-| WireGuard AmneziaWG | Clash Verge Rev (支持 jc/jmin/jmax), AmneziaWG 客户端 |
+| AmneziaWG | Clash Verge Rev (mihomo ≥1.19，支持 jc/jmin/jmax/s1/s2/h1-h4)、Shadowrocket；**sing-box 不支持** |
 
 ## 常见问题
 
@@ -139,8 +139,10 @@ sudo bash easynet-singbox-client.sh doctor
 
 ### AmneziaWG 节点无法连接
 
-- 服务器端为标准 WireGuard（无需改动），客户端需使用支持 jc/jmin/jmax 的 AmneziaWG 客户端
-- 如客户端不支持 AmneziaWG，关闭 `EASYNET_WIREGUARD_OBFS` 重新部署以生成标准 WireGuard 配置
+- 服务端固定使用 AmneziaWG（`awg-quick@wg0`），混淆参数（Jc/Jmin/Jmax/S1/S2/H1-H4）在部署时随机生成并写入订阅
+- 客户端需支持 AmneziaWG：Clash Verge Rev (mihomo ≥1.19) 或 Shadowrocket；**sing-box 暂不支持**
+- 确订订阅已更新（参数必须与服务端一致）并重新导入节点；手动配置时需与服务端 `/etc/amnezia/amneziawg/wg0.conf` 对齐
+- 如客户端不支持 AmneziaWG，请改用其他节点（Reality / Hysteria2 / Shadowsocks）
 
 ### Hysteria2 端口跳变后无法连接
 

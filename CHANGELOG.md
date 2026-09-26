@@ -13,6 +13,14 @@
   （审查者记录 (SNI, 目的IP) 后解析 SNI，若不一致即判定可疑；开源 DPI 库 nDPI 已实现）。
   `auto`（默认）检测到本机 Edge 证书时自动启用，否则回退「借用外部站点」。
 
+### 变更
+- **WireGuard → 真 AmneziaWG**：模块改用 AmneziaWG（`awg`/`awg-quick`，配置目录 `/etc/amnezia/amneziawg`，
+  systemd 服务 `awg-quick@wg0`），部署时随机生成并持久化 Jc/Jmin/Jmax/S1/S2/H1-H4 并写入客户端订阅。
+  修复此前「服务端为标准 WireGuard、客户端 URI 却携带 jc/jmin/jmax」的不一致。安全等级 60 → 50。
+  客户端要求：Clash Verge Rev (mihomo ≥1.19) / Shadowrocket；sing-box 不支持。
+- **Reality 回退限速**（`EASYNET_REALITY_LIMIT_FALLBACK_UPLOAD` / `_DOWNLOAD`）：可选限制未通过校验的
+  回退连接速率（`afterBytes:bytesPerSec:burstBytesPerSec`），防止节点被当作免费加速/滥用。
+
 ### 改进
 - Reality 配置改为**幂等渲染**：先在临时文件生成目标配置，与现有配置一致时跳过写入与重启；
   支持在不改动 UUID/私钥/Short ID 的前提下切换传输方式与伪装模式。
@@ -28,8 +36,8 @@
 - 文档与示例域名改用语义中性的 `world.example.com`，补充避开 GFW 关键词与 Reality 自偷的指引。
 
 ### 测试
-- `tests/test_config_generation.bats` 新增 6 个 Reality 自偷用例（模式解析 / 自动切换 / 密钥保留 /
-  幂等跳过重启）；测试总数 314 → 320。
+- `tests/test_config_generation.bats` 新增 Reality 自偷 / 回退限速 / AmneziaWG 参数用例；
+  `tests/test_protocol_metadata.bats` 夹具补充 AmneziaWG 参数；测试总数 314 → 323。
 
 ## [0.0.10] - 2026-09-26
 

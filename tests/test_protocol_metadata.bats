@@ -33,6 +33,15 @@ PrivateKey = client-private+key=
 Address = 10.0.0.2/32
 DNS = 1.1.1.1, 8.8.8.8
 MTU = 1360
+Jc = 5
+Jmin = 8
+Jmax = 80
+S1 = 40
+S2 = 120
+H1 = 123456789
+H2 = 234567890
+H3 = 345678901
+H4 = 456789012
 [Peer]
 PublicKey = server-public+key=
 PresharedKey = pre-shared+key=
@@ -175,7 +184,7 @@ JSON
 }
 
 @test "WireGuard metadata declares service" {
-    [ "$(jq -r '.systemd.services[0]' "$STATE_DIR/modules/wireguard/metadata.json")" = "wg-quick@wg0" ]
+    [ "$(jq -r '.systemd.services[0]' "$STATE_DIR/modules/wireguard/metadata.json")" = "awg-quick@wg0" ]
 }
 
 @test "Migrated SS/WG modules do not depend on legacy state paths" {

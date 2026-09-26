@@ -14,7 +14,7 @@ setup() {
 {"schemaVersion":1,"module":"example-a","enabled":true,"protocol":"vless","port":8443,"client":{"uri":"vless://example","clash":{}},"systemd":{"services":["xray","xray"]}}
 JSON
     cat > "$EASYNET_STATE_DIR/modules/example-b/metadata.json" <<'JSON'
-{"schemaVersion":1,"module":"example-b","enabled":true,"protocol":"wireguard","port":51820,"client":{"uri":"wg://example","clash":{}},"systemd":{"services":["wg-quick@wg0"]}}
+{"schemaVersion":1,"module":"example-b","enabled":true,"protocol":"wireguard","port":51820,"client":{"uri":"wg://example","clash":{}},"systemd":{"services":["awg-quick@wg0"]}}
 JSON
 }
 
@@ -27,9 +27,9 @@ teardown() {
     echo "$output" | grep -qx "xray"
 }
 
-@test "Cron service list includes wg-quick@wg0" {
+@test "Cron service list includes awg-quick@wg0" {
     run cron_restart_services
-    echo "$output" | grep -qx "wg-quick@wg0"
+    echo "$output" | grep -qx "awg-quick@wg0"
 }
 
 @test "Cron service list de-duplicates repeated services" {
@@ -39,7 +39,7 @@ teardown() {
 
 @test "Cron restart command is generated from metadata" {
     run cron_restart_command
-    [ "$output" = "/usr/bin/systemctl restart xray wg-quick@wg0 2>/dev/null" ]
+    [ "$output" = "/usr/bin/systemctl restart xray awg-quick@wg0 2>/dev/null" ]
 }
 
 @test "Cron restart command excludes undeclared services" {
