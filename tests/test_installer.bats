@@ -109,6 +109,27 @@ build_fake_release() {
     [ "$output" = "https://example.com/releases/download/0.0.8/easynet.tar.gz" ]
 }
 
+@test "Installer release version is not clobbered by os-release VERSION" {
+    run env EASYNET_VERSION="test" bash -c '
+        source "$1"
+        if [ -f /etc/os-release ]; then . /etc/os-release; fi
+        release_url easynet.tar.gz
+    ' _ "$INSTALLER"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"/download/test/easynet.tar.gz" ]]
+}
+
+@test "Installer keeps release version after check_os reads os-release" {
+    [ -f /etc/os-release ] || skip "no /etc/os-release on this platform"
+    run env EASYNET_VERSION="test" bash -c '
+        source "$1"
+        check_os >/dev/null 2>&1
+        release_url easynet.tar.gz
+    ' _ "$INSTALLER"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"/download/test/easynet.tar.gz" ]]
+}
+
 @test "Installer downloads, verifies and installs the package to EASYNET_INSTALL_DIR" {
     TMP_DIR="$(mktemp -d /tmp/easynet-installer-test.XXXXXX)"
     release="$TMP_DIR/release/download/test"

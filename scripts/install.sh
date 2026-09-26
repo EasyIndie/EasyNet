@@ -21,7 +21,7 @@ set -euo pipefail
 # “已赋默认值的内部变量”和“可能未设置的环境变量”）。
 # ---------------------------------------------------------
 REPO="${EASYNET_REPO:-EasyIndie/EasyNet}"
-VERSION="${EASYNET_VERSION:-latest}"
+RELEASE_VERSION="${EASYNET_VERSION:-latest}"
 INSTALL_DIR="${EASYNET_INSTALL_DIR:-/opt/easynet}"
 SKIP_SHA256="${EASYNET_SKIP_SHA256:-false}"
 INSTALL_ONLY="${EASYNET_INSTALL_ONLY:-false}"
@@ -67,13 +67,14 @@ require_root() {
 
 check_os() {
     local os=""
+    local pretty=""
     if [ -f /etc/os-release ]; then
-        # shellcheck source=/dev/null  # 系统文件，路径固定
-        . /etc/os-release
-        os="${ID:-}"
+        # 在子 shell 中读取，避免 os-release 的变量（如 VERSION）污染本脚本变量
+        os="$(. /etc/os-release 2>/dev/null; printf '%s' "${ID:-}")"
+        pretty="$(. /etc/os-release 2>/dev/null; printf '%s' "${PRETTY_NAME:-}")"
     fi
     case "$os" in
-        ubuntu | debian) log "检测到操作系统: ${PRETTY_NAME:-$os}" ;;
+        ubuntu | debian) log "检测到操作系统: ${pretty:-$os}" ;;
         *) die "此脚本仅支持 Ubuntu 和 Debian 系统（检测到: ${os:-unknown}）" ;;
     esac
 }
@@ -109,10 +110,10 @@ download() {
 release_url() {
     local asset="$1"
 
-    if [ "$VERSION" = "latest" ]; then
+    if [ "$RELEASE_VERSION" = "latest" ]; then
         printf '%s/latest/download/%s' "$RELEASE_BASE_URL" "$asset"
     else
-        printf '%s/download/%s/%s' "$RELEASE_BASE_URL" "$VERSION" "$asset"
+        printf '%s/download/%s/%s' "$RELEASE_BASE_URL" "$RELEASE_VERSION" "$asset"
     fi
 }
 
@@ -132,7 +133,7 @@ install_package() {
     local work_dir="$1"
     local staging=""
 
-    log "下载 EasyNet (${VERSION}): $(release_url "$TARBALL_NAME")"
+    log "下载 EasyNet (${RELEASE_VERSION}): $(release_url "$TARBALL_NAME")"
     download "$(release_url "$TARBALL_NAME")" "$work_dir/$TARBALL_NAME" ||
         die "下载安装包失败: $(release_url "$TARBALL_NAME")"
 
