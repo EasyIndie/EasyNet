@@ -64,7 +64,7 @@ export_wireguard_metadata() {
     ip_only=$(echo "$wg_addr" | cut -d'/' -f1)
     wg_server="${wg_endpoint%:*}"
     wg_port="${wg_endpoint##*:}"
-    wg_mtu="${wg_mtu:-1360}"
+    wg_mtu="${wg_mtu:-1280}"
 
     enc_priv=$(urlencode "$wg_priv_key")
     enc_pub=$(urlencode "$wg_pub_key")
@@ -106,10 +106,10 @@ export_wireguard_metadata() {
         --argjson jmax "$jmax" \
         --argjson s1 "$s1" \
         --argjson s2 "$s2" \
-        --arg h1 "$h1" \
-        --arg h2 "$h2" \
-        --arg h3 "$h3" \
-        --arg h4 "$h4" \
+        --argjson h1 "$h1" \
+        --argjson h2 "$h2" \
+        --argjson h3 "$h3" \
+        --argjson h4 "$h4" \
         '{
             jc: $jc, jmin: $jmin, jmax: $jmax,
             s1: $s1, s2: $s2,

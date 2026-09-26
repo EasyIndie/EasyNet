@@ -93,12 +93,17 @@ generate_amneziawg_headers() {
     printf '%s\n' "${values[@]}"
 }
 
+# Read a single key from an INI-style config (empty when missing).
+read_ini_value() {
+    local file="$1" key="$2"
+    [ -f "$file" ] || return 0
+    grep -E "^[[:space:]]*${key}[[:space:]]*=" "$file" | head -n1 |
+        sed 's/^[^=]*=[[:space:]]*//' | tr -d '[:space:]' || true
+}
+
 # Read a single key from the server config (empty when missing).
 read_server_param() {
-    local key="$1"
-    [ -f "$WG_CONFIG" ] || return 0
-    grep -E "^[[:space:]]*${key}[[:space:]]*=" "$WG_CONFIG" | head -n1 |
-        sed 's/^[^=]*=[[:space:]]*//' | tr -d '[:space:]' || true
+    read_ini_value "$WG_CONFIG" "$1"
 }
 
 # Resolve AmneziaWG parameters with priority:
@@ -217,17 +222,21 @@ add_client() {
     local client_id=$2
     CLIENT_CONFIG_FILE="$CLIENT_CONFIG_DIR/$client_name.conf"
 
+    local client_private_key="" pre_shared_key="" client_ip=""
+
     if [ -f "$CLIENT_CONFIG_FILE" ]; then
-        log_info "检测到已有的客户端配置: $client_name，跳过生成。"
-        return
+        client_private_key=$(read_ini_value "$CLIENT_CONFIG_FILE" "PrivateKey")
+        pre_shared_key=$(read_ini_value "$CLIENT_CONFIG_FILE" "PresharedKey")
+        client_ip=$(read_ini_value "$CLIENT_CONFIG_FILE" "Address")
+        log_info "更新已有客户端配置: $client_name（保留密钥，刷新混淆参数/MTU）"
+    else
+        log_info "添加客户端: $client_name"
     fi
 
-    log_info "添加客户端: $client_name"
-
-    CLIENT_PRIVATE_KEY=$(generate_private_key)
-    CLIENT_PUBLIC_KEY=$(generate_public_key "$CLIENT_PRIVATE_KEY")
-    PRE_SHARED_KEY=$(generate_preshared_key)
-    CLIENT_IP="10.0.0.$((client_id + 1))/32"
+    [ -n "$client_private_key" ] || client_private_key=$(generate_private_key)
+    CLIENT_PUBLIC_KEY=$(generate_public_key "$client_private_key")
+    [ -n "$pre_shared_key" ] || pre_shared_key=$(generate_preshared_key)
+    [ -n "$client_ip" ] || client_ip="10.0.0.$((client_id + 1))/32"
 
     SERVER_PUBLIC_KEY=$(cat "$WG_DIR/server_public.key")
     SERVER_PORT=$(grep ListenPort "$WG_CONFIG" | awk '{print $3}')
@@ -235,20 +244,23 @@ add_client() {
 
     resolve_amneziawg_params
 
-    cat >> "$WG_CONFIG" << EOF
+    # Ensure the server has a peer entry for this client.
+    if ! grep -Fq "PublicKey = $CLIENT_PUBLIC_KEY" "$WG_CONFIG"; then
+        cat >> "$WG_CONFIG" << EOF
 
 [Peer]
 PublicKey = $CLIENT_PUBLIC_KEY
-PresharedKey = $PRE_SHARED_KEY
-AllowedIPs = $CLIENT_IP
+PresharedKey = $pre_shared_key
+AllowedIPs = $client_ip
 EOF
+    fi
 
     cat > "$CLIENT_CONFIG_FILE" << EOF
 [Interface]
-PrivateKey = $CLIENT_PRIVATE_KEY
-Address = $CLIENT_IP
+PrivateKey = $client_private_key
+Address = $client_ip
 DNS = 1.1.1.1, 8.8.8.8
-MTU = 1360
+MTU = 1280
 Jc = $AWG_JC
 Jmin = $AWG_JMIN
 Jmax = $AWG_JMAX
@@ -261,7 +273,7 @@ H4 = $AWG_H4
 
 [Peer]
 PublicKey = $SERVER_PUBLIC_KEY
-PresharedKey = $PRE_SHARED_KEY
+PresharedKey = $pre_shared_key
 Endpoint = $PUBLIC_IP:$SERVER_PORT
 AllowedIPs = 0.0.0.0/0
 PersistentKeepalive = 25

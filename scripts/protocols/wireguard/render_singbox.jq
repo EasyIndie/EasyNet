@@ -17,7 +17,7 @@
     tag: $tag,
     address: [($c.ip | if contains("/") then . else . + "/32" end)],
     private_key: $c["private-key"],
-    mtu: ($c.mtu // 1360),
+    mtu: ($c.mtu // 1280),
     peers: [
         {
             address: $c.server,
