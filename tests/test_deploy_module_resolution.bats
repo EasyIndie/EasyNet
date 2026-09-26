@@ -130,3 +130,47 @@ setup() {
     source "$PROJECT_ROOT/scripts/core/metadata.sh"
     [ "$SCRIPT_DIR" = "protocol-dir-sentinel" ]
 }
+
+# -- Manifest validation (fail-fast) --
+
+@test "All discovered protocol manifests pass validation" {
+    local module
+    for module in $(discovery_list_modules); do
+        discovery_load_manifest "$module"
+        if ! discovery_validate_manifest; then
+            echo "manifest validation failed: $module"
+            return 1
+        fi
+    done
+}
+
+@test "discovery_validate_manifest rejects a manifest missing a required field" {
+    discovery_load_manifest xray-reality
+    MODULE_DEFAULT_PORT=""
+    run discovery_validate_manifest
+    [ "$status" -eq 1 ]
+}
+
+@test "discovery_validate_manifest rejects a non-numeric default port" {
+    discovery_load_manifest xray-reality
+    MODULE_DEFAULT_PORT="not-a-port"
+    run discovery_validate_manifest
+    [ "$status" -eq 1 ]
+}
+
+@test "discovery_validate_manifest rejects an out-of-range default port" {
+    discovery_load_manifest xray-reality
+    MODULE_DEFAULT_PORT="70000"
+    run discovery_validate_manifest
+    [ "$status" -eq 1 ]
+}
+
+@test "validate_module_manifest accepts a well-formed module" {
+    run validate_module_manifest xray-reality
+    [ "$status" -eq 0 ]
+}
+
+@test "validate_module_manifest rejects an unknown module" {
+    run validate_module_manifest no-such-module
+    [ "$status" -eq 1 ]
+}

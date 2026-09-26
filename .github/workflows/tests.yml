@@ -130,6 +130,16 @@ jobs:
             echo "Release $TAG" > /tmp/release_notes.md
           fi
 
+      - name: Build release assets
+        run: |
+          # 打包仓库内容（tarball 根目录即仓库根目录，保留 git 中的可执行位）
+          git archive --format=tar.gz -o easynet.tar.gz HEAD
+          # 生成 sha256sum -c 兼容的校验文件（固定引用 easynet.tar.gz）
+          sha256sum easynet.tar.gz > easynet.tar.gz.sha256
+          # 自举安装器作为固定资产发布，供 latest/download/ 稳定拉取
+          cp scripts/install.sh easynet-install.sh
+          ls -l easynet.tar.gz easynet.tar.gz.sha256 easynet-install.sh
+
       - name: Create Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -138,4 +148,7 @@ jobs:
             --repo "${{ github.repository }}" \
             --title "${{ github.ref_name }}" \
             --notes-file /tmp/release_notes.md \
-            --verify-tag
+            --verify-tag \
+            easynet.tar.gz \
+            easynet.tar.gz.sha256 \
+            easynet-install.sh

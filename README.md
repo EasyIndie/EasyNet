@@ -22,7 +22,7 @@
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5–$15/月）
-- 🛡️ 安全稳定，自带 267 个测试用例（23 套件）保护核心逻辑
+- 🛡️ 安全稳定，自带 294 个测试用例（25 套件）保护核心逻辑
 
 ## 协议对比与防探测等级
 
@@ -89,13 +89,14 @@ EasyNet/
 │   │   └── cert_renew_hook.sh  #   证书续期后处理（权限修正 + 服务重启）
 │   ├── clients/                # 客户端安装器（独立运行于终端设备）
 │   │   └── install_singbox_client.sh
+│   ├── install.sh              # 自举安装器（下载 release 包并部署，免 git clone）
 │   ├── deploy.sh               # 一键部署入口
 │   ├── uninstall.sh            # 模块化卸载入口
 │   ├── generate_subscription.sh# 订阅文件重新生成
 │   ├── show_subscription.sh    # 重新显示订阅链接和二维码
 │   ├── rotate_subscription.sh  # 轮换订阅入口（支持 --grace 迁移宽限）
 │   └── smoke_test.sh           # 部署后快速检查
-├── tests/                      # 单元测试（23 个 bats 套件，267 个用例）
+├── tests/                      # 单元测试（25 个 bats 套件，294 个用例）
 ├── docs/                       # 文档目录
 │   ├── deployment.md           #   部署、协议选择、订阅承载、完整配置项
 │   ├── clients.md              #   全平台客户端说明与常见问题
@@ -121,7 +122,31 @@ EasyNet/
   - iOS 用 `Shadowrocket`
   - Raspberry Pi / 卡片机用 `sing-box`
 
-### 手动部署
+### 一键部署（推荐）
+
+无需 `git clone`，下载自举安装器并执行即可（自动下载 release 包、校验 SHA256、解压到 `/opt/easynet` 后启动部署）：
+
+```bash
+curl -fsSL https://github.com/EasyIndie/EasyNet/releases/latest/download/easynet-install.sh -o install.sh
+sudo bash install.sh
+```
+
+自动化部署（`EASYNET_*` 变量原样透传给 `deploy.sh`）：
+
+```bash
+sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com bash install.sh
+```
+
+指定版本或安装目录：
+
+```bash
+sudo EASYNET_VERSION=0.0.8 EASYNET_INSTALL_DIR=/opt/easynet bash install.sh
+```
+
+> 安装器遵循项目「无 `curl | bash`」规范：先落地、校验 SHA256、通过后才执行；失败即中止。
+> 目标机要求 root 权限的 `Ubuntu 22.04+` / `Debian 11+`。
+
+### 从源码部署（开发 / 审计）
 
 ```bash
 git clone https://github.com/EasyIndie/EasyNet.git

@@ -115,20 +115,20 @@ setup_cron_jobs() {
 }
 
 select_from_env() {
-    if [ -n "$EASYNET_PROFILE" ]; then
-        choice="profile:$EASYNET_PROFILE"
-        log_info "从环境变量 EASYNET_PROFILE 读取部署策略: $EASYNET_PROFILE"
+    if [ -n "${EASYNET_PROFILE:-}" ]; then
+        choice="profile:${EASYNET_PROFILE:-}"
+        log_info "从环境变量 EASYNET_PROFILE 读取部署策略: ${EASYNET_PROFILE:-}"
         return 0
     fi
 
-    if [ -n "$EASYNET_MODULE" ]; then
-        choice="$EASYNET_MODULE"
-        log_info "从环境变量 EASYNET_MODULE 读取部署模块: $EASYNET_MODULE"
+    if [ -n "${EASYNET_MODULE:-}" ]; then
+        choice="${EASYNET_MODULE:-}"
+        log_info "从环境变量 EASYNET_MODULE 读取部署模块: ${EASYNET_MODULE:-}"
         return 0
     fi
 
-    if [ -n "$EASYNET_SERVICE_CHOICE" ]; then
-        choice="$EASYNET_SERVICE_CHOICE"
+    if [ -n "${EASYNET_SERVICE_CHOICE:-}" ]; then
+        choice="${EASYNET_SERVICE_CHOICE:-}"
         log_info "从环境变量 EASYNET_SERVICE_CHOICE 读取部署选择: $choice"
         return 0
     fi
@@ -180,6 +180,20 @@ module_export_script() {
     discovery_module_export_script "$1"
 }
 
+# Load and structurally validate a module's manifest before deploying it.
+# Fails fast on missing/invalid manifest fields instead of silently failing later.
+validate_module_manifest() {
+    local module="$1"
+    if ! discovery_load_manifest "$module" 2>/dev/null; then
+        log_error "无法加载模块 manifest: $module"
+        return 1
+    fi
+    if ! discovery_validate_manifest; then
+        log_error "模块 manifest 校验失败: $module"
+        return 1
+    fi
+}
+
 deploy_edge_gateway() {
     bash "$DEPLOY_SCRIPT_DIR/exposure/edge/deploy.sh"
 }
@@ -195,7 +209,7 @@ module_requires_edge() {
 edge_gateway_enabled() {
     local module
 
-    if [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ] || [ -n "$EASYNET_DOMAIN" ]; then
+    if [ -n "${EASYNET_SUBSCRIPTION_DOMAIN:-}" ] || [ -n "${EASYNET_DOMAIN:-}" ]; then
         return 0
     fi
 
@@ -213,18 +227,18 @@ ensure_edge_domain() {
         return 0
     fi
 
-    if [ -n "$EASYNET_DOMAIN" ] || [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ]; then
+    if [ -n "${EASYNET_DOMAIN:-}" ] || [ -n "${EASYNET_SUBSCRIPTION_DOMAIN:-}" ]; then
         return 0
     fi
 
     read -r -p "请输入 Edge Gateway 绑定域名: " EASYNET_DOMAIN
-    if [ -z "$EASYNET_DOMAIN" ]; then
+    if [ -z "${EASYNET_DOMAIN:-}" ]; then
         log_error "Edge Gateway 域名不能为空"
         return 1
     fi
     # Validate domain format
-    if ! [[ "$EASYNET_DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
-        log_error "域名格式无效: $EASYNET_DOMAIN"
+    if ! [[ "${EASYNET_DOMAIN:-}" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
+        log_error "域名格式无效: ${EASYNET_DOMAIN:-}"
         return 1
     fi
     export EASYNET_DOMAIN
@@ -323,6 +337,10 @@ deploy_module() {
         return 1
     }
 
+    if ! validate_module_manifest "$module"; then
+        return 1
+    fi
+
     log_info "开始部署 $(module_display_name "$module")..."
     prepare_module_dependencies "$module"
     bash "$entrypoint"
@@ -397,7 +415,7 @@ main() {
         fi
         
         # 如果使用环境变量进行自动化部署，执行一次后自动退出，避免死循环
-        if [ -n "$EASYNET_SERVICE_CHOICE" ] || [ -n "$EASYNET_MODULE" ] || [ -n "$EASYNET_PROFILE" ]; then
+        if [ -n "${EASYNET_SERVICE_CHOICE:-}" ] || [ -n "${EASYNET_MODULE:-}" ] || [ -n "${EASYNET_PROFILE:-}" ]; then
             log_info "自动化部署完成，退出脚本。"
             exit 0
         fi
@@ -407,7 +425,7 @@ main() {
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-    set -eE
+    set -ueE
     trap '_easynet_error_handler' ERR
     main "$@"
 fi

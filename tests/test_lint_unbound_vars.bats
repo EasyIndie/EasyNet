@@ -7,12 +7,13 @@
 #   (EASYNET_*, NGINX_*, JOURNALD_*) may not be set at runtime. All references
 #   must use the ${VAR:-} form so they expand to empty string when unset.
 #
-# Exceptions (not in set -u scripts so not checked here):
-#   - scripts/deploy.sh (orchestrator, no set -u)
+# Notes:
+#   - Orchestrators (deploy.sh, uninstall.sh, generate_subscription.sh) now
+#     enable set -u, so they are checked here like any other script.
 #   - Library files sourced by set -u scripts — they run in the caller's shell
 #     context and inherit its set -u, but function-body bare vars are flagged
-#     only if the caller's context has set -u. We check only the scripts that
-#     directly enable set -u.
+#     only if the caller's context has set -u. We check scripts that directly
+#     enable set -u plus the EXTRA_LIBS list below.
 
 load test_helper
 
@@ -25,6 +26,7 @@ readonly VAR_PREFIXES='EASYNET_|NGINX_|JOURNALD_|SINGBOX_|HYSTERIA2_|SHADOWSOCKS
 # when sourced by a caller that does. We check them unconditionally.
 readonly EXTRA_LIBS=(
     "$BATS_TEST_DIRNAME/../scripts/core/subscription.sh"
+    "$BATS_TEST_DIRNAME/../scripts/core/validate.sh"
 )
 
 @test "set -u scripts guard env vars with \${VAR:-}" {

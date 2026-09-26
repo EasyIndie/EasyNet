@@ -5,6 +5,44 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.8] - 2026-09-26
+
+### 新增
+- **一键安装（免 git clone）**：新增 `scripts/install.sh` 自举安装器：下载 release 包 → 校验 SHA256 →
+  解压到 `/opt/easynet`（可配 `EASYNET_INSTALL_DIR`）→ 执行 `scripts/deploy.sh`。失败即中止，
+  遵循「无 `curl | bash`、先落地后校验」规范；重复运行 = 原地升级脚本（保留已有 `.env`）。
+
+  ```bash
+  curl -fsSL https://github.com/EasyIndie/EasyNet/releases/latest/download/easynet-install.sh -o install.sh
+  sudo bash install.sh
+  ```
+
+- **CI 发布安装产物**：release 新增 `easynet.tar.gz`、`easynet.tar.gz.sha256`、`easynet-install.sh`
+  固定资产，`releases/latest/download/` 稳定可拉。
+- 新增配置项：`EASYNET_VERSION`、`EASYNET_INSTALL_DIR`、`EASYNET_SKIP_SHA256`、`EASYNET_INSTALL_ONLY`、
+  `EASYNET_REPO`、`EASYNET_RELEASE_BASE_URL`。
+- **VPS 验收脚本**：新增 `scripts/acceptance_test.sh`，覆盖校验失败中止、一键安装、`.env` 保留与升级、
+  `balanced` 真实部署、订阅生成、全卸载，支持本地 tarball 初步验收模式（一键可复现）。
+
+### 架构
+- **部署前 manifest 校验**：`deploy.sh` 新增 `validate_module_manifest()`，部署时调用
+  `discovery_validate_manifest()`（fail-fast）；后者补齐 `MODULE_DEFAULT_PORT` 必填及端口范围校验。
+- **严格性统一**：`render_clash.sh` ×4 改为 `set -euo pipefail`；`deploy.sh`/`uninstall.sh`/
+  `generate_subscription.sh` 补齐 `set -u`；修复 `validate.sh` 的裸变量引用。
+- lint 测试移除「deploy.sh 无 set -u」的过时例外，并将 `validate.sh` 纳入检查。
+
+### 测试
+- 新增 `tests/test_installer.bats`（12 用例）与 6 个 manifest 校验用例；测试总数 267 → 294（25 套件）。
+
+### 文档
+- README/部署文档改为「一键安装」优先，`git clone` 降级为开发/审计选项。
+- 架构评估报告新增「0.0.8 收尾更新」章节，记录部署方式改造、架构收尾，以及
+  `routes.sh` 硬编码与 `clients/` 无 manifest 两项「保留现状」的决策。
+
+### 本次未做（后续迭代）
+- 协议演进（Xray Finalmask、Hysteria2 ECH/Realms、shadowsocks-rust 升级）。
+- 安全加固（Nginx TLS 密码套件/HSTS/OCSP、公网 IP 检测改 HTTPS）。
+
 ## [0.0.7] - 2026-09-26
 
 ### 增强
@@ -177,6 +215,8 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.8]: https://github.com/EasyIndie/EasyNet/compare/0.0.7...0.0.8
+[0.0.7]: https://github.com/EasyIndie/EasyNet/compare/0.0.6...0.0.7
 [0.0.6]: https://github.com/EasyIndie/EasyNet/compare/0.0.5...0.0.6
 [0.0.5]: https://github.com/EasyIndie/EasyNet/compare/0.0.4...0.0.5
 [0.0.4]: https://github.com/EasyIndie/EasyNet/compare/0.0.3...0.0.4

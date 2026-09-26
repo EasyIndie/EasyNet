@@ -137,17 +137,30 @@ EASYNET_WIREGUARD_OBFS=true
 ssh root@your-server-ip
 ```
 
-### 2. 拉取项目
+### 2. 一键安装（推荐，无需 git clone）
+
+```bash
+curl -fsSL https://github.com/EasyIndie/EasyNet/releases/latest/download/easynet-install.sh -o install.sh
+sudo bash install.sh
+```
+
+安装器会自动：下载 release 包 → 校验 SHA256 → 解压到 `/opt/easynet`（可用 `EASYNET_INSTALL_DIR` 覆盖）→ 执行 `scripts/deploy.sh`。
+失败即中止，遵循项目「无 `curl | bash`、先落地后校验」规范。
+
+自动化部署（`EASYNET_*` 变量原样透传给 `deploy.sh`）：
+
+```bash
+sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=proxy.example.com bash install.sh
+```
+
+指定版本：`sudo EASYNET_VERSION=0.0.8 bash install.sh`。
+
+### 3. 从源码部署（开发 / 审计）
 
 ```bash
 apt update && apt install -y git
 git clone https://github.com/EasyIndie/EasyNet.git
 cd EasyNet
-```
-
-### 3. 执行部署
-
-```bash
 ./scripts/deploy.sh
 ```
 
@@ -166,6 +179,7 @@ cd EasyNet
 方式一：使用 `.env`
 
 ```bash
+cd /opt/easynet          # 一键安装器默认目录；源码部署则在仓库根目录
 cp .env.example .env
 ./scripts/deploy.sh
 ```
@@ -340,6 +354,19 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 ### 完整配置项清单
 
 所有配置项通过项目根目录的 `.env` 文件设置，脚本仅加载 `EASYNET_*` 前缀变量（`SS_VERSION` 除外）。以下按功能分类列出。
+
+#### 自举安装器（`install.sh`）
+
+以下变量仅由 `scripts/install.sh` 读取；未通过安装器部署时可忽略。
+
+| 变量 | 作用 | 默认值 |
+|------|------|--------|
+| `EASYNET_VERSION` | 指定 release 版本 tag | `latest` |
+| `EASYNET_INSTALL_DIR` | 安装目录（解压目标） | `/opt/easynet` |
+| `EASYNET_SKIP_SHA256` | 跳过 release 包 SHA256 校验（仅开发，不推荐） | `false` |
+| `EASYNET_INSTALL_ONLY` | 只安装不部署（便于先配置 `.env`） | `false` |
+| `EASYNET_REPO` | GitHub 仓库名 | `EasyIndie/EasyNet` |
+| `EASYNET_RELEASE_BASE_URL` | Releases 基础 URL（镜像/测试用） | `https://github.com/<repo>/releases` |
 
 #### 部署控制
 

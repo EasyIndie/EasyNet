@@ -112,6 +112,7 @@ discovery_validate_manifest() {
     local required_vars=(
         MANIFEST_VERSION MODULE_NAME MODULE_DISPLAY_NAME MODULE_CLASH_TYPE
         MODULE_SINGBOX_TYPE MODULE_SECURITY_RANK MODULE_EDGE_MODE
+        MODULE_DEFAULT_PORT
     )
     local var
     for var in "${required_vars[@]}"; do
@@ -133,6 +134,17 @@ discovery_validate_manifest() {
             return 1
             ;;
     esac
+    # Validate default port is numeric and within the TCP/UDP range
+    case "${MODULE_DEFAULT_PORT:-}" in
+        ''|*[!0-9]*)
+            echo "[ERROR] Manifest for '${MODULE_NAME:-unknown}' has non-numeric MODULE_DEFAULT_PORT='${MODULE_DEFAULT_PORT:-}'" >&2
+            return 1
+            ;;
+    esac
+    if [ "${MODULE_DEFAULT_PORT}" -lt 1 ] || [ "${MODULE_DEFAULT_PORT}" -gt 65535 ]; then
+        echo "[ERROR] Manifest for '${MODULE_NAME:-unknown}' MODULE_DEFAULT_PORT out of range: ${MODULE_DEFAULT_PORT}" >&2
+        return 1
+    fi
     return 0
 }
 

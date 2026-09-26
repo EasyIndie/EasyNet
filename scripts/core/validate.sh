@@ -136,11 +136,11 @@ validate_domain_resolvable() {
 validate_deployment_domains() {
     local has_error=0
 
-    if [ -n "$EASYNET_DOMAIN" ]; then
-        validate_domain_resolvable "$EASYNET_DOMAIN" "EASYNET_DOMAIN" || has_error=1
+    if [ -n "${EASYNET_DOMAIN:-}" ]; then
+        validate_domain_resolvable "${EASYNET_DOMAIN:-}" "EASYNET_DOMAIN" || has_error=1
     fi
-    if [ -n "$EASYNET_SUBSCRIPTION_DOMAIN" ] && [ "$EASYNET_SUBSCRIPTION_DOMAIN" != "$EASYNET_DOMAIN" ]; then
-        validate_domain_resolvable "$EASYNET_SUBSCRIPTION_DOMAIN" "EASYNET_SUBSCRIPTION_DOMAIN" || has_error=1
+    if [ -n "${EASYNET_SUBSCRIPTION_DOMAIN:-}" ] && [ "${EASYNET_SUBSCRIPTION_DOMAIN:-}" != "${EASYNET_DOMAIN:-}" ]; then
+        validate_domain_resolvable "${EASYNET_SUBSCRIPTION_DOMAIN:-}" "EASYNET_SUBSCRIPTION_DOMAIN" || has_error=1
     fi
 
     return "$has_error"

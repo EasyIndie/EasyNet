@@ -5,7 +5,7 @@
 # - /clash: Mihomo YAML 订阅，适用于 Clash Verge Rev / Mihomo
 # - /singbox: sing-box JSON 配置，适用于低资源无界面客户端
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -20,9 +20,9 @@ source "$PROJECT_ROOT/scripts/core/subscription_clash.sh"
 WEB_ROOT="${EASYNET_WEB_ROOT:-/var/www/html}"
 SUB_FILE="${WEB_ROOT}/sub"
 CLASH_FILE="${WEB_ROOT}/clash"
-SINGBOX_FILE="${WEB_ROOT}/singbox"
-SINGBOX_CLIENT_INSTALLER_SOURCE="$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
-SINGBOX_CLIENT_INSTALLER_FILE="${WEB_ROOT}/easynet-singbox-client.sh"
+SB_FILE="${WEB_ROOT}/singbox"
+SB_CLIENT_INSTALLER_SOURCE="$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
+SB_CLIENT_INSTALLER_FILE="${WEB_ROOT}/easynet-singbox-client.sh"
 
 SUBSCRIPTION_TMP_DIR="$(mktemp -d /tmp/easynet-subscription.XXXXXX)"
 cleanup_subscription_tmp() {
@@ -33,17 +33,17 @@ trap cleanup_subscription_tmp EXIT
 LINKS_FILE_SAFE="$SUBSCRIPTION_TMP_DIR/links_safe.txt"
 CLASH_PROXIES_SAFE="$SUBSCRIPTION_TMP_DIR/clash_proxies_safe.yaml"
 CLASH_NAMES_SAFE="$SUBSCRIPTION_TMP_DIR/clash_names_safe.txt"
-SINGBOX_OUTBOUNDS_SAFE="$SUBSCRIPTION_TMP_DIR/singbox_outbounds_safe.jsonl"
-SINGBOX_ENDPOINTS_SAFE="$SUBSCRIPTION_TMP_DIR/singbox_endpoints_safe.jsonl"
-SINGBOX_NAMES_SAFE="$SUBSCRIPTION_TMP_DIR/singbox_names_safe.txt"
+SB_OUTBOUNDS_SAFE="$SUBSCRIPTION_TMP_DIR/singbox_outbounds_safe.jsonl"
+SB_ENDPOINTS_SAFE="$SUBSCRIPTION_TMP_DIR/singbox_endpoints_safe.jsonl"
+SB_NAMES_SAFE="$SUBSCRIPTION_TMP_DIR/singbox_names_safe.txt"
 
 for file in \
     "$LINKS_FILE_SAFE" \
     "$CLASH_PROXIES_SAFE" \
     "$CLASH_NAMES_SAFE" \
-    "$SINGBOX_OUTBOUNDS_SAFE" \
-    "$SINGBOX_ENDPOINTS_SAFE" \
-    "$SINGBOX_NAMES_SAFE"; do
+    "$SB_OUTBOUNDS_SAFE" \
+    "$SB_ENDPOINTS_SAFE" \
+    "$SB_NAMES_SAFE"; do
     : > "$file"
 done
 
@@ -149,12 +149,12 @@ generate_singbox_config() {
 }
 
 publish_singbox_client_installer() {
-    if [ ! -f "$SINGBOX_CLIENT_INSTALLER_SOURCE" ]; then
-        log_warn "未找到 sing-box 客户端安装脚本: $SINGBOX_CLIENT_INSTALLER_SOURCE"
+    if [ ! -f "$SB_CLIENT_INSTALLER_SOURCE" ]; then
+        log_warn "未找到 sing-box 客户端安装脚本: $SB_CLIENT_INSTALLER_SOURCE"
         return 0
     fi
 
-    install -m 0644 "$SINGBOX_CLIENT_INSTALLER_SOURCE" "$SINGBOX_CLIENT_INSTALLER_FILE"
+    install -m 0644 "$SB_CLIENT_INSTALLER_SOURCE" "$SB_CLIENT_INSTALLER_FILE"
 }
 
 
@@ -210,8 +210,8 @@ load_metadata_nodes() {
         if append_metadata_clash_proxy "$metadata_file" "$CLASH_PROXIES_SAFE"; then
             append_proxy_name "$CLASH_NAMES_SAFE" "$name"
         fi
-        if append_metadata_singbox_outbound "$metadata_file" "$SINGBOX_OUTBOUNDS_SAFE" "$SINGBOX_ENDPOINTS_SAFE"; then
-            append_proxy_name "$SINGBOX_NAMES_SAFE" "$name"
+        if append_metadata_singbox_outbound "$metadata_file" "$SB_OUTBOUNDS_SAFE" "$SB_ENDPOINTS_SAFE"; then
+            append_proxy_name "$SB_NAMES_SAFE" "$name"
         fi
 
     done < <(metadata_files_by_security)
@@ -286,6 +286,6 @@ if [ -s "$LINKS_FILE_SAFE" ]; then
 fi
 
 generate_clash_config "$CLASH_FILE" "$CLASH_PROXIES_SAFE" "$CLASH_NAMES_SAFE"
-generate_singbox_config "$SINGBOX_FILE" "$SINGBOX_OUTBOUNDS_SAFE" "$SINGBOX_ENDPOINTS_SAFE" "$SINGBOX_NAMES_SAFE"
+generate_singbox_config "$SB_FILE" "$SB_OUTBOUNDS_SAFE" "$SB_ENDPOINTS_SAFE" "$SB_NAMES_SAFE"
 
 show_subscription_links "$(easynet_subscription_domain)" "$(easynet_subscription_scheme)" "$(easynet_subscription_port)"

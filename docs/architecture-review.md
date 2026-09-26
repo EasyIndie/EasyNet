@@ -12,7 +12,7 @@
 |------|------|------|
 | **架构设计** | ⭐⭐⭐⭐ | 四层分离清晰，metadata 状态模式优秀，插件系统简洁 |
 | **代码质量** | ⭐⭐⭐⭐ | ShellCheck 仅 2 个警告，引用规范，无遗留语法 |
-| **测试覆盖** | ⭐⭐⭐ | 267 测试全通过，核心逻辑覆盖好，但部署脚本无测试 |
+| **测试覆盖** | ⭐⭐⭐ | 294 测试全通过，核心逻辑覆盖好，但部署脚本无测试 |
 | **文档** | ⭐⭐⭐⭐ | README/CONTRIBUTING/CHANGELOG 完善，但缺架构文档 |
 | **CI/CD** | ⭐⭐⭐⭐ | ShellCheck + bats + 集成测试 三层 CI |
 | **安全性** | ⭐⭐⭐⭐ | 审计后已修复大部分问题，剩余 6 项低风险未处理 |
@@ -58,7 +58,7 @@
 
 **亮点：** `discovery_get_manifest_value()` 通过 `case` 白名单限制可读变量，拒绝未知变量。
 
-**问题：** `discovery_validate_manifest()` 定义了但未被 `deploy.sh` 调用——有缺失字段的模块会在后续步骤中静默失败。
+**问题：** ~~`discovery_validate_manifest()` 定义了但未被 `deploy.sh` 调用——有缺失字段的模块会在后续步骤中静默失败。~~ ✅ 已修复：`deploy.sh` 新增 `validate_module_manifest()`，部署前加载并校验 manifest；同时补齐 `MODULE_DEFAULT_PORT` 字段及端口范围校验。
 
 ### 2.3 数据流质量
 
@@ -107,7 +107,7 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 
 1. ~~**`discovery_uninstall_entrypoint()` 被定义两次**~~ ✅ 已修复——现在只有一个定义（`discovery.sh:244`）
 2. **`for m in $modules`**（`profiles.sh:86`）——未引用的变量同时受 word splitting 和 pathname expansion 影响
-3. **协议脚本无 `set -u`**——未定义变量引用静默展开为空字符串
+3. ~~**协议脚本无 `set -u`**~~ ✅ 已修复（协议脚本本已使用 `set -euo pipefail`；本轮进一步为 `deploy.sh`/`uninstall.sh`/`generate_subscription.sh` 补齐 `set -u`，并修复 `validate.sh` 的裸引用）
 
 ---
 
@@ -116,7 +116,7 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 ### 4.1 覆盖总结
 
 ```
-23 个测试文件, 267 个测试, 0 失败
+25 个测试文件, 294 个测试, 0 失败
 ```
 
 | 覆盖良好 | 覆盖缺失 |
@@ -153,7 +153,7 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 | # | 建议 | 涉及文件 | 工作量 |
 |---|------|---------|--------|
 | ~5~ | ~~修复 `discovery_uninstall_entrypoint()` 重复定义~~ ✅ 已修复 | `core/discovery.sh:244` | 极小 |
-| 6 | 协议脚本增加 `set -uo pipefail` | 协议 `deploy.sh`/`export.sh`/`uninstall.sh` | 小 |
+| 6 | ~~协议脚本增加 `set -uo pipefail`~~ ✅ 已修复：协议脚本本已具备；本轮为编排器与 `render_clash.sh` 统一 `set -u` | 协议 `deploy.sh`/`export.sh`/`uninstall.sh` | 小 |
 | ~7~ | ~~合并 5 个 `yaml_escape()` 到 `subscription_clash.sh`~~ ✅ 已修复 | `core/subscription_clash.sh` | 小 |
 | ~8~ | ~~添加 `core/display.sh`，统一 qrencode 输出~~ ✅ 已修复 | `core/display.sh` | 小 |
 
@@ -177,3 +177,31 @@ export.sh 写入 →  firewall.sh (UFW 规则)
 **最大薄弱环节：** 914 行协议部署脚本 + 215 行 Edge 部署脚本零测试覆盖。这是风险最高的代码——包含包安装、配置模板、systemd 管理，一旦出错可导致生产服务中断。
 
 **总体：** 在 Shell 脚本项目中，EasyNet 的架构和代码质量处于第一梯队。改进空间主要集中在提取基础设施层、消除重复代码、补上高风险的部署脚本测试。
+
+---
+
+## 七、0.0.8 收尾更新（部署方式改造 + 架构收尾）
+
+### 7.1 部署方式：免 git clone 的一键安装
+
+- 新增 `scripts/install.sh`：自包含自举安装器，下载 release 包 → 校验 SHA256 → 解压到持久目录（默认 `/opt/easynet`）→ 执行 `scripts/deploy.sh`。失败即中止，遵循「无 `curl | bash`」规范；重复运行 = 原地升级脚本（保留已有 `.env`，状态目录 `/var/lib/easynet` 不受影响）。
+- CI release job 新增产物：`easynet.tar.gz`、`easynet.tar.gz.sha256`、`easynet-install.sh`（固定名，`latest/download/` 稳定可拉）。
+- 新增 `tests/test_installer.bats`（12 用例），覆盖校验失败中止、缺校验文件拒绝、`.env` 保留、参数透传等。
+
+### 7.2 架构收尾
+
+- `deploy.sh` 新增 `validate_module_manifest()`，部署前调用 `discovery_validate_manifest()`（fail-fast）；后者补齐 `MODULE_DEFAULT_PORT` 必填与端口范围校验。
+- 严格性统一：`render_clash.sh` ×4 改为 `set -euo pipefail`；`deploy.sh`/`uninstall.sh`/`generate_subscription.sh` 补齐 `set -u`，并修复 `validate.sh` 的裸引用。
+- lint 测试同步：移除「deploy.sh 无 set -u」的过时例外，并把 `validate.sh` 纳入检查。
+
+### 7.3 明确保留现状的决策（避免反复讨论）
+
+| 评审条目 | 决策 | 理由 |
+|---------|------|------|
+| `deploy.sh` 硬编码 `source exposure/edge/routes.sh` | **保留** | `routes.sh` 是库函数（`ensure_edge_backend_route`），不是暴露模块的入口；discovery 化只增加间接层，无编排收益 |
+| `clients/` 无 `manifest.sh` | **保留** | 客户端安装器是独立单文件、面向端设备，不参与服务端 discovery/部署编排 |
+
+### 7.4 本次未做（后续迭代）
+
+- 协议演进：Xray Finalmask、Hysteria2 ECH/Realms、shadowsocks-rust 升级。
+- 安全加固：Nginx TLS 密码套件/HSTS/OCSP、公网 IP 检测改 HTTPS。

@@ -49,14 +49,14 @@ module_display_name() {
 }
 
 select_from_env() {
-    if [ -n "$EASYNET_UNINSTALL_MODULE" ]; then
-        choice="$EASYNET_UNINSTALL_MODULE"
+    if [ -n "${EASYNET_UNINSTALL_MODULE:-}" ]; then
+        choice="${EASYNET_UNINSTALL_MODULE:-}"
         log_info "从环境变量 EASYNET_UNINSTALL_MODULE 读取卸载模块: $choice"
         return 0
     fi
 
-    if [ -n "$EASYNET_UNINSTALL_CHOICE" ]; then
-        choice="$EASYNET_UNINSTALL_CHOICE"
+    if [ -n "${EASYNET_UNINSTALL_CHOICE:-}" ]; then
+        choice="${EASYNET_UNINSTALL_CHOICE:-}"
         log_info "从环境变量 EASYNET_UNINSTALL_CHOICE 读取卸载选择: $choice"
         return 0
     fi
@@ -164,7 +164,7 @@ main() {
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-    set -eE
+    set -ueE
     trap '_easynet_error_handler' ERR
     main "$@"
 fi

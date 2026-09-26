@@ -1,7 +1,7 @@
 #!/bin/bash
 # EasyNet Shadowsocks 2022 Clash YAML proxy renderer
 # Usage: bash render_clash.sh <metadata.json>
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
