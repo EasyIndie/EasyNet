@@ -5,6 +5,12 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [Unreleased]
+
+### 文档
+- 新增 `docs/singbox-unification-analysis.md`：评估是否将多协议收敛为统一 sing-box 实现，
+  含能力对照、收益/代价、趋势判断与建议路线；本轮结论为「维持现状」。
+
 ## [0.0.10] - 2026-09-26
 
 ### 改进
