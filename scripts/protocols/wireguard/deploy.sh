@@ -199,9 +199,13 @@ EOF
 create_systemd_service() {
     log_info "启用 AmneziaWG 服务..."
 
-    # Migrate away from a previous plain WireGuard deployment, if any.
-    if systemctl list-unit-files "wg-quick@${WG_INTERFACE}.service" >/dev/null 2>&1; then
-        systemctl disable --now "wg-quick@${WG_INTERFACE}" >/dev/null 2>&1 || true
+    # Migrate away from a previous plain WireGuard deployment. The old
+    # wg-quick interface may linger even after the service stops, and
+    # awg-quick refuses to start when the interface already exists.
+    systemctl disable --now "wg-quick@${WG_INTERFACE}" >/dev/null 2>&1 || true
+    if ip link show "$WG_INTERFACE" >/dev/null 2>&1; then
+        log_info "移除已存在的接口 $WG_INTERFACE（从旧版 WireGuard 迁移）..."
+        ip link delete "$WG_INTERFACE" >/dev/null 2>&1 || true
     fi
 
     systemctl enable "$WG_SERVICE"
