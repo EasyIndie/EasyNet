@@ -128,3 +128,14 @@ setup() {
     rg -q 'outbounds \| type == "array"' "$INSTALLER"
     rg -q "本次配置不启用分流规则" "$INSTALLER"
 }
+
+@test "Installer update unit can read its env file and write config/rules" {
+    # The updater reads the 600-root env file, rewrites the config, materializes
+    # rule sets and restarts the service: it must run as root with explicit
+    # write paths. DynamicUser + ProtectSystem=full breaks it
+    # ("/etc/easynet/singbox-client.env: Permission denied").
+    update_unit="$(sed -n '/UPDATE_NAME}.service/,/^EOF/p' "$INSTALLER")"
+    ! printf '%s' "$update_unit" | rg -q 'DynamicUser=yes'
+    printf '%s' "$update_unit" | rg -q 'ProtectSystem=strict'
+    printf '%s' "$update_unit" | rg -q 'ReadWritePaths=\$\{STATE_DIR\} \$\{CONFIG_DIR\}'
+}

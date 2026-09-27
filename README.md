@@ -22,7 +22,7 @@
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5–$15/月）
-- 🛡️ 安全稳定，自带 334 个测试用例（27 套件）保护核心逻辑
+- 🛡️ 安全稳定，自带 335 个测试用例（27 套件）保护核心逻辑
 
 ## 协议对比与防探测等级
 
@@ -99,7 +99,7 @@ EasyNet/
 │   ├── diagnose_reachability.sh # 公网可达性 / IP 封锁诊断
 │   ├── acceptance_test.sh      # VPS 一键验收脚本
 │   └── smoke_test.sh           # 部署后快速检查
-├── tests/                      # 单元测试（27 个 bats 套件，334 个用例）
+├── tests/                      # 单元测试（27 个 bats 套件，335 个用例）
 ├── docs/                       # 文档目录
 │   ├── deployment.md           #   部署、协议选择、订阅承载、完整配置项
 │   ├── clients.md              #   全平台客户端说明与常见问题
@@ -107,6 +107,7 @@ EasyNet/
 │   ├── architecture-review.md  #   架构与代码质量评估报告
 │   ├── security-audit.md       #   安全审计报告
 │   ├── unified-backend-analysis.md  # 统一服务端（sing-box / Xray-core）可行性分析
+│   ├── audit-2026-09-27.md      # 第二轮全面审计（安全/稳定/性能/客户端）
 │   └── generate-protocol-table.sh  # 协议支持表自动生成工具
 ├── tools/                      # 辅助工具（二维码生成等）
 ├── .env.example                # 环境变量配置模板
@@ -217,6 +218,7 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 - [架构评估报告](./docs/architecture-review.md) — 代码质量与架构改进建议
 - [安全审计报告](./docs/security-audit.md) — 协议抗 DPI 与实现层安全评估
 - [统一服务端方案分析](./docs/unified-backend-analysis.md) — sing-box / Xray-core 收敛可行性与趋势（结论：维持现状，优先评估 Xray-core）
+- [第二轮全面审计（2026-09-27）](./docs/audit-2026-09-27.md) — 重置后全新部署验收 + 安全/稳定/性能/客户端体验
 
 ## 贡献指南
 

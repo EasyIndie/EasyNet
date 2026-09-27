@@ -94,6 +94,8 @@ EOF
 # Install and enable fail2ban with an sshd jail (brute-force protection).
 # Uses jail.d/ so a user-managed /etc/fail2ban/jail.local is never overwritten.
 maintenance_configure_fail2ban() {
+    local admin_ip=""
+
     if ! command -v fail2ban-client >/dev/null 2>&1; then
         log_info "安装 fail2ban（SSH 防暴力破解）..."
         DEBIAN_FRONTEND=noninteractive apt install -y fail2ban >/dev/null 2>&1 || {
@@ -102,19 +104,29 @@ maintenance_configure_fail2ban() {
         }
     fi
 
+    # Never ban the operator running this deployment: remember the source IP of
+    # the current SSH session so a mistyped password cannot lock us out.
+    if [ -n "${SSH_CLIENT:-}" ]; then
+        admin_ip="${SSH_CLIENT%% *}"
+    fi
+    if [ -n "${EASYNET_FAIL2BAN_IGNORE_IP:-}" ]; then
+        admin_ip="${admin_ip:+${admin_ip} }${EASYNET_FAIL2BAN_IGNORE_IP:-}"
+    fi
+
     mkdir -p /etc/fail2ban/jail.d
-    cat > /etc/fail2ban/jail.d/easynet.local << 'EOF'
+    cat > /etc/fail2ban/jail.d/easynet.local << EOF
 # Managed by EasyNet - do not edit
 [DEFAULT]
+# Normal (not aggressive) mode: aggressive adds ddos/extra patterns that also
+# match benign "connection closed" events and can ban the operator's own IP.
 backend = systemd
 bantime = 1h
 findtime = 10m
 maxretry = 5
-ignoreip = 127.0.0.1/8 ::1
+ignoreip = 127.0.0.1/8 ::1${admin_ip:+ ${admin_ip}}
 
 [sshd]
 enabled = true
-mode = aggressive
 EOF
     chmod 644 /etc/fail2ban/jail.d/easynet.local
 

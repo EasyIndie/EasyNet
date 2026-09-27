@@ -69,6 +69,18 @@
   Geedge TSG 源码分析、QUIC SNI 过滤）为判据，逐协议给出抗 DPI 判定，并列出未修复项
   （SSH root 密码登录 / 订阅直连路径默认开启）及风险等级。
 
+### 修复
+- **sing-box 客户端每日自动更新失效**：`easynet-singbox-update.service` 使用
+  `DynamicUser=yes` + `ProtectSystem=full`，既读不到 600 的 `/etc/easynet/singbox-client.env`
+  （`Permission denied`），也无法写入 `/etc`，导致客户端**永远无法随服务端变化自动更新**。
+  改为以 root 运行 + `ProtectSystem=strict` + `ReadWritePaths`，实测更新成功并自动重启。
+- **fail2ban 误封风险**：`mode = aggressive` 的 ddos/extra 规则会匹配「连接被关闭」等正常事件；
+  改为默认 `normal`，并把部署时 SSH 会话来源 IP 自动写入 `ignoreip`。
+
+### 文档
+- 新增 `docs/audit-2026-09-27.md`：重置后全新部署的验收结论 + 安全性/稳定性/访问速度/
+  客户端体验四维审计（含实测数据与 3 项遗留改进）。
+
 ### 测试
 - `tests/test_hardening.bats` 新增 systemd 沙箱单元名归一化、SS 密钥不入命令行、
   fail2ban jail 三个用例；测试总数 331 → 334。

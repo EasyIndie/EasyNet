@@ -430,16 +430,21 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
+    # The updater rewrites ${CONFIG_DIR}/config.json + rules and restarts the
+    # client service, and it reads the 600-root env file. It therefore must run
+    # as root: with DynamicUser=yes + ProtectSystem=full it fails with
+    # "/etc/easynet/singbox-client.env: Permission denied" and cannot write /etc.
     cat > "/etc/systemd/system/${UPDATE_NAME}.service" <<EOF
 [Unit]
 Description=Update EasyNet sing-box config
 
 [Service]
 Type=oneshot
-DynamicUser=yes
-ProtectSystem=full
+ProtectSystem=strict
+ProtectHome=yes
 PrivateTmp=yes
 NoNewPrivileges=yes
+ReadWritePaths=${STATE_DIR} ${CONFIG_DIR}
 ExecStart=${INSTALL_DIR}/easynet-singbox-update
 EOF
 
