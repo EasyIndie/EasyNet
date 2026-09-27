@@ -81,9 +81,29 @@
 - 新增 `docs/audit-2026-09-27.md`：重置后全新部署的验收结论 + 安全性/稳定性/访问速度/
   客户端体验四维审计（含实测数据与 3 项遗留改进）。
 
+### 变更
+- **订阅直连路径默认关闭**（`EASYNET_SUBSCRIPTION_DIRECT_PATHS` 默认 `true` → `false`）：固定的
+  `/sub`、`/clash`、`/singbox` 可被猜中（域名可从证书透明度日志获知），默认仅提供不可猜的随机
+  路径。新增 `EASYNET_SUBSCRIPTION_PATH_PREFIX` 校验（拒绝空白/`?`/`#`/`&`，过短告警），可用于
+  **固定订阅路径**，使重装服务器后客户端订阅 URL 不变。
+- **重部署零中断**：hysteria2 / shadowsocks / amneziawg 增加「渲染 → 比对 → 未变化则跳过重启」；
+  xray 仅在沙箱变化或服务未运行时重启；nginx 全链路改用 `reload`。
+- **证书续期钩子不再引发重启风暴**：acme.sh 每次部署都会执行 `--install-cert`，此前会触发 hook
+  重启全部服务；现按证书指纹比对，仅在证书真正变化时重启（nginx 用 `reload`）。
+- 修复 AmneziaWG 的「旧版迁移」逻辑：不再在每次部署时删除正在使用的 `wg0` 接口。
+
+### 新增
+- **`scripts/security/harden_ssh.sh`（SSH 加固，可选、独立）**：`check` / `apply` / `confirm` /
+  `revert` / `status`。`apply` 前置校验（公钥存在性 + 当前会话为 publickey）、写入前备份、
+  `sshd -t` 校验、并武装 **10 分钟自动回滚**（未 `confirm` 则自动恢复，不会锁死）。drop-in 命名为
+  `10-easynet-hardening.conf` 以排在 `50-cloud-init.conf` 之前（sshd「首个值生效」）。
+  **不参与 `deploy.sh`**，日常迭代流程不受影响。
+- 部署时若 sing-box 规则集未发布（`rules/manifest.json` 缺失）会显式告警并给出修复命令。
+
 ### 测试
 - `tests/test_hardening.bats` 新增 systemd 沙箱单元名归一化、SS 密钥不入命令行、
-  fail2ban jail 三个用例；测试总数 331 → 334。
+  fail2ban jail 等用例；另新增 SSH 加固 dry-run/拒绝无公钥/回滚保险、零中断重启、
+  订阅默认随机路径、规则集缺失告警等用例。测试总数 331 → 342。
 
 ## [0.0.10] - 2026-09-26
 

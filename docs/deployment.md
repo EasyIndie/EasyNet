@@ -236,7 +236,8 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 | `https://域名/s/\<随机值\>/singbox` | JSON | sing-box |
 | `https://域名/s/\<随机值\>/singbox-client.sh` | Shell 脚本 | 树莓派 / 卡片机安装脚本 |
 
-- 默认同时提供 `/sub`、`/clash`、`/singbox` 直接路径访问（便于配置）。可通过 `EASYNET_SUBSCRIPTION_DIRECT_PATHS=false` 关闭，仅保留随机路径
+- 默认**仅**提供随机路径（如 `/s/<32位hex>/sub`）；`/sub`、`/clash`、`/singbox` 这类固定路径可被猜中（域名可从证书透明度日志获知），默认关闭，可用 `EASYNET_SUBSCRIPTION_DIRECT_PATHS=true` 开启
+- 可用 `EASYNET_SUBSCRIPTION_PATH_PREFIX` **固定**随机路径：重装服务器后订阅 URL 不变，客户端无需重新导入
 - 随机订阅前缀会持久化保存，重启、重部署、证书续期和重新生成订阅都不会改变；可运行 `./scripts/show_subscription.sh` 随时重新显示链接和二维码
 - 如怀疑订阅链接泄露，可运行 `./scripts/rotate_subscription.sh` 主动轮换订阅入口；如需给多设备迁移留出时间，可使用 `./scripts/rotate_subscription.sh --grace` 暂时保留旧入口
 - `Hysteria2` 使用 Edge 统一证书（`shared_tls` 模式），自身监听 `443/udp` 承载 QUIC 流量
@@ -425,7 +426,8 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 |------|------|--------|
 | `EASYNET_DOMAIN` | 主域名；Hysteria2 / Edge TLS 要求域名已 A 记录解析到服务器公网 IP | 未设置（不部署 Edge） |
 | `EASYNET_SUBSCRIPTION_DOMAIN` | 订阅域名，可与主域名不同 | 同 `EASYNET_DOMAIN` |
-| `EASYNET_SUBSCRIPTION_DIRECT_PATHS` | 启用 /sub、/clash、/singbox 直接路径访问订阅 | `true` |
+| `EASYNET_SUBSCRIPTION_DIRECT_PATHS` | 启用 /sub、/clash、/singbox 直接路径访问订阅（安全性较低） | `false` |
+| `EASYNET_SUBSCRIPTION_PATH_PREFIX` | 固定订阅随机路径（重装后订阅 URL 不变，强烈建议设置） | 首次部署随机生成 `/s/<32 位随机十六进制>` |
 | `EASYNET_EDGE_HTTP_PORT` | Edge HTTP 端口（acme.sh 证书挑战 + Nginx 伪装站点） | `80` |
 | `EASYNET_EDGE_HTTPS_PORT` | Edge HTTPS 端口（订阅 + 协议后端转发） | `443` |
 | `EASYNET_EDGE_CERT_DIR` | TLS 证书存放目录 | `/etc/ssl/easynet-edge` |
@@ -434,7 +436,6 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_EDGE_MASQUERADE_URL` | Nginx 根路径反向代理目标（消除 TLS 指纹特征） | `https://www.bing.com` |
 | `EASYNET_EDGE_RENEW_HOOK` | 证书续期钩子脚本路径 | `scripts/exposure/edge/cert_renew_hook.sh` |
 | `EASYNET_EDGE_STATE_DIR` | Edge Gateway 状态目录（routes、cert 等状态持久化） | `${EASYNET_STATE_DIR}/exposure/edge` |
-| `EASYNET_SUBSCRIPTION_PATH_PREFIX` | 订阅路径前缀（覆盖自动生成的随机串） | 自动生成：`/s/<32 位随机十六进制>` |
 | `EASYNET_SUBSCRIPTION_SCHEME` | 订阅 URL 协议 | `https` |
 | `EASYNET_SUBSCRIPTION_URL_PORT` | 订阅 URL 端口号 | 回退到 Edge 状态文件中的端口（`443`） |
 | `EASYNET_SUBSCRIPTION_ROTATION_GRACE` | 订阅轮换时保留旧入口（同 `--grace` 参数） | `false` |

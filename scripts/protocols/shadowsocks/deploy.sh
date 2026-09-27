@@ -93,18 +93,32 @@ configure_shadowsocks() {
         > "$config_file.tmp"
     chown root:nogroup "$config_file.tmp" 2>/dev/null || true
     chmod 640 "$config_file.tmp"
-    mv "$config_file.tmp" "$config_file"
-    log_info "Shadowsocks 2022 配置已写入（640 root:nogroup，密钥仅存于配置文件）"
+
+    # Only replace (and later restart) when something actually changed, so a
+    # re-deploy does not drop live Shadowsocks sessions.
+    SS_CHANGED=false
+    if ! cmp -s "$config_file.tmp" "$config_file"; then
+        mv "$config_file.tmp" "$config_file"
+        SS_CHANGED=true
+        log_info "Shadowsocks 2022 配置已写入（640 root:nogroup，密钥仅存于配置文件）"
+    else
+        rm -f "$config_file.tmp"
+        log_info "Shadowsocks 配置未变化。"
+    fi
 }
 
 create_systemd_service() {
     log_info "创建 systemd 服务..."
 
+    local unit=/etc/systemd/system/shadowsocks-rust-server.service
+    local new_unit
+    new_unit="$(mktemp)"
+
     # The PSK is read from the config file only -- never from the command line,
     # which any local user could read via /proc/<pid>/cmdline.
     # `CapabilityBoundingSet=` (empty set) drops all capabilities; note that
     # `CapabilityBoundingSet=~` would mean "grant everything", not "drop all".
-    cat > /etc/systemd/system/shadowsocks-rust-server.service << 'EOF'
+    cat > "$new_unit" << 'EOF'
 [Unit]
 Description=Shadowsocks-rust Server (2022 Edition)
 After=network.target nss-lookup.target
@@ -135,9 +149,21 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
+    SS_UNIT_CHANGED=false
+    if ! cmp -s "$new_unit" "$unit"; then
+        install -m 644 "$new_unit" "$unit"
+        SS_UNIT_CHANGED=true
+    fi
+    rm -f "$new_unit"
+
     systemctl daemon-reload
-    systemctl enable shadowsocks-rust-server
-    systemctl restart shadowsocks-rust-server
+    systemctl enable shadowsocks-rust-server >/dev/null 2>&1 || true
+    if [ "${SS_UNIT_CHANGED:-false}" = "true" ] || [ "${SS_CHANGED:-false}" = "true" ] ||
+        ! systemctl is-active --quiet shadowsocks-rust-server; then
+        systemctl restart shadowsocks-rust-server
+    else
+        log_info "Shadowsocks 配置未变化，跳过重启。"
+    fi
 }
 
 show_config() {

@@ -304,4 +304,14 @@ fi
 generate_clash_config "$CLASH_FILE" "$CLASH_PROXIES_SAFE" "$CLASH_NAMES_SAFE"
 generate_singbox_config "$SB_FILE" "$SB_OUTBOUNDS_SAFE" "$SB_ENDPOINTS_SAFE" "$SB_NAMES_SAFE"
 
+# The sing-box subscription references remote rule sets served from the Edge web
+# root. They are a manual build step; if they were never published, sing-box
+# clients silently lose split routing (or fail to start on /singbox import), so
+# warn loudly here instead of leaving the operator guessing.
+if [ ! -f "${WEB_ROOT}/rules/manifest.json" ]; then
+    log_warn "sing-box 分流规则集尚未发布：${WEB_ROOT}/rules/ 不存在。"
+    log_warn "  → /singbox 订阅将不含分流规则（客户端仍可正常代理，但没有国内直连/广告拦截）。"
+    log_warn "  → 修复：在服务器上运行 ./scripts/generate_singbox_rules.sh"
+fi
+
 show_subscription_links "$(easynet_subscription_domain)" "$(easynet_subscription_scheme)" "$(easynet_subscription_port)"

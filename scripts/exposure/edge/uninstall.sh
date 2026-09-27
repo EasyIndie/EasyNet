@@ -21,7 +21,7 @@ main() {
     uninstall_remove_path "${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}" "Edge 证书目录"
 
     if command -v systemctl &>/dev/null; then
-        systemctl restart nginx >/dev/null 2>&1 || true
+        systemctl reload nginx >/dev/null 2>&1 || systemctl restart nginx >/dev/null 2>&1 || true
     fi
 
     log_info "Edge Gateway 清理完成"

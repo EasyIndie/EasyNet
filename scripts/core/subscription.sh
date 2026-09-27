@@ -91,7 +91,11 @@ easynet_subscription_endpoint() {
     local path_prefix
     path_prefix="$(easynet_subscription_path_prefix)"
 
-    if [ "${EASYNET_SUBSCRIPTION_DIRECT_PATHS:-true}" = "true" ]; then
+    # Default OFF: a fixed /sub path is guessable (the domain is public via
+    # certificate transparency logs) and would leak every credential. The
+    # random path is unguessable and can be pinned via
+    # EASYNET_SUBSCRIPTION_PATH_PREFIX so it survives re-installs.
+    if [ "${EASYNET_SUBSCRIPTION_DIRECT_PATHS:-false}" = "true" ]; then
         # Direct paths: /sub, /clash, /singbox
         echo "/${endpoint#/}"
     elif [ -n "$path_prefix" ]; then

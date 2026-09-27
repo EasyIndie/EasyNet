@@ -71,7 +71,9 @@ maintenance_apply_systemd_hardening() {
     dropin="$dropin_dir/easynet-hardening.conf"
 
     mkdir -p "$dropin_dir"
-    cat > "$dropin" << 'EOF'
+    local new_dropin
+    new_dropin="$(mktemp)"
+    cat > "$new_dropin" << 'EOF'
 [Service]
 ProtectSystem=strict
 ProtectHome=yes
@@ -85,10 +87,22 @@ RestrictNamespaces=yes
 LockPersonality=yes
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 EOF
-    [ -n "$extra" ] && printf '%s\n' "$extra" >> "$dropin"
-    chmod 644 "$dropin"
-    systemctl daemon-reload >/dev/null 2>&1 || true
-    log_info "已应用 systemd 沙箱加固: ${unit}（$dropin）"
+    [ -n "$extra" ] && printf '%s\n' "$extra" >> "$new_dropin"
+    chmod 644 "$new_dropin"
+
+    # Report whether the sandbox actually changed so callers can avoid
+    # restarting a healthy service on every re-deploy.
+    SYSTEMD_HARDENING_CHANGED=false
+    if ! cmp -s "$new_dropin" "$dropin"; then
+        install -m 644 "$new_dropin" "$dropin"
+        SYSTEMD_HARDENING_CHANGED=true
+    fi
+    rm -f "$new_dropin"
+
+    if [ "$SYSTEMD_HARDENING_CHANGED" = true ]; then
+        systemctl daemon-reload >/dev/null 2>&1 || true
+        log_info "已应用 systemd 沙箱加固: ${unit}（$dropin）"
+    fi
 }
 
 # Install and enable fail2ban with an sshd jail (brute-force protection).

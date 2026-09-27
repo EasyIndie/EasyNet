@@ -136,3 +136,24 @@ JSON
     run cron_restart_command
     [ "$status" -eq 1 ]
 }
+
+@test "Re-deploy skips restarting protocol services whose config is unchanged" {
+    # Restarting drops every online client, so each module must compare the
+    # rendered config/unit and only restart when something changed.
+    rg -q 'HYSTERIA2_CHANGED' "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"
+    rg -q 'SS_CHANGED' "$PROJECT_ROOT/scripts/protocols/shadowsocks/deploy.sh"
+    rg -q 'WG_CONFIG_CHANGED' "$PROJECT_ROOT/scripts/protocols/wireguard/deploy.sh"
+    rg -q '跳过重启' "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"
+    rg -q '跳过重启' "$PROJECT_ROOT/scripts/protocols/shadowsocks/deploy.sh"
+    rg -q '跳过重启' "$PROJECT_ROOT/scripts/protocols/wireguard/deploy.sh"
+
+    # Nginx must reload (keeps in-flight subscriptions), never restart.
+    run rg -q 'systemctl restart nginx' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
+    [ "$status" -eq 1 ]
+    rg -q 'systemctl reload nginx' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
+}
+
+@test "Subscription generation warns when rule sets were never published" {
+    rg -q '分流规则集尚未发布' "$PROJECT_ROOT/scripts/generate_subscription.sh"
+    rg -q 'generate_singbox_rules.sh' "$PROJECT_ROOT/scripts/generate_subscription.sh"
+}

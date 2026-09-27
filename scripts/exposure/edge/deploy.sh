@@ -37,6 +37,16 @@ ensure_edge_subscription_path_prefix() {
 
     path_file="$EDGE_STATE_DIR/subscription_path_prefix.txt"
     if [ -n "${EASYNET_SUBSCRIPTION_PATH_PREFIX:-}" ]; then
+        # A pinned prefix keeps subscription URLs stable across re-installs,
+        # but it is also the only secret protecting the subscription: reject
+        # values that would break URLs or that are too short to resist guessing.
+        if [[ "${EASYNET_SUBSCRIPTION_PATH_PREFIX}" == *[[:space:]\?\#\&]* ]]; then
+            log_error "EASYNET_SUBSCRIPTION_PATH_PREFIX 不能包含空白、?、# 或 &"
+            exit 1
+        fi
+        if [ "${#EASYNET_SUBSCRIPTION_PATH_PREFIX}" -lt 16 ]; then
+            log_warn "EASYNET_SUBSCRIPTION_PATH_PREFIX 少于 16 字符，过于容易被猜中；建议使用 \`openssl rand -hex 16\`"
+        fi
         path_prefix="/${EASYNET_SUBSCRIPTION_PATH_PREFIX#/}"
         path_prefix="${path_prefix%/}"
     elif [ -f "$path_file" ]; then
@@ -72,9 +82,10 @@ write_edge_state() {
 write_edge_subscription_routes() {
     easynet_write_subscription_routes "$EDGE_ROUTES_DIR/subscription.conf" "$WEB_ROOT" "$EDGE_SUBSCRIPTION_PATH_PREFIX"
 
-    # Also write direct-path routes (e.g. /sub, /clash, /singbox) for convenience
+    # Also write direct-path routes (e.g. /sub, /clash, /singbox) for convenience.
+    # Off by default: the random path is unguessable, a fixed path is not.
     # Enabled via EASYNET_SUBSCRIPTION_DIRECT_PATHS=true
-    if [ "${EASYNET_SUBSCRIPTION_DIRECT_PATHS:-true}" = "true" ]; then
+    if [ "${EASYNET_SUBSCRIPTION_DIRECT_PATHS:-false}" = "true" ]; then
         while IFS='|' read -r endpoint file_name content_type; do
             [ -z "$endpoint" ] && continue
             cat >> "$EDGE_ROUTES_DIR/subscription.conf" <<EOF
@@ -210,7 +221,9 @@ setup_edge_nginx() {
         log_error "Nginx HTTP 配置测试失败，请检查语法错误。"
         return 1
     fi
-    systemctl restart nginx
+    # Reload instead of restart: a reload keeps existing TLS connections and
+    # in-flight subscriber downloads alive, a restart drops them.
+    if systemctl is-active --quiet nginx; then systemctl reload nginx; else systemctl start nginx; fi
 
     issue_edge_certificate
     maintenance_configure_nginx_logrotate
@@ -220,7 +233,7 @@ setup_edge_nginx() {
         log_error "Nginx HTTPS 配置测试失败，请检查语法错误。"
         return 1
     fi
-    systemctl restart nginx
+    if systemctl is-active --quiet nginx; then systemctl reload nginx; else systemctl start nginx; fi
 
     if command -v ufw &>/dev/null; then
         ufw allow "${EDGE_HTTP_PORT}/tcp" >/dev/null 2>&1 || true

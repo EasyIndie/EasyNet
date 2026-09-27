@@ -24,8 +24,8 @@
 | 严重性 | 问题 | 状态 |
 |:--:|---|---|
 | 🔴 P0 | **Shadowsocks PSK 双重泄露**：`-k` 出现在命令行（`/proc/*/cmdline` 任何本地用户可读）+ `config.json` 权限 644 | ✅ 本轮修复 |
-| 🔴 P0 | **SSH 允许 root 密码登录且无 fail2ban** | ⚠️ 见第六节（需用户确认，避免锁死） |
-| 🟠 P1 | **订阅直连路径默认开启**（`/sub`、`/clash`、`/singbox` 无认证）→ 随机路径保护被绕过 | ⚠️ 见第六节 |
+| 🔴 P0 | **SSH 允许 root 密码登录且无 fail2ban** | ✅ 已解决：fail2ban（自动） + `scripts/security/harden_ssh.sh`（显式、带回滚看门狗） |
+| 🟠 P1 | **订阅直连路径默认开启**（`/sub`、`/clash`、`/singbox` 无认证）→ 随机路径保护被绕过 | ✅ 已解决：默认仅随机路径 + 可用 `EASYNET_SUBSCRIPTION_PATH_PREFIX` 固定 |
 | 🟠 P1 | `CapabilityBoundingSet=~` 实际语义是「授予全部能力」（应为空集） | ✅ 本轮修复 |
 | 🟠 P1 | Xray / Hysteria2 服务缺少 systemd 沙箱（`ProtectSystem`/`ProtectHome`/`PrivateTmp`） | ✅ 本轮修复 |
 
@@ -191,8 +191,8 @@ CapabilityBoundingSet=~      ← systemd 语义：对空列表取反 = 授予全
 
 | 优先级 | 问题 | 风险 | 建议 |
 |:--:|---|---|---|
-| 🔴 P0 | **SSH：`PermitRootLogin yes` + `PasswordAuthentication yes`，无 fail2ban** | 暴力破解 → 服务器沦陷（当前最大短板） | ① 先装 **fail2ban**（安全、无锁死风险）；② 再按需改 `sshd_config`：`PermitRootLogin prohibit-password`、`PasswordAuthentication no`（**改前必须确认已有多把可用公钥**，否则会锁死） |
-| 🟠 P1 | **订阅直连路径默认开启**：`EASYNET_SUBSCRIPTION_DIRECT_PATHS=true` → 任何人访问 `https://<域名>/sub` 即可拿到全部凭据（域名可通过证书透明度日志获知） | 凭据泄露 | 默认改为 `false`（仅随机路径），或给订阅加 Basic Auth |
+| ✅ 已解决 | **SSH：`PermitRootLogin yes` + `PasswordAuthentication yes`，无 fail2ban** | 暴力破解 → 服务器沦陷 | 自动：fail2ban（`mode=normal` + 部署者 IP 白名单）。显式：`bash scripts/security/harden_ssh.sh check\|apply\|confirm\|revert`——公钥存在性预检 + `sshd -t` 校验 + **10 分钟自动回滚**，实测无锁死。**不参与 `deploy.sh`** |
+| ✅ 已解决 | **订阅直连路径默认开启** → 任何人访问 `https://<域名>/sub` 即可拿到全部凭据 | 凭据泄露 | 默认改为 `false`（仅随机路径）；`EASYNET_SUBSCRIPTION_PATH_PREFIX` 可固定路径，重装后客户端无感 |
 | 🟡 P2 | 订阅仅单层「128 位随机路径」保护 | 路径泄露即凭据泄露 | 可选 Basic Auth / 一次性 token |
 | 🟡 P2 | WireGuard 私钥写入客户端 URI | 分享链接=私钥 | 协议约定，保留但已在部署时告警 |
 | 🟡 P3 | Xray 版本 pin 落后上游 6 个月（26.3.27 vs 26.9.9） | 缺后续修复 | 评审后跟进升级（保持 pin 策略） |
@@ -223,3 +223,15 @@ CapabilityBoundingSet=~      ← systemd 语义：对空列表取反 = 授予全
 - sing-box v1.14.2 / Xray-core v26.9.9 配置文档与源码（见 `docs/unified-backend-analysis.md`）。
 - 测试 VPS 运行时取证（2026-09-27）：`systemctl show`、`/proc/<pid>/status`、`ss -lntup`、
   `ufw status verbose`、`sshd -T`、配置文件权限。
+
+
+---
+
+## 九、第二轮修复落实（2026-09-27）
+
+| 项 | 实现 | 验证 |
+|---|---|---|
+| **P0 SSH 加固** | 新增 `scripts/security/harden_ssh.sh`（`check`/`apply`/`confirm`/`revert`/`status`），drop-in 命名为 `10-` 以排在 `50-cloud-init.conf` 之前（sshd「首个值生效」）；apply 前校验公钥存在性 + 当前会话为 publickey，apply 后 `sshd -t` 校验并武装 10 分钟自动回滚 | 体检→apply→新连接仍可登录→confirm；**自动回滚实测**（20s 延迟不 confirm 后自动恢复默认，全程可登录）；重复 apply 为 no-op |
+| **P1 订阅直连路径默认关闭** | `EASYNET_SUBSCRIPTION_DIRECT_PATHS` 默认 `true` → `false`；新增 `EASYNET_SUBSCRIPTION_PATH_PREFIX` 校验（拒绝空白/?/#/&，过短告警） | `/sub` 不再返回节点（0 条），随机路径 200/4 节点 |
+| **P2 重部署零中断** | hysteria2 / shadowsocks / awg-quick 增加「渲染→比对→不变则跳过重启」；xray 仅在沙箱变化或未运行时重启；nginx 全链路 `reload`；**证书续期 hook 增加指纹比对**（acme 每次部署都会跑 `--install-cert`，此前每次都重启全部服务）；AWG 的「旧版迁移」不再误删在用接口 | 连续两次部署后 **5 个服务 `ActiveEnterTimestamp` 完全不变** |
+| **P3 规则集缺失提示** | `generate_subscription.sh` 检测 `rules/manifest.json` 缺失并给出修复命令 | 实测输出完整告警 |

@@ -397,11 +397,17 @@ configure_reality() {
 
 create_systemd_service() {
     log_info "配置 Xray 服务..."
-    systemctl enable xray
+    systemctl enable xray >/dev/null 2>&1 || true
     # Sandbox the upstream unit via drop-in (config lives in /usr/local/etc/xray,
     # which stays readable; RuntimeDirectory=/run/xray stays writable).
     maintenance_apply_systemd_hardening xray
-    systemctl restart xray
+    # Restart only when something actually changed: config changes are handled by
+    # configure_reality() and certificate renewals by the edge renew hook.
+    if [ "${SYSTEMD_HARDENING_CHANGED:-false}" = "true" ] || ! systemctl is-active --quiet xray; then
+        systemctl restart xray
+    else
+        log_info "Xray 服务已在运行，跳过重启。"
+    fi
 }
 
 ensure_short_id() {

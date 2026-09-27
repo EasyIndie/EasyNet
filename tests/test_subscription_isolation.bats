@@ -57,10 +57,32 @@ JSON
     echo "443" > "$STATE_DIR/exposure/edge/port.txt"
     echo "/s/0123456789abcdef0123456789abcdef" > "$STATE_DIR/exposure/edge/subscription_path_prefix.txt"
     run env EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" \
+        EASYNET_SUBSCRIPTION_DIRECT_PATHS=true \
         bash "$PROJECT_ROOT/scripts/generate_subscription.sh"
     echo "$output" | rg -q "https://edge.example.com/sub"
     echo "$output" | rg -q "https://edge.example.com/singbox"
     echo "$output" | rg -q "https://edge.example.com/clash"
+    rm -rf "$TMP_DIR"
+}
+
+@test "Subscription links use the unguessable random path by default" {
+    TMP_DIR=$(mktemp -d)
+    STATE_DIR="$TMP_DIR/state"
+    WEB_ROOT="$TMP_DIR/web"
+    mkdir -p "$STATE_DIR/modules/example"
+    cat > "$STATE_DIR/modules/example/metadata.json" <<'JSON'
+{"schemaVersion":1,"module":"xray-reality","enabled":true,"protocol":"vless","port":8443,"client":{"uri":"vless://example","clash":{"name":"Example","type":"vless","server":"203.0.113.10","port":8443,"uuid":"11111111-1111-4111-8111-111111111111","network":"tcp","flow":"xtls-rprx-vision","servername":"www.example.com","client-fingerprint":"chrome","reality-opts":{"public-key":"pk","short-id":"sid"}}}}
+JSON
+    mkdir -p "$STATE_DIR/exposure/edge"
+    echo "edge.example.com" > "$STATE_DIR/exposure/edge/domain.txt"
+    echo "https" > "$STATE_DIR/exposure/edge/scheme.txt"
+    echo "443" > "$STATE_DIR/exposure/edge/port.txt"
+    echo "/s/0123456789abcdef0123456789abcdef" > "$STATE_DIR/exposure/edge/subscription_path_prefix.txt"
+    run env EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" \
+        bash "$PROJECT_ROOT/scripts/generate_subscription.sh"
+    echo "$output" | rg -q "https://edge.example.com/s/0123456789abcdef0123456789abcdef/sub"
+    # A fixed /sub path would be guessable: the domain is public via CT logs.
+    echo "$output" | rg -qv "https://edge.example.com/sub$"
     rm -rf "$TMP_DIR"
 }
 
@@ -153,7 +175,7 @@ JSON
     echo "443" > "$STATE_DIR/exposure/edge/port.txt"
     run env EASYNET_STATE_DIR="$STATE_DIR" \
         bash "$PROJECT_ROOT/scripts/show_subscription.sh"
-    echo "$output" | rg -q "https://edge.example.com/clash"
+    echo "$output" | rg -q "https://edge.example.com/s/test/clash"
     rm -rf "$TMP_DIR"
 }
 

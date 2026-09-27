@@ -79,3 +79,31 @@ setup() {
     rg -q "maintenance_configure_logs|maintenance_configure_nginx_logrotate" "$PROJECT_ROOT/scripts/deploy.sh" "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
     rg -q "SystemMaxUse|/etc/logrotate.d/easynet-nginx|/var/log/nginx/\\*.log" "$PROJECT_ROOT/scripts/core/maintenance.sh"
 }
+
+@test "SSH hardening dry-run renders a drop-in that sorts before cloud-init" {
+    run bash "$PROJECT_ROOT/scripts/security/harden_ssh.sh" apply --dry-run
+    [ "$status" -eq 0 ]
+    echo "$output" | rg -q '^PermitRootLogin prohibit-password$'
+    echo "$output" | rg -q '^PasswordAuthentication no$'
+    echo "$output" | rg -q '^MaxAuthTries 3$'
+    # `10-` must sort before `50-cloud-init.conf`: sshd uses the FIRST value it sees.
+    rg -q '10-easynet-hardening' "$PROJECT_ROOT/scripts/security/harden_ssh.sh"
+    rg -q '50-cloud-init' "$PROJECT_ROOT/scripts/security/harden_ssh.sh"
+}
+
+@test "SSH hardening refuses to apply when no authorized key exists" {
+    rg -q '拒绝加固' "$PROJECT_ROOT/scripts/security/harden_ssh.sh"
+    rg -q 'count_authorized_keys' "$PROJECT_ROOT/scripts/security/harden_ssh.sh"
+}
+
+@test "SSH hardening arms an automatic rollback and provides confirm/revert" {
+    rg -q 'on-active' "$PROJECT_ROOT/scripts/security/harden_ssh.sh"
+    rg -q 'cmd_confirm' "$PROJECT_ROOT/scripts/security/harden_ssh.sh"
+    rg -q 'cmd_revert' "$PROJECT_ROOT/scripts/security/harden_ssh.sh"
+    rg -q 'sshd -t' "$PROJECT_ROOT/scripts/security/harden_ssh.sh"
+}
+
+@test "SSH hardening is opt-in and never called by the deploy pipeline" {
+    run rg -l 'harden_ssh' "$PROJECT_ROOT/scripts/deploy.sh" "$PROJECT_ROOT/scripts/core"
+    [ "$status" -eq 1 ]
+}

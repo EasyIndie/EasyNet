@@ -160,6 +160,8 @@ configure_server() {
     log_info "配置 AmneziaWG 服务器..."
     mkdir -p "$WG_DIR" "$CLIENT_CONFIG_DIR"
 
+    WG_CONFIG_CHANGED=false
+
     if [ -f "$WG_CONFIG" ] && grep -q "PrivateKey" "$WG_CONFIG"; then
         log_info "检测到已有的 AmneziaWG 配置，保留服务端密钥与混淆参数。"
         SERVER_PUBLIC_KEY=$(cat "$WG_DIR/server_public.key" 2>/dev/null || echo "")
@@ -198,23 +200,41 @@ EOF
         chmod 600 "$WG_CONFIG"
         echo "$SERVER_PUBLIC_KEY" > "$WG_DIR/server_public.key"
         chmod 644 "$WG_DIR/server_public.key"
+        WG_CONFIG_CHANGED=true
     fi
 }
 
 create_systemd_service() {
     log_info "启用 AmneziaWG 服务..."
 
-    # Migrate away from a previous plain WireGuard deployment. The old
-    # wg-quick interface may linger even after the service stops, and
-    # awg-quick refuses to start when the interface already exists.
+    local needs_restart=false old_wg_active=false
+
+    # Migrate away from a previous plain WireGuard deployment. Only do this when
+    # the OLD wg-quick service owns the interface, or when no AWG service is
+    # running: deleting a live awg-quick interface would drop every client.
+    if systemctl is-active --quiet "wg-quick@${WG_INTERFACE}"; then
+        old_wg_active=true
+    fi
     systemctl disable --now "wg-quick@${WG_INTERFACE}" >/dev/null 2>&1 || true
     if ip link show "$WG_INTERFACE" >/dev/null 2>&1; then
-        log_info "移除已存在的接口 $WG_INTERFACE（从旧版 WireGuard 迁移）..."
-        ip link delete "$WG_INTERFACE" >/dev/null 2>&1 || true
+        if [ "$old_wg_active" = true ] || ! systemctl is-active --quiet "$WG_SERVICE"; then
+            log_info "移除已存在的接口 $WG_INTERFACE（从旧版 WireGuard 迁移）..."
+            ip link delete "$WG_INTERFACE" >/dev/null 2>&1 || true
+            needs_restart=true
+        fi
     fi
 
-    systemctl enable "$WG_SERVICE"
-    systemctl restart "$WG_SERVICE"
+    if [ "${WG_CONFIG_CHANGED:-true}" = "true" ] || ! systemctl is-active --quiet "$WG_SERVICE"; then
+        needs_restart=true
+    fi
+
+    systemctl enable "$WG_SERVICE" >/dev/null 2>&1 || true
+    if [ "$needs_restart" = "true" ]; then
+        systemctl restart "$WG_SERVICE"
+    else
+        # Restarting awg-quick tears down the tunnel for every online client.
+        log_info "AmneziaWG 配置未变化，跳过重启。"
+    fi
 }
 
 add_client() {
@@ -253,6 +273,7 @@ PublicKey = $CLIENT_PUBLIC_KEY
 PresharedKey = $pre_shared_key
 AllowedIPs = $client_ip
 EOF
+        WG_CONFIG_CHANGED=true
     fi
 
     cat > "$CLIENT_CONFIG_FILE" << EOF

@@ -9,6 +9,21 @@ source "$CORE_DIR/logging.sh"
 EDGE_CERT_DIR="${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}"
 EDGE_CERT_FILE="${EASYNET_EDGE_CERT_FILE:-$EDGE_CERT_DIR/fullchain.crt}"
 EDGE_KEY_FILE="${EASYNET_EDGE_KEY_FILE:-$EDGE_CERT_DIR/private.key}"
+# acme.sh runs this hook on every `--install-cert` (i.e. every deploy), so we
+# must not restart the whole stack unless the certificate really changed.
+CERT_FINGERPRINT_FILE="${EASYNET_EDGE_CERT_FINGERPRINT_FILE:-/var/lib/easynet/edge/cert_fingerprint.txt}"
+
+cert_fingerprint() {
+    [ -f "$EDGE_CERT_FILE" ] || {
+        printf ''
+        return 0
+    }
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$EDGE_CERT_FILE" | awk '{print $1}'
+    else
+        openssl dgst -sha256 "$EDGE_CERT_FILE" | awk '{print $NF}'
+    fi
+}
 
 service_exists() {
     systemctl cat "$1" >/dev/null 2>&1 ||
@@ -75,8 +90,22 @@ main() {
 
     fix_edge_cert_permissions
 
-    # Always restart nginx (Edge Gateway)
-    restart_if_exists nginx
+    # Skip the restart storm when the certificate is byte-identical (the common
+    # case: acme.sh --install-cert runs on every deploy, but nothing rotated).
+    local fingerprint previous
+    fingerprint="$(cert_fingerprint)"
+    previous="$(cat "$CERT_FINGERPRINT_FILE" 2>/dev/null || true)"
+    if [ -n "$fingerprint" ] && [ "$fingerprint" = "$previous" ]; then
+        log_info "Edge 证书未变化，跳过服务重启。"
+        return 0
+    fi
+
+    # Reload nginx (Edge Gateway): a reload keeps in-flight downloads alive.
+    if service_exists nginx; then
+        systemctl reload nginx >/dev/null 2>&1 ||
+            systemctl restart nginx >/dev/null 2>&1 ||
+            log_warn "nginx 重载失败"
+    fi
 
     # Dynamically restart services that use Edge certificates,
     # discovered from metadata across all deployed modules.
@@ -92,6 +121,11 @@ main() {
     # Legacy fallback: ensure hysteria2 is restarted
     # (in case its metadata is missing)
     restart_if_exists hysteria-server.service
+
+    if [ -n "$fingerprint" ]; then
+        mkdir -p "$(dirname "$CERT_FINGERPRINT_FILE")"
+        printf '%s' "$fingerprint" > "$CERT_FINGERPRINT_FILE"
+    fi
 
     log_info "Edge 证书续期 hook 已完成。"
 }

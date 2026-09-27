@@ -382,7 +382,8 @@ deploy_modules() {
         deploy_module "$module"
     done
     if edge_gateway_enabled; then
-        systemctl restart nginx >/dev/null 2>&1 || true
+        # Reload, not restart: subscription files and TLS connections stay alive.
+        systemctl reload nginx >/dev/null 2>&1 || systemctl restart nginx >/dev/null 2>&1 || true
     fi
     bash "$DEPLOY_SCRIPT_DIR/generate_subscription.sh"
     setup_firewall

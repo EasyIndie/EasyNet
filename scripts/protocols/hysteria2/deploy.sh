@@ -59,7 +59,8 @@ require_tls_certificate() {
 }
 
 write_env_var() {
-    printf '%s=%q\n' "$1" "$2" >> "${HYSTERIA2_ENV_FILE:-}"
+    local file="$1" name="$2" value="$3"
+    printf '%s=%q\n' "$name" "$value" >> "$file"
 }
 
 # Read a secret persisted by an earlier deploy from HYSTERIA2_ENV_FILE.
@@ -148,7 +149,11 @@ configure_hysteria2() {
     mkdir -p "${HYSTERIA2_CONFIG_DIR:-}"
     require_tls_certificate
 
-    cat > "${HYSTERIA2_CONFIG_FILE:-}" <<EOF
+    local new_config new_env
+    new_config="$(mktemp)"
+    new_env="$(mktemp)"
+
+    cat > "$new_config" <<EOF
 listen: :$port
 
 tls:
@@ -173,7 +178,7 @@ EOF
 
     # Append port hopping config if enabled
     if [ -n "$port_hopping" ]; then
-        cat >> "${HYSTERIA2_CONFIG_FILE:-}" <<EOF
+        cat >> "$new_config" <<EOF
 
 portHopping:
   interval: $hop_interval
@@ -183,27 +188,41 @@ EOF
         log_info "Port Hopping 已启用: $port_hopping (间隔 $hop_interval)"
     fi
 
-    : > "${HYSTERIA2_ENV_FILE:-}"
-    write_env_var HYSTERIA2_DOMAIN "$domain"
-    write_env_var HYSTERIA2_PORT "$port"
-    write_env_var HYSTERIA2_PASSWORD "$password"
-    write_env_var HYSTERIA2_OBFS_PASSWORD "$obfs_password"
-    write_env_var HYSTERIA2_SNI "$domain"
+    write_env_var "$new_env" HYSTERIA2_DOMAIN "$domain"
+    write_env_var "$new_env" HYSTERIA2_PORT "$port"
+    write_env_var "$new_env" HYSTERIA2_PASSWORD "$password"
+    write_env_var "$new_env" HYSTERIA2_OBFS_PASSWORD "$obfs_password"
+    write_env_var "$new_env" HYSTERIA2_SNI "$domain"
     if [ -n "$port_hopping" ]; then
-        write_env_var HYSTERIA2_PORT_HOPPING "$port_hopping"
-        write_env_var HYSTERIA2_PORT_HOP_INTERVAL "$hop_interval"
+        write_env_var "$new_env" HYSTERIA2_PORT_HOPPING "$port_hopping"
+        write_env_var "$new_env" HYSTERIA2_PORT_HOP_INTERVAL "$hop_interval"
     fi
+
+    # Idempotent apply: replace only when something changed, so a re-deploy does
+    # not drop live Hysteria2 sessions.
+    HYSTERIA2_CHANGED=false
+    if ! cmp -s "$new_config" "${HYSTERIA2_CONFIG_FILE:-}" || ! cmp -s "$new_env" "${HYSTERIA2_ENV_FILE:-}"; then
+        install -m 600 "$new_config" "${HYSTERIA2_CONFIG_FILE:-}"
+        install -m 600 "$new_env" "${HYSTERIA2_ENV_FILE:-}"
+        HYSTERIA2_CHANGED=true
+    fi
+    rm -f "$new_config" "$new_env"
 
     set_hysteria2_file_permissions
 }
 
 restart_hysteria2() {
     log_info "启动 Hysteria2 服务..."
-    systemctl enable "${HYSTERIA2_SERVICE:-}"
+    systemctl enable "${HYSTERIA2_SERVICE:-}" >/dev/null 2>&1 || true
     # Sandbox the upstream unit via drop-in; keep /var/lib/hysteria (its home and
     # WorkingDirectory) writable under ProtectSystem=strict.
     maintenance_apply_systemd_hardening "${HYSTERIA2_SERVICE:-}" \
         "ReadWritePaths=/var/lib/hysteria"
+    if [ "${HYSTERIA2_CHANGED:-true}" != "true" ] && [ "${SYSTEMD_HARDENING_CHANGED:-false}" != "true" ] &&
+        systemctl is-active --quiet "${HYSTERIA2_SERVICE:-}"; then
+        log_info "Hysteria2 配置未变化，跳过重启。"
+        return 0
+    fi
     systemctl restart "${HYSTERIA2_SERVICE:-}"
 }
 
