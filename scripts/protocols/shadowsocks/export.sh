@@ -32,7 +32,7 @@ export_shadowsocks_metadata() {
 
     userinfo=$(printf '%s:%s' "${method}" "${psk}" | base64 -w 0 | tr '+/' '-_' | sed 's/=*$//')
     local flag_code flag_suffix=""
-    flag_code="$(get_country_code)"
+    flag_code="$(get_country_code "$public_ip")"
     [ -n "$flag_code" ] && flag_suffix="/?flag=$flag_code"
     uri="ss://${userinfo}@${public_ip}:${port}${flag_suffix}#EasyNet-SS"
 

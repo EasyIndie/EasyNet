@@ -46,7 +46,7 @@ export_xray_reality_metadata() {
     # Note: xtls-rprx-vision flow only works with TCP transport, not XHTTP.
     # XHTTP uses HTTP/2 framing which conflicts with XTLS direct passthrough.
     local flag_code flag_suffix=""
-    flag_code="$(get_country_code)"
+    flag_code="$(get_country_code "$public_ip")"
     [ -n "$flag_code" ] && flag_suffix="&flag=$flag_code"
     if [ "$transport" = "xhttp" ]; then
         uri="vless://$uuid@$public_ip:$port?encryption=none&security=reality&sni=$sni&fp=$fingerprint&pbk=$public_key&sid=$short_id&type=xhttp&mode=$xhttp_mode${flag_suffix}#EasyNet-Reality"

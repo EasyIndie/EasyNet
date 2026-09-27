@@ -76,7 +76,7 @@ export_wireguard_metadata() {
     # JSON blob (all values are strings). Keep individual params for other clients.
     local obfs_param enc_obfs_param
     local flag_code flag_suffix=""
-    flag_code="$(get_country_code)"
+    flag_code="$(get_country_code "$wg_server")"
     [ -n "$flag_code" ] && flag_suffix="&flag=$flag_code"
     obfs_param=$(jq -cn \
         --arg jc "$jc" --arg jmin "$jmin" --arg jmax "$jmax" \

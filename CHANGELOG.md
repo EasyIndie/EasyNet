@@ -41,7 +41,7 @@
 ### 测试
 - `tests/test_config_generation.bats` 新增 Reality 自偷 / 回退限速 / AmneziaWG 参数用例；
   `tests/test_protocol_metadata.bats` 新增 Shadowrocket obfs / 国家旗帜 / mihomo amnezia-wg-option
-  断言并补充 AmneziaWG 夹具；测试总数 314 → 326。
+  断言并补充 AmneziaWG 夹具；测试总数 314 → 331。
 
 ## [0.0.10] - 2026-09-26
 
