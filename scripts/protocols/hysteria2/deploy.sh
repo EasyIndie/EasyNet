@@ -240,6 +240,25 @@ configure_hysteria2() {
     port_hopping="${EASYNET_HYSTERIA2_PORT_HOPPING:-}"
     hop_interval="${EASYNET_HYSTERIA2_PORT_HOP_INTERVAL:-30s}"
 
+    # Port hopping is enforced by the *server*: hysteria binds the base port and
+    # installs nftables redirects (start..end -> base) for the rest of the range.
+    # The `portHopping:` YAML block is a client-side option -- writing it into the
+    # server config (as we used to) silently did nothing, so clients that hopped
+    # were sent to ports nothing was listening on.
+    local listen_spec="$port"
+    if [ -n "$port_hopping" ]; then
+        if [[ "$port_hopping" =~ ^([0-9]{2,5})-([0-9]{2,5})$ ]] \
+            && [ "${BASH_REMATCH[1]}" -ge 1 ] && [ "${BASH_REMATCH[2]}" -le 65535 ] \
+            && [ "${BASH_REMATCH[1]}" -lt "${BASH_REMATCH[2]}" ]; then
+            listen_spec="$port,$port_hopping"
+            log_info "Port Hopping 已启用: $port_hopping (基础端口 ${port}，间隔 $hop_interval)"
+            log_info "  服务器将把 $port_hopping/udp 全部重定向到 $port/udp，并自动管理 nftables 规则"
+        else
+            log_warn "EASYNET_HYSTERIA2_PORT_HOPPING 格式无效（应为 起始-结束，如 20000-30000）: ${port_hopping}，已忽略"
+            port_hopping=""
+        fi
+    fi
+
     log_info "配置 Hysteria2..."
     mkdir -p "${HYSTERIA2_CONFIG_DIR:-}"
     require_tls_certificate
@@ -249,7 +268,7 @@ configure_hysteria2() {
     new_env="$(mktemp)"
 
     cat > "$new_config" <<EOF
-listen: :$port
+listen: :$listen_spec
 
 tls:
   cert: ${HYSTERIA2_CERT_FILE:-}
@@ -271,17 +290,6 @@ obfs:
     password: $obfs_password
 EOF
 
-    # Append port hopping config if enabled
-    if [ -n "$port_hopping" ]; then
-        cat >> "$new_config" <<EOF
-
-portHopping:
-  interval: $hop_interval
-  ports:
-    - $port_hopping
-EOF
-        log_info "Port Hopping 已启用: $port_hopping (间隔 $hop_interval)"
-    fi
 
     write_env_var "$new_env" HYSTERIA2_DOMAIN "$domain"
     write_env_var "$new_env" HYSTERIA2_PORT "$port"
@@ -312,8 +320,12 @@ restart_hysteria2() {
     systemctl enable "${HYSTERIA2_SERVICE:-}" >/dev/null 2>&1 || true
     # Sandbox the upstream unit via drop-in; keep /var/lib/hysteria (its home and
     # WorkingDirectory) writable under ProtectSystem=strict.
+    # AF_NETLINK is required: port hopping makes hysteria shell out to nft(8) to
+    # install the redirect rules, and without it the service dies at startup with
+    # "Unable to initialize Netlink socket: Address family not supported by protocol".
     maintenance_apply_systemd_hardening "${HYSTERIA2_SERVICE:-}" \
-        "ReadWritePaths=/var/lib/hysteria"
+        "ReadWritePaths=/var/lib/hysteria
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK"
     if [ "${HYSTERIA2_CHANGED:-true}" != "true" ] && [ "${HYSTERIA2_UNIT_CHANGED:-false}" != "true" ] &&
         [ "${HYSTERIA2_BINARY_CHANGED:-false}" != "true" ] &&
         [ "${SYSTEMD_HARDENING_CHANGED:-false}" != "true" ] &&
@@ -325,12 +337,13 @@ restart_hysteria2() {
 }
 
 show_config() {
-    local domain port config_url
+    local domain port config_url hop_range
 
     # shellcheck disable=SC1090
     source "${HYSTERIA2_ENV_FILE:-}"
     domain="${HYSTERIA2_DOMAIN:-}"
     port="${HYSTERIA2_PORT:-}"
+    hop_range="${HYSTERIA2_PORT_HOPPING:-}"
 
     echo ""
     echo "========================================"
@@ -348,7 +361,13 @@ show_config() {
     show_qrcode "$config_url" "配置二维码"
     echo ""
     echo "连通性提示:"
-    echo "- Hysteria2 使用 UDP/${port}，请确认云厂商安全组和服务器防火墙均已放行 UDP/$port"
+    echo "- Hysteria2 使用 UDP/${port}，请确认云厂商安全组和服务器防火墙均已放行 UDP/${port}"
+    # Port hopping is only useful if the whole range reaches the VM: we install the
+    # nftables redirects locally, but the cloud security group is outside our reach.
+    if [ -n "$hop_range" ]; then
+        echo "- 端口跳跃已启用：云厂商安全组必须放行 UDP/${hop_range}（否则客户端跳变时会断流）"
+        echo "  本机防火墙已自动放行；若你用的是云厂商侧防火墙，请手动添加该 UDP 范围"
+    fi
     echo "========================================"
 }
 

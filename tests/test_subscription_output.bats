@@ -137,3 +137,44 @@ teardown() {
     [ "$status" -eq 0 ]
     rm -rf "$TMP2"
 }
+
+@test "Hysteria2 subscription exposes hopping to every client dialect" {
+    # sing-box wants server_ports ["start:end"], mihomo wants ports "start-end",
+    # and the URI carries the (non-standard but widely understood) porthopping
+    # params. All three must agree on the same range.
+    local meta="$BATS_TEST_TMPDIR/hy2.json"
+    cat > "$meta" <<'JSON'
+{"schemaVersion":1,"module":"hysteria2","protocol":"hysteria2","port":443,
+ "client":{"uri":"hysteria2://pw@d.example.com:443/?sni=d.example.com&obfs=salamander&obfs-password=o&porthopping=20000-30000&porthopping-interval=30s#EasyNet-Hysteria2",
+ "clash":{"name":"EasyNet-Hysteria2","type":"hysteria2","server":"d.example.com","port":443,"password":"pw","sni":"d.example.com","obfs":"salamander","obfs-password":"o","up":"100 Mbps","down":"100 Mbps","hop-range":"20000-30000","hop-interval":"30s"}}}
+JSON
+
+    run jq -c -f "$PROJECT_ROOT/scripts/protocols/hysteria2/render_singbox.jq" "$meta"
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s' "$output" | jq -c '.server_ports')" = '["20000:30000"]' ]
+    [ "$(printf '%s' "$output" | jq -r '.hop_interval')" = "30s" ]
+
+    run bash "$PROJECT_ROOT/scripts/protocols/hysteria2/render_clash.sh" "$meta"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *'ports: "20000-30000"'* ]]
+    [[ "$output" == *'hop-interval: "30s"'* ]]
+
+    run jq -r '.client.uri' "$meta"
+    [[ "$output" == *"porthopping=20000-30000"* ]]
+}
+
+@test "Hysteria2 renderers omit hopping fields when hopping is disabled" {
+    local meta="$BATS_TEST_TMPDIR/hy2off.json"
+    cat > "$meta" <<'JSON'
+{"schemaVersion":1,"module":"hysteria2","protocol":"hysteria2","port":443,
+ "client":{"uri":"hysteria2://pw@d.example.com:443/","clash":{"name":"EasyNet-Hysteria2","type":"hysteria2","server":"d.example.com","port":443,"password":"pw","sni":"d.example.com","obfs":"salamander","obfs-password":"o","up":"100 Mbps","down":"100 Mbps"}}}
+JSON
+    run jq -c -f "$PROJECT_ROOT/scripts/protocols/hysteria2/render_singbox.jq" "$meta"
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s' "$output" | jq -c 'has("server_ports")')" = "false" ]
+    [ "$(printf '%s' "$output" | jq -c 'has("hop_interval")')" = "false" ]
+
+    run bash "$PROJECT_ROOT/scripts/protocols/hysteria2/render_clash.sh" "$meta"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"ports:"* ]]
+}

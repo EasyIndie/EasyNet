@@ -15,6 +15,7 @@ main() {
     uninstall_remove_path "$WG_DIR" "AmneziaWG 配置目录"
     uninstall_remove_path "/etc/wireguard" "旧版 WireGuard 配置目录"
     uninstall_remove_file "/etc/sysctl.d/wireguard.conf" "WireGuard sysctl 配置"
+    uninstall_remove_hardening_dropin "awg-quick@wg0.service"
     uninstall_remove_module_metadata "$MODULE_NAME"
     uninstall_apt_purge amneziawg amneziawg-dkms amneziawg-tools
     uninstall_refresh_runtime_state

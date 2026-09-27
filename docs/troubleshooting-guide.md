@@ -200,6 +200,8 @@ EASYNET_DIAG_CLIENT_IP=<客户端公网IP> bash scripts/diagnose_reachability.sh
 - 查看 Hysteria2 日志：`journalctl -u hysteria-server.service -n 100 --no-pager -l`
 - 确认客户端配置中包含 `port_hopping` 参数（通过订阅导入自动包含）
 - 如客户端不支持 Port Hopping，关闭 `EASYNET_HYSTERIA2_PORT_HOPPING` 重新部署
+- 跳变到某个端口后断流：99% 是**云厂商安全组**没放行整个 UDP 范围（本机 `ufw status` 应能看到该范围，
+  `nft list ruleset | grep redirect` 应能看到 `udp dport <范围> redirect to :<基础端口>`）
 
 ### Xray XHTTP 模式下连接异常
 

@@ -5,6 +5,50 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.11] - 2026-09-27
+
+### 修复
+- **Hysteria2 端口跳跃（Port Hopping）此前从未真正生效**：服务端配置里写的是客户端专有的
+  `portHopping:` 块（服务端会静默忽略），而订阅却向客户端宣告 `porthopping=20000-30000` ——
+  会跳变的客户端会被送到无人监听的端口。现改为服务端 `listen: :<基础端口>,<范围>`，
+  由 hysteria 内建范围支持接管：监听基础端口并**自动创建/回收 nftables 重定向**（范围 → 基础端口）。
+  同时把沙箱补上 `AF_NETLINK`（否则服务启动即致命错误：`Unable to initialize Netlink socket`），
+  并按各客户端方言输出跳变字段：sing-box `server_ports` + `hop_interval`、mihomo `ports` +
+  `hop-interval`、URI 保留 `porthopping` 兼容参数。实测：服务端对 443/20000/23456/25000/29999
+  全部返回 204；`hop_interval=5s` 的跳变客户端 35 秒内 7/7 请求成功。
+- **`set -o pipefail` + `producer | head -1` 会中止部署**：生产者收到 SIGPIPE 返回 141，`set -e`
+  随即退出（实测 `xray version | head -1` 直接让部署中断）。全仓库 12 处改为 `awk 'NR==1'` /
+  `find -print -quit` / 单遍 awk，并新增 lint 规则防回归。
+- **`install_hysteria2` 在二进制已最新时提前返回**，跳过服务账号/运行时目录/systemd unit 的创建
+  （实测：删除 `hysteria` 用户后重部署，服务卡在 `activating`）。现运行时准备无条件执行。
+- **卸载后仍对外开放 UDP 端口范围**：元数据把范围存成 `20000-30000`（连字符），UFW 需要
+  `20000:30000`（冒号），`ufw delete` 报 `Bad port` 又被 `|| true` 吞掉。现抽出
+  `firewall_normalize_rule()` 作为唯一归一化入口，apply 与 uninstall 共用。
+- **`scripts/uninstall.sh` 调用了 `core/uninstall.sh` 的函数却没 source 它** → `command not found`
+  （exit 127）→ `set -e` 中断整个收尾流程（cron 未刷新、`~/.easynet` 索引未更新）。
+- 卸载遗留：systemd 加固 drop-in、上游旧模板单元（`xray@.service`、`hysteria-server@.service`、
+  `10-donot_touch_single_conf.conf`）、sing-box 规则集、证书指纹状态、状态目录空骨架。
+- `~/.easynet` 索引不再保留指向已删除路径的断链（剪枝只处理 hub 自建链接，不穿透目录软链）。
+- lint 的「`$VAR` 紧跟多字节字符」检查此前用 `grep -P`，而 BSD grep 无 `-P` → 本地 macOS 静默通过
+  （CI 才发现）。改用可移植写法 `LC_ALL=C grep -nE '\$[A-Za-z_][A-Za-z0-9_]*[^ -~]'`。
+
+### 变更
+- **所有二进制依赖改为「仓库内 pin 版本 + SHA256 且默认强制校验」**：新增 `scripts/core/pins.sh`
+  （Xray `26.3.27`、hysteria2 `2.12.3`、shadowsocks-rust `1.25.0`、acme.sh `3.1.6`，每架构独立哈希，
+  来源为厂商自身发布元数据）。哈希不匹配即中止部署。
+- **不再执行第三方安装脚本**：Xray 改为直接下载官方 release zip（原来从 `main` 分支取
+  `install-release.sh`，脚本本身无法 pin），Hysteria2 改为直接下载官方 release 二进制
+  （原来取 `get.hy2.sh`，永远装 latest）。两者改用自写 systemd unit，并自动创建 `hysteria` 系统账号。
+- 覆盖版本但未提供 SHA256 → **默认拒绝部署**（`EASYNET_ALLOW_UNPINNED=1` 可强制跳过，不建议）。
+- shadowsocks-rust `1.24.0 → 1.25.0`；替换二进制后强制重启服务（否则运行的仍是旧镜像）。
+- 新增 `scripts/check_upstream_pins.sh` + `.github/workflows/pins.yml`（每周检查 pin 是否落后上游
+  **稳定版**；Xray 的 pre-release 不会被误报）。
+- 纠正文档中的一个前提错误：Xray 并非「落后上游 6 个月」——自 `26.4.15` 起其所有 release 均为
+  pre-release，`26.3.27` 就是最新稳定版。
+- 端口跳跃现已生效，因此**云厂商安全组必须放行整个 UDP 范围**（本机 UFW 由 EasyNet 自动处理）；
+  部署输出与会话结束提示都会明确提醒。
+- 测试 362 → 386。
+
 ## [Unreleased]
 
 ### 新增
@@ -399,6 +443,7 @@
 - logrotate 和 journald 日志限额
 - 单元测试框架（13 个测试套件）
 
+[0.0.11]: https://github.com/EasyIndie/EasyNet/compare/0.0.10...0.0.11
 [0.0.10]: https://github.com/EasyIndie/EasyNet/compare/0.0.9...0.0.10
 [0.0.9]: https://github.com/EasyIndie/EasyNet/compare/0.0.8...0.0.9
 [0.0.8]: https://github.com/EasyIndie/EasyNet/compare/0.0.7...0.0.8

@@ -647,3 +647,52 @@ source_protocol() {
     grep -q "HYSTERIA2_DOMAIN" "$env_file"     || { echo "# HYSTERIA2_DOMAIN"; return 1; }
     grep -q "HYSTERIA2_PASSWORD" "$env_file"   || { echo "# HYSTERIA2_PASSWORD"; return 1; }
 }
+
+@test "Hysteria2 port hopping is enforced by the server listen range" {
+    # Regression: the server config used to carry a `portHopping:` block, which is a
+    # client-side option. The server ignored it entirely, so clients that hopped
+    # were sent to ports nothing was listening on. The server must instead listen on
+    # "<base>,<range>" -- hysteria then redirects the range to the base via nftables.
+    source "$PROJECT_ROOT/scripts/core/metadata.sh"
+    source "$PROJECT_ROOT/scripts/core/env.sh"
+    export HYSTERIA2_CONFIG_DIR="$TMP_DIR/hy2hop"
+    export EASYNET_DOMAIN="proxy.example.com"
+    export EASYNET_HYSTERIA2_PORT_HOPPING="20000-30000"
+    source_protocol "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"
+
+    run configure_hysteria2
+    [ "$status" -eq 0 ]
+
+    local config="${HYSTERIA2_CONFIG_FILE:-$HYSTERIA2_CONFIG_DIR/config.yaml}"
+    run grep -c "^listen: :443,20000-30000$" "$config"
+    [ "$output" = "1" ] || { echo "# listen line is: $(grep '^listen' "$config")" >&3; return 1; }
+
+    # the client-only block must not be written into the server config
+    run grep -c "portHopping:" "$config"
+    [ "$output" = "0" ]
+}
+
+@test "Hysteria2 rejects a malformed port hopping range" {
+    source "$PROJECT_ROOT/scripts/core/metadata.sh"
+    source "$PROJECT_ROOT/scripts/core/env.sh"
+    export HYSTERIA2_CONFIG_DIR="$TMP_DIR/hy2bad"
+    export EASYNET_DOMAIN="proxy.example.com"
+    export EASYNET_HYSTERIA2_PORT_HOPPING="30000-20000"   # reversed
+    source_protocol "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"
+
+    run configure_hysteria2
+    [ "$status" -eq 0 ]
+
+    local config="${HYSTERIA2_CONFIG_FILE:-$HYSTERIA2_CONFIG_DIR/config.yaml}"
+    run grep -c "^listen: :443$" "$config"
+    [ "$output" = "1" ] || { echo "# listen line is: $(grep '^listen' "$config")" >&3; return 1; }
+
+    local env_file="${HYSTERIA2_ENV_FILE:-$HYSTERIA2_CONFIG_DIR/easynet.env}"
+    run grep -c "HYSTERIA2_PORT_HOPPING" "$env_file"
+    [ "$output" = "0" ]
+}
+
+@test "Hysteria2 sandbox allows AF_NETLINK (needed for nft redirects)" {
+    run grep -q 'AF_INET AF_INET6 AF_UNIX AF_NETLINK' "$PROJECT_ROOT/scripts/protocols/hysteria2/deploy.sh"
+    [ "$status" -eq 0 ] || { echo "# port hopping dies without AF_NETLINK" >&3; return 1; }
+}

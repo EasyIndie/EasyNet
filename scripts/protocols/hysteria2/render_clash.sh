@@ -19,6 +19,8 @@ obfs=$(jq -r '.client.clash.obfs // empty' "$METADATA_FILE")
 obfs_password=$(jq -r '.client.clash."obfs-password" // empty' "$METADATA_FILE")
 up=$(jq -r '.client.clash.up // "100 Mbps"' "$METADATA_FILE")
 down=$(jq -r '.client.clash.down // "100 Mbps"' "$METADATA_FILE")
+hop_range=$(jq -r '.client.clash."hop-range" // empty' "$METADATA_FILE")
+hop_interval=$(jq -r '.client.clash."hop-interval" // empty' "$METADATA_FILE")
 
 cat << EOF
   - name: "$(yaml_escape "$name")"
@@ -33,3 +35,8 @@ cat << EOF
     up: "$(yaml_escape "$up")"
     down: "$(yaml_escape "$down")"
 EOF
+    # mihomo port hopping: `ports` accepts a "start-end" string (or a list).
+    if [ -n "${hop_range:-}" ]; then
+        printf '    ports: "%s"\n' "$(yaml_escape "$hop_range")"
+        [ -n "${hop_interval:-}" ] && printf '    hop-interval: "%s"\n' "$(yaml_escape "$hop_interval")"
+    fi

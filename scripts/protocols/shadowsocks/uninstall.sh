@@ -15,6 +15,7 @@ main() {
     uninstall_delete_firewall_rules "$MODULE_NAME"
     uninstall_remove_path "$CONFIG_DIR" "Shadowsocks 配置目录"
     uninstall_remove_systemd_unit "shadowsocks-rust-server.service"
+    uninstall_remove_hardening_dropin "shadowsocks-rust-server.service"
     uninstall_remove_file "$SS_BIN" "ssserver 二进制文件"
     uninstall_remove_module_metadata "$MODULE_NAME"
     uninstall_refresh_runtime_state

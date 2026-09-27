@@ -148,7 +148,7 @@ sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com bash install.sh
 指定版本或安装目录：
 
 ```bash
-sudo EASYNET_VERSION=0.0.8 EASYNET_INSTALL_DIR=/opt/easynet bash install.sh
+sudo EASYNET_VERSION=<版本 tag> EASYNET_INSTALL_DIR=/opt/easynet bash install.sh
 ```
 
 > 安装器遵循项目「无 `curl | bash`」规范：先落地、校验 SHA256、通过后才执行；失败即中止。

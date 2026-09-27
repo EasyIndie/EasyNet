@@ -127,6 +127,13 @@ EASYNET_REALITY_XMUX_CONCURRENCY=4
 # Hysteria2: 端口跳变（默认禁用，需放行防火墙端口范围）
 EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000
 
+# 端口跳跃要求「整个 UDP 范围」都能到达本机：
+#   - 本机 UFW 由 EasyNet 自动放行；
+#   - 云厂商安全组必须手动放行同一范围（否则客户端跳变到该端口时会断流）。
+# 服务端配置为 listen: :443,20000-30000 —— hysteria 监听 443，
+# 并把 20000-30000/udp 重定向到 443（nftables 规则由 hysteria 自动创建/回收）；
+# 服务进程需要 CAP_NET_ADMIN 与 AF_NETLINK（EasyNet 已配置）。
+
 # AmneziaWG 默认启用（Jc/Jmin/Jmax/S1/S2/H1-H4 随机生成并持久化，无需配置）
 ```
 
@@ -218,7 +225,7 @@ sudo bash install.sh
 sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com bash install.sh
 ```
 
-指定版本：`sudo EASYNET_VERSION=0.0.8 bash install.sh`。
+指定版本：`sudo EASYNET_VERSION=<版本 tag> bash install.sh`。
 
 ### 3. 从源码部署（开发 / 审计）
 
@@ -316,7 +323,7 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 
 ```bash
 curl -fsSL https://github.com/EasyIndie/EasyNet/releases/latest/download/easynet-install.sh -o install.sh
-EASYNET_VERSION=<新版本，如 0.0.10> bash install.sh
+EASYNET_VERSION=<版本 tag，如 0.0.11> bash install.sh
 ```
 
 安装器会替换 `/opt/easynet/scripts` 为新版本、保留 `/opt/easynet/.env`，然后重跑 `deploy.sh`。
@@ -539,7 +546,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_HYSTERIA2_PASSWORD` | 认证密码 | 随机生成（16 字节 Hex） |
 | `EASYNET_HYSTERIA2_OBFS_PASSWORD` | Salamander 混淆密码 | 随机生成（16 字节 Hex） |
 | `EASYNET_HYSTERIA2_MASQUERADE_URL` | QUIC 伪装目标 | `https://www.bing.com/` |
-| `EASYNET_HYSTERIA2_PORT_HOPPING` | 端口跳变范围（如 `20000-30000`，空则禁用） | 未设置（禁用） |
+| `EASYNET_HYSTERIA2_PORT_HOPPING` | 端口跳变范围（如 `20000-30000`，空则禁用）。服务端改成 `listen: :<基础端口>,<范围>`，由 hysteria 自己建立并回收 nftables 重定向（范围 → 基础端口） | 未设置（禁用） |
 | `EASYNET_HYSTERIA2_PORT_HOP_INTERVAL` | 端口跳变间隔 | `30s` |
 | `EASYNET_HYSTERIA2_CERT_FILE` | TLS 证书文件路径 | `${EASYNET_EDGE_CERT_DIR}/fullchain.crt` |
 | `EASYNET_HYSTERIA2_KEY_FILE` | TLS 私钥文件路径 | `${EASYNET_EDGE_CERT_DIR}/private.key` |

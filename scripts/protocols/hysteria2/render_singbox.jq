@@ -8,6 +8,10 @@
     server: $c.server,
     server_port: $c.port,
     password: $c.password,
+    # Port hopping: sing-box expects "start:end" in server_ports.
+    server_ports: (if ($c["hop-range"] // "") == "" then null
+                   else $c["hop-range"] | split("-") | ["\(.[0]):\(.[1])"] end),
+    hop_interval: ($c["hop-interval"] // null),
     obfs: {
         type: ($c.obfs // "salamander"),
         password: $c["obfs-password"]

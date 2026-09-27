@@ -16,6 +16,10 @@ main() {
     uninstall_remove_path "${HYSTERIA2_CONFIG_DIR:-}" "Hysteria2 配置目录"
     uninstall_remove_file "/usr/local/bin/hysteria" "Hysteria2 可执行文件"
     uninstall_remove_file "/etc/systemd/system/${HYSTERIA2_SERVICE:-}" "Hysteria2 systemd unit"
+    uninstall_remove_hardening_dropin "${HYSTERIA2_SERVICE:-}"
+    # Legacy upstream-installer template unit (get.hy2.sh created this before we
+    # started writing hysteria-server.service ourselves).
+    uninstall_remove_file "/etc/systemd/system/hysteria-server@.service" "旧版 Hysteria2 模板单元"
     uninstall_remove_module_metadata "$MODULE_NAME"
     uninstall_refresh_runtime_state
     log_info "Hysteria2 卸载完成"

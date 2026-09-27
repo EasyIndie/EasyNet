@@ -34,6 +34,17 @@ export_hysteria2_metadata() {
         return 1
     fi
 
+    # Validate the hopping range once, so the server config, the URI and the
+    # client renderers can never disagree about it.
+    if [ -n "$port_hopping" ]; then
+        if ! [[ "$port_hopping" =~ ^([0-9]{2,5})-([0-9]{2,5})$ ]] \
+            || [ "${BASH_REMATCH[1]}" -lt 1 ] || [ "${BASH_REMATCH[2]}" -gt 65535 ] \
+            || [ "${BASH_REMATCH[1]}" -ge "${BASH_REMATCH[2]}" ]; then
+            echo "忽略无效的端口跳跃范围: $port_hopping" >&2
+            port_hopping=""
+        fi
+    fi
+
     # Build URI; append port-hopping params when enabled
     local flag_code flag_suffix=""
     flag_code="$(get_country_code)"
@@ -65,6 +76,8 @@ export_hysteria2_metadata() {
         --arg password "$password" \
         --arg sni "$sni" \
         --arg obfs_password "$obfs_password" \
+        --arg port_hopping "$port_hopping" \
+        --arg hop_interval "$hop_interval" \
         --arg uri "$uri" \
         --argjson port "$port" \
         --argjson firewall "$firewall_json" \
@@ -90,7 +103,12 @@ export_hysteria2_metadata() {
                     obfs: "salamander",
                     "obfs-password": $obfs_password,
                     up: "100 Mbps",
-                    down: "100 Mbps"
+                    down: "100 Mbps",
+                    # Consumed by render_clash.sh (mihomo `ports`) and
+                    # render_singbox.jq (`server_ports`); null when hopping is off
+                    # so the renderers omit the field entirely.
+                    "hop-range": (if $port_hopping == "" then null else $port_hopping end),
+                    "hop-interval": (if $port_hopping == "" then null else $hop_interval end)
                 }
             },
             firewall: $firewall,

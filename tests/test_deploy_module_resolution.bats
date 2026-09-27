@@ -174,3 +174,71 @@ setup() {
     run validate_module_manifest no-such-module
     [ "$status" -eq 1 ]
 }
+
+@test "firewall_normalize_rule converts metadata hyphen ranges to UFW colon form" {
+    source "$PROJECT_ROOT/scripts/core/firewall.sh"
+    [ "$(firewall_normalize_rule '20000-30000/udp')" = "20000:30000/udp" ]
+}
+
+@test "firewall_normalize_rule leaves plain ports untouched" {
+    source "$PROJECT_ROOT/scripts/core/firewall.sh"
+    [ "$(firewall_normalize_rule '443/udp')" = "443/udp" ]
+    [ "$(firewall_normalize_rule '8388/tcp')" = "8388/tcp" ]
+}
+
+@test "uninstall normalises port ranges before calling ufw delete" {
+    # Regression: uninstall used to pass "20000-30000/udp" straight to
+    # `ufw delete`, which fails with "Bad port" and silently leaves the
+    # Hysteria2 port-hopping range open after the service is gone.
+    run grep -q 'rule="$(firewall_normalize_rule "$rule")"' "$PROJECT_ROOT/scripts/core/uninstall.sh"
+    [ "$status" -eq 0 ]
+}
+
+@test "every module uninstall removes the hardening drop-in it created" {
+    for f in "$PROJECT_ROOT"/scripts/protocols/*/uninstall.sh; do
+        run grep -q 'uninstall_remove_hardening_dropin' "$f"
+        [ "$status" -eq 0 ]
+    done
+}
+
+@test "uninstall prunes empty state directories but keeps the state root" {
+    source "$PROJECT_ROOT/scripts/core/uninstall.sh"
+    local state="$BATS_TEST_TMPDIR/state"
+    mkdir -p "$state/modules/xray-reality" "$state/edge" "$state/keepme"
+    printf 'x\n' > "$state/keepme/country_code"
+
+    EASYNET_STATE_DIR="$state" uninstall_prune_empty_state_dirs
+
+    [ -d "$state" ]            # root survives
+    [ -d "$state/keepme" ]     # non-empty dir survives
+    [ ! -d "$state/modules/xray-reality" ]
+    [ ! -d "$state/edge" ]
+    [ ! -d "$state/modules" ]
+}
+
+@test "uninstall flow prunes empty state dirs at the end (covers modules like edge)" {
+    # The Edge Gateway uninstall does not call uninstall_refresh_runtime_state, so
+    # the final flow must prune: /var/lib/easynet/exposure stayed behind otherwise.
+    run grep -q 'uninstall_prune_empty_state_dirs' "$PROJECT_ROOT/scripts/uninstall.sh"
+    [ "$status" -eq 0 ]
+}
+
+@test "uninstall orchestrator sources the core helpers it calls" {
+    # Regression: refresh_after_uninstall() called uninstall_prune_empty_state_dirs
+    # without sourcing core/uninstall.sh. Under `set -e` that exits 127 and aborts
+    # the whole teardown (cron not refreshed, ~/.easynet index left stale).
+    run grep -q 'source "$PROJECT_ROOT/scripts/core/uninstall.sh"' "$PROJECT_ROOT/scripts/uninstall.sh"
+    [ "$status" -eq 0 ]
+}
+
+@test "every uninstall_* helper called by the orchestrator is actually defined" {
+    local fn
+    while IFS= read -r fn; do
+        [ -n "$fn" ] || continue
+        grep -qE "^${fn}\(\)" "$PROJECT_ROOT/scripts/uninstall.sh" ||
+            grep -qE "^${fn}\(\)" "$PROJECT_ROOT/scripts/core/uninstall.sh" || {
+            echo "调用但未定义: $fn" >&2
+            return 1
+        }
+    done < <(grep -oE '\buninstall_[a-z_]+' "$PROJECT_ROOT/scripts/uninstall.sh" | sort -u)
+}

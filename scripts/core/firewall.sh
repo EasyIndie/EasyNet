@@ -45,6 +45,15 @@ firewall_base_rules() {
     done < <(firewall_detect_ssh_ports)
 }
 
+# UFW spells port ranges "start:end" (colon), while metadata stores them
+# "start-end" (hyphen, friendlier in JSON/shell). Normalise in exactly one place
+# so the apply and uninstall paths cannot drift apart -- a drifted uninstall once
+# left `ufw delete allow 20000-30000/udp` failing with "Bad port", silently
+# keeping the Hysteria2 port-hopping range open after the service was removed.
+firewall_normalize_rule() {
+    printf '%s\n' "${1/-/:}"
+}
+
 firewall_metadata_rules() {
     local metadata_file rule
 
@@ -53,12 +62,9 @@ firewall_metadata_rules() {
         if ! metadata_validate_file "$metadata_file"; then
             continue
         fi
-        # For string port ranges (e.g. "20000-30000"), convert hyphen to colon
-        # for UFW compatibility; integer ports pass through unchanged.
         while IFS= read -r rule; do
             [ -z "$rule" ] && continue
-            rule="${rule/-/:}"
-            echo "$rule"
+            firewall_normalize_rule "$rule"
         done < <(jq -r '.firewall[]? | "\(.port)/\(.proto)"' "$metadata_file")
     done < <(metadata_list_files)
 }

@@ -80,7 +80,7 @@
 | Reality | 自偷 | `dest=127.0.0.1:443`、`serverNames=["test-world.jokerhub.cn"]`（SNI→DNS 一致） | ✅ |
 | Reality | vision / uTLS | `flow=xtls-rprx-vision`、`fingerprint=chrome`、`maxTimeDiff=1800000`、`shortIds=[16 hex]` | ✅ |
 | Reality | 回退限速 | `limitFallbackUpload=1 MiB/s`、`limitFallbackDownload=10 MiB/s` | ✅ |
-| Hysteria2 | 混淆 / 跳端口 | `obfs: salamander`、`portHopping 20000-30000 / 30s`、`masquerade: proxy` | ✅ |
+| Hysteria2 | 混淆 / 跳端口 | `obfs: salamander`、`masquerade: proxy`；**端口跳跃当时其实没生效**（服务端写了客户端专有的 `portHopping:` 块）→ 第四轮修复，见 `audit-round4.md` | ⚠️→✅ |
 | AmneziaWG | 真 AWG（非原版 WG） | `awg show`：`jc=8 jmin=8 jmax=80 s1=87 s2=46 h1..h4` 全部非零并持久化 | ✅ |
 | Shadowsocks | 加密与传输 | `2022-blake3-aes-256-gcm`、`mode=tcp_and_udp` | ✅ |
 | 订阅 | 国家旗帜/参数 | `flag=SG ×4`、`mtu=1280`、`obfs=amneziawg` | ✅ |

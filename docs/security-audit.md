@@ -78,7 +78,11 @@ Xray 26.3.27（捆绑 uTLS v1.8.x，Chrome profile 含 X25519MLKEM768 后量子�
 ```
 listen: :443 (UDP)   TLS 1.3 (Edge 证书)
 obfs: salamander（随机密钥，每次部署生成并持久化）
-portHopping: 20000-30000 / 30s
+# 服务端：监听基础端口 + 跳变范围，hysteria 自动建立 nftables 重定向
+listen: :443,20000-30000
+# 客户端：server_ports ["20000:30000"]（sing-box）/ ports "20000-30000"（mihomo）
+#          / URI 端口与 porthopping 参数（hysteria 规范用端口多值形式）
+hopInterval: 30s
 masquerade: proxy → https://www.bing.com/ (rewriteHost)
 ```
 
@@ -86,7 +90,7 @@ masquerade: proxy → https://www.bing.com/ (rewriteHost)
 |---|:--:|---|
 | QUIC SNI 过滤（#654） | ✅ 缓解 | salamander 混淆使 QUIC 首包不再是明文 SNI 结构 |
 | QUIC 版本/参数指纹 | ✅ 缓解 | 混淆后不暴露标准 quic-go 指纹 |
-| UDP 端口固定被针对 | ✅ 缓解 | 端口跳跃把流量摊到 10001 个端口 |
+| UDP 端口固定被针对 | ✅ 缓解 | 端口跳跃把流量摊到 10001 个端口（服务端 `listen: :443,20000-30000`，hysteria 自动建立 nftables 重定向；需云安全组放行该范围） |
 | 主动探测 | ⚠️ 中 | masquerade 用 `proxy` 模式回源 bing；相比静态站点更像「真站点」，但仍是代理语义 |
 
 ### 3.3 AmneziaWG —— ⚠️ 中

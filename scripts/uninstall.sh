@@ -7,6 +7,10 @@ source "$PROJECT_ROOT/scripts/core/env.sh"
 source "$PROJECT_ROOT/scripts/core/env_file.sh"
 source "$PROJECT_ROOT/scripts/core/cron.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
+# shellcheck source=core/uninstall.sh
+# refresh_after_uninstall() calls helpers defined here; without this source the
+# orchestration aborts with "command not found" (exit 127) under set -e.
+source "$PROJECT_ROOT/scripts/core/uninstall.sh"
 # shellcheck source=core/hub.sh
 source "$PROJECT_ROOT/scripts/core/hub.sh"
 
@@ -139,6 +143,9 @@ refresh_after_uninstall() {
         bash "$UNINSTALL_SCRIPT_DIR/generate_subscription.sh" >/dev/null 2>&1 || true
     fi
     cron_install_restart_job
+    # Some modules (e.g. the Edge Gateway) do not refresh runtime state themselves,
+    # so prune empty state directories once the whole flow is done.
+    uninstall_prune_empty_state_dirs
     # Keep the ~/.easynet index in sync with whatever remains installed.
     ensure_easynet_hub --quiet >/dev/null 2>&1 || true
 }

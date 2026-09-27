@@ -17,7 +17,12 @@ main() {
     uninstall_remove_file "$WEB_ROOT/clash" "Clash 订阅文件"
     uninstall_remove_file "$WEB_ROOT/singbox" "sing-box 配置文件"
     uninstall_remove_file "$WEB_ROOT/easynet-singbox-client.sh" "sing-box 客户端安装脚本"
+    uninstall_remove_path "$WEB_ROOT/rules" "sing-box 分流规则集"
     uninstall_remove_path "$EDGE_STATE_DIR" "Edge 状态"
+    # Cert fingerprint cache written by cert_renew_hook.sh: it lives outside the
+    # Edge state dir, and leaving it behind would make the next reinstall skip the
+    # post-renewal service restart.
+    uninstall_remove_path "${EASYNET_STATE_DIR:-/var/lib/easynet}/edge" "Edge 证书指纹状态"
     uninstall_remove_path "${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}" "Edge 证书目录"
 
     if command -v systemctl &>/dev/null; then

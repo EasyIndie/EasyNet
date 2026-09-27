@@ -89,6 +89,21 @@ easynet_hub_write_index() {
 
 # ensure_easynet_hub [--quiet]
 # Idempotently (re)builds the hub. Safe to call on every deploy.
+easynet_hub_prune() {
+    local hub="$1"
+    local link
+
+    # Drop the links we created whose target is gone (e.g. after an uninstall) so
+    # the index never advertises a path that no longer exists. Only direct children
+    # of the hub and of configs/ are considered: the glob never descends through
+    # directory symlinks such as `systemd`, so real system files are never touched.
+    for link in "$hub"/* "$hub"/configs/*; do
+        [ -L "$link" ] || continue
+        [ -e "$link" ] && continue
+        rm -f -- "$link"
+    done
+}
+
 ensure_easynet_hub() {
     local quiet="${1:-}"
     local project hub state_dir
@@ -132,6 +147,7 @@ ensure_easynet_hub() {
     easynet_hub_add "security/sshd-hardening.conf" "${EASYNET_SSHD_DROPIN_DIR:-/etc/ssh/sshd_config.d}/10-easynet-hardening.conf" "SSH 加固 drop-in（未加固时不存在）"
     easynet_hub_add "security/fail2ban.conf" "/etc/fail2ban/jail.d/easynet.local" "fail2ban jail（自动配置）"
 
+    easynet_hub_prune "$hub"
     easynet_hub_write_index
 
     # Put the CLI on PATH so `easynet` works from anywhere (opt out with

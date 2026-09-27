@@ -157,3 +157,48 @@ build_hub() {
 shadowsocks-rust-server.service
 awg-quick@wg0.service" ]
 }
+
+@test "hub prunes links it created when their target disappears" {
+    export EASYNET_HUB_DIR="$BATS_TEST_TMPDIR/hub"
+    source "$PROJECT_ROOT/scripts/core/hub.sh"
+    source "$PROJECT_ROOT/scripts/core/env.sh"
+
+    mkdir -p "$BATS_TEST_TMPDIR/target"
+    easynet_hub_link "certs" "$BATS_TEST_TMPDIR/target"
+    [ -L "$EASYNET_HUB_DIR/certs" ]
+
+    rm -rf "$BATS_TEST_TMPDIR/target"
+    mkdir -p "$EASYNET_HUB_DIR"
+    easynet_hub_prune "$EASYNET_HUB_DIR"
+    [ ! -e "$EASYNET_HUB_DIR/certs" ] && [ ! -L "$EASYNET_HUB_DIR/certs" ]
+}
+
+@test "hub prune never descends into directory symlinks" {
+    export EASYNET_HUB_DIR="$BATS_TEST_TMPDIR/hub"
+    source "$PROJECT_ROOT/scripts/core/hub.sh"
+
+    local real="$BATS_TEST_TMPDIR/systemd"
+    mkdir -p "$real"
+    # a dangling symlink *inside* the linked directory (like a package leftover)
+    ln -sfn "$BATS_TEST_TMPDIR/gone" "$real/leftover.service"
+    easynet_hub_link "systemd" "$real"
+
+    easynet_hub_prune "$EASYNET_HUB_DIR"
+    # the directory link survives and the real file inside was NOT deleted
+    [ -L "$EASYNET_HUB_DIR/systemd" ]
+    [ -L "$real/leftover.service" ]
+}
+
+@test "hub prune leaves healthy links and real files alone" {
+    export EASYNET_HUB_DIR="$BATS_TEST_TMPDIR/hub"
+    source "$PROJECT_ROOT/scripts/core/hub.sh"
+
+    mkdir -p "$BATS_TEST_TMPDIR/target" "$EASYNET_HUB_DIR"
+    easynet_hub_link "state" "$BATS_TEST_TMPDIR/target"
+    mkdir -p "$EASYNET_HUB_DIR/logs"
+    printf 'keep\n' > "$EASYNET_HUB_DIR/README.md"
+
+    easynet_hub_prune "$EASYNET_HUB_DIR"
+    [ -L "$EASYNET_HUB_DIR/state" ]
+    [ -f "$EASYNET_HUB_DIR/README.md" ]
+}

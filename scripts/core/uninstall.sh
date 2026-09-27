@@ -94,6 +94,8 @@ uninstall_firewall_rules_to_delete() {
 
     while IFS= read -r rule; do
         [ -z "$rule" ] && continue
+        # metadata stores ranges as "start-end", UFW wants "start:end"
+        rule="$(firewall_normalize_rule "$rule")"
         uninstall_rule_is_base "$rule" && continue
         uninstall_rule_used_by_other_metadata "$rule" "$metadata_file" && continue
         echo "$rule"
@@ -141,6 +143,33 @@ uninstall_remove_systemd_unit() {
     uninstall_remove_file "/etc/systemd/system/$unit" "systemd unit"
 }
 
+# Remove the sandbox drop-in we generated for a unit. systemd resolves drop-ins
+# from <unit>.d/, so a stale file would silently re-apply hardening to a future
+# unit that happens to reuse the name.
+uninstall_remove_hardening_dropin() {
+    local unit="$1"
+    local unit_dir="${EASYNET_SYSTEMD_UNIT_DIR:-/etc/systemd/system}"
+    local dropin_dir dropin
+
+    case "$unit" in
+        *.*) ;;
+        *) unit="${unit}.service" ;;
+    esac
+
+    dropin_dir="$unit_dir/${unit}.d"
+    dropin="$dropin_dir/easynet-hardening.conf"
+    [ -e "$dropin" ] || return 0
+
+    if uninstall_keep_config; then
+        log_info "保留 systemd 加固 drop-in: $dropin"
+        return 0
+    fi
+
+    rm -f -- "$dropin"
+    rmdir "$dropin_dir" 2>/dev/null || true
+    log_info "已删除 systemd 加固 drop-in: $dropin"
+}
+
 uninstall_remove_module_metadata() {
     local module="$1"
     local metadata_file metadata_dir
@@ -153,6 +182,17 @@ uninstall_remove_module_metadata() {
 uninstall_refresh_runtime_state() {
     systemctl daemon-reload >/dev/null 2>&1 || true
     cron_install_restart_job
+    uninstall_prune_empty_state_dirs
+}
+
+# Drop now-empty directories under the state root (e.g. modules/<name>/ once a
+# module is removed) so a full uninstall does not leave an empty skeleton behind.
+# The detected-country cache is kept on purpose: it is root-only and saves a
+# fresh lookup after a reinstall.
+uninstall_prune_empty_state_dirs() {
+    local state_dir="${EASYNET_STATE_DIR:-/var/lib/easynet}"
+    [ -d "$state_dir" ] || return 0
+    find "$state_dir" -mindepth 1 -type d -empty -delete 2>/dev/null || true
 }
 
 uninstall_apt_purge() {
