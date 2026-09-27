@@ -62,7 +62,7 @@ install_shadowsocks() {
     install -m 755 "$bin_path" "$SS_BIN"
     # A new binary only takes effect after a restart, so force one.
     SS_BINARY_CHANGED=true
-    log_info "shadowsocks-rust v${version} 已安装到 $SS_BIN（SHA256 校验通过）"
+    log_info "shadowsocks-rust v${version} 已安装到 ${SS_BIN}（SHA256 校验通过）"
 }
 
 

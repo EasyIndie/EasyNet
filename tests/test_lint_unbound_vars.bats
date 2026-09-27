@@ -38,7 +38,10 @@ readonly EXTRA_LIBS=(
     while IFS= read -r f; do
         [ -n "$f" ] || continue
         local hits
-        hits=$(LC_ALL=C grep -nP '\$[A-Za-z_][A-Za-z0-9_]*[^\x00-\x7F]' "$f" 2>/dev/null || true)
+        # Portable: BSD grep has no -P, and `grep -P ... || true` silently passed
+        # on macOS, hiding real hits. With LC_ALL=C, `[^ -~]` means "any byte
+        # outside printable ASCII" on both GNU and BSD grep.
+        hits=$(LC_ALL=C grep -nE '\$[A-Za-z_][A-Za-z0-9_]*[^ -~]' "$f" 2>/dev/null || true)
         if [ -n "$hits" ]; then
             echo "# ${f#$BATS_TEST_DIRNAME/../}" >&3
             while IFS= read -r line; do
