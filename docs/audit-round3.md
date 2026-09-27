@@ -77,7 +77,7 @@
 
 | 协议 | 核验项 | 实测值 | 结论 |
 |---|---|---|:--:|
-| Reality | 自偷 | `dest=127.0.0.1:443`、`serverNames=["test-world.jokerhub.cn"]`（SNI→DNS 一致） | ✅ |
+| Reality | 自偷 | `dest=127.0.0.1:443`、`serverNames=["<你的域名>"]`（SNI→DNS 一致） | ✅ |
 | Reality | vision / uTLS | `flow=xtls-rprx-vision`、`fingerprint=chrome`、`maxTimeDiff=1800000`、`shortIds=[16 hex]` | ✅ |
 | Reality | 回退限速 | `limitFallbackUpload=1 MiB/s`、`limitFallbackDownload=10 MiB/s` | ✅ |
 | Hysteria2 | 混淆 / 跳端口 | `obfs: salamander`、`masquerade: proxy`；**端口跳跃当时其实没生效**（服务端写了客户端专有的 `portHopping:` 块）→ 第四轮修复，见 `audit-round4.md` | ⚠️→✅ |
@@ -116,7 +116,7 @@
 |---|---|
 | 敏感文件 world-readable | **0**（`/var/lib/easynet` 700、前缀与路由 600、协议配置 600/640、metadata 600、`.env` 600） |
 | 非 root 读取状态目录 | Permission denied（`setpriv --reuid=65534`） |
-| TLS | TLS 1.2 + 1.3 可用；**1.0/1.1 被拒**；ECDHE-only 密码套件；Let's Encrypt（`CN=test-world.jokerhub.cn`，有效期至 2026-12-26） |
+| TLS | TLS 1.2 + 1.3 可用；**1.0/1.1 被拒**；ECDHE-only 密码套件；Let's Encrypt（`CN=<你的域名>`，有效期 90 天） |
 | 安全响应头 | `HSTS max-age=63072000; includeSubDomains`、`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY` —— **各恰好 1 次** |
 | Server 头 | `nginx`（无版本/发行版） |
 | 监听端口 | 22/80/443/8443/tcp、443/8388/51820/udp（与 UFW 放行项一一对应，无多余监听） |

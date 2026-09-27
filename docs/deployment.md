@@ -238,7 +238,7 @@ sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com bash install.sh
 sudo EASYNET_VERSION=<版本 tag> EASYNET_INSTALL_ONLY=true bash install.sh
 sudo install -m 600 /dev/stdin /opt/easynet/.env <<'ENV'
 EASYNET_PROFILE=balanced
-EASYNET_DOMAIN=world.jokerhub.cn
+EASYNET_DOMAIN=example.com
 ENV
 cd /opt/easynet && bash scripts/deploy.sh
 ```

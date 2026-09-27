@@ -10,7 +10,7 @@
 #   6. uninstall 全卸载
 #
 # 用法（在测试 VPS 上以 root 运行，源码目录即脚本上级）：
-#   EASYNET_DOMAIN=test-world.jokerhub.cn bash scripts/acceptance_test.sh
+#   EASYNET_DOMAIN=example.com bash scripts/acceptance_test.sh
 #
 # 环境变量：
 #   EASYNET_DOMAIN                测试域名（真实部署必需；缺省则跳过第 4/5 步）

@@ -124,11 +124,14 @@ New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub inde
 
 | 环境 | 域名 | 策略 | 协议 | 用途 |
 |---|---|---|---|---|
-| **测试 VPS** | `test-world.jokerhub.cn` | `compat` | 全部 4 种（Reality / Hysteria2 / SS2022 / AmneziaWG） | 功能迭代与验收；每次发版后走一遍完整流程 |
-| **正式 VPS** | `world.jokerhub.cn` | `balanced` | 仅最安全的 2 种协议 | 生产；改动必须先在测试 VPS 验收通过 |
+| **测试 VPS** | 由 `.env` 决定（不写入本仓库） | `compat` | 全部 4 种（Reality / Hysteria2 / SS2022 / AmneziaWG） | 功能迭代与验收；每次发版后走一遍完整流程 |
+| **正式 VPS** | 由 `.env` 决定（不写入本仓库） | `balanced` | 仅最安全的 2 种协议 | 生产；改动必须先在测试 VPS 验收通过 |
 
-- 测试环境**永远**用 `test-world.jokerhub.cn` + `compat`；不要为了省时间在测试机上改成 `balanced`。
-- 正式环境**永远**用 `world.jokerhub.cn` + `balanced`；部署前必须先确认测试机同版本验收通过。
+- 测试环境**永远**用 `compat`（四种协议全开），不要为了省时间改成 `balanced`。
+- 正式环境**永远**用 `balanced`（最安全的两/三种），且域名与测试环境不同。
+- **本仓库是公开的**：真实域名、IP、订阅路径前缀等运行标识**一律不得写入仓库**（含文档、注释、测试、提交信息）。
+  仓库内示例统一用保留域名 `example.com`；各环境的真实值只放在那台机器上的 `.env`（600）或本地验收目录。
+  `tests/test_no_private_identifiers.bats` 会在 CI 里拦截已知标识的回归。
 - **VPS 上一律用 `.env` 文件驱动部署**，不要在命令行内联环境变量：`.env` 是唯一配置来源，
   既能反复重部署得到一致结果，也能直接 diff/回滚配置。部署命令永远是 `bash scripts/deploy.sh`
   （`deploy.sh` 自动加载同目录 `.env`）。
