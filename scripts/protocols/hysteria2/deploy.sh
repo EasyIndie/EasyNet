@@ -22,7 +22,7 @@ HYSTERIA2_CERT_FILE="${EASYNET_HYSTERIA2_CERT_FILE:-${HYSTERIA2_CERT_DIR:-}/full
 HYSTERIA2_KEY_FILE="${EASYNET_HYSTERIA2_KEY_FILE:-${HYSTERIA2_CERT_DIR:-}/private.key}"
 
 install_hysteria2() {
-    local pin version want_sha256 asset url tmp_dir installed=""
+    local pin version want_sha256 installed=""
     HYSTERIA2_BINARY_CHANGED=false
 
     # Pinned version + SHA256 (see core/pins.sh). The upstream one-liner
@@ -38,10 +38,20 @@ install_hysteria2() {
     fi
     if [ "$installed" = "v${version}" ]; then
         log_info "Hysteria2 v${version} 已是最新，跳过安装。"
-        return 0
+    else
+        log_info "安装 Hysteria2 v${version}..."
+        install_hysteria2_binary "$version" "$want_sha256"
     fi
-    log_info "安装 Hysteria2 v${version}..."
 
+    # Always ensure the runtime prerequisites (service account, state dir, unit):
+    # they must exist even when the binary itself is already current.
+    ensure_hysteria2_runtime
+    write_hysteria2_systemd_unit
+}
+
+# Download + verify + install the pinned release asset.
+install_hysteria2_binary() {
+    local version="$1" want_sha256="$2" asset url tmp_dir
     asset="$(easynet_pin_asset hysteria2)"
     if [ -z "$asset" ]; then
         log_error "Hysteria2 不支持当前架构: $(detect_arch)"
@@ -63,8 +73,6 @@ install_hysteria2() {
     install -m 0755 "$tmp_dir/hysteria" /usr/local/bin/hysteria
     # A new binary only takes effect after a restart, so force one.
     HYSTERIA2_BINARY_CHANGED=true
-    ensure_hysteria2_runtime
-    write_hysteria2_systemd_unit
     log_info "Hysteria2 v${version} 已安装（SHA256 校验通过）。"
 }
 
