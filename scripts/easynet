@@ -1,0 +1,403 @@
+#!/bin/bash
+# EasyNet unified operations CLI.
+#
+# Single entry point for maintenance work, so operators do not have to
+# remember where each protocol keeps its files or which systemd unit belongs
+# to which module. Run `easynet help` (or just `easynet`) for the command list.
+set -euo pipefail
+
+_easynet_cli_self="${BASH_SOURCE[0]}"
+# Resolve symlinks (the CLI is also reachable as /usr/local/bin/easynet and
+# via ~/.easynet/easynet, so BASH_SOURCE[0] may be a link, not the real file).
+_easynet_link_hops=0
+while [ -L "$_easynet_cli_self" ] && [ "$_easynet_link_hops" -lt 20 ]; do
+    _easynet_link_target="$(readlink "$_easynet_cli_self")"
+    case "$_easynet_link_target" in
+        /*) _easynet_cli_self="$_easynet_link_target" ;;
+        *) _easynet_cli_self="$(dirname "$_easynet_cli_self")/$_easynet_link_target" ;;
+    esac
+    _easynet_link_hops=$((_easynet_link_hops + 1))
+done
+unset _easynet_link_hops _easynet_link_target
+EASYNET_CLI_DIR="$(cd "$(dirname "$_easynet_cli_self")" && pwd)"
+unset _easynet_cli_self
+EASYNET_PROJECT_DIR="${EASYNET_PROJECT_DIR:-$(cd "${EASYNET_CLI_DIR:-}/.." && pwd)}"
+
+# shellcheck source=core/env.sh
+. "${EASYNET_CLI_DIR:-}/core/env.sh"
+# shellcheck source=core/discovery.sh
+. "${EASYNET_CLI_DIR:-}/core/discovery.sh"
+# shellcheck source=core/hub.sh
+. "${EASYNET_CLI_DIR:-}/core/hub.sh"
+# shellcheck source=core/logging.sh
+. "${EASYNET_CLI_DIR:-}/core/logging.sh"
+
+usage() {
+    cat << 'EOF'
+EasyNet 统一运维命令
+
+用法: easynet <命令> [参数]
+
+  status              总览：服务状态 / 订阅 / 证书 / SSH 加固
+  where               路径总表（~/.easynet 索引）
+  path <名称>         打印某条目的真实路径（可 cd "$(easynet path xray)"）
+  ls                  列出 ~/.easynet 目录
+  config [<协议>]     列出或查看协议配置文件
+  edit <协议>         用编辑器打开协议配置文件
+  logs [<服务>]       跟踪日志（缺省为全部 EasyNet 服务；`logs deploy` 看部署日志）
+  deploy [<协议>...]  重新部署（日志自动落盘到 ~/.easynet/logs/）
+  restart <服务|all>  重启服务
+  sub                 显示订阅链接与二维码
+  services            列出 EasyNet 管理的 systemd 服务
+  hub [--refresh]     显示/重建工作目录索引
+  ssh                 体检 SSH 加固状态
+  harden-ssh <命令>   转发到 SSH 加固脚本（check/apply/confirm/revert/status）
+  doctor              连通性诊断
+  env                 编辑部署配置 .env
+  update              更新 EasyNet 程序本体（git 仓库）
+  version             显示版本
+  help                本帮助
+
+服务名可用简写: xray | hysteria2 | shadowsocks | wireguard | nginx | fail2ban
+EOF
+}
+
+hub_dir() { easynet_hub_dir; }
+
+ensure_hub() {
+    ensure_easynet_hub --quiet
+}
+
+# resolve_service <alias> -> systemd unit name used by manifests
+resolve_service() {
+    local alias="${1:-}"
+    case "$alias" in
+        xray|reality|xray-reality) printf 'xray.service\n' ;;
+        hysteria2|hysteria|hy2) printf 'hysteria-server.service\n' ;;
+        shadowsocks|ss|ss2022) printf 'shadowsocks-rust-server.service\n' ;;
+        wireguard|wg|amneziawg|awg) printf 'awg-quick@wg0.service\n' ;;
+        nginx|edge) printf 'nginx.service\n' ;;
+        fail2ban|f2b) printf 'fail2ban.service\n' ;;
+        singbox|sing-box|client) printf 'easynet-singbox.service\n' ;;
+        '') printf '\n' ;;
+        *)
+            # Accept a real unit name as-is.
+            printf '%s\n' "$alias"
+            ;;
+    esac
+}
+
+# translate_alias <alias> -> module name (for config lookups)
+module_from_alias() {
+    case "${1:-}" in
+        xray|reality|xray-reality) printf 'xray-reality' ;;
+        hysteria2|hysteria|hy2) printf 'hysteria2' ;;
+        shadowsocks|ss|ss2022) printf 'shadowsocks' ;;
+        wireguard|wg|amneziawg|awg) printf 'wireguard' ;;
+        *) printf '%s' "${1:-}" ;;
+    esac
+}
+
+module_config_files() {
+    local module config_dir
+    module="$(module_from_alias "${1:-}")"
+    config_dir="$(discovery_get_manifest_value "$module" MODULE_CONFIG_DIR 2>/dev/null)" || config_dir=""
+    [ -n "$config_dir" ] && [ -d "$config_dir" ] || return 0
+    find "$config_dir" -maxdepth 2 -type f \( -name '*.conf' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.env' \) 2>/dev/null | sort
+}
+
+core_services() {
+    local unit
+    for unit in xray.service hysteria-server.service shadowsocks-rust-server.service \
+        awg-quick@wg0.service nginx.service fail2ban.service; do
+        # `systemctl list-unit-files <short-name>` matches nothing, so ask for
+        # the unit's LoadState instead.
+        [ "$(systemctl show -p LoadState --value "$unit" 2>/dev/null)" = "loaded" ] || continue
+        printf '%s\n' "$unit"
+    done
+}
+
+cmd_status() {
+    ensure_hub
+    printf '\n\033[1m服务状态\033[0m\n'
+    local unit state
+    for unit in $(core_services); do
+        state="$(systemctl is-active "$unit" 2>/dev/null || true)"
+        case "$state" in
+            active) printf '  \033[32m●\033[0m %-34s active\n' "$unit" ;;
+            *) printf '  \033[31m●\033[0m %-34s %s\n' "$unit" "${state:--}" ;;
+        esac
+    done
+    local extra
+    extra="$(systemctl is-active easynet-singbox 2>/dev/null || true)"
+    [ -n "$extra" ] && printf '  \033[32m●\033[0m %-34s %s (本机客户端)\n' "easynet-singbox" "$extra"
+
+    printf '\n\033[1m订阅\033[0m\n'
+    local edge_state prefix
+    edge_state="$(easynet_edge_state_dir)"
+    if [ -f "$edge_state/subscription_path_prefix.txt" ]; then
+        prefix="$(cat "$edge_state/subscription_path_prefix.txt")"
+        printf '  域名    : %s\n' "$(cat "$edge_state/domain.txt" 2>/dev/null || printf '?')"
+        printf '  前缀    : %s\n' "$prefix"
+        printf '  链接    : https://%s%s/sub\n' \
+            "$(cat "$edge_state/domain.txt" 2>/dev/null || printf '?')" "$prefix"
+    else
+        printf '  （尚未生成，请运行 bash %s/generate_subscription.sh）\n' "${EASYNET_PROJECT_DIR:-}/scripts"
+    fi
+
+    printf '\n\033[1m证书\033[0m\n'
+    local cert="${EASYNET_EDGE_CERT_FILE:-/etc/ssl/easynet-edge/fullchain.crt}"
+    if [ -f "$cert" ]; then
+        openssl x509 -in "$cert" -noout \
+            -subject -enddate 2>/dev/null | sed 's/^/  /' || printf '  %s\n' "$cert"
+    else
+        printf '  未找到 %s\n' "$cert"
+    fi
+
+    printf '\n\033[1mSSH\033[0m\n'
+    local pa pr
+    pa="$(sshd -T 2>/dev/null | awk '/^passwordauthentication/{print $2}')"
+    pr="$(sshd -T 2>/dev/null | awk '/^permitrootlogin/{print $2}')"
+    printf '  PasswordAuthentication: %s\n' "${pa:-?}"
+    printf '  PermitRootLogin       : %s\n' "${pr:-?}"
+    printf '  fail2ban              : %s\n' "$(systemctl is-active fail2ban.service 2>/dev/null || echo -)"
+
+    printf '\n\033[1m工作目录\033[0m\n  %s（%s）\n\n' "$(hub_dir)" "$(hub_dir)/README.md"
+}
+
+cmd_where() {
+    ensure_hub
+    # Regenerate to make sure the index reflects the current deployment, then print it.
+    sed -n '/^| 入口/,/^$/p' "$(hub_dir)/README.md"
+}
+
+cmd_ls() {
+    ensure_hub
+    ls -lA "$(hub_dir)"
+}
+
+cmd_path() {
+    local want="${1:-}"
+    [ -n "$want" ] || {
+        log_error "用法: easynet path <名称>"
+        return 1
+    }
+    local link target
+    ensure_hub
+    # Accept a bare hub entry, a protocol alias, or a configs/<module> path.
+    for link in "$(hub_dir)/$want" "$(hub_dir)/configs/$(module_from_alias "$want")"; do
+        [ -L "$link" ] || continue
+        target="$(readlink "$link")"
+        if [ -d "$target" ]; then
+            (cd "$target" && pwd -P)
+        else
+            printf '%s\n' "$target"
+        fi
+        return 0
+    done
+    if [ -d "$(hub_dir)/$want" ]; then
+        (cd "$(hub_dir)/$want" && pwd -P)
+        return 0
+    fi
+    # Fall back to a service alias.
+    local unit
+    unit="$(resolve_service "$want")"
+    if [ "$(systemctl show -p LoadState --value "$unit" 2>/dev/null)" = "loaded" ]; then
+        printf '/etc/systemd/system (unit: %s)\n' "$unit"
+        return 0
+    fi
+    log_error "未知条目: ${want}（用 easynet where 查看全部）"
+    return 1
+}
+
+cmd_config() {
+    local want="${1:-}"
+    local module files
+    if [ -n "$want" ]; then
+        module="$(module_from_alias "$want")"
+        files="$(module_config_files "$want")"
+        if [ -z "$files" ]; then
+            log_error "未找到 ${module} 的配置文件（是否已部署？）"
+            return 1
+        fi
+        printf '%s\n' "$files"
+        local dir
+        dir="$(discovery_get_manifest_value "$module" MODULE_CONFIG_DIR 2>/dev/null || true)"
+        printf '\n# 目录: %s\n' "$dir"
+        return 0
+    fi
+    local cfg
+    for module in $(discovery_list_modules_by_security 2>/dev/null); do
+        cfg="$(discovery_get_manifest_value "$module" MODULE_CONFIG_DIR 2>/dev/null || true)"
+        [ -n "$cfg" ] || continue
+        printf '\n\033[1m%s\033[0m (%s)\n' "$module" "$cfg"
+        module_config_files "$module" | sed 's/^/  /'
+    done
+    printf '\n编辑: easynet edit <协议>    查看: easynet config <协议>\n'
+}
+
+cmd_edit() {
+    local want="${1:-}"
+    [ -n "$want" ] || {
+        log_error "用法: easynet edit <协议>"
+        return 1
+    }
+    local file
+    file="$(module_config_files "$want" | grep -vE 'public\.key$' | head -1)"
+    [ -n "$file" ] || {
+        log_error "未找到 ${want} 的配置文件"
+        return 1
+    }
+    "${EDITOR:-vi}" "$file"
+    printf '已编辑 %s；生效请执行: easynet restart %s\n' "$file" "$want"
+}
+
+cmd_logs() {
+    local want="${1:-}"
+    if [ "$want" = "deploy" ] || [ "$want" = "deploy-log" ]; then
+        local latest
+        latest="$(easynet_hub_logs_dir)/latest.log"
+        if [ ! -e "$latest" ]; then
+            log_error "暂无部署日志（用 easynet deploy 部署会自动记录）"
+            return 1
+        fi
+        tail -f "$latest"
+        return 0
+    fi
+    if [ -n "$want" ]; then
+        journalctl -u "$(resolve_service "$want")" -f -n 50
+        return 0
+    fi
+    local units=()
+    local unit
+    for unit in $(core_services); do units+=(-u "$unit"); done
+    journalctl "${units[@]}" -f -n 40
+}
+
+cmd_restart() {
+    local want="${1:-}"
+    if [ "$want" = "all" ]; then
+        local unit
+        for unit in $(core_services); do
+            printf '  重启 %s ... ' "$unit"
+            if systemctl restart "$unit"; then printf 'ok\n'; else printf '失败\n'; fi
+        done
+        return 0
+    fi
+    [ -n "$want" ] || {
+        log_error "用法: easynet restart <服务|all>"
+        return 1
+    }
+    systemctl restart "$(resolve_service "$want")"
+    printf '%s 已重启\n' "$(resolve_service "$want")"
+}
+
+cmd_deploy() {
+    local log_dir log rc=0
+    log_dir="$(easynet_hub_logs_dir)"
+    mkdir -p "$log_dir"
+    log="$log_dir/deploy-$(date +%Y%m%d-%H%M%S).log"
+    ln -sfn "$log" "$log_dir/latest.log"
+    log_info "部署日志: $log"
+    DEBIAN_FRONTEND=noninteractive bash "${EASYNET_PROJECT_DIR:-}/scripts/deploy.sh" "$@" 2>&1 \
+        | tee -a "$log" || rc=$?
+    ensure_easynet_hub --quiet
+    printf '\n部署结束（exit=%s）\n日志: %s\n' "$rc" "$log"
+    return "$rc"
+}
+
+cmd_services() {
+    local unit
+    for unit in $(core_services); do
+        printf '%-34s %-10s %s\n' "$unit" \
+            "$(systemctl is-active "$unit" 2>/dev/null || echo -)" \
+            "$(systemctl is-enabled "$unit" 2>/dev/null || echo -)"
+    done
+}
+
+cmd_sub() {
+    bash "${EASYNET_PROJECT_DIR:-}/scripts/show_subscription.sh" "$@"
+}
+
+cmd_hub() {
+    case "${1:-}" in
+        --refresh) ensure_easynet_hub ;;
+        '') ensure_hub && printf '工作目录: %s\n\n' "$(hub_dir)" && cat "$(hub_dir)/README.md" ;;
+        *) ensure_hub && cat "$(hub_dir)/README.md" ;;
+    esac
+}
+
+cmd_ssh() {
+    bash "${EASYNET_PROJECT_DIR:-}/scripts/security/harden_ssh.sh" status
+}
+
+cmd_harden_ssh() {
+    bash "${EASYNET_PROJECT_DIR:-}/scripts/security/harden_ssh.sh" "$@"
+}
+
+cmd_doctor() {
+    bash "${EASYNET_PROJECT_DIR:-}/scripts/diagnose_reachability.sh" "$@"
+}
+
+cmd_env() {
+    local env_file="${EASYNET_PROJECT_DIR:-}/.env"
+    [ -f "$env_file" ] || {
+        log_error "未找到 $env_file"
+        return 1
+    }
+    "${EDITOR:-vi}" "$env_file"
+    printf '已编辑 %s；重新部署请执行 bash %s/deploy.sh\n' "$env_file" "${EASYNET_PROJECT_DIR:-}/scripts"
+}
+
+cmd_version() {
+    if [ -f "${EASYNET_PROJECT_DIR:-}/VERSION" ]; then
+        cat "${EASYNET_PROJECT_DIR:-}/VERSION"
+    elif git -C "${EASYNET_PROJECT_DIR:-}" rev-parse --short HEAD >/dev/null 2>&1; then
+        git -C "${EASYNET_PROJECT_DIR:-}" describe --tags --always 2>/dev/null ||
+            git -C "${EASYNET_PROJECT_DIR:-}" rev-parse --short HEAD
+    else
+        printf 'unknown\n'
+    fi
+}
+
+cmd_update() {
+    if [ ! -d "${EASYNET_PROJECT_DIR:-}/.git" ]; then
+        log_error "非 git 安装，请使用安装脚本升级"
+        return 1
+    fi
+    git -C "${EASYNET_PROJECT_DIR:-}" pull --ff-only
+    printf '已更新到 %s\n' "$(cmd_version)"
+}
+
+main() {
+    local cmd="${1:-help}"
+    shift || true
+    case "$cmd" in
+        help | -h | --help) usage ;;
+        status) cmd_status ;;
+        where) cmd_where ;;
+        ls) cmd_ls ;;
+        path) cmd_path "$@" ;;
+        config) cmd_config "$@" ;;
+        edit) cmd_edit "$@" ;;
+        logs) cmd_logs "$@" ;;
+        restart) cmd_restart "$@" ;;
+        deploy | redeploy) cmd_deploy "$@" ;;
+        services) cmd_services ;;
+        sub | subscription) cmd_sub "$@" ;;
+        hub) cmd_hub "$@" ;;
+        ssh) cmd_ssh ;;
+        harden-ssh) cmd_harden_ssh "$@" ;;
+        doctor) cmd_doctor "$@" ;;
+        env) cmd_env ;;
+        version | -v | --version) cmd_version ;;
+        update) cmd_update ;;
+        *)
+            log_error "未知命令: $cmd"
+            usage
+            return 1
+            ;;
+    esac
+}
+
+main "$@"

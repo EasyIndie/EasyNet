@@ -24,7 +24,7 @@ install_shadowsocks() {
 
     # Check if cargo-installed
     if [ -x "$SS_BIN" ]; then
-        log_info "检测到 $SS_BIN，跳过安装。"
+        log_info "检测到 ${SS_BIN}，跳过安装。"
         return
     fi
 

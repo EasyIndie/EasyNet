@@ -10,7 +10,7 @@ EasyNet is a Bash-based server deployment tool that installs and manages proxy p
 
 | Command | Description |
 |---------|-------------|
-| `bats tests/*.bats` | Run all 342 tests (27 test files) |
+| `bats tests/*.bats` | Run all 356 tests (28 test files) |
 | `bats tests/test_protocol_metadata.bats` | Run a single test file |
 | `bats --formatter tap tests/` | TAP output (used in CI) |
 | `shellcheck --rcfile=.shellcheckrc --shell=bash --severity=style scripts/` | Lint all scripts |
@@ -48,6 +48,7 @@ scripts/
     display.sh                  ←   QR code display
     validate.sh                 ←   Pre-flight checks
     env.sh / env_file.sh        ←   State directory paths, .env parsing
+    hub.sh                      ←   ~/.easynet operational hub (symlink index)
     subscription*.sh            ←   Subscription generation
     logging.sh                  ←   Unified logging (log_info/log_error)
     maintenance.sh              ←   System maintenance utilities
@@ -97,6 +98,27 @@ Variable access is whitelist-protected (`discovery_get_manifest_value` rejects u
    - `cert_renew_hook.sh` (post-renewal service restart)
    - `validate.sh` (pre-flight checks)
 5. **Subscription files** → served via Edge Nginx at randomized paths
+
+## Operational Hub (`~/.easynet`)
+
+Every path EasyNet touches is spread across the FHS because upstream installers and systemd
+units hard-code them. Physical relocation would break upstream upgrades and redeploy
+idempotency, so instead `core/hub.sh` builds a **single working directory** of symlinks plus a
+generated `README.md` index:
+
+```
+~/.easynet/{easynet,project,env,state,logs/,certs,web,nginx-site,acme,systemd,
+            configs/<module> → MODULE_CONFIG_DIR (declared by each manifest),
+            security/{harden-ssh,sshd-hardening.conf,fail2ban.conf}}
+```
+
+`ensure_easynet_hub()` runs at the end of every deploy/uninstall (pure `mkdir`/`ln` — deleting
+the hub is always safe). `scripts/easynet` is the unified CLI (`status`, `where`, `path`,
+`config`, `edit`, `logs`, `restart`, `sub`, `services`, `hub`, `ssh`, `doctor`, `env`,
+`deploy`, `update`); `ensure_easynet_hub` also symlinks it to `/usr/local/bin/easynet`.
+`easynet deploy` tees output to `~/.easynet/logs/deploy-<timestamp>.log` (`latest.log`).
+
+New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub indexes them.
 
 ## Important Practices
 

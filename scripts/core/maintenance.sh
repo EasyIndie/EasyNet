@@ -101,7 +101,7 @@ EOF
 
     if [ "$SYSTEMD_HARDENING_CHANGED" = true ]; then
         systemctl daemon-reload >/dev/null 2>&1 || true
-        log_info "已应用 systemd 沙箱加固: ${unit}（$dropin）"
+        log_info "已应用 systemd 沙箱加固: ${unit}（${dropin}）"
     fi
 }
 

@@ -29,6 +29,32 @@ readonly EXTRA_LIBS=(
     "$BATS_TEST_DIRNAME/../scripts/core/validate.sh"
 )
 
+@test "Shell variables are braced when followed by a multi-byte character" {
+    # bash may swallow the following UTF-8 bytes into the variable name when it
+    # writes $VAR immediately before a CJK character (breaks on bash 3.2, the
+    # macOS default). Always use ${VAR} in that position.
+    local errors=0
+    local f
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        local hits
+        hits=$(LC_ALL=C grep -nP '\$[A-Za-z_][A-Za-z0-9_]*[^\x00-\x7F]' "$f" 2>/dev/null || true)
+        if [ -n "$hits" ]; then
+            echo "# ${f#$BATS_TEST_DIRNAME/../}" >&3
+            while IFS= read -r line; do
+                echo "#   $line" >&3
+            done <<< "$hits"
+            errors=$((errors + 1))
+        fi
+    done < <(grep -rl --include='*' -E '^#!' "$BATS_TEST_DIRNAME/../scripts" 2>/dev/null || true)
+
+    if [ "$errors" -gt 0 ]; then
+        echo "# FAIL: $errors file(s) use \$VAR right before a multi-byte char" >&3
+        echo "# Use \${VAR} instead of \$VAR in that position." >&3
+    fi
+    [ "$errors" -eq 0 ]
+}
+
 @test "set -u scripts guard env vars with \${VAR:-}" {
     local script_dir="$BATS_TEST_DIRNAME/../scripts"
     local errors=0

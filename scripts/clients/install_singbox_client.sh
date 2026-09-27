@@ -143,7 +143,7 @@ install_singbox_binary() {
             log "检测到已安装最新版 sing-box: $existing_binary"
             return 0
         fi
-        log "检测到旧版 sing-box: $existing_binary，将更新到最新版..."
+        log "检测到旧版 sing-box: ${existing_binary}，将更新到最新版..."
     fi
 
     resolve_singbox_url
@@ -189,7 +189,7 @@ set_saved_mode() {
     local mode="$1"
     local tmp_file
 
-    [ -f "$ENV_FILE" ] || die "未找到 $ENV_FILE，请先完成客户端安装。"
+    [ -f "$ENV_FILE" ] || die "未找到 ${ENV_FILE}，请先完成客户端安装。"
 
     tmp_file="$(mktemp /tmp/easynet-singbox-env.XXXXXX)"
     if grep -q '^SINGBOX_MODE=' "$ENV_FILE"; then
@@ -486,7 +486,7 @@ doctor() {
         log "配置链接: ${SINGBOX_CONFIG_URL:-unknown}"
         log "配置文件: $config_file"
     else
-        warn "未找到 $ENV_FILE，请先完成客户端安装。"
+        warn "未找到 ${ENV_FILE}，请先完成客户端安装。"
     fi
 
     if [ -f "$config_file" ]; then
@@ -573,7 +573,7 @@ print_status() {
         source "$ENV_FILE"
         mode="${SINGBOX_MODE:-mixed}"
     else
-        warn "未找到 $ENV_FILE，无法读取保存模式。"
+        warn "未找到 ${ENV_FILE}，无法读取保存模式。"
     fi
 
     log "当前模式: $mode"
@@ -608,7 +608,7 @@ update_and_restart() {
 switch_mode() {
     local previous_mode
 
-    [ -f "$ENV_FILE" ] || die "未找到 $ENV_FILE，请先完成客户端安装。"
+    [ -f "$ENV_FILE" ] || die "未找到 ${ENV_FILE}，请先完成客户端安装。"
     previous_mode="$(
         grep -E '^SINGBOX_MODE=' "$ENV_FILE" 2>/dev/null |
             tail -n 1 |

@@ -104,6 +104,12 @@ setup() {
 }
 
 @test "SSH hardening is opt-in and never called by the deploy pipeline" {
-    run rg -l 'harden_ssh' "$PROJECT_ROOT/scripts/deploy.sh" "$PROJECT_ROOT/scripts/core"
+    # deploy.sh must never reference it at all
+    run rg -l 'harden_ssh' "$PROJECT_ROOT/scripts/deploy.sh"
     [ "$status" -eq 1 ]
+    # core modules may only *index* it (hub symlink) — never execute it
+    run rg -l 'bash .*/harden_ssh\.sh' "$PROJECT_ROOT/scripts/core"
+    [ "$status" -eq 1 ]
+    run rg -q 'scripts/security/harden_ssh\.sh' "$PROJECT_ROOT/scripts/core/hub.sh"
+    [ "$status" -eq 0 ]
 }

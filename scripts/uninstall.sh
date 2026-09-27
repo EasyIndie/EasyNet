@@ -7,6 +7,8 @@ source "$PROJECT_ROOT/scripts/core/env.sh"
 source "$PROJECT_ROOT/scripts/core/env_file.sh"
 source "$PROJECT_ROOT/scripts/core/cron.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
+# shellcheck source=core/hub.sh
+source "$PROJECT_ROOT/scripts/core/hub.sh"
 
 # Error trap for set -eE: provides context on unexpected failures
 _easynet_error_handler() {
@@ -137,6 +139,8 @@ refresh_after_uninstall() {
         bash "$UNINSTALL_SCRIPT_DIR/generate_subscription.sh" >/dev/null 2>&1 || true
     fi
     cron_install_restart_job
+    # Keep the ~/.easynet index in sync with whatever remains installed.
+    ensure_easynet_hub --quiet >/dev/null 2>&1 || true
 }
 
 main() {

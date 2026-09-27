@@ -112,7 +112,7 @@ ensure_build_binary() {
 
     pattern="sing-box-.*-linux-${arch}\\.tar\\.gz$"
     version="$(github_asset_field "${SINGBOX_REPO:-}" "$BUILD_TAG" "$pattern" name)" || die "无法获取 sing-box release 信息（网络？）"
-    [ -n "$version" ] || die "没有找到匹配的 sing-box 资产（tag=$BUILD_TAG, arch=$arch）"
+    [ -n "$version" ] || die "没有找到匹配的 sing-box 资产（tag=$BUILD_TAG, arch=${arch}）"
     target="$CACHE_DIR/$version"
     if [ -x "$target/sing-box" ]; then
         printf '%s' "$target/sing-box"
@@ -143,7 +143,7 @@ ensure_db() {
     fi
     url="$(github_asset_field "$repo" latest "^${file}$" browser_download_url)"
     sha="$(github_asset_sha256 "$repo" latest "^${file}$")"
-    [ -n "$url" ] || die "无法获取 ${file} 下载地址（repo=$repo）"
+    [ -n "$url" ] || die "无法获取 ${file} 下载地址（repo=${repo}）"
     mkdir -p "$CACHE_DIR"
     log_info "下载官方数据库: ${file}" >&2
     download_file "$url" "$out" "$sha" >/dev/null || die "${file} 下载或校验失败"
@@ -159,7 +159,7 @@ build_one() {
     case "$source_type" in
     geosite) db="$geosite_db" ;;
     geoip) db="$geoip_db" ;;
-    *) die "未知 source 类型: $source_type（清单里只支持 geosite|geoip）" ;;
+    *) die "未知 source 类型: ${source_type}（清单里只支持 geosite|geoip）" ;;
     esac
 
     if ! "$bin" "$source_type" export -f "$db" "$category" -o "$json" >/dev/null 2>&1; then

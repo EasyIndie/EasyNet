@@ -136,6 +136,64 @@ EASYNET_HYSTERIA2_PORT_HOPPING=20000-30000
 > 使 SNI 与 DNS 一致。`auto`（默认）会在检测到本机 Edge 证书时自动启用。
 
 
+## 运维工作目录（~/.easynet）
+
+EasyNet 涉及的路径天然分散（上游安装器与 systemd 单元硬编码）：
+
+| 内容 | 真实位置 |
+|---|---|
+| Xray+Reality 配置 | `/usr/local/etc/xray` |
+| Hysteria2 配置 | `/etc/hysteria` |
+| Shadowsocks 配置 | `/etc/shadowsocks-rust` |
+| AmneziaWG 配置 | `/etc/amnezia/amneziawg` |
+| Edge Nginx 站点 | `/etc/nginx/sites-available/easynet-edge` |
+| TLS 证书 | `/etc/ssl/easynet-edge` |
+| acme.sh 状态 | `/root/.acme.sh` |
+| 运行状态 / 订阅 | `/var/lib/easynet` |
+| 静态根目录 / 规则集 | `/var/www/html` |
+| 部署配置 | `/opt/easynet/.env` |
+
+**物理搬迁这些目录会破坏上游升级与重装幂等**，因此 EasyNet 不搬文件，而是生成一个
+**统一工作目录** `~/.easynet`，用符号链接把上面全部收敛到一处，并生成索引
+`~/.easynet/README.md`（每一条都标注真实路径）：
+
+```
+~/.easynet/
+├── README.md            # 路径索引（自动生成）
+├── easynet              # 统一运维命令
+├── project → /opt/easynet
+├── env → /opt/easynet/.env
+├── state → /var/lib/easynet
+├── logs/                # 部署日志（deploy-<时间戳>.log、latest.log）
+├── certs → /etc/ssl/easynet-edge
+├── web → /var/www/html
+├── nginx-site → /etc/nginx/sites-available/easynet-edge
+├── acme → /root/.acme.sh
+├── systemd → /etc/systemd/system
+├── configs/{xray-reality,hysteria2,shadowsocks,wireguard} → 各自真实配置目录
+└── security/{harden-ssh,sshd-hardening.conf,fail2ban.conf}
+```
+
+维护人员只需记住一个地方：
+
+```bash
+easynet status              # 服务 / 订阅 / 证书 / SSH 总览
+easynet where               # 路径总表（~/.easynet 索引）
+easynet path hysteria2      # 打印真实路径，配合 cd "$(easynet path hysteria2)"
+easynet config              # 列出全部配置文件
+easynet edit hysteria2      # 编辑后提示重启命令
+easynet logs xray           # 跟踪日志；easynet logs deploy 看部署日志
+easynet restart all         # 重启全部服务
+easynet sub                 # 订阅链接与二维码
+easynet deploy              # 重新部署（日志自动写入 ~/.easynet/logs/）
+```
+
+`easynet` 会被自动软链到 `/usr/local/bin/easynet`（可用 `EASYNET_HUB_NO_PATH_LINK=1` 关闭）。
+hub 由 `core/hub.sh` 的 `ensure_easynet_hub()` 在每次部署/卸载结束时重建，是纯
+`mkdir`/`ln` 操作，删除后不影响任何服务运行。
+
+约定：**新增协议必须在 manifest 里声明 `MODULE_CONFIG_DIR`**，这样 hub 会自动索引它的配置目录。
+
 ## 快速部署
 
 ### 1. 登录服务器

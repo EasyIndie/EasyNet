@@ -218,7 +218,7 @@ create_systemd_service() {
     systemctl disable --now "wg-quick@${WG_INTERFACE}" >/dev/null 2>&1 || true
     if ip link show "$WG_INTERFACE" >/dev/null 2>&1; then
         if [ "$old_wg_active" = true ] || ! systemctl is-active --quiet "$WG_SERVICE"; then
-            log_info "移除已存在的接口 $WG_INTERFACE（从旧版 WireGuard 迁移）..."
+            log_info "移除已存在的接口 ${WG_INTERFACE}（从旧版 WireGuard 迁移）..."
             ip link delete "$WG_INTERFACE" >/dev/null 2>&1 || true
             needs_restart=true
         fi
@@ -248,7 +248,7 @@ add_client() {
         client_private_key=$(read_ini_value "$CLIENT_CONFIG_FILE" "PrivateKey")
         pre_shared_key=$(read_ini_value "$CLIENT_CONFIG_FILE" "PresharedKey")
         client_ip=$(read_ini_value "$CLIENT_CONFIG_FILE" "Address")
-        log_info "更新已有客户端配置: $client_name（保留密钥，刷新混淆参数/MTU）"
+        log_info "更新已有客户端配置: ${client_name}（保留密钥，刷新混淆参数/MTU）"
     else
         log_info "添加客户端: $client_name"
     fi

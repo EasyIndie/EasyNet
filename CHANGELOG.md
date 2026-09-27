@@ -81,6 +81,17 @@
 - 新增 `docs/audit-2026-09-27.md`：重置后全新部署的验收结论 + 安全性/稳定性/访问速度/
   客户端体验四维审计（含实测数据与 3 项遗留改进）。
 
+### 新增
+- **运维工作目录 `~/.easynet` + 统一命令 `easynet`**：EasyNet 涉及的路径天然分散在上游硬编码
+  的位置（`/usr/local/etc/xray`、`/etc/hysteria`、`/etc/shadowsocks-rust`、`/etc/amnezia/amneziawg`、
+  `/etc/nginx`、`/etc/ssl/easynet-edge`、`/root/.acme.sh`、`/var/lib/easynet`、`/var/www/html`）。
+  物理搬迁会破坏上游升级与重装幂等，因此改为生成一个**符号链接索引目录** `~/.easynet`（含
+  自动生成的 `README.md` 路径总表），并配套统一 CLI `easynet`
+  （`status`/`where`/`path`/`config`/`edit`/`logs`/`restart`/`sub`/`deploy`/`ssh`/`doctor`…）。
+  自动软链到 `/usr/local/bin/easynet`；`easynet deploy` 把部署日志收敛到 `~/.easynet/logs/`。
+  hub 为纯 `mkdir`/`ln` 操作，删除无副作用，不参与服务运行。
+- protocol manifest 新增 `MODULE_CONFIG_DIR`：新增协议时声明配置目录，hub 自动索引。
+
 ### 变更
 - **订阅直连路径默认关闭**（`EASYNET_SUBSCRIPTION_DIRECT_PATHS` 默认 `true` → `false`）：固定的
   `/sub`、`/clash`、`/singbox` 可被猜中（域名可从证书透明度日志获知），默认仅提供不可猜的随机
@@ -104,6 +115,11 @@
 - `tests/test_hardening.bats` 新增 systemd 沙箱单元名归一化、SS 密钥不入命令行、
   fail2ban jail 等用例；另新增 SSH 加固 dry-run/拒绝无公钥/回滚保险、零中断重启、
   订阅默认随机路径、规则集缺失告警等用例。测试总数 331 → 342。
+- `tests/test_hub.bats` 新增 13 个用例（hub 索引/幂等/不覆盖真实文件、CLI 命令与自解析、
+  manifest 配置目录声明、hub 无破坏性操作）。
+- `tests/test_lint_unbound_vars.bats` 新增「`$VAR` 紧跟多字节字符必须写成 `${VAR}`」检查：
+  bash 会把后随的 UTF-8 字节并入变量名（macOS bash 3.2 必崩），全仓库 23 处已修正。
+  测试总数 342 → 356。
 
 ## [0.0.10] - 2026-09-26
 

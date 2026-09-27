@@ -114,7 +114,7 @@ set_hysteria2_file_permissions() {
     fi
 
     if ! id "$service_user" >/dev/null 2>&1; then
-        log_warn "未找到 Hysteria2 systemd 用户 $service_user，暂时仅设置 root 可读权限。"
+        log_warn "未找到 Hysteria2 systemd 用户 ${service_user}，暂时仅设置 root 可读权限。"
         chmod 600 "${HYSTERIA2_CONFIG_FILE:-}" "${HYSTERIA2_ENV_FILE:-}" "${HYSTERIA2_KEY_FILE:-}"
         chmod 644 "${HYSTERIA2_CERT_FILE:-}"
         return
@@ -250,7 +250,7 @@ show_config() {
     show_qrcode "$config_url" "配置二维码"
     echo ""
     echo "连通性提示:"
-    echo "- Hysteria2 使用 UDP/$port，请确认云厂商安全组和服务器防火墙均已放行 UDP/$port"
+    echo "- Hysteria2 使用 UDP/${port}，请确认云厂商安全组和服务器防火墙均已放行 UDP/$port"
     echo "========================================"
 }
 

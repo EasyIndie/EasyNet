@@ -197,7 +197,7 @@ main() {
     trap - EXIT
 
     if [ "$INSTALL_ONLY" = "true" ]; then
-        log "已安装到 $INSTALL_DIR（EASYNET_INSTALL_ONLY=true，跳过部署）"
+        log "已安装到 ${INSTALL_DIR}（EASYNET_INSTALL_ONLY=true，跳过部署）"
         exit 0
     fi
 

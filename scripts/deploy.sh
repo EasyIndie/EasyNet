@@ -3,6 +3,8 @@
 DEPLOY_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 PROJECT_ROOT="$(dirname "$DEPLOY_SCRIPT_DIR")"
 source "$PROJECT_ROOT/scripts/core/logging.sh"
+# shellcheck source=core/hub.sh
+source "$PROJECT_ROOT/scripts/core/hub.sh"
 source "$PROJECT_ROOT/scripts/core/firewall.sh"
 source "$PROJECT_ROOT/scripts/core/cron.sh"
 source "$PROJECT_ROOT/scripts/core/env.sh"
@@ -388,6 +390,8 @@ deploy_modules() {
     bash "$DEPLOY_SCRIPT_DIR/generate_subscription.sh"
     setup_firewall
     setup_cron_jobs
+    # Refresh the operational hub (~/.easynet) so every path stays indexed.
+    ensure_easynet_hub
 }
 
 main() {

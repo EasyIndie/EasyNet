@@ -271,7 +271,7 @@ cmd_revert() {
     fi
 
     if command -v sshd >/dev/null 2>&1 && ! sshd -t -f "$SSHD_MAIN"; then
-        die "回滚后 sshd 配置校验失败，请手工检查 $SSHD_MAIN。"
+        die "回滚后 sshd 配置校验失败，请手工检查 ${SSHD_MAIN}。"
     fi
     systemctl reload "$SSH_SERVICE" 2>/dev/null || systemctl restart "$SSH_SERVICE"
     # The saved state has been consumed: allow a later apply to snapshot afresh.
@@ -281,7 +281,7 @@ cmd_revert() {
 
 cmd_status() {
     if [ -f "$SSHD_DROPIN" ]; then
-        echo "状态: 已应用（$SSHD_DROPIN）"
+        echo "状态: 已应用（${SSHD_DROPIN}）"
         if systemctl is-active --quiet "${ROLLBACK_UNIT}.timer"; then
             echo "回滚定时器: 运行中 —— 执行 confirm 以保留加固"
         else
@@ -306,7 +306,7 @@ main() {
         revert) cmd_revert ;;
         status) cmd_status ;;
         help | -h | --help) usage ;;
-        *) die "未知命令: $cmd（可用: check|apply|confirm|revert|status）" ;;
+        *) die "未知命令: ${cmd}（可用: check|apply|confirm|revert|status）" ;;
     esac
 }
 

@@ -13,4 +13,6 @@ MODULE_SECURITY_RANK=20
 MODULE_DEFAULT_PORT=443
 MODULE_EDGE_MODE="shared_tls"
 MODULE_PROFILES="balanced compat"
+# Where this protocol keeps its on-disk configuration (indexed by ~/.easynet)
+MODULE_CONFIG_DIR="/etc/hysteria"
 MODULE_SYSTEMD_SERVICES=("hysteria-server.service")

@@ -191,7 +191,7 @@ phase_deploy() {
         return 0
     fi
 
-    info "运行 deploy.sh（balanced, 域名 $DOMAIN）... 可能需要数分钟"
+    info "运行 deploy.sh（balanced, 域名 ${DOMAIN}）... 可能需要数分钟"
     if bash "$INSTALL_DIR/scripts/deploy.sh"; then
         pass "deploy.sh 退出码 0"
     else

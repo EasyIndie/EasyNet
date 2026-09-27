@@ -14,4 +14,6 @@ MODULE_SECURITY_RANK=40
 MODULE_DEFAULT_PORT=8388
 MODULE_EDGE_MODE="none"
 MODULE_PROFILES="compat"
+# Where this protocol keeps its on-disk configuration (indexed by ~/.easynet)
+MODULE_CONFIG_DIR="/etc/shadowsocks-rust"
 MODULE_SYSTEMD_SERVICES=("shadowsocks-rust-server")

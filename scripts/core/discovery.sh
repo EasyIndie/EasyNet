@@ -62,6 +62,7 @@ discovery_load_manifest() {
     unset MODULE_DEFAULT_PORT MODULE_DEFAULT_PUBLIC_PORT
     unset MODULE_EDGE_MODE MODULE_PROFILES MODULE_NGINX_ROUTE_TEMPLATE
     unset MODULE_SYSTEMD_SERVICES MODULE_FIREWALL_RULES MODULE_ENV_PREFIX
+    unset MODULE_CONFIG_DIR
     # shellcheck source=/dev/null  # dynamic path per module; sourced at runtime
     source "$manifest_path"
 
@@ -96,6 +97,7 @@ discovery_get_manifest_value() {
         MODULE_PROFILES)            value="${MODULE_PROFILES:-}" ;;
         MODULE_SYSTEMD_SERVICES)    value="${MODULE_SYSTEMD_SERVICES[*]:-}" ;;
         MODULE_ENV_PREFIX)          value="${MODULE_ENV_PREFIX:-}" ;;
+        MODULE_CONFIG_DIR)          value="${MODULE_CONFIG_DIR:-}" ;;
         MODULE_NGINX_ROUTE_TEMPLATE) value="${MODULE_NGINX_ROUTE_TEMPLATE:-}" ;;
         MODULE_TYPE)                value="${MODULE_TYPE:-}" ;;
         *)

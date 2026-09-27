@@ -171,7 +171,7 @@ resolve_reality_target() {
             ;;
         self | borrow) ;;
         *)
-            log_error "EASYNET_REALITY_MODE 取值无效: $mode（应为 auto|self|borrow）"
+            log_error "EASYNET_REALITY_MODE 取值无效: ${mode}（应为 auto|self|borrow）"
             exit 1
             ;;
     esac
@@ -223,7 +223,7 @@ set_xray_config_permissions() {
         return 0
     fi
     if ! id "$service_user" >/dev/null 2>&1; then
-        log_warn "未找到 Xray systemd 用户 $service_user，配置文件将仅 root 可读。"
+        log_warn "未找到 Xray systemd 用户 ${service_user}，配置文件将仅 root 可读。"
         return 0
     fi
 
@@ -252,7 +252,7 @@ reality_fallback_limit_json() {
     burst="${burst:-$bytes}"
 
     if ! [[ "$after" =~ ^[0-9]+$ ]] || ! [[ "$bytes" =~ ^[0-9]+$ ]] || ! [[ "$burst" =~ ^[0-9]+$ ]]; then
-        log_warn "Reality 回退限速格式无效: $spec（应为 afterBytes:bytesPerSec:burstBytesPerSec）"
+        log_warn "Reality 回退限速格式无效: ${spec}（应为 afterBytes:bytesPerSec:burstBytesPerSec）"
         printf '{}'
         return 0
     fi
