@@ -45,9 +45,11 @@ install_shadowsocks() {
         exit 1
     }
 
-    if [ -n "${EASYNET_SHADOWSOCKS_INSTALL_SHA256:-}" ]; then
+    local ss_sha256
+    ss_sha256="${EASYNET_SHADOWSOCKS_INSTALL_SHA256:-}"
+    if [ -n "$ss_sha256" ]; then
         log_info "校验 SHA256..."
-        echo "${EASYNET_SHADOWSOCKS_INSTALL_SHA256}  $tmp_dir/$tar_file" | sha256sum -c
+        echo "$ss_sha256  $tmp_dir/$tar_file" | sha256sum -c
     fi
 
     tar -xJf "$tmp_dir/$tar_file" -C "$tmp_dir"

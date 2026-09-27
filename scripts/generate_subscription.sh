@@ -314,4 +314,8 @@ if [ ! -f "${WEB_ROOT}/rules/manifest.json" ]; then
     log_warn "  → 修复：在服务器上运行 ./scripts/generate_singbox_rules.sh"
 fi
 
+# The (random) subscription path lives in the state dir and is the only secret
+# protecting every node credential: keep the tree root-only.
+easynet_secure_state_dir
+
 show_subscription_links "$(easynet_subscription_domain)" "$(easynet_subscription_scheme)" "$(easynet_subscription_port)"

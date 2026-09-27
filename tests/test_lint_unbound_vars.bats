@@ -83,7 +83,10 @@ readonly EXTRA_LIBS=(
         # Source lines referencing *_CORE_DIR are excluded below.
 
         local matches
-        matches=$(grep -nE '\$('"$VAR_PREFIXES"')' "$script" \
+        # Match both bare $VAR and braced ${VAR} without a default: the
+        # braced form crashes just the same under set -u when unset, but was
+        # previously unchecked (a real blind spot).
+        matches=$(grep -nE '\$('"$VAR_PREFIXES"')|\$\{('"$VAR_PREFIXES"')[A-Z0-9_]*\}' "$script" \
             | grep -v ':-' \
             | grep -v '# ok' \
             | grep -v '^[[:digit:]]*:.*\<source\>.*\$' \

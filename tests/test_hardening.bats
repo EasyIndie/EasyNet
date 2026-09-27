@@ -32,6 +32,9 @@ setup() {
     [ -f "$EASYNET_SYSTEMD_UNIT_DIR/xray.service.d/easynet-hardening.conf" ]
     [ ! -d "$EASYNET_SYSTEMD_UNIT_DIR/xray.d" ]
     grep -q '^ProtectSystem=strict$' "$EASYNET_SYSTEMD_UNIT_DIR/xray.service.d/easynet-hardening.conf"
+    # Upstream units may lack Restart=; the drop-in supplies the recovery contract
+    grep -q '^Restart=on-failure$' "$EASYNET_SYSTEMD_UNIT_DIR/xray.service.d/easynet-hardening.conf"
+    grep -q '^RestartSec=5$' "$EASYNET_SYSTEMD_UNIT_DIR/xray.service.d/easynet-hardening.conf"
 
     maintenance_apply_systemd_hardening hysteria-server.service "ReadWritePaths=/var/lib/hysteria"
     dropin="$EASYNET_SYSTEMD_UNIT_DIR/hysteria-server.service.d/easynet-hardening.conf"
@@ -111,5 +114,59 @@ setup() {
     run rg -l 'bash .*/harden_ssh\.sh' "$PROJECT_ROOT/scripts/core"
     [ "$status" -eq 1 ]
     run rg -q 'scripts/security/harden_ssh\.sh' "$PROJECT_ROOT/scripts/core/hub.sh"
+    [ "$status" -eq 0 ]
+}
+
+@test "Edge state tree is root-only (subscription path is the only secret)" {
+    run rg -q 'easynet_secure_state_dir' "$PROJECT_ROOT/scripts/core/env.sh"
+    [ "$status" -eq 0 ]
+    # Called from the two write paths
+    run rg -q 'easynet_secure_state_dir' "$PROJECT_ROOT/scripts/deploy.sh" "$PROJECT_ROOT/scripts/generate_subscription.sh"
+    [ "$status" -eq 0 ]
+    # Prefix file and generated routes are chmod 600 at write time
+    run rg -q 'chmod 600 "\$path_file"' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
+    [ "$status" -eq 0 ]
+    run rg -q 'chmod 600 "\$route_file"' "$PROJECT_ROOT/scripts/core/subscription.sh"
+    [ "$status" -eq 0 ]
+}
+
+@test "easynet_secure_state_dir actually tightens permissions" {
+    TMP_STATE="$(mktemp -d)"
+    mkdir -p "$TMP_STATE/exposure/edge/routes" "$TMP_STATE/modules"
+    echo "/s/abcdef0123456789abcdef0123456789" > "$TMP_STATE/exposure/edge/subscription_path_prefix.txt"
+    echo 'location = /x { }' > "$TMP_STATE/exposure/edge/routes/subscription.conf"
+    chmod 755 "$TMP_STATE" "$TMP_STATE/exposure" "$TMP_STATE/exposure/edge" "$TMP_STATE/exposure/edge/routes"
+    chmod 644 "$TMP_STATE/exposure/edge/subscription_path_prefix.txt" "$TMP_STATE/exposure/edge/routes/subscription.conf"
+
+    EASYNET_STATE_DIR="$TMP_STATE" bash -c ". '$PROJECT_ROOT/scripts/core/env.sh'; easynet_secure_state_dir"
+
+    # stat(1) differs between GNU and BSD, so read modes portably
+    mode_of() {
+        if stat -c '%a' "$1" >/dev/null 2>&1; then stat -c '%a' "$1"; else stat -f '%Lp' "$1"; fi
+    }
+    local bad="" pair path want got
+    for pair in         "$TMP_STATE:700"         "$TMP_STATE/exposure:700"         "$TMP_STATE/exposure/edge:700"         "$TMP_STATE/exposure/edge/routes:700"         "$TMP_STATE/exposure/edge/subscription_path_prefix.txt:600"         "$TMP_STATE/exposure/edge/routes/subscription.conf:600"; do
+        path="${pair%:*}"; want="${pair##*:}"
+        got="$(mode_of "$path")"
+        [ "$got" = "$want" ] || bad="${bad}${path##*/}=${got}(want ${want}) "
+    done
+    [ -z "$bad" ] || echo "# 权限未收紧: $bad" >&3
+    [ -z "$bad" ]
+    rm -rf "$TMP_STATE"
+}
+
+@test "Masquerade route does not emit duplicate security headers" {
+    # Proxied upstream headers must be hidden, otherwise HSTS appears twice with
+    # conflicting max-age (invalid per RFC 6797 and a fingerprint).
+    run rg -c 'proxy_hide_header Strict-Transport-Security' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
+    [ "$output" = "3" ]
+    run rg -q 'proxy_hide_header X-Frame-Options' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
+    [ "$status" -eq 0 ]
+    run rg -q 'proxy_hide_header X-Content-Type-Options' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
+    [ "$status" -eq 0 ]
+}
+
+@test "Edge server hides the nginx version" {
+    run rg -q 'server_tokens off;' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
     [ "$status" -eq 0 ]
 }

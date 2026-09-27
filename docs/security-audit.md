@@ -193,7 +193,10 @@ CapabilityBoundingSet=~      ← systemd 语义：对空列表取反 = 授予全
 |:--:|---|---|---|
 | ✅ 已解决 | **SSH：`PermitRootLogin yes` + `PasswordAuthentication yes`，无 fail2ban** | 暴力破解 → 服务器沦陷 | 自动：fail2ban（`mode=normal` + 部署者 IP 白名单）。显式：`bash scripts/security/harden_ssh.sh check\|apply\|confirm\|revert`——公钥存在性预检 + `sshd -t` 校验 + **10 分钟自动回滚**，实测无锁死。**不参与 `deploy.sh`** |
 | ✅ 已解决 | **订阅直连路径默认开启** → 任何人访问 `https://<域名>/sub` 即可拿到全部凭据 | 凭据泄露 | 默认改为 `false`（仅随机路径）；`EASYNET_SUBSCRIPTION_PATH_PREFIX` 可固定路径，重装后客户端无感 |
+| 🟡 P2 | **状态目录 world-readable**（订阅路径前缀 644）→ 本地用户可读到保护全部凭据的唯一秘密 | 凭据泄露（需本地账号） | ✅ 第三轮修复：`easynet_secure_state_dir()` 把状态树收敛为 700、前缀与路由 600，`setpriv` 实测 Permission denied |
 | 🟡 P2 | 订阅仅单层「128 位随机路径」保护 | 路径泄露即凭据泄露 | 可选 Basic Auth / 一次性 token |
+| 🟡 P2 | **伪装页重复且冲突的安全头**（上游透传 + 自身设置 → 两个不同 `HSTS max-age`），违反 RFC 6797 且本身是指纹 | 安全策略被 UA 忽略；可区分性 | ✅ 第三轮修复：`proxy_hide_header`（HSTS / X-Frame-Options / X-Content-Type-Options），实测各恰好 1 次 |
+| 🟡 P2 | **hysteria-server 上游 unit 无 `Restart=`** → 崩溃不自恢复 | 服务长时间不可用 | ✅ 第三轮修复：沙箱 drop-in 补 `Restart=on-failure` + `RestartSec=5`，`kill -9` 实测 5s 拉起 |
 | 🟡 P2 | WireGuard 私钥写入客户端 URI | 分享链接=私钥 | 协议约定，保留但已在部署时告警 |
 | 🟡 P3 | Xray 版本 pin 落后上游 6 个月（26.3.27 vs 26.9.9） | 缺后续修复 | 评审后跟进升级（保持 pin 策略） |
 | 🟡 P3 | Reality 未启用 Finalmask | 应对针对性检测的余量不足 | 作为应急开关（`EASYNET_REALITY_FINALMASK`）预留 |
@@ -235,3 +238,35 @@ CapabilityBoundingSet=~      ← systemd 语义：对空列表取反 = 授予全
 | **P1 订阅直连路径默认关闭** | `EASYNET_SUBSCRIPTION_DIRECT_PATHS` 默认 `true` → `false`；新增 `EASYNET_SUBSCRIPTION_PATH_PREFIX` 校验（拒绝空白/?/#/&，过短告警） | `/sub` 不再返回节点（0 条），随机路径 200/4 节点 |
 | **P2 重部署零中断** | hysteria2 / shadowsocks / awg-quick 增加「渲染→比对→不变则跳过重启」；xray 仅在沙箱变化或未运行时重启；nginx 全链路 `reload`；**证书续期 hook 增加指纹比对**（acme 每次部署都会跑 `--install-cert`，此前每次都重启全部服务）；AWG 的「旧版迁移」不再误删在用接口 | 连续两次部署后 **5 个服务 `ActiveEnterTimestamp` 完全不变** |
 | **P3 规则集缺失提示** | `generate_subscription.sh` 检测 `rules/manifest.json` 缺失并给出修复命令 | 实测输出完整告警 |
+
+
+---
+
+## 十、第三轮审计（2026-09-27 · 重置后复验）
+
+完整报告见 [`audit-round3.md`](./audit-round3.md)。要点：
+
+**历史问题闭环**：核验 31 项 —— 修复并实测 24 项、按设计保留 4 项、**仍未解决 3 项（供应链 pin）**。
+
+**本轮新发现并修复 5 项**：
+
+| 编号 | 级别 | 问题 | 修复 |
+|:--:|:--:|---|---|
+| N1 | 🟠 P1 | 状态目录 755/644，订阅路径前缀 world-readable | `easynet_secure_state_dir()`（700/600） |
+| N3 | 🟠 P1 | 伪装页重复且冲突的安全头（RFC 6797） | `proxy_hide_header` ×3 处 |
+| N4 | 🟡 P2 | hysteria 无 `Restart=`，崩溃不自恢复 | drop-in 补 `Restart=on-failure`/`RestartSec=5` |
+| N5 | 🟡 P3 | 客户端 mixed 硬编码 `0.0.0.0`（公网=开放代理） | `--listen-address` + 非 loopback 告警 |
+| N6 | 🟡 P3 | `Server: nginx/1.28.3 (Ubuntu)` 暴露版本 | `server_tokens off` |
+
+**文档纠错（上轮表述不准确）**：
+
+| 上轮结论 | 实测 |
+|---|---|
+| 「仅 TLS 1.3」 | **TLS 1.2 + 1.3**（1.0/1.1 拒绝）；TLS 1.2 为刻意保留 |
+| 「无 world-readable」 | 协议配置/metadata 正确，**状态目录 755/644**（N1） |
+| 「服务端 ≈62MB」 | **≈104MB**（漏计 fail2ban 31.8MB） |
+| 「崩溃自恢复 ✅（xray/hysteria/ss）」 | xray/ss ✅、**hysteria `Restart=no`**（N4） |
+
+**工具缺陷修复**：`test_lint_unbound_vars.bats` 原先只检查裸 `$VAR`，**不检查 `${VAR}`**（无 `:-` 时
+在 `set -u` 下同样崩溃）。扩展规则后扫出 3 处并修正。另新增「`$VAR` 紧跟多字节字符必须写 `${VAR}`」
+检查（bash 会把后随 UTF-8 字节并入变量名，macOS bash 3.2 实测崩溃）。

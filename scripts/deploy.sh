@@ -390,6 +390,8 @@ deploy_modules() {
     bash "$DEPLOY_SCRIPT_DIR/generate_subscription.sh"
     setup_firewall
     setup_cron_jobs
+    # Keep the state tree root-only (it holds the subscription path secret).
+    easynet_secure_state_dir
     # Refresh the operational hub (~/.easynet) so every path stays indexed.
     ensure_easynet_hub
 }

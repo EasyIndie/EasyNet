@@ -86,6 +86,11 @@ RestrictSUIDSGID=yes
 RestrictNamespaces=yes
 LockPersonality=yes
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+# Crash recovery contract. Some upstream units (e.g. hysteria-server.service)
+# ship without Restart=, so a crash would leave the proxy down until the daily
+# cron or manual intervention. Set it here so every hardened service recovers.
+Restart=on-failure
+RestartSec=5
 EOF
     [ -n "$extra" ] && printf '%s\n' "$extra" >> "$new_dropin"
     chmod 644 "$new_dropin"

@@ -33,21 +33,22 @@ edge_acme_domain_args() {
 }
 
 ensure_edge_subscription_path_prefix() {
-    local path_file path_prefix
+    local path_file path_prefix requested
 
     path_file="$EDGE_STATE_DIR/subscription_path_prefix.txt"
-    if [ -n "${EASYNET_SUBSCRIPTION_PATH_PREFIX:-}" ]; then
+    requested="${EASYNET_SUBSCRIPTION_PATH_PREFIX:-}"
+    if [ -n "$requested" ]; then
         # A pinned prefix keeps subscription URLs stable across re-installs,
         # but it is also the only secret protecting the subscription: reject
         # values that would break URLs or that are too short to resist guessing.
-        if [[ "${EASYNET_SUBSCRIPTION_PATH_PREFIX}" == *[[:space:]\?\#\&]* ]]; then
+        if [[ "$requested" == *[[:space:]\?\#\&]* ]]; then
             log_error "EASYNET_SUBSCRIPTION_PATH_PREFIX 不能包含空白、?、# 或 &"
             exit 1
         fi
-        if [ "${#EASYNET_SUBSCRIPTION_PATH_PREFIX}" -lt 16 ]; then
+        if [ "${#requested}" -lt 16 ]; then
             log_warn "EASYNET_SUBSCRIPTION_PATH_PREFIX 少于 16 字符，过于容易被猜中；建议使用 \`openssl rand -hex 16\`"
         fi
-        path_prefix="/${EASYNET_SUBSCRIPTION_PATH_PREFIX#/}"
+        path_prefix="/${requested#/}"
         path_prefix="${path_prefix%/}"
     elif [ -f "$path_file" ]; then
         path_prefix=$(cat "$path_file")
@@ -58,6 +59,8 @@ ensure_edge_subscription_path_prefix() {
     path_prefix="/${path_prefix#/}"
     path_prefix="${path_prefix%/}"
     echo "$path_prefix" > "$path_file"
+    # The prefix is the only secret gating all credentials: root-only.
+    chmod 600 "$path_file" 2>/dev/null || true
     EDGE_SUBSCRIPTION_PATH_PREFIX="$path_prefix"
 }
 
@@ -104,6 +107,7 @@ write_edge_http_site() {
 server {
     listen ${EDGE_HTTP_PORT};
     server_name ${EDGE_SERVER_NAMES};
+    server_tokens off;
 
     root $WEB_ROOT;
 
@@ -117,6 +121,13 @@ server {
         proxy_set_header Host \$proxy_host;
         proxy_ssl_server_name on;
         proxy_redirect off;
+        # The masquerade target sends its own security headers; without hiding
+        # them we would emit duplicates with conflicting values (e.g. two HSTS
+        # max-age), which is invalid per RFC 6797 and is itself a fingerprint
+        # (a real site does not return two contradictory HSTS headers).
+        proxy_hide_header Strict-Transport-Security;
+        proxy_hide_header X-Frame-Options;
+        proxy_hide_header X-Content-Type-Options;
     }
 }
 EOF
@@ -127,6 +138,7 @@ write_edge_https_site() {
 server {
     listen ${EDGE_HTTP_PORT};
     server_name ${EDGE_SERVER_NAMES};
+    server_tokens off;
 
     root $WEB_ROOT;
 
@@ -140,12 +152,20 @@ server {
         proxy_set_header Host \$proxy_host;
         proxy_ssl_server_name on;
         proxy_redirect off;
+        # The masquerade target sends its own security headers; without hiding
+        # them we would emit duplicates with conflicting values (e.g. two HSTS
+        # max-age), which is invalid per RFC 6797 and is itself a fingerprint
+        # (a real site does not return two contradictory HSTS headers).
+        proxy_hide_header Strict-Transport-Security;
+        proxy_hide_header X-Frame-Options;
+        proxy_hide_header X-Content-Type-Options;
     }
 }
 
 server {
     listen ${EDGE_HTTPS_PORT} ssl;
     server_name ${EDGE_SERVER_NAMES};
+    server_tokens off;
 
     ssl_certificate ${EDGE_CERT_DIR}/fullchain.crt;
     ssl_certificate_key ${EDGE_CERT_DIR}/private.key;
@@ -173,6 +193,13 @@ server {
         proxy_set_header Host \$proxy_host;
         proxy_ssl_server_name on;
         proxy_redirect off;
+        # The masquerade target sends its own security headers; without hiding
+        # them we would emit duplicates with conflicting values (e.g. two HSTS
+        # max-age), which is invalid per RFC 6797 and is itself a fingerprint
+        # (a real site does not return two contradictory HSTS headers).
+        proxy_hide_header Strict-Transport-Security;
+        proxy_hide_header X-Frame-Options;
+        proxy_hide_header X-Content-Type-Options;
     }
 }
 EOF

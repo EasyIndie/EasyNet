@@ -139,3 +139,28 @@ setup() {
     printf '%s' "$update_unit" | rg -q 'ProtectSystem=strict'
     printf '%s' "$update_unit" | rg -q 'ReadWritePaths=\$\{STATE_DIR\} \$\{CONFIG_DIR\}'
 }
+
+@test "Client mixed listener is configurable and warns on non-loopback binding" {
+    # Documented option
+    run rg -q -- '--listen-address' "$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
+    [ "$status" -eq 0 ]
+    # Validation rejects non-IP values
+    run rg -q 'listen-address 只能是 IP 地址' "$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
+    [ "$status" -eq 0 ]
+    # Warns when binding beyond loopback (open proxy risk)
+    run rg -q '开放代理' "$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
+    [ "$status" -eq 0 ]
+    # Persisted so the daily updater keeps the same bind address
+    run rg -q "^SINGBOX_LISTEN='\\\$LISTEN_ADDRESS'" "$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
+    [ "$status" -eq 0 ]
+}
+
+@test "Client config generator reads the listen address at runtime (not build time)" {
+    # The jq block lives inside the quoted updater heredoc, so it must reference
+    # the runtime env var with a default, not the installer's shell variable.
+    run rg -q 'jq --arg listen "\$\{SINGBOX_LISTEN:-0\.0\.0\.0\}"' "$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
+    [ "$status" -eq 0 ]
+    # And it must not be hardcoded any more
+    run rg -q 'listen: "0\.0\.0\.0"' "$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
+    [ "$status" -eq 1 ]
+}

@@ -5,6 +5,9 @@ set -euo pipefail
 CONFIG_URL=""
 ACTION="install"
 MODE="${EASYNET_SINGBOX_MODE:-mixed}"
+# mixed 模式监听地址。默认 0.0.0.0 便于局域网共享（安装器会提示局域网地址）；
+# 公网设备上这会成为开放代理，可用 --listen-address 127.0.0.1 收紧。
+LISTEN_ADDRESS="${EASYNET_SINGBOX_LISTEN:-0.0.0.0}"
 SINGBOX_URL="${EASYNET_SINGBOX_DOWNLOAD_URL:-}"
 INSTALL_DIR="${EASYNET_SINGBOX_INSTALL_DIR:-/usr/local/bin}"
 CONFIG_DIR="${EASYNET_SINGBOX_CONFIG_DIR:-/etc/sing-box}"
@@ -22,6 +25,7 @@ usage() {
     cat <<EOF
 Usage:
   sudo bash $0 --config-url <EasyNet /singbox URL> [--mode mixed|tun] [--sing-box-url <tar.gz URL>]
+              [--listen-address <addr>]
   sudo bash $0 start|stop|restart|status|update|doctor
   sudo bash $0 switch-mode mixed|tun
 
@@ -29,6 +33,8 @@ Options:
   --config-url      EasyNet sing-box config URL, usually https://domain/s/<random>/singbox
   --mode            Client mode. mixed opens HTTP/SOCKS port only. tun enables local full-device proxy.
   --sing-box-url    Optional sing-box release tarball URL. Auto-detected when omitted.
+  --listen-address  Address the mixed proxy binds to (default 0.0.0.0 for LAN sharing).
+                    Use 127.0.0.1 to keep it local-only on public / untrusted hosts.
   -h, --help        Show this help.
 EOF
 }
@@ -68,6 +74,11 @@ parse_args() {
                 MODE="$2"
                 shift 2
                 ;;
+            --listen-address)
+                [ $# -ge 2 ] || die "--listen-address 需要一个地址"
+                LISTEN_ADDRESS="$2"
+                shift 2
+                ;;
             -h|--help)
                 usage
                 exit 0
@@ -82,6 +93,15 @@ parse_args() {
         mixed|tun) ;;
         *) die "--mode 只支持 mixed 或 tun" ;;
     esac
+
+    case "$LISTEN_ADDRESS" in
+        *[!A-Za-z0-9:.]*) die "--listen-address 只能是 IP 地址" ;;
+    esac
+    if [ "$MODE" = "mixed" ] && [ "$LISTEN_ADDRESS" != "127.0.0.1" ] && [ "$LISTEN_ADDRESS" != "::1" ]; then
+        warn "mixed 代理将监听 ${LISTEN_ADDRESS}:7890 —— 同网段（公网 IP 则等于全网）均可直接使用，"
+        warn "  即一个无认证的开放代理。若不需要局域网共享，请改用 --listen-address 127.0.0.1，"
+        warn "  或用防火墙只放行可信用途来源。"
+    fi
 
     if [ "$ACTION" = "install" ]; then
         [ -n "$CONFIG_URL" ] || die "缺少 --config-url"
@@ -181,6 +201,7 @@ SINGBOX_CONFIG_URL='$(quote_single "$CONFIG_URL")'
 SINGBOX_CONFIG_FILE='$CONFIG_DIR/config.json'
 SINGBOX_BIN='$INSTALL_DIR/sing-box'
 SINGBOX_MODE='$MODE'
+SINGBOX_LISTEN='$LISTEN_ADDRESS'
 EOF
     chmod 600 "$STATE_DIR/singbox-client.env"
 }
@@ -225,12 +246,12 @@ curl -fL "${SINGBOX_CONFIG_URL:-}" -o "$tmp_file"
 
 case "${SINGBOX_MODE:-mixed}" in
     mixed)
-        jq '
+        jq --arg listen "${SINGBOX_LISTEN:-0.0.0.0}" '
             .inbounds = [
                 {
                     type: "mixed",
                     tag: "mixed-in",
-                    listen: "0.0.0.0",
+                    listen: $listen,
                     listen_port: 7890
                 }
             ]
@@ -302,7 +323,7 @@ case "${SINGBOX_MODE:-mixed}" in
         ' "$tmp_file" > "$mode_file"
         ;;
     *)
-        echo "Unsupported SINGBOX_MODE: ${SINGBOX_MODE}" >&2
+        echo "Unsupported SINGBOX_MODE: ${SINGBOX_MODE:-}" >&2
         exit 1
         ;;
 esac
@@ -696,12 +717,21 @@ main() {
     systemctl enable --now "${UPDATE_NAME}.timer"
 
     log "sing-box 客户端已启动，当前模式: $MODE"
-    if lan_ip="$(local_lan_ip)" && [ -n "$lan_ip" ]; then
-        if [ "$MODE" = "mixed" ]; then
-            log "局域网代理地址: http://${lan_ip}:7890 或 socks5://${lan_ip}:7890"
-        else
-            log "TUN 模式已启用，树莓派本机流量会由 sing-box 接管。"
-        fi
+    if [ "$MODE" = "mixed" ]; then
+        # Only advertise a LAN address when the proxy actually accepts non-local
+        # connections, otherwise we point users at a port that is not listening.
+        case "$LISTEN_ADDRESS" in
+            127.0.0.1 | ::1)
+                log "代理仅监听本机: http://127.0.0.1:7890 或 socks5://127.0.0.1:7890"
+                ;;
+            *)
+                if lan_ip="$(local_lan_ip)" && [ -n "$lan_ip" ]; then
+                    log "代理监听 ${LISTEN_ADDRESS}:7890，本机可访问 http://${lan_ip}:7890 或 socks5://${lan_ip}:7890"
+                fi
+                ;;
+        esac
+    else
+        log "TUN 模式已启用，本机流量会由 sing-box 接管。"
     fi
 }
 

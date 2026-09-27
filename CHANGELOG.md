@@ -81,6 +81,24 @@
 - 新增 `docs/audit-2026-09-27.md`：重置后全新部署的验收结论 + 安全性/稳定性/访问速度/
   客户端体验四维审计（含实测数据与 3 项遗留改进）。
 
+### 修复（第三轮全面审计）
+- **状态目录不再 world-readable**：`/var/lib/easynet` 及其下**订阅路径前缀**（保护全部凭据的唯一
+  秘密）原为 `755/644`，任意本地用户可读。新增 `easynet_secure_state_dir()`，状态树收敛为 `700`、
+  前缀与生成的路由文件 `600`（`setpriv` 实测 Permission denied）。
+- **伪装页不再输出重复且冲突的安全头**：上游（bing）透传 + 自身 `add_header` 导致两个 `HSTS max-age`
+  与两个 `X-Frame-Options`，违反 RFC 6797 且本身是指纹。三个 `location /` 增加 `proxy_hide_header`。
+- **hysteria-server 崩溃自恢复**：上游 unit 无 `Restart=`（默认 `no`），崩溃后只能等每日 cron。
+  沙箱 drop-in 统一补 `Restart=on-failure` + `RestartSec=5`（`kill -9` 实测 5 秒拉起）。
+- **客户端 mixed 监听地址可配置**：新增 `--listen-address` / `EASYNET_SINGBOX_LISTEN`（默认保持
+  `0.0.0.0` 以支持局域网共享），非 loopback 时显式告警「开放代理」风险；提示文案随实际绑定地址变化。
+- **Edge 隐匿 nginx 版本**：`server_tokens off`（原 `Server: nginx/1.28.3 (Ubuntu)`）。
+- **lint 盲区修复**：`test_lint_unbound_vars.bats` 原先只查裸 `$VAR`，**不查 `${VAR}`**——后者在
+  `set -u` 下同样会崩溃。扩展规则后扫出 3 处并修正（`install_singbox_client.sh`、
+  `edge/deploy.sh`、`shadowsocks/deploy.sh`）。
+- 文档纠错：上轮报告「仅 TLS 1.3」实为 **TLS 1.2 + 1.3**（1.0/1.1 拒绝，1.2 为刻意保留）；
+  「服务端内存 ≈62MB」实为 **≈104MB**（漏计 fail2ban）。
+- 新增 `docs/audit-round3.md`（第三轮全面审计：31 项历史问题闭环核验 + 运行态取证）。
+
 ### 新增
 - **运维工作目录 `~/.easynet` + 统一命令 `easynet`**：EasyNet 涉及的路径天然分散在上游硬编码
   的位置（`/usr/local/etc/xray`、`/etc/hysteria`、`/etc/shadowsocks-rust`、`/etc/amnezia/amneziawg`、

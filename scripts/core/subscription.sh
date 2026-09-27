@@ -223,6 +223,9 @@ location = ${prefix}/${endpoint} {
 EOF
         done < <(easynet_subscription_endpoint_specs)
     done
+    # Embed the (secret) subscription path: nginx reads it as root at config
+    # parse time, so keeping it root-only does not affect serving.
+    chmod 600 "$route_file" 2>/dev/null || true
 }
 
 easynet_subscription_url() {

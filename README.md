@@ -22,7 +22,7 @@
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5–$15/月）
-- 🛡️ 安全稳定，自带 356 个测试用例（28 套件）保护核心逻辑
+- 🛡️ 安全稳定，自带 362 个测试用例（28 套件）保护核心逻辑
 
 ## 协议对比与防探测等级
 
@@ -101,7 +101,7 @@ EasyNet/
 │   └── smoke_test.sh           # 部署后快速检查
 ├── core/hub.sh                 # ~/.easynet 运维工作目录（符号链接索引）
 ├── easynet                     # 统一运维命令（status/config/logs/restart/deploy…）
-├── tests/                      # 单元测试（28 个 bats 套件，356 个用例）
+├── tests/                      # 单元测试（28 个 bats 套件，362 个用例）
 ├── docs/                       # 文档目录
 │   ├── deployment.md           #   部署、协议选择、订阅承载、完整配置项
 │   ├── clients.md              #   全平台客户端说明与常见问题
@@ -220,6 +220,7 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 - [架构评估报告](./docs/architecture-review.md) — 代码质量与架构改进建议
 - [安全审计报告](./docs/security-audit.md) — 协议抗 DPI 与实现层安全评估
 - [统一服务端方案分析](./docs/unified-backend-analysis.md) — sing-box / Xray-core 收敛可行性与趋势（结论：维持现状，优先评估 Xray-core）
+- [第三轮全面审计（2026-09-27）](./docs/audit-round3.md) — 重置后复验 + 历史问题闭环核验（31 项）
 - [第二轮全面审计（2026-09-27）](./docs/audit-2026-09-27.md) — 重置后全新部署验收 + 安全/稳定/性能/客户端体验
 - [SSH 加固（可选）](./scripts/security/harden_ssh.sh) — `check\|apply\|confirm\|revert`，带 10 分钟自动回滚保险
 
