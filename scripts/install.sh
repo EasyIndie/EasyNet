@@ -166,7 +166,11 @@ install_package() {
     rm -rf "$INSTALL_DIR"
     mv "$staging" "$INSTALL_DIR"
     chmod 0755 "$INSTALL_DIR/scripts/deploy.sh" 2>/dev/null || true
-    log "已安装到: $INSTALL_DIR"
+    # Record what was installed: a release tarball has no .git, so without this
+    # there is no way to tell which version a machine is running (used by the
+    # acceptance report and by support requests).
+    printf '%s\n' "$RELEASE_VERSION" > "$INSTALL_DIR/VERSION" 2>/dev/null || true
+    log "已安装到: $INSTALL_DIR (版本: $RELEASE_VERSION)"
 }
 
 main() {

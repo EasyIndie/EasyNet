@@ -145,6 +145,10 @@ build_fake_release() {
     [ "$status" -eq 0 ]
     [ -x "$target/scripts/deploy.sh" ]
 
+    # a release tarball carries no .git, so the installer records the version
+    [ -f "$target/VERSION" ]
+    [ "$(cat "$target/VERSION")" = "test" ]
+
     run "$target/scripts/deploy.sh" hello
     [ "$status" -eq 0 ]
     [[ "$output" == *"DEPLOY_STUB hello"* ]]
