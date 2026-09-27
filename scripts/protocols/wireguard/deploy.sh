@@ -329,7 +329,19 @@ show_config() {
     enc_psk=$(urlencode "$wg_psk")
     enc_dns=$(urlencode "$wg_dns")
     ip_only=$(echo "$wg_addr" | cut -d'/' -f1)
+
+    local obfs_param enc_obfs_param
+    obfs_param=$(jq -cn \
+        --arg jc "$jc" --arg jmin "$jmin" --arg jmax "$jmax" \
+        --arg s1 "$s1" --arg s2 "$s2" \
+        --arg h1 "$h1" --arg h2 "$h2" --arg h3 "$h3" --arg h4 "$h4" \
+        '{jc: $jc, jmin: $jmin, jmax: $jmax, s1: $s1, s2: $s2,
+          h1: $h1, h2: $h2, h3: $h3, h4: $h4,
+          random_trailers: "false", disable_cookies: "false"}')
+    enc_obfs_param=$(urlencode_query "$obfs_param")
+
     wg_uri="wg://${wg_endpoint}?publicKey=${enc_pub}&privateKey=${enc_priv}&presharedKey=${enc_psk}&ip=${ip_only}&mtu=${wg_mtu}&dns=${enc_dns}&udp=1"
+    wg_uri="${wg_uri}&obfs=amneziawg&obfsParam=${enc_obfs_param}"
     wg_uri="${wg_uri}&jc=${jc}&jmin=${jmin}&jmax=${jmax}&s1=${s1}&s2=${s2}&h1=${h1}&h2=${h2}&h3=${h3}&h4=${h4}#EasyNet-WG"
 
     echo ""

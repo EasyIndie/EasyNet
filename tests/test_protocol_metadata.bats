@@ -187,6 +187,16 @@ JSON
     [ "$(jq -r '.systemd.services[0]' "$STATE_DIR/modules/wireguard/metadata.json")" = "awg-quick@wg0" ]
 }
 
+@test "WireGuard metadata URI carries AmneziaWG obfs for Shadowrocket" {
+    uri=$(jq -r '.client.uri' "$STATE_DIR/modules/wireguard/metadata.json")
+    [[ "$uri" == *"obfs=amneziawg"* ]] && [[ "$uri" == *"obfsParam="* ]] && [[ "$uri" == *"obfsParam=%7B"* ]]
+}
+
+@test "WireGuard metadata exposes amnezia-wg-option for mihomo" {
+    [ "$(jq -r '.client.clash."amnezia-wg-option".jc' "$STATE_DIR/modules/wireguard/metadata.json")" = "5" ]
+    [ "$(jq -r '.client.clash."amnezia-wg-option".h1' "$STATE_DIR/modules/wireguard/metadata.json")" = "123456789" ]
+}
+
 @test "Migrated SS/WG modules do not depend on legacy state paths" {
     run rg -q "/etc/trojan-go|v2ray_path|trojan_path" "$PROJECT_ROOT/scripts/protocols/shadowsocks" "$PROJECT_ROOT/scripts/protocols/wireguard"
     [ "$status" -eq 1 ]

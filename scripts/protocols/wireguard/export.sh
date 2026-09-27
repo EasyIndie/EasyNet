@@ -70,7 +70,22 @@ export_wireguard_metadata() {
     enc_pub=$(urlencode "$wg_pub_key")
     enc_psk=$(urlencode "$wg_psk")
     enc_dns=$(urlencode "$wg_dns")
+
+    # Shadowrocket represents AmneziaWG obfuscation as obfs=amneziawg with an
+    # obfsParam JSON blob (all values are strings). Other clients use the
+    # individual AWG query params, so we emit both.
+    local obfs_param enc_obfs_param
+    obfs_param=$(jq -cn \
+        --arg jc "$jc" --arg jmin "$jmin" --arg jmax "$jmax" \
+        --arg s1 "$s1" --arg s2 "$s2" \
+        --arg h1 "$h1" --arg h2 "$h2" --arg h3 "$h3" --arg h4 "$h4" \
+        '{jc: $jc, jmin: $jmin, jmax: $jmax, s1: $s1, s2: $s2,
+          h1: $h1, h2: $h2, h3: $h3, h4: $h4,
+          random_trailers: "false", disable_cookies: "false"}')
+    enc_obfs_param=$(urlencode_query "$obfs_param")
+
     uri="wg://${wg_endpoint}?publicKey=${enc_pub}&privateKey=${enc_priv}&presharedKey=${enc_psk}&ip=${ip_only}&mtu=${wg_mtu}&dns=${enc_dns}&udp=1"
+    uri="${uri}&obfs=amneziawg&obfsParam=${enc_obfs_param}"
     uri="${uri}&jc=${jc}&jmin=${jmin}&jmax=${jmax}&s1=${s1}&s2=${s2}&h1=${h1}&h2=${h2}&h3=${h3}&h4=${h4}#EasyNet-WG"
 
     dns_json=$(printf '%s' "$wg_dns" | jq -R 'split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))')
