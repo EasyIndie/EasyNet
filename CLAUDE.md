@@ -120,6 +120,21 @@ the hub is always safe). `scripts/easynet` is the unified CLI (`status`, `where`
 
 New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub indexes them.
 
+## Deployment Environments (固定约定)
+
+| 环境 | 域名 | 策略 | 协议 | 用途 |
+|---|---|---|---|---|
+| **测试 VPS** | `test-world.jokerhub.cn` | `compat` | 全部 4 种（Reality / Hysteria2 / SS2022 / AmneziaWG） | 功能迭代与验收；每次发版后走一遍完整流程 |
+| **正式 VPS** | `world.jokerhub.cn` | `balanced` | 仅最安全的 2 种协议 | 生产；改动必须先在测试 VPS 验收通过 |
+
+- 测试环境**永远**用 `test-world.jokerhub.cn` + `compat`；不要为了省时间在测试机上改成 `balanced`。
+- 正式环境**永远**用 `world.jokerhub.cn` + `balanced`；部署前必须先确认测试机同版本验收通过。
+- 两者都通过各自目录下的 `.env`（仅 `EASYNET_*` 变量）固定配置，部署命令相同：
+  `bash scripts/deploy.sh`。
+- 发版后的验收走官方一键安装器（与真实用户一致）：
+  `bash ~/Desktop/easynet-acceptance/reset-acceptance.sh --release <tag>`
+  （改动了尚未发版的代码时才用不带 `--release` 的本地工作树模式）。
+
 ## Important Practices
 
 - **ShellCheck**: All scripts must pass `--severity=style`. Suppressions use targeted `# shellcheck disable=CODE` with justification comment.
