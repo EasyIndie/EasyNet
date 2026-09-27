@@ -5,6 +5,7 @@ load test_helper
 setup_file() {
     export TMP_DIR=$(mktemp -d)
     export STATE_DIR="$TMP_DIR/state"
+    export EASYNET_FLAG=SG
     XRAY_FIXTURE_DIR="$TMP_DIR/xray"
     SS_FIXTURE_DIR="$TMP_DIR/shadowsocks"
     WG_FIXTURE_DIR="$TMP_DIR/wireguard"
@@ -195,6 +196,13 @@ JSON
 @test "WireGuard metadata exposes amnezia-wg-option for mihomo" {
     [ "$(jq -r '.client.clash."amnezia-wg-option".jc' "$STATE_DIR/modules/wireguard/metadata.json")" = "5" ]
     [ "$(jq -r '.client.clash."amnezia-wg-option".h1' "$STATE_DIR/modules/wireguard/metadata.json")" = "123456789" ]
+}
+
+@test "Protocol URIs carry the country flag for clients like Shadowrocket" {
+    for module in xray-reality hysteria2 shadowsocks wireguard; do
+        uri=$(jq -r '.client.uri' "$STATE_DIR/modules/$module/metadata.json")
+        [[ "$uri" == *"flag=SG"* ]] || { echo "# $module URI missing flag: $uri" >&3; return 1; }
+    done
 }
 
 @test "Migrated SS/WG modules do not depend on legacy state paths" {

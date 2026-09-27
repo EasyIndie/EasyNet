@@ -31,7 +31,10 @@ export_shadowsocks_metadata() {
     fi
 
     userinfo=$(printf '%s:%s' "${method}" "${psk}" | base64 -w 0 | tr '+/' '-_' | sed 's/=*$//')
-    uri="ss://${userinfo}@${public_ip}:${port}#EasyNet-SS"
+    local flag_code flag_suffix=""
+    flag_code="$(get_country_code)"
+    [ -n "$flag_code" ] && flag_suffix="/?flag=$flag_code"
+    uri="ss://${userinfo}@${public_ip}:${port}${flag_suffix}#EasyNet-SS"
 
     metadata_json=$(jq -n \
         --arg module_name "$MODULE_NAME" \

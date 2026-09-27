@@ -452,6 +452,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | 变量 | 作用 | 默认值 |
 |------|------|--------|
 | `EASYNET_PUBLIC_IP` | 手动指定公网 IP（覆盖自动检测） | 自动检测 |
+| `EASYNET_FLAG` | 节点国家旗帜（ISO 3166-1 alpha-2，Shadowrocket 等显示） | 自动通过 ipinfo.io 推断 |
 
 #### Xray + Reality
 

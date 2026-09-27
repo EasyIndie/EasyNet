@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/metadata.sh"
 source "$CORE_DIR/url.sh"
+source "$CORE_DIR/network.sh"
 
 MODULE_NAME="wireguard"
 WG_DIR="${WG_DIR:-/etc/amnezia/amneziawg}"
@@ -71,10 +72,12 @@ export_wireguard_metadata() {
     enc_psk=$(urlencode "$wg_psk")
     enc_dns=$(urlencode "$wg_dns")
 
-    # Shadowrocket represents AmneziaWG obfuscation as obfs=amneziawg with an
-    # obfsParam JSON blob (all values are strings). Other clients use the
-    # individual AWG query params, so we emit both.
+    # Build the Shadowrocket-style AWG flags: obfs=amneziawg with an obfsParam
+    # JSON blob (all values are strings). Keep individual params for other clients.
     local obfs_param enc_obfs_param
+    local flag_code flag_suffix=""
+    flag_code="$(get_country_code)"
+    [ -n "$flag_code" ] && flag_suffix="&flag=$flag_code"
     obfs_param=$(jq -cn \
         --arg jc "$jc" --arg jmin "$jmin" --arg jmax "$jmax" \
         --arg s1 "$s1" --arg s2 "$s2" \
@@ -86,7 +89,7 @@ export_wireguard_metadata() {
 
     uri="wg://${wg_endpoint}?publicKey=${enc_pub}&privateKey=${enc_priv}&presharedKey=${enc_psk}&ip=${ip_only}&mtu=${wg_mtu}&dns=${enc_dns}&udp=1"
     uri="${uri}&obfs=amneziawg&obfsParam=${enc_obfs_param}"
-    uri="${uri}&jc=${jc}&jmin=${jmin}&jmax=${jmax}&s1=${s1}&s2=${s2}&h1=${h1}&h2=${h2}&h3=${h3}&h4=${h4}#EasyNet-WG"
+    uri="${uri}&jc=${jc}&jmin=${jmin}&jmax=${jmax}&s1=${s1}&s2=${s2}&h1=${h1}&h2=${h2}&h3=${h3}&h4=${h4}${flag_suffix}#EasyNet-WG"
 
     dns_json=$(printf '%s' "$wg_dns" | jq -R 'split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))')
 

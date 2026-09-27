@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/metadata.sh"
 source "$CORE_DIR/url.sh"
+source "$CORE_DIR/network.sh"
 
 MODULE_NAME="hysteria2"
 HYSTERIA2_CONFIG_DIR="${HYSTERIA2_CONFIG_DIR:-/etc/hysteria}"
@@ -34,11 +35,14 @@ export_hysteria2_metadata() {
     fi
 
     # Build URI; append port-hopping params when enabled
+    local flag_code flag_suffix=""
+    flag_code="$(get_country_code)"
+    [ -n "$flag_code" ] && flag_suffix="&flag=$flag_code"
     uri="hysteria2://$(urlencode "$password")@$domain:$port/?sni=$(urlencode "$sni")&obfs=salamander&obfs-password=$(urlencode "$obfs_password")"
     if [ -n "$port_hopping" ]; then
         uri="${uri}&porthopping=$(urlencode "$port_hopping")&porthopping-interval=$(urlencode "$hop_interval")"
     fi
-    uri="${uri}#EasyNet-Hysteria2"
+    uri="${uri}${flag_suffix}#EasyNet-Hysteria2"
 
     # Build firewall rules; add port range when hopping is enabled
     local firewall_json

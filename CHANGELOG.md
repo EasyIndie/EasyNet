@@ -12,6 +12,9 @@
   自有域名作为 Reality SNI，回退到本机 Edge 站点，以对抗 2026 年出现的「SNI→DNS 一致性检查」
   （审查者记录 (SNI, 目的IP) 后解析 SNI，若不一致即判定可疑；开源 DPI 库 nDPI 已实现）。
   `auto`（默认）检测到本机 Edge 证书时自动启用，否则回退「借用外部站点」。
+- **节点国家旗帜 `flag`**：订阅 URI 自动带上 `flag=XX`（ISO 3166-1 alpha-2），供Shadowrocket
+  等客户端显示节点国家旗帜；可用 `EASYNET_FLAG` 覆盖，默认通过 ipinfo.io 推断（与公网 IP 探测同源），
+  失败则省略。
 
 ### 变更
 - **WireGuard → 真 AmneziaWG**：模块改用 AmneziaWG（`awg`/`awg-quick`，配置目录 `/etc/amnezia/amneziawg`，
@@ -37,7 +40,8 @@
 
 ### 测试
 - `tests/test_config_generation.bats` 新增 Reality 自偷 / 回退限速 / AmneziaWG 参数用例；
-  `tests/test_protocol_metadata.bats` 夹具补充 AmneziaWG 参数；测试总数 314 → 323。
+  `tests/test_protocol_metadata.bats` 新增 Shadowrocket obfs / 国家旗帜 / mihomo amnezia-wg-option
+  断言并补充 AmneziaWG 夹具；测试总数 314 → 326。
 
 ## [0.0.10] - 2026-09-26
 
