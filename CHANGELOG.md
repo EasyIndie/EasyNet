@@ -42,8 +42,9 @@
   （`root` → `600`；其他用户 → `640 root:<group>`）。
 
 ### 文档
-- 新增 `docs/singbox-unification-analysis.md`：评估是否将多协议收敛为统一 sing-box 实现，
-  含能力对照、收益/代价、趋势判断与建议路线；本轮结论为「维持现状」。
+- 新增 `docs/unified-backend-analysis.md`：评估是否将多协议收敛为统一服务端实现（含
+  **sing-box 与 Xray-core 两条路线**），含能力对照、收益/代价、趋势判断与建议路线；
+  结论为「维持现状，优先评估 Xray-core」（Xray 保留了 XHTTP/Finalmask，与抗 DPI 定位更契合）。
 - 文档与示例域名改用语义中性的 `world.example.com`，补充避开 GFW 关键词与 Reality 自偷的指引。
 - sing-box 相关文档同步：订阅要求 1.14+、AmneziaWG 不在 sing-box 订阅中、未发布
   `/rules/*.srs` 会让 `/singbox` 启动失败（需先跑 `generate_singbox_rules.sh`）。

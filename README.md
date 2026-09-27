@@ -106,7 +106,7 @@ EasyNet/
 │   ├── troubleshooting-guide.md#   故障排查指南
 │   ├── architecture-review.md  #   架构与代码质量评估报告
 │   ├── security-audit.md       #   安全审计报告
-│   ├── singbox-unification-analysis.md # 协议收敛为统一 sing-box 的可行性分析
+│   ├── unified-backend-analysis.md  # 统一服务端（sing-box / Xray-core）可行性分析
 │   └── generate-protocol-table.sh  # 协议支持表自动生成工具
 ├── tools/                      # 辅助工具（二维码生成等）
 ├── .env.example                # 环境变量配置模板
@@ -216,7 +216,7 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 - [故障排查指南](./docs/troubleshooting-guide.md) — 分协议、分场景的排障流程
 - [架构评估报告](./docs/architecture-review.md) — 代码质量与架构改进建议
 - [安全审计报告](./docs/security-audit.md) — 协议抗 DPI 与实现层安全评估
-- [sing-box 统一方案分析](./docs/singbox-unification-analysis.md) — 协议收敛可行性与趋势分析（结论：维持现状）
+- [统一服务端方案分析](./docs/unified-backend-analysis.md) — sing-box / Xray-core 收敛可行性与趋势（结论：维持现状，优先评估 Xray-core）
 
 ## 贡献指南
 
