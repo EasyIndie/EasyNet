@@ -1,0 +1,24 @@
+name: Upstream Pins
+
+# Weekly check that the pinned upstream versions in scripts/core/pins.sh are still
+# the latest upstream *stable* releases. A red run means "consider bumping a pin",
+# it never blocks a PR (schedule + manual only).
+on:
+  schedule:
+    # Mondays 03:17 UTC
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-pins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check upstream pins
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/check_upstream_pins.sh

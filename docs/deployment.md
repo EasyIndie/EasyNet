@@ -307,7 +307,7 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 
 环境变量：
 
-- `.env` 只加载 `EASYNET_*` 前缀变量，非 `EASYNET_*` 变量会被忽略（`SS_VERSION` 除外）
+- `.env` 只加载 `EASYNET_*` 前缀变量，非 `EASYNET_*` 变量会被忽略
 - 远程安装脚本和发布包支持可选 SHA256 校验，变量见 `.env.example`
 
 ## 升级到新版本
@@ -453,7 +453,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 
 ### 完整配置项清单
 
-所有配置项通过项目根目录的 `.env` 文件设置，脚本仅加载 `EASYNET_*` 前缀变量（`SS_VERSION` 除外）。以下按功能分类列出。
+所有配置项通过项目根目录的 `.env` 文件设置，脚本仅加载 `EASYNET_*` 前缀变量。以下按功能分类列出。
 
 #### 自举安装器（`install.sh`）
 
@@ -527,7 +527,9 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_REALITY_XMUX_CONN_IDLE` | XMUX 空闲连接超时（秒） | `60` |
 | `EASYNET_REALITY_LIMIT_FALLBACK_UPLOAD` | 回退上传限速 `afterBytes:bytesPerSec:burstBytesPerSec` | 未设置（禁用） |
 | `EASYNET_REALITY_LIMIT_FALLBACK_DOWNLOAD` | 回退下载限速（同上） | 未设置（禁用） |
-| `EASYNET_XRAY_INSTALL_SHA256` | Xray 安装脚本 SHA256 校验（可选） | 未设置（不校验） |
+| `EASYNET_XRAY_VERSION` | 覆盖 Xray 版本（**须同时提供 `EASYNET_XRAY_SHA256`**） | pin 见 `scripts/core/pins.sh`：`26.3.27` |
+| `EASYNET_XRAY_SHA256` | 覆盖版本时的发布包 SHA256 | pin 内置，默认自动校验 |
+| `EASYNET_ALLOW_UNPINNED` | 设为 `1` 时允许无校验安装未 pin 的版本（不建议） | 未设置（拒绝） |
 
 #### Hysteria2
 
@@ -541,15 +543,16 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_HYSTERIA2_PORT_HOP_INTERVAL` | 端口跳变间隔 | `30s` |
 | `EASYNET_HYSTERIA2_CERT_FILE` | TLS 证书文件路径 | `${EASYNET_EDGE_CERT_DIR}/fullchain.crt` |
 | `EASYNET_HYSTERIA2_KEY_FILE` | TLS 私钥文件路径 | `${EASYNET_EDGE_CERT_DIR}/private.key` |
-| `EASYNET_HYSTERIA2_INSTALL_SHA256` | Hy2 安装脚本 SHA256 校验（可选） | 未设置（不校验） |
+| `EASYNET_HYSTERIA2_VERSION` | 覆盖 Hysteria2 版本（**须同时提供 `EASYNET_HYSTERIA2_SHA256`**） | pin：`2.12.3` |
+| `EASYNET_HYSTERIA2_SHA256` | 覆盖版本时的发布物 SHA256 | pin 内置，默认自动校验 |
 
 #### Shadowsocks 2022
 
 | 变量 | 作用 | 默认值 |
 |------|------|--------|
 | `EASYNET_SHADOWSOCKS_PORT` | ss-server 监听端口 | `8388` |
-| `EASYNET_SHADOWSOCKS_INSTALL_SHA256` | 发布包 SHA256 校验（可选） | 未设置（不校验） |
-| `SS_VERSION` | shadowsocks-rust 版本（非 `EASYNET_*` 前缀，需显式设置） | `1.24.0` |
+| `EASYNET_SHADOWSOCKS_VERSION` | 覆盖 shadowsocks-rust 版本（**须同时提供 `EASYNET_SHADOWSOCKS_SHA256`**） | pin：`1.25.0` |
+| `EASYNET_SHADOWSOCKS_SHA256` | 覆盖版本时的发布包 SHA256 | pin 内置，默认自动校验 |
 
 #### AmneziaWG
 
@@ -571,7 +574,8 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 
 | 变量 | 作用 | 默认值 |
 |------|------|--------|
-| `EASYNET_ACME_INSTALL_SHA256` | acme.sh 安装脚本 SHA256 校验（可选） | 未设置（不校验） |
+| `EASYNET_ACME_VERSION` | 覆盖 acme.sh 版本（**须同时提供 `EASYNET_ACME_SHA256`**） | pin：`3.1.6` |
+| `EASYNET_ACME_SHA256` | 覆盖版本时 `get.acme.sh` 的 SHA256 | pin 内置，默认自动校验 |
 
 #### 系统维护
 

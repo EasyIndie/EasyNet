@@ -81,6 +81,23 @@
 - 新增 `docs/audit-2026-09-27.md`：重置后全新部署的验收结论 + 安全性/稳定性/访问速度/
   客户端体验四维审计（含实测数据与 3 项遗留改进）。
 
+### 变更（第四轮：供应链 pin 一等公民化）
+- **所有二进制依赖改为「仓库内 pin 版本 + SHA256，且默认强制校验」**：新增
+  `scripts/core/pins.sh`（Xray `26.3.27`、hysteria2 `2.12.3`、shadowsocks-rust `1.25.0`、
+  acme.sh `3.1.6`，每架构独立哈希）。哈希来源均为厂商自身发布元数据
+  （Xray `.dgst` / hysteria `hashes.txt` / SS `.sha256`）。
+- **不再执行第三方安装脚本**：Xray 改为直接下载官方 release zip（原来从 `main` 分支取
+  `install-release.sh`），Hysteria2 改为直接下载官方 release 二进制（原来取 `get.hy2.sh`）。
+  两者随之改为自写 systemd unit，并自动创建 `hysteria` 系统用户。
+- **覆盖版本但未提供 SHA256 → 默认拒绝部署**（`EASYNET_ALLOW_UNPINNED=1` 可强制跳过）。
+- shadowsocks-rust 升级 `1.24.0 → 1.25.0`；替换二进制后**强制重启服务**（否则运行中的仍是旧镜像）。
+- 新增 `scripts/check_upstream_pins.sh` + `.github/workflows/pins.yml`（每周检查 pin 是否落后
+  上游**稳定版**；Xray 的 pre-release 不会被误报）。
+- **修复一类潜在崩溃**：`set -o pipefail` 下 `producer | head -1` 会让生产者收到 SIGPIPE
+  返回 141，`set -e` 随即中止脚本（实测 `xray version | head -1` 直接导致部署中断）。
+  全仓库 12 处改为 `awk 'NR==1'` / `find -print -quit` / 单遍 awk，并加 lint 防回归。
+- 修正第三轮审计的一个前提错误：Xray「落后 6 个月」不成立——`26.3.27` 是最新稳定版。
+
 ### 修复（第三轮全面审计）
 - **状态目录不再 world-readable**：`/var/lib/easynet` 及其下**订阅路径前缀**（保护全部凭据的唯一
   秘密）原为 `755/644`，任意本地用户可读。新增 `easynet_secure_state_dir()`，状态树收敛为 `700`、

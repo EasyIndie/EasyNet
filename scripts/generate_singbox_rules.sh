@@ -210,7 +210,7 @@ write_manifest() {
     jq -n \
         --argjson files "$entries" \
         --arg generated_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        --arg singbox "$("$bin" version 2>/dev/null | head -n 1)" \
+        --arg singbox "$("$bin" version 2>/dev/null | awk 'NR==1')" \
         '{generated_at: $generated_at, singbox: $singbox, files: $files}' >"$tmp"
 
     if [ "$DRY_RUN" = "yes" ]; then
@@ -233,7 +233,7 @@ main() {
 
     local bin geosite_db geoip_db failed=0
     bin="$(ensure_build_binary | tail -n 1)"
-    log_info "构建用 sing-box: $("$bin" version 2>/dev/null | head -n 1)"
+    log_info "构建用 sing-box: $("$bin" version 2>/dev/null | awk 'NR==1')"
 
     geosite_db="$(ensure_db geosite "$GEOSITE_REPO" | tail -n 1)"
     geoip_db="$(ensure_db geoip "$GEOIP_REPO" | tail -n 1)"

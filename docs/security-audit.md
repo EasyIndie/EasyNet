@@ -173,17 +173,24 @@ CapabilityBoundingSet=~      ← systemd 语义：对空列表取反 = 授予全
 
 ### 5.2 供应链
 
-| 组件 | 版本固定 | 完整性校验 |
-|---|:--:|:--:|
-| Xray-core | ✅ `EASYNET_XRAY_VERSION`（默认 26.3.27） | ⚠️ SHA256 可选、默认跳过 |
-| shadowsocks-rust | ✅ `v1.24.0` | ⚠️ SHA256 可选、默认跳过 |
-| hysteria2 | ❌ `get.hy2.sh` 取最新 | ⚠️ 可选 |
-| AmneziaWG | ❌ `ppa:amnezia/ppa` | —— |
-| acme.sh | ❌ `get.acme.sh` | ⚠️ 可选 |
-| 无 `curl \| bash`（先落地→校验→执行） | ✅ | ✅ |
+**已实施（第四轮，供应链 pin 一等公民化）**：
 
-**建议**：把 SHA256 校验列为一等公民（提供 `scripts/security-pins.sh` 或 release 附
-`checksums.txt`），并在 CI 中对默认版本 pin 做「是否落后于上游最新」的提醒。
+| 组件 | 版本固定 | 完整性校验 | 安装方式 |
+|---|:--:|:--:|---|
+| Xray-core | ✅ pin `26.3.27` | ✅ **默认校验 SHA256**（仓库内置） | 直接下载官方 release zip，**不再执行上游安装脚本** |
+| shadowsocks-rust | ✅ pin `1.25.0` | ✅ 默认校验 | 官方 release tarball |
+| hysteria2 | ✅ pin `2.12.3` | ✅ 默认校验 | 直接下载官方 release 二进制，**不再执行 `get.hy2.sh`** |
+| acme.sh | ✅ pin `3.1.6` | ✅ 默认校验 | `get.acme.sh`（校验脚本哈希） |
+| AmneziaWG | ⚠️ PPA（未 pin） | ✅ apt 对软件包签名校验（GPG） | —— |
+| 无 `curl \| bash`（先落地→校验→执行） | ✅ | ✅ | —— |
+
+- pin 集中在 `scripts/core/pins.sh`：版本 + 每架构 SHA256，随仓库评审变更。
+- **覆盖版本但未提供 SHA256 时默认拒绝部署**（`EASYNET_ALLOW_UNPINNED=1` 可强制跳过）。
+- 自写 `xray.service` / `hysteria-server.service`：不再依赖会变动（main 分支、总是 latest）的
+  上游安装脚本，同时消除「安装脚本本身不可 pin」的隐患。
+- `scripts/check_upstream_pins.sh` + 每周 CI（`.github/workflows/pins.yml`）检查 pin 是否落后
+  上游**稳定版**（Xray 自 26.4.15 起全部标记为 pre-release，`26.3.27` 即最新 stable）。
+- 残余：acme.sh 安装后自身可能随其 cron 自动升级（上游行为，pin 覆盖初始安装）。
 
 ---
 

@@ -243,7 +243,7 @@ cmd_edit() {
         return 1
     }
     local file
-    file="$(module_config_files "$want" | grep -vE 'public\.key$' | head -1)"
+    file="$(module_config_files "$want" | grep -vE 'public\.key$' | awk 'NR==1')"
     [ -n "$file" ] || {
         log_error "未找到 ${want} 的配置文件"
         return 1

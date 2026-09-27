@@ -7,6 +7,7 @@ CORE_DIR="$(cd "$SCRIPT_DIR/../../core" &>/dev/null && pwd)"
 source "$CORE_DIR/logging.sh"
 source "$CORE_DIR/env.sh"
 source "$CORE_DIR/download.sh"
+source "$CORE_DIR/pins.sh"
 source "$CORE_DIR/maintenance.sh"
 source "$CORE_DIR/subscription.sh"
 
@@ -207,8 +208,13 @@ EOF
 
 install_acme() {
     if [ ! -d "$HOME/.acme.sh" ]; then
-        log_info "安装 acme.sh 用于 Edge TLS 证书..."
-        run_downloaded_script "https://get.acme.sh" "${EASYNET_ACME_INSTALL_SHA256:-}"
+        local pin
+        # Pinned + verified by default (core/pins.sh). Note: acme.sh itself may
+        # self-upgrade later via its own cron entry - that is upstream behaviour
+        # and is out of scope for the install-time pin.
+        pin="$(easynet_resolve_pin acme)" || exit 1
+        log_info "安装 acme.sh v${pin%%|*} 用于 Edge TLS 证书..."
+        run_downloaded_script "https://get.acme.sh" "${pin#*|}"
     fi
     export PATH="$HOME/.acme.sh:$PATH"
 }

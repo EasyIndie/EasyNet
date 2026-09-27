@@ -100,7 +100,7 @@
 
 | # | 问题 | 核验 | 风险 |
 |:--:|---|---|---|
-| 21 | Xray pin `26.3.27`，上游已 `26.9.9`（落后约 6 个月） | `xray version` → `26.3.27` | 缺后续修复与新特性（XHTTP/Finalmask/新 uTLS） |
+| 21 | Xray pin `26.3.27` vs 「上游 26.9.9」 | **前提有误**：Xray 自 26.4.15 起全部标记为 pre-release，`26.3.27` 正是**最新 stable** | ✅ 无需升级；如需 pre-release 需显式评估 |
 | 22 | SHA256 校验默认跳过 | 部署日志明确告警 `EASYNET_XRAY_INSTALL_SHA256 未设置，将跳过安装脚本的完整性验证`（**至少是显式告警，不是静默跳过**） | 供应链攻击面 |
 | 23 | hysteria2（`get.hy2.sh`）、AmneziaWG（PPA）、acme.sh 未 pin | `amneziawg-tools v3.1.20260812`、`acme.sh v3.1.6` | 上游变更可能破坏部署 |
 
@@ -181,7 +181,7 @@
 
 | 优先级 | 项 | 风险 | 建议 |
 |:--:|---|---|---|
-| 🟡 **P2** | **供应链 pin**：Xray 落后约 6 个月；SHA256 默认跳过；hysteria2/AWG/acme.sh 未 pin | 缺安全修复；供应链完整性依赖 TLS | ① 评估升级 Xray 至 26.9.x（保持 pin 策略）；② release 附 `checksums.txt` 并默认校验；③ 为 hysteria2/acme.sh 增加 pin |
+| ✅ **已解决** | ~~**供应链 pin**：SHA256 默认跳过；hysteria2/AWG/acme.sh 未 pin~~ | —— | 第四轮已解决：见 `security-audit.md` §5.2。pin 集中到 `core/pins.sh` 并**默认强制校验**；Xray/hysteria2 改为直接下载官方 release（不再执行上游安装脚本）；新增每周 CI 检查 pin 是否落后上游稳定版 |
 | 🟡 P2 | 订阅仅单层「128 位随机路径」保护 | 路径泄露即凭据泄露 | 可选 Basic Auth / 一次性 token |
 | 🟡 P3 | 无运行监控/告警 | 故障不可知 | 轻量心跳（如每日 curl 自检 + 失败告警） |
 | 🟡 P3 | 客户端 `RouteDns`/`mixed` 默认 `0.0.0.0` | 不受信网络上=开放代理 | 已在安装时告警 + 提供 `--listen-address`（**默认值保持不变**，属设计取舍） |

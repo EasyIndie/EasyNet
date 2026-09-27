@@ -11,6 +11,7 @@ source "$CORE_DIR/download.sh"
 source "$CORE_DIR/display.sh"
 source "$CORE_DIR/crypto.sh"
 source "$CORE_DIR/maintenance.sh"
+source "$CORE_DIR/pins.sh"
 
 HYSTERIA2_CONFIG_DIR="${HYSTERIA2_CONFIG_DIR:-/etc/hysteria}"
 HYSTERIA2_CONFIG_FILE="${HYSTERIA2_CONFIG_FILE:-${HYSTERIA2_CONFIG_DIR:-}/config.yaml}"
@@ -21,13 +22,97 @@ HYSTERIA2_CERT_FILE="${EASYNET_HYSTERIA2_CERT_FILE:-${HYSTERIA2_CERT_DIR:-}/full
 HYSTERIA2_KEY_FILE="${EASYNET_HYSTERIA2_KEY_FILE:-${HYSTERIA2_CERT_DIR:-}/private.key}"
 
 install_hysteria2() {
-    if command -v hysteria &>/dev/null; then
-        log_info "检测到 Hysteria2 已安装，跳过安装。"
-        return
+    local pin version want_sha256 asset url tmp_dir installed=""
+    HYSTERIA2_BINARY_CHANGED=false
+
+    # Pinned version + SHA256 (see core/pins.sh). The upstream one-liner
+    # (get.hy2.sh) always installs "latest" as root, so we fetch the exact
+    # release asset instead and verify it against a hash stored in this repo.
+    pin="$(easynet_resolve_pin hysteria2)" || exit 1
+    version="${pin%%|*}"
+    want_sha256="${pin#*|}"
+
+    if command -v hysteria >/dev/null 2>&1; then
+        # `hysteria version` prints an ASCII banner first, so match the tag itself.
+        installed="$(hysteria version 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | awk 'NR==1')"
+    fi
+    if [ "$installed" = "v${version}" ]; then
+        log_info "Hysteria2 v${version} 已是最新，跳过安装。"
+        return 0
+    fi
+    log_info "安装 Hysteria2 v${version}..."
+
+    asset="$(easynet_pin_asset hysteria2)"
+    if [ -z "$asset" ]; then
+        log_error "Hysteria2 不支持当前架构: $(detect_arch)"
+        exit 1
+    fi
+    url="https://github.com/apernet/hysteria/releases/download/app/v${version}/${asset}"
+
+    tmp_dir="$(mktemp -d)"
+    # shellcheck disable=SC2064  # expand tmp_dir now
+    trap "rm -rf '$tmp_dir'" RETURN
+
+    if ! download_file "$url" "$tmp_dir/hysteria" "$want_sha256"; then
+        log_error "Hysteria2 下载或完整性校验失败。"
+        log_error "  期望 SHA256: ${want_sha256}"
+        log_error "  如确认上游已更换发布物，请更新 scripts/core/pins.sh 并提交评审。"
+        exit 1
     fi
 
-    log_info "安装 Hysteria2..."
-    run_downloaded_script "https://get.hy2.sh/" "${EASYNET_HYSTERIA2_INSTALL_SHA256:-}"
+    install -m 0755 "$tmp_dir/hysteria" /usr/local/bin/hysteria
+    # A new binary only takes effect after a restart, so force one.
+    HYSTERIA2_BINARY_CHANGED=true
+    ensure_hysteria2_runtime
+    write_hysteria2_systemd_unit
+    log_info "Hysteria2 v${version} 已安装（SHA256 校验通过）。"
+}
+
+# Service account + state dir. The upstream installer used to create these; now
+# that we install the binary ourselves we own them too.
+ensure_hysteria2_runtime() {
+    if ! id -u hysteria >/dev/null 2>&1; then
+        useradd --system --no-create-home --shell /usr/sbin/nologin hysteria
+    fi
+    mkdir -p "${HYSTERIA2_CONFIG_DIR:-}" /var/lib/hysteria
+    chown hysteria:hysteria /var/lib/hysteria 2>/dev/null || true
+    chmod 700 /var/lib/hysteria 2>/dev/null || true
+}
+
+write_hysteria2_systemd_unit() {
+    local unit_dir="${EASYNET_SYSTEMD_UNIT_DIR:-/etc/systemd/system}"
+    local unit_file="$unit_dir/${HYSTERIA2_SERVICE:-hysteria-server.service}"
+    local new_unit
+    new_unit="$(mktemp)"
+    cat > "$new_unit" << 'EOF'
+[Unit]
+Description=Hysteria2 Server Service
+After=network.target
+
+[Service]
+Type=simple
+User=hysteria
+Group=hysteria
+ExecStart=/usr/local/bin/hysteria server --config /etc/hysteria/config.yaml
+WorkingDirectory=/var/lib/hysteria
+Environment=HYSTERIA_LOG_LEVEL=info
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE CAP_NET_RAW
+NoNewPrivileges=true
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    chmod 644 "$new_unit"
+
+    HYSTERIA2_UNIT_CHANGED=false
+    if ! cmp -s "$new_unit" "$unit_file"; then
+        install -m 644 "$new_unit" "$unit_file"
+        HYSTERIA2_UNIT_CHANGED=true
+    fi
+    rm -f "$new_unit"
 }
 
 require_domain() {
@@ -96,8 +181,10 @@ resolve_hysteria2_secret() {
 }
 
 hysteria2_service_user() {
-    systemctl cat "${HYSTERIA2_SERVICE:-}" 2>/dev/null |
-        awk -F= '/^[[:space:]]*User=/{ gsub(/[[:space:]]/, "", $2); print $2; exit }'
+    local user
+    user="$(systemctl cat "${HYSTERIA2_SERVICE:-}" 2>/dev/null |
+        awk -F= '/^[[:space:]]*User=/{ gsub(/[[:space:]]/, "", $2); print $2; exit }' || true)"
+    printf '%s' "${user:-hysteria}"
 }
 
 set_hysteria2_file_permissions() {
@@ -213,12 +300,15 @@ EOF
 
 restart_hysteria2() {
     log_info "启动 Hysteria2 服务..."
+    systemctl daemon-reload >/dev/null 2>&1 || true
     systemctl enable "${HYSTERIA2_SERVICE:-}" >/dev/null 2>&1 || true
     # Sandbox the upstream unit via drop-in; keep /var/lib/hysteria (its home and
     # WorkingDirectory) writable under ProtectSystem=strict.
     maintenance_apply_systemd_hardening "${HYSTERIA2_SERVICE:-}" \
         "ReadWritePaths=/var/lib/hysteria"
-    if [ "${HYSTERIA2_CHANGED:-true}" != "true" ] && [ "${SYSTEMD_HARDENING_CHANGED:-false}" != "true" ] &&
+    if [ "${HYSTERIA2_CHANGED:-true}" != "true" ] && [ "${HYSTERIA2_UNIT_CHANGED:-false}" != "true" ] &&
+        [ "${HYSTERIA2_BINARY_CHANGED:-false}" != "true" ] &&
+        [ "${SYSTEMD_HARDENING_CHANGED:-false}" != "true" ] &&
         systemctl is-active --quiet "${HYSTERIA2_SERVICE:-}"; then
         log_info "Hysteria2 配置未变化，跳过重启。"
         return 0

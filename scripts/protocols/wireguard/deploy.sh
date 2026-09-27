@@ -97,8 +97,16 @@ generate_amneziawg_headers() {
 read_ini_value() {
     local file="$1" key="$2"
     [ -f "$file" ] || return 0
-    grep -E "^[[:space:]]*${key}[[:space:]]*=" "$file" | head -n1 |
-        sed 's/^[^=]*=[[:space:]]*//' | tr -d '[:space:]' || true
+    # Single awk pass: it reads the whole file (no early exit, so no SIGPIPE under
+    # pipefail) and prints the first matching value with whitespace stripped.
+    awk -v k="$key" '
+        !found && $0 ~ "^[[:space:]]*" k "[[:space:]]*=" {
+            sub(/^[^=]*=[[:space:]]*/, "")
+            gsub(/[[:space:]]/, "")
+            print
+            found = 1
+        }
+    ' "$file" || true
 }
 
 # Read a single key from the server config (empty when missing).
@@ -172,7 +180,7 @@ configure_server() {
         SERVER_IP="${EASYNET_WIREGUARD_SERVER_IP:-10.0.0.1/24}"
         PUBLIC_IP=$(get_public_ip)
 
-        DEFAULT_IFACE=$(ip route | grep default | awk '{print $5}' | head -n 1)
+        DEFAULT_IFACE=$(ip route | awk '/default/ && !found {print $5; found=1}')
         if [[ -z "$DEFAULT_IFACE" ]]; then
             DEFAULT_IFACE="eth0"
         fi

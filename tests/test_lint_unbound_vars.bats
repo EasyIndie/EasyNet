@@ -107,3 +107,28 @@ readonly EXTRA_LIBS=(
     fi
     [ "$errors" -eq 0 ]
 }
+
+@test "pipefail scripts avoid early-terminating pipeline stages" {
+    # `producer | head -1` under `set -o pipefail`: head exits after one line, the
+    # producer is killed by SIGPIPE and the pipeline reports 141, which `set -e`
+    # turns into a hard deployment failure. Use `awk 'NR==1'` (reads everything) or
+    # `find ... -print -quit` instead. Append `# ok` with a reason to suppress.
+    local errors=0 f hits
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        grep -q 'pipefail' "$f" 2>/dev/null || continue
+        hits=$(grep -nE '\|[[:space:]]*head([[:space:]]|$)' "$f" 2>/dev/null | grep -v '# ok' || true)
+        if [ -n "$hits" ]; then
+            echo "# ${f#$BATS_TEST_DIRNAME/../}" >&3
+            while IFS= read -r line; do
+                echo "#   $line" >&3
+            done <<< "$hits"
+            errors=$((errors + 1))
+        fi
+    done < <(find "$BATS_TEST_DIRNAME/../scripts" -type f 2>/dev/null)
+
+    if [ "$errors" -gt 0 ]; then
+        echo "# FAIL: $errors file(s) use \`| head\` under pipefail" >&3
+    fi
+    [ "$errors" -eq 0 ]
+}

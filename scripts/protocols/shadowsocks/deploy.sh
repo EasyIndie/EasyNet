@@ -9,60 +9,62 @@ source "$CORE_DIR/download.sh"
 source "$CORE_DIR/network.sh"
 source "$CORE_DIR/display.sh"
 source "$CORE_DIR/crypto.sh"
+source "$CORE_DIR/pins.sh"
 
 CONFIG_DIR="${SHADOWSOCKS_CONFIG_DIR:-/etc/shadowsocks-rust}"
 SS_BIN="${SS_BIN:-/usr/local/bin/ssserver}"
-SS_VERSION="${SS_VERSION:-1.24.0}"
+# Version + SHA256 come from core/pins.sh (always verified); EASYNET_SHADOWSOCKS_VERSION
+# can override the version but then EASYNET_SHADOWSOCKS_SHA256 must be supplied too.
 
 install_shadowsocks() {
-    if command -v ssserver &>/dev/null; then
-        local inst_ver
-        inst_ver=$(ssserver --version 2>&1 | grep -oP '[\d]+\.[\d]+\.[\d]+' || echo "0")
-        log_info "检测到已安装的 shadowsocks-rust v${inst_ver}，跳过安装。"
-        return
+    local pin version want_sha256 inst_ver=""
+    SS_BINARY_CHANGED=false
+    pin="$(easynet_resolve_pin shadowsocks)" || exit 1
+    version="${pin%%|*}"
+    want_sha256="${pin#*|}"
+
+    if command -v ssserver >/dev/null 2>&1; then
+        inst_ver="$(ssserver --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | awk 'NR==1')"
+    fi
+    if [ -x "$SS_BIN" ] && [ -z "$inst_ver" ]; then
+        inst_ver="$("$SS_BIN" --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | awk 'NR==1')"
+    fi
+    if [ "$inst_ver" = "$version" ]; then
+        log_info "shadowsocks-rust v${version} 已是最新，跳过安装。"
+        return 0
     fi
 
-    # Check if cargo-installed
-    if [ -x "$SS_BIN" ]; then
-        log_info "检测到 ${SS_BIN}，跳过安装。"
-        return
-    fi
-
-    log_info "安装 shadowsocks-rust v${SS_VERSION}..."
-    local arch
-    arch=$(detect_rust_target)
-
-    local tar_file="shadowsocks-v${SS_VERSION}.${arch}.tar.xz"
-    local url="https://github.com/shadowsocks/shadowsocks-rust/releases/download/v${SS_VERSION}/${tar_file}"
+    log_info "安装 shadowsocks-rust v${version}..."
+    local arch tar_file url
+    arch="$(detect_rust_target)"
+    tar_file="shadowsocks-v${version}.${arch}.tar.xz"
+    url="https://github.com/shadowsocks/shadowsocks-rust/releases/download/v${version}/${tar_file}"
 
     local tmp_dir=""
-    tmp_dir=$(mktemp -d)
+    tmp_dir="$(mktemp -d)"
     trap 'rm -rf "${tmp_dir:-}"' RETURN
 
     log_info "下载 $url ..."
-    curl -fsSL -o "$tmp_dir/$tar_file" "$url" || {
-        log_error "下载 shadowsocks-rust 失败，请检查网络或架构兼容性。"
+    if ! download_file "$url" "$tmp_dir/$tar_file" "$want_sha256"; then
+        log_error "下载或完整性校验失败（期望 SHA256: ${want_sha256}）。"
+        log_error "  如确认上游已更换发布物，请更新 scripts/core/pins.sh 并提交评审。"
         exit 1
-    }
-
-    local ss_sha256
-    ss_sha256="${EASYNET_SHADOWSOCKS_INSTALL_SHA256:-}"
-    if [ -n "$ss_sha256" ]; then
-        log_info "校验 SHA256..."
-        echo "$ss_sha256  $tmp_dir/$tar_file" | sha256sum -c
     fi
 
     tar -xJf "$tmp_dir/$tar_file" -C "$tmp_dir"
     local bin_path
-    bin_path=$(find "$tmp_dir" -name ssserver -type f | head -1)
+    bin_path="$(find "$tmp_dir" -name ssserver -type f -print -quit)"
     if [ -z "$bin_path" ]; then
         log_error "未在归档中找到 ssserver 二进制文件。"
         exit 1
     fi
 
     install -m 755 "$bin_path" "$SS_BIN"
-    log_info "shadowsocks-rust ssserver 已安装到 $SS_BIN"
+    # A new binary only takes effect after a restart, so force one.
+    SS_BINARY_CHANGED=true
+    log_info "shadowsocks-rust v${version} 已安装到 $SS_BIN（SHA256 校验通过）"
 }
+
 
 configure_shadowsocks() {
     log_info "配置 Shadowsocks 2022 Edition..."
@@ -161,6 +163,7 @@ EOF
     systemctl daemon-reload
     systemctl enable shadowsocks-rust-server >/dev/null 2>&1 || true
     if [ "${SS_UNIT_CHANGED:-false}" = "true" ] || [ "${SS_CHANGED:-false}" = "true" ] ||
+        [ "${SS_BINARY_CHANGED:-false}" = "true" ] ||
         ! systemctl is-active --quiet shadowsocks-rust-server; then
         systemctl restart shadowsocks-rust-server
     else

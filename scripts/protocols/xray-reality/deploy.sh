@@ -10,6 +10,7 @@ source "$CORE_DIR/network.sh"
 source "$CORE_DIR/display.sh"
 source "$CORE_DIR/crypto.sh"
 source "$CORE_DIR/maintenance.sh"
+source "$CORE_DIR/pins.sh"
 
 XRAY_DIR="${XRAY_DIR:-/usr/local/etc/xray}"
 XRAY_BIN="${XRAY_BIN:-/usr/local/bin/xray}"
@@ -17,25 +18,98 @@ XRAY_BIN="${XRAY_BIN:-/usr/local/bin/xray}"
 EDGE_CERT_FILE="${EASYNET_EDGE_CERT_FILE:-${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}/fullchain.crt}"
 
 install_xray() {
-    local xray_version xray_sha256
+    local pin version want_sha256 asset url tmp_dir installed=""
+    XRAY_BINARY_CHANGED=false
     log_info "安装 Xray..."
 
-    # 2026-06: v26.3.27 is the minimum safe version (fixes Aparecium NewSessionTicket gap).
-    # Check https://github.com/XTLS/Xray-core/releases for the latest release.
-    # v26.3.27+ bundles uTLS v1.8.2+ which fixes CVE-2026-26995 (missing padding) and
-    # CVE-2026-27017 (ECH/GREASE mismatch) that allow TLS fingerprint detection.
-    xray_version="${EASYNET_XRAY_VERSION:-26.3.27}"
+    # Pinned version + SHA256 (see core/pins.sh). No third-party install script is
+    # fetched: we download the exact release asset, verify it against a hash stored
+    # in this repository, then place the binary and the systemd unit ourselves.
+    pin="$(easynet_resolve_pin xray)" || exit 1
+    version="${pin%%|*}"
+    want_sha256="${pin#*|}"
 
-    xray_sha256="${EASYNET_XRAY_INSTALL_SHA256:-}"
-    if [ -z "$xray_sha256" ]; then
-        log_warn "EASYNET_XRAY_INSTALL_SHA256 未设置，将跳过安装脚本的完整性验证"
-        log_warn "建议设置此变量以防止供应链攻击: export EASYNET_XRAY_INSTALL_SHA256=<sha256>"
+    if command -v xray >/dev/null 2>&1; then
+        installed="$(xray version 2>/dev/null | awk 'NR==1 {print $2}')"
+    fi
+    if [ "$installed" = "$version" ]; then
+        log_info "Xray v${version} 已是最新，跳过安装。"
+        return 0
     fi
 
-    run_downloaded_script \
-        "https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh" \
-        "$xray_sha256" \
-        install --version "v${xray_version}"
+    asset="$(easynet_pin_asset xray)"
+    if [ -z "$asset" ]; then
+        log_error "Xray 不支持当前架构: $(detect_arch)"
+        exit 1
+    fi
+    url="https://github.com/XTLS/Xray-core/releases/download/v${version}/${asset}"
+
+    tmp_dir="$(mktemp -d)"
+    # shellcheck disable=SC2064  # expand tmp_dir now
+    trap "rm -rf '$tmp_dir'" RETURN
+
+    log_info "下载 Xray v${version}: ${asset}"
+    if ! download_file "$url" "$tmp_dir/$asset" "$want_sha256"; then
+        log_error "Xray 下载或完整性校验失败。"
+        log_error "  期望 SHA256: ${want_sha256}"
+        log_error "  如确认上游已更换发布物，请更新 scripts/core/pins.sh 并提交评审。"
+        exit 1
+    fi
+
+    command -v unzip >/dev/null 2>&1 ||
+        DEBIAN_FRONTEND=noninteractive apt install -y unzip >/dev/null 2>&1
+    unzip -oq "$tmp_dir/$asset" -d "$tmp_dir/xray" || {
+        log_error "解压 Xray 失败。"
+        exit 1
+    }
+    install -m 0755 "$tmp_dir/xray/xray" "$XRAY_BIN"
+    # A new binary only takes effect after a restart, so force one.
+    XRAY_BINARY_CHANGED=true
+    mkdir -p "$XRAY_DIR"
+    # Write the unit now: the service user (User=nobody) is needed when we set
+    # config permissions later in configure_reality().
+    write_xray_systemd_unit
+    log_info "Xray v${version} 已安装到 ${XRAY_BIN}（SHA256 校验通过）。"
+}
+
+# systemd unit for Xray. We used to rely on the upstream installer's unit; writing
+# it ourselves removes the dependency on a moving install script (main branch) and
+# lets the sandbox drop-in merge cleanly.
+write_xray_systemd_unit() {
+    local unit_dir="${EASYNET_SYSTEMD_UNIT_DIR:-/etc/systemd/system}"
+    local unit_file="$unit_dir/xray.service"
+    local new_unit
+    new_unit="$(mktemp)"
+    cat > "$new_unit" << 'EOF'
+[Unit]
+Description=Xray Service
+Documentation=https://github.com/XTLS/Xray-core
+After=network.target nss-lookup.target
+
+[Service]
+User=nobody
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ExecStart=/usr/local/bin/xray run -config /usr/local/etc/xray/config.json
+Restart=on-failure
+RestartPreventExitStatus=23
+LimitNPROC=10000
+LimitNOFILE=1000000
+RuntimeDirectory=xray
+RuntimeDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    chmod 644 "$new_unit"
+
+    XRAY_UNIT_CHANGED=false
+    if ! cmp -s "$new_unit" "$unit_file"; then
+        install -m 644 "$new_unit" "$unit_file"
+        XRAY_UNIT_CHANGED=true
+    fi
+    rm -f "$new_unit"
 }
 
 # Write xray config.json template based on transport type
@@ -201,8 +275,12 @@ resolve_reality_target() {
 
 # Resolve the Xray systemd service user (default: root).
 xray_service_user() {
-    systemctl cat xray 2>/dev/null |
-        awk -F= '/^[[:space:]]*User=/{ gsub(/[[:space:]]/, "", $2); print $2; exit }'
+    # The unit may not exist yet (first install writes it just before this runs),
+    # and `systemctl cat` failing would abort the script under `set -e pipefail`.
+    local user
+    user="$(systemctl cat xray 2>/dev/null |
+        awk -F= '/^[[:space:]]*User=/{ gsub(/[[:space:]]/, "", $2); print $2; exit }' || true)"
+    printf '%s' "${user:-nobody}"
 }
 
 # Make config.json readable by the Xray service user while keeping it private.
@@ -397,13 +475,17 @@ configure_reality() {
 
 create_systemd_service() {
     log_info "配置 Xray 服务..."
+    write_xray_systemd_unit
+    systemctl daemon-reload >/dev/null 2>&1 || true
     systemctl enable xray >/dev/null 2>&1 || true
     # Sandbox the upstream unit via drop-in (config lives in /usr/local/etc/xray,
     # which stays readable; RuntimeDirectory=/run/xray stays writable).
     maintenance_apply_systemd_hardening xray
     # Restart only when something actually changed: config changes are handled by
     # configure_reality() and certificate renewals by the edge renew hook.
-    if [ "${SYSTEMD_HARDENING_CHANGED:-false}" = "true" ] || ! systemctl is-active --quiet xray; then
+    if [ "${XRAY_UNIT_CHANGED:-false}" = "true" ] || [ "${SYSTEMD_HARDENING_CHANGED:-false}" = "true" ] ||
+        [ "${XRAY_BINARY_CHANGED:-false}" = "true" ] ||
+        ! systemctl is-active --quiet xray; then
         systemctl restart xray
     else
         log_info "Xray 服务已在运行，跳过重启。"

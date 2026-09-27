@@ -142,10 +142,12 @@ resolve_singbox_url() {
     [ -n "${SINGBOX_URL:-}" ] && return 0
 
     asset_arch="$(detect_asset_arch)"
+    # awk rather than head: under `set -o pipefail` an early-terminating consumer
+    # gives curl/sed SIGPIPE (141), which set -e turns into a hard failure.
     SINGBOX_URL="$(
         curl -fsSL "$GITHUB_API" \
             | sed -n "s/.*\"browser_download_url\": \"\\([^\"]*sing-box-[^\"]*-${asset_arch}\\.tar\\.gz\\)\".*/\\1/p" \
-            | head -n 1
+            | awk 'NR==1'
     )"
     [ -n "${SINGBOX_URL:-}" ] || die "无法自动找到 sing-box ${asset_arch} 下载地址，请使用 --sing-box-url 指定。"
 }
@@ -181,7 +183,7 @@ install_singbox_binary() {
     fi
 
     tar -xzf "$tarball" -C "$tmp_dir"
-    binary_path="$(find "$tmp_dir" -type f -name sing-box -perm -111 | head -n 1)"
+    binary_path="$(find "$tmp_dir" -type f -name sing-box -perm -111 -print -quit)"
     [ -n "$binary_path" ] || die "下载包中未找到 sing-box 可执行文件"
 
     install -m 0755 "$binary_path" "$INSTALL_DIR/sing-box"
