@@ -132,17 +132,31 @@ easynet_singbox_rules_tags() {
     easynet_singbox_rules_specs | cut -d'|' -f1
 }
 
+# 订阅里远端规则集使用的 HTTP 客户端 tag（route.default_http_client 引用它）
+easynet_singbox_rules_http_client_tag() {
+    printf '%s' "ruleset"
+}
+
+# 订阅顶层 http_clients：为远端规则集提供显式的下载客户端。
+# sing-box 1.14 起 remote rule-set 的 `download_detour` 已弃用（1.16 移除），
+# 改用 `http_clients` + `route.default_http_client`。
+easynet_singbox_http_clients_json() {
+    local detour
+    detour="${EASYNET_SINGBOX_RULES_DETOUR:-DIRECT}"
+    jq -cn --arg tag "$(easynet_singbox_rules_http_client_tag)" --arg detour "$detour" \
+        '[{tag:$tag, detour:$detour}]'
+}
+
 # 订阅里 route.rule_set 的内容：remote 指向本机 edge 发布的 .srs
 easynet_singbox_rule_sets_json() {
-    local tag url detour out="["
-    detour="${EASYNET_SINGBOX_RULES_DETOUR:-DIRECT}"
+    local tag url out="["
 
     while IFS= read -r tag; do
         [ -z "$tag" ] && continue
         url="$(easynet_subscription_url "rules/${tag}.srs" 2>/dev/null || true)"
         [ -n "$url" ] || continue
-        out+="$(jq -cn --arg tag "$tag" --arg url "$url" --arg detour "$detour" \
-            '{type:"remote", tag:$tag, format:"binary", url:$url, download_detour:$detour, update_interval:"7d"}'),"
+        out+="$(jq -cn --arg tag "$tag" --arg url "$url" \
+            '{type:"remote", tag:$tag, format:"binary", url:$url, update_interval:"7d"}'),"
     done < <(easynet_singbox_rules_tags)
 
     printf '%s' "${out%,}]"

@@ -124,17 +124,19 @@ JSON
     rm -rf "$TMP_DIR"
 }
 
-@test "sing-box config renders WireGuard as endpoint for current sing-box versions" {
+@test "sing-box config omits AmneziaWG nodes entirely" {
     TMP_DIR=$(mktemp -d)
     STATE_DIR="$TMP_DIR/state"
     WEB_ROOT="$TMP_DIR/web"
     mkdir -p "$STATE_DIR/modules/example"
     cat > "$STATE_DIR/modules/example/metadata.json" <<JSON
-{"schemaVersion":1,"module":"wireguard","enabled":true,"protocol":"wireguard","client":{"uri":"wg://node","clash":{"name":"Example WG","type":"wireguard","server":"203.0.113.10","port":51820,"ip":"10.0.0.2","private-key":"pk","public-key":"pk","pre-shared-key":"psk","mtu":1360,"dns":["1.1.1.1"]}}}
+{"schemaVersion":1,"module":"wireguard","enabled":true,"protocol":"wireguard","client":{"uri":"wg://node","clash":{"name":"Example WG","type":"wireguard","server":"203.0.113.10","port":51820,"ip":"10.0.0.2","private-key":"pk","public-key":"pk","pre-shared-key":"psk","mtu":1280,"dns":["1.1.1.1"]}}}
 JSON
     env EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" \
         bash "$PROJECT_ROOT/scripts/generate_subscription.sh" >/dev/null 2>&1 || true
-    jq -e '.endpoints[] | select(.type == "wireguard")' "$WEB_ROOT/singbox" >/dev/null 2>&1
+    ! jq -e '.endpoints[]? | select(.type == "wireguard")' "$WEB_ROOT/singbox" >/dev/null 2>&1
+    ! jq -e '.outbounds[] | select(.tag == "Example WG")' "$WEB_ROOT/singbox" >/dev/null 2>&1
+    ! jq -e '.outbounds[] | select(.tag == "Proxy").outbounds | index("Example WG")' "$WEB_ROOT/singbox" >/dev/null 2>&1
     rm -rf "$TMP_DIR"
 }
 

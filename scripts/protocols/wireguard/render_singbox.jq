@@ -1,32 +1,15 @@
-# EasyNet WireGuard sing-box endpoint renderer
-# sing-box v1.11+ migrated WireGuard from outbound to endpoint format:
-#   server/server_port → peers[].address/port
-#   peer_public_key    → peers[].public_key
-#   pre_shared_key     → peers[].pre_shared_key
-#   local_address      → address
+# EasyNet WireGuard (AmneziaWG) sing-box renderer
 #
-# Note: AmneziaWG obfuscation (jc/jmin/jmax/s1/s2/h1-h4) is not included here;
-# mainline sing-box releases do not support these fields in the WireGuard
-# endpoint. The server runs AmneziaWG, so a plain sing-box WireGuard client
-# will NOT connect. Use Shadowrocket or Clash Verge Rev (mihomo) for this node.
-# Usage: jq -c -f render_singbox.jq <metadata.json>
-.client.clash as $c
-| ($c.name // .module) as $tag
-| {
-    type: "wireguard",
-    tag: $tag,
-    address: [($c.ip | if contains("/") then . else . + "/32" end)],
-    private_key: $c["private-key"],
-    mtu: ($c.mtu // 1280),
-    peers: [
-        {
-            address: $c.server,
-            port: $c.port,
-            public_key: $c["public-key"],
-            pre_shared_key: $c["pre-shared-key"],
-            allowed_ips: ["0.0.0.0/0"],
-            persistent_keepalive_interval: 25
-        }
-    ]
-}
-| walk(if type == "object" then with_entries(select(.value != null and .value != "")) else . end)
+# EasyNet always deploys AmneziaWG on the server, while mainline sing-box has no
+# AmneziaWG support: its WireGuard endpoint rejects the obfuscation fields
+# (`json: unknown field "jc"`), and an AmneziaWG server does not answer plain
+# WireGuard handshakes. A rendered node could therefore never connect, so this
+# module intentionally renders nothing and is omitted from the sing-box
+# subscription (including the `Proxy` selector and `Auto` urltest).
+#
+# Use the URI / Clash subscriptions instead (Shadowrocket, Clash Verge Rev).
+#
+# To bring the node back once sing-box supports AmneziaWG, restore the endpoint
+# renderer from git history (the commit that introduced this stub) and re-add
+# the "sing-box renders WireGuard" test.
+empty

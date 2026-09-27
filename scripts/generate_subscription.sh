@@ -69,11 +69,14 @@ generate_singbox_config() {
 
     [ ! -s "$names_file" ] && return 0
 
-    local rule_sets policy_rules
+    local rule_sets policy_rules http_clients default_http_client
     rule_sets="$(easynet_singbox_rule_sets_json)"
     policy_rules="$(easynet_singbox_policy_rules_json)"
+    http_clients="$(easynet_singbox_http_clients_json)"
+    default_http_client="$(easynet_singbox_rules_http_client_tag)"
     [ -n "$rule_sets" ] || rule_sets="[]"
     [ -n "$policy_rules" ] || policy_rules="[]"
+    [ -n "$http_clients" ] || http_clients="[]"
     if [ "$rule_sets" = "[]" ]; then
         log_warn "未找到 sing-box 分流规则清单（scripts/core/singbox-rules.conf）或其中为空，本次订阅不含分流规则。"
     fi
@@ -81,6 +84,8 @@ generate_singbox_config() {
     jq -n \
         --argjson rule_sets "$rule_sets" \
         --argjson policy_rules "$policy_rules" \
+        --argjson http_clients "$http_clients" \
+        --arg default_http_client "$default_http_client" \
         --slurpfile node_outbounds "$outbounds_file" \
         --slurpfile node_endpoints "$endpoints_file" \
         --rawfile names_raw "$names_file" \
@@ -118,7 +123,10 @@ generate_singbox_config() {
                 ]
                 + $node_outbounds
                 + [
-                    { type: "direct", tag: "DIRECT" },
+                    # udp_fragment 与默认值相同（行为不变），但能让 DIRECT 成为
+                    # 「非空」出站，否则 sing-box 会拒绝 http_client 的 detour：
+                    # "detour to an empty direct outbound makes no sense"。
+                    { type: "direct", tag: "DIRECT", udp_fragment: true },
                     { type: "block", tag: "REJECT" }
                 ]
             ),
@@ -141,9 +149,13 @@ generate_singbox_config() {
                     auto_detect_interface: true,
                     final: "Proxy"
                 }
-                + (if ($rule_sets | length) > 0 then { rule_set: $rule_sets } else {} end)
+                + (if ($rule_sets | length) > 0
+                   then { rule_set: $rule_sets, default_http_client: $default_http_client }
+                   else {} end)
             )
-        } + if ($node_endpoints | length) > 0 then { endpoints: $node_endpoints } else {} end)' > "$output_file"
+        }
+        + (if ($node_endpoints | length) > 0 then { endpoints: $node_endpoints } else {} end)
+        + (if ($rule_sets | length) > 0 then { http_clients: $http_clients } else {} end))' > "$output_file"
 
     chmod 644 "$output_file"
 }
@@ -162,7 +174,7 @@ append_metadata_singbox_outbound() {
     local metadata_file="$1"
     local output_file="$2"
     local endpoint_file="$3"
-    local module render_jq type target_file
+    local module render_jq type target_file rendered
 
     module=$(jq -r '.module // empty' "$metadata_file")
     [ -z "$module" ] && return 1
@@ -176,7 +188,11 @@ append_metadata_singbox_outbound() {
         target_file="$output_file"
     fi
 
-    jq -c -f "$render_jq" "$metadata_file" >> "$target_file"
+    # A module that sing-box cannot represent (e.g. AmneziaWG) renders nothing;
+    # skip it entirely so it is not referenced by the selector/urltest either.
+    rendered="$(jq -c -f "$render_jq" "$metadata_file")" || return 1
+    [ -n "$rendered" ] || return 1
+    printf '%s\n' "$rendered" >> "$target_file"
 }
 
 metadata_files_by_security() {

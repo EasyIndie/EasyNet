@@ -19,7 +19,7 @@
 #     EASYNET_SINGBOX_RULES_BIN      已有 sing-box 可执行文件（跳过下载）
 #     EASYNET_SINGBOX_RULES_CACHE    构建缓存目录（默认 <state>/tools）
 #     EASYNET_SINGBOX_RULES_CONF     类别清单路径（默认 scripts/core/singbox-rules.conf）
-#     EASYNET_SINGBOX_RULES_DETOUR   remote 规则集的 download_detour（默认 DIRECT，仅写入订阅）
+#     EASYNET_SINGBOX_RULES_DETOUR   remote 规则集的下载出站（http_client.detour，默认 DIRECT，仅写入订阅）
 #     EASYNET_WEB_ROOT               发布目录（默认 /var/www/html）
 
 set -euo pipefail

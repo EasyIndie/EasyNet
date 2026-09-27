@@ -45,7 +45,7 @@
 | 属性 | Xray+Reality | Hysteria2 | Shadowsocks 2022 | AmneziaWG |
 |------|:---:|:---:|:---:|:---:|
 | Clash 类型 | `vless` | `hysteria2` | `ss` | `wireguard` |
-| sing-box 类型 | `vless` | `hysteria2` | `shadowsocks` | `wireguard` |
+| sing-box 类型 | `vless` | `hysteria2` | `shadowsocks` | —（sing-box 未支持 AmneziaWG，不在 sing-box 订阅中） |
 | 安全等级（越小越安全） | 10 | 20 | 40 | 50 |
 | 默认端口 | 8443 | 443 | 8388 | 51820 |
 | Edge 模式 | `none` | `shared_tls` | `none` | `none` |
@@ -331,7 +331,7 @@ systemctl status awg-quick@wg0
 
 - Shadowrocket / v2rayN / v2rayNG：以部署输出或 `./scripts/show_subscription.sh` 显示的 URI 订阅为准（`sub` 端点）
 - Clash Verge Rev / Mihomo：以部署输出或 `./scripts/show_subscription.sh` 显示的 Clash 订阅为准（`clash` 端点）
-- Raspberry Pi / 卡片机 / 无界面 Linux：以部署输出或 `./scripts/show_subscription.sh` 显示的 sing-box 配置为准，推荐 `sing-box 1.13+`
+- Raspberry Pi / 卡片机 / 无界面 Linux：以部署输出或 `./scripts/show_subscription.sh` 显示的 sing-box 配置为准，推荐 `sing-box 1.14+`
 
 ### 其他检查
 
@@ -548,6 +548,9 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 ./scripts/generate_singbox_rules.sh              # 生成并发布到 ${EASYNET_WEB_ROOT}/rules/
 ./scripts/generate_singbox_rules.sh --dry-run    # 只打印不写文件
 ```
+
+> ⚠️ **未发布规则集时 `/singbox` 订阅无法启动**：订阅里 `route.rule_set` 用 `remote` 指向这些
+> `.srs` 文件，拉不到（404）会让 sing-box 直接启动失败。部署后至少跑一次上面的脚本。
 
 - 类别清单：`scripts/core/singbox-rules.conf`（`tag|source|category|action`，加类别只改一行）；
 - 生成物：`rules/<tag>.srs` 与 `rules/manifest.json`（含每个文件的 sha256）——属构建产物，**不进版本库**；

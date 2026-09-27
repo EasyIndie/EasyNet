@@ -120,8 +120,10 @@ teardown() {
     jq -e '.outbounds[] | select(.type == "hysteria2")' "$WEB_ROOT/singbox" >/dev/null
 }
 
-@test "sing-box renders WireGuard as endpoint" {
-    jq -e '.endpoints[] | select(.type == "wireguard")' "$WEB_ROOT/singbox" >/dev/null
+@test "sing-box config omits AmneziaWG (unsupported by sing-box)" {
+    ! jq -e '.endpoints[]? | select(.type == "wireguard")' "$WEB_ROOT/singbox" >/dev/null 2>&1
+    ! jq -e '.outbounds[] | select(.tag == "EasyNet-WG")' "$WEB_ROOT/singbox" >/dev/null 2>&1
+    ! jq -e '.route.final as $f | .outbounds[] | select(.tag == "Proxy").outbounds | index("EasyNet-WG")' "$WEB_ROOT/singbox" >/dev/null 2>&1
 }
 
 @test "sing-box config has route section" {

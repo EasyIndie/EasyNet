@@ -17,6 +17,14 @@
   失败则省略。
 
 ### 变更
+- **sing-box 订阅不再输出 AmneziaWG 节点**：mainline sing-box 不支持 AmneziaWG（其 WireGuard
+  endpoint 拒绝 `jc/jmin/...`：`json: unknown field "jc"`），该节点永远连不上，此前还会污染
+  `Proxy` 选择器与 `Auto` 测速。现从 sing-box 订阅中整体剔除（含 selector/urltest 引用）；
+  URI / Clash 订阅不受影响。若后续 sing-box 支持 AmneziaWG，恢复 `render_singbox.jq` 即可。
+- **远端规则集下载迁移到 `http_clients`**：sing-box 1.14 起 `download_detour` 已弃用、1.16 移除。
+  订阅改为顶层 `http_clients` + `route.default_http_client`，并在 `DIRECT` 出站显式加
+  `udp_fragment: true`（与默认值相同，仅为让出站「非空」——否则 sing-box 报
+  `detour to an empty direct outbound makes no sense`）。sing-box 订阅要求 **1.14+**。
 - **WireGuard → 真 AmneziaWG**：模块改用 AmneziaWG（`awg`/`awg-quick`，配置目录 `/etc/amnezia/amneziawg`，
   systemd 服务 `awg-quick@wg0`），部署时随机生成并持久化 Jc/Jmin/Jmax/S1/S2/H1-H4 并写入客户端订阅。
   修复此前「服务端为标准 WireGuard、客户端 URI 却携带 jc/jmin/jmax」的不一致。安全等级 60 → 50。
@@ -37,6 +45,8 @@
 - 新增 `docs/singbox-unification-analysis.md`：评估是否将多协议收敛为统一 sing-box 实现，
   含能力对照、收益/代价、趋势判断与建议路线；本轮结论为「维持现状」。
 - 文档与示例域名改用语义中性的 `world.example.com`，补充避开 GFW 关键词与 Reality 自偷的指引。
+- sing-box 相关文档同步：订阅要求 1.14+、AmneziaWG 不在 sing-box 订阅中、未发布
+  `/rules/*.srs` 会让 `/singbox` 启动失败（需先跑 `generate_singbox_rules.sh`）。
 
 ### 测试
 - `tests/test_config_generation.bats` 新增 Reality 自偷 / 回退限速 / AmneziaWG 参数用例；

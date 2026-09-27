@@ -79,7 +79,11 @@ teardown() {
     [ "$(jq '.route.rule_set | length' "$WEB_ROOT/singbox")" -eq 3 ]
     jq -e '.route.rule_set[] | select(.tag == "cn-domains") | .type == "remote"' "$WEB_ROOT/singbox" >/dev/null
     jq -e '.route.rule_set[] | select(.tag == "cn-domains") | .url | endswith("rules/cn-domains.srs")' "$WEB_ROOT/singbox" >/dev/null
-    jq -e '.route.rule_set[] | select(.tag == "cn-domains") | .download_detour == "DIRECT"' "$WEB_ROOT/singbox" >/dev/null
+    jq -e '.route.default_http_client == "ruleset"' "$WEB_ROOT/singbox" >/dev/null
+    jq -e '.http_clients[] | select(.tag == "ruleset") | .detour == "DIRECT"' "$WEB_ROOT/singbox" >/dev/null
+    jq -e '.outbounds[] | select(.tag == "DIRECT") | .udp_fragment == true' "$WEB_ROOT/singbox" >/dev/null
+    jq -e '.route.rule_set[] | select(.tag == "cn-domains") | has("download_detour") | not' "$WEB_ROOT/singbox" >/dev/null
+    jq -e '.route.rule_set[] | select(.tag == "cn-domains") | has("http_client") | not' "$WEB_ROOT/singbox" >/dev/null
 }
 
 @test "清单为空时优雅降级：无 rule_set、仍是合法配置" {

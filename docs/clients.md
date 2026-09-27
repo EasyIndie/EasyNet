@@ -40,7 +40,7 @@
 
 ### Raspberry Pi / 卡片机
 
-树莓派、软路由、卡片机建议使用 `sing-box`（要求 1.13+）。
+树莓、软路由、卡片机建议使用 `sing-box`（要求 **1.14+**：订阅使用 1.14 引入的 `http_clients` / `route.default_http_client` 下载远端规则集）。
 
 **安装：** 在服务端运行 `./scripts/show_subscription.sh`，复制输出中的”树莓派快速安装”两行命令，到树莓派上执行：
 
@@ -94,7 +94,7 @@ sudo bash easynet-singbox-client.sh doctor
 | Shadowsocks 2022 (BLAKE3) | Clash Verge Rev ≥1.6, Shadowrocket ≥2.2.38, sing-box ≥1.8 |
 | Xray XHTTP 传输 | Clash Verge Rev ≥1.7, sing-box ≥1.11 |
 | Hysteria2 Port Hopping | 需客户端支持 `port_hopping` 参数 |
-| AmneziaWG | Clash Verge Rev (mihomo ≥1.19，支持 jc/jmin/jmax/s1/s2/h1-h4)、Shadowrocket；**sing-box 不支持** |
+| AmneziaWG | Clash Verge Rev (mihomo ≥1.19，支持 jc/jmin/jmax/s1/s2/h1-h4)、Shadowrocket；**sing-box 未支持 AmneziaWG，故不会出现在 sing-box 订阅中** |
 
 ## 常见问题
 
@@ -112,8 +112,9 @@ sudo bash easynet-singbox-client.sh doctor
 ### sing-box 启动失败
 
 - 先运行 `/usr/local/bin/sing-box check -c /etc/sing-box/config.json`
-- 确认使用的是 `singbox` 配置链接
+- 确认使用的是 `singbox` 配置链接；要求 sing-box **≥1.14**（订阅使用 `http_clients`）
 - Shadowsocks 2022 节点需 sing-box ≥1.8
+- 如报 `initial rule-set: ... unexpected status: 404`，说明服务端还没发布规则集：在服务器运行 `./scripts/generate_singbox_rules.sh`（远端规则集拉不到会让 sing-box 直接启动失败）
 - 如看到 `legacy inbound fields are deprecated`，先在服务端重新运行 `./scripts/generate_subscription.sh`，再在树莓派执行 `/usr/local/bin/easynet-singbox-update`
 
 ### mixed 模式无法连接 7890
@@ -140,7 +141,7 @@ sudo bash easynet-singbox-client.sh doctor
 ### AmneziaWG 节点无法连接
 
 - 服务端固定使用 AmneziaWG（`awg-quick@wg0`），混淆参数（Jc/Jmin/Jmax/S1/S2/H1-H4）在部署时随机生成并写入订阅
-- 客户端需支持 AmneziaWG：Clash Verge Rev (mihomo ≥1.19) 或 Shadowrocket；**sing-box 暂不支持**
+- 客户端需支持 AmneziaWG：Clash Verge Rev (mihomo ≥1.19) 或 Shadowrocket；**sing-box 未支持 AmneziaWG**（其 WireGuard endpoint 不认 `jc/jmin/...`），因此该节点**不会出现在 `singbox` 订阅里**（selector/urltest 也不包含）
 - 确订订阅已更新（参数必须与服务端一致）并重新导入节点；手动配置时需与服务端 `/etc/amnezia/amneziawg/wg0.conf` 对齐
 - 如客户端不支持 AmneziaWG，请改用其他节点（Reality / Hysteria2 / Shadowsocks）
 
