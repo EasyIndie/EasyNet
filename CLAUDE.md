@@ -129,9 +129,13 @@ New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub inde
 
 - 测试环境**永远**用 `compat`（四种协议全开），不要为了省时间改成 `balanced`。
 - 正式环境**永远**用 `balanced`（最安全的两/三种），且域名与测试环境不同。
-- **本仓库是公开的**：真实域名、IP、订阅路径前缀等运行标识**一律不得写入仓库**（含文档、注释、测试、提交信息）。
+- **本仓库保持公开（已评估的决策，勿再改动可见性）**：理由——服务域名本身已通过 Certificate
+  Transparency 日志公开可查（Let's Encrypt / Cloudflare 签发的每张证书都必须公示），
+  私有化既隐藏不了域名，又会破坏 `install.sh` 一键安装与 `easynet update`（release 资产需认证）。
+  因此采取「公开仓库 + 不写运行标识」的组合。
+- **真实域名、IP、订阅路径前缀等运行标识一律不得写入仓库**（含文档、注释、测试、提交信息）。
   仓库内示例统一用保留域名 `example.com`；各环境的真实值只放在那台机器上的 `.env`（600）或本地验收目录。
-  `tests/test_no_private_identifiers.bats` 会在 CI 里拦截已知标识的回归。
+  `tests/test_no_private_identifiers.bats` 会在 CI 里拦截已知标识的回归（含哨兵断言，防止检查本身失效）。
 - **VPS 上一律用 `.env` 文件驱动部署**，不要在命令行内联环境变量：`.env` 是唯一配置来源，
   既能反复重部署得到一致结果，也能直接 diff/回滚配置。部署命令永远是 `bash scripts/deploy.sh`
   （`deploy.sh` 自动加载同目录 `.env`）。
