@@ -129,8 +129,11 @@ New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub inde
 
 - 测试环境**永远**用 `test-world.jokerhub.cn` + `compat`；不要为了省时间在测试机上改成 `balanced`。
 - 正式环境**永远**用 `world.jokerhub.cn` + `balanced`；部署前必须先确认测试机同版本验收通过。
-- 两者都通过各自目录下的 `.env`（仅 `EASYNET_*` 变量）固定配置，部署命令相同：
-  `bash scripts/deploy.sh`。
+- **VPS 上一律用 `.env` 文件驱动部署**，不要在命令行内联环境变量：`.env` 是唯一配置来源，
+  既能反复重部署得到一致结果，也能直接 diff/回滚配置。部署命令永远是 `bash scripts/deploy.sh`
+  （`deploy.sh` 自动加载同目录 `.env`）。
+- `.env` 只接受 `EASYNET_[A-Z0-9_]+`（见 `core/env_file.sh`）；权限保持 600（含订阅路径密钥）。
+  模板：测试 `.env.test-vps`、正式 `.env.prod-vps`（存于本地验收目录，不入库）。
 - 发版后的验收走官方一键安装器（与真实用户一致）：
   `bash ~/Desktop/easynet-acceptance/reset-acceptance.sh --release <tag>`
   （改动了尚未发版的代码时才用不带 `--release` 的本地工作树模式）。

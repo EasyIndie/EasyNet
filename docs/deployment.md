@@ -203,6 +203,11 @@ hub 由 `core/hub.sh` 的 `ensure_easynet_hub()` 在每次部署/卸载结束时
 
 ## 快速部署
 
+> **约定：服务器上一律用 `.env` 文件驱动部署**（不要内联环境变量）。
+> `.env` 是配置的唯一来源：改动可 diff、可回滚，反复重部署结果一致。
+> 它只接受 `EASYNET_[A-Z0-9_]+`，权限保持 `600`（含订阅路径密钥）。
+> 每次部署都是同一条命令 —— `bash scripts/deploy.sh`（自动加载同目录 `.env`）。
+
 ### 1. 登录服务器
 
 ```bash
@@ -226,6 +231,17 @@ sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com bash install.sh
 ```
 
 指定版本：`sudo EASYNET_VERSION=<版本 tag> bash install.sh`。
+
+只安装不部署（便于先写好 `.env` 再部署；重装/升级时已存在的 `.env` 会被保留）：
+
+```bash
+sudo EASYNET_VERSION=<版本 tag> EASYNET_INSTALL_ONLY=true bash install.sh
+sudo install -m 600 /dev/stdin /opt/easynet/.env <<'ENV'
+EASYNET_PROFILE=balanced
+EASYNET_DOMAIN=world.jokerhub.cn
+ENV
+cd /opt/easynet && bash scripts/deploy.sh
+```
 
 ### 3. 从源码部署（开发 / 审计）
 
