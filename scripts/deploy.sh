@@ -108,6 +108,10 @@ setup_auto_update() {
     dpkg-reconfigure -f noninteractive unattended-upgrades
 }
 
+setup_fail2ban() {
+    maintenance_configure_fail2ban
+}
+
 setup_cron_jobs() {
     log_info "配置定时任务与系统日志限制..."
     maintenance_configure_logs

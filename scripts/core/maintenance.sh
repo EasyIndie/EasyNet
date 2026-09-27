@@ -47,3 +47,82 @@ maintenance_configure_logs() {
     maintenance_configure_journald
     maintenance_configure_nginx_logrotate
 }
+
+# Apply a conservative systemd sandbox via drop-in, without touching the
+# upstream-generated unit file (so upstream package upgrades stay clean).
+# Extra unit directives can be appended with the second argument.
+# Usage: maintenance_apply_systemd_hardening <unit> [extra-directives]
+maintenance_apply_systemd_hardening() {
+    local unit="$1"
+    local extra="${2:-}"
+    local unit_dir="${EASYNET_SYSTEMD_UNIT_DIR:-/etc/systemd/system}"
+    local dropin_dir dropin
+
+    [ -n "$unit" ] || return 0
+
+    # systemd only resolves drop-ins from <full-unit-name>.d (e.g. xray.service.d),
+    # so normalise a bare name such as "xray" to "xray.service".
+    case "$unit" in
+        *.*) ;;
+        *) unit="${unit}.service" ;;
+    esac
+
+    dropin_dir="${unit_dir}/${unit}.d"
+    dropin="$dropin_dir/easynet-hardening.conf"
+
+    mkdir -p "$dropin_dir"
+    cat > "$dropin" << 'EOF'
+[Service]
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+EOF
+    [ -n "$extra" ] && printf '%s\n' "$extra" >> "$dropin"
+    chmod 644 "$dropin"
+    systemctl daemon-reload >/dev/null 2>&1 || true
+    log_info "已应用 systemd 沙箱加固: ${unit}（$dropin）"
+}
+
+# Install and enable fail2ban with an sshd jail (brute-force protection).
+# Uses jail.d/ so a user-managed /etc/fail2ban/jail.local is never overwritten.
+maintenance_configure_fail2ban() {
+    if ! command -v fail2ban-client >/dev/null 2>&1; then
+        log_info "安装 fail2ban（SSH 防暴力破解）..."
+        DEBIAN_FRONTEND=noninteractive apt install -y fail2ban >/dev/null 2>&1 || {
+            log_warn "fail2ban 安装失败，已跳过。"
+            return 0
+        }
+    fi
+
+    mkdir -p /etc/fail2ban/jail.d
+    cat > /etc/fail2ban/jail.d/easynet.local << 'EOF'
+# Managed by EasyNet - do not edit
+[DEFAULT]
+backend = systemd
+bantime = 1h
+findtime = 10m
+maxretry = 5
+ignoreip = 127.0.0.1/8 ::1
+
+[sshd]
+enabled = true
+mode = aggressive
+EOF
+    chmod 644 /etc/fail2ban/jail.d/easynet.local
+
+    systemctl enable fail2ban >/dev/null 2>&1 || true
+    systemctl restart fail2ban >/dev/null 2>&1 || true
+    if systemctl is-active --quiet fail2ban; then
+        log_info "fail2ban 已启用（sshd jail，maxretry=5，bantime=1h）"
+    else
+        log_warn "fail2ban 未能启动，请检查 journalctl -u fail2ban。"
+    fi
+}

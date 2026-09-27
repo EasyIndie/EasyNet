@@ -22,7 +22,7 @@
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5–$15/月）
-- 🛡️ 安全稳定，自带 331 个测试用例（27 套件）保护核心逻辑
+- 🛡️ 安全稳定，自带 334 个测试用例（27 套件）保护核心逻辑
 
 ## 协议对比与防探测等级
 
@@ -99,7 +99,7 @@ EasyNet/
 │   ├── diagnose_reachability.sh # 公网可达性 / IP 封锁诊断
 │   ├── acceptance_test.sh      # VPS 一键验收脚本
 │   └── smoke_test.sh           # 部署后快速检查
-├── tests/                      # 单元测试（27 个 bats 套件，331 个用例）
+├── tests/                      # 单元测试（27 个 bats 套件，334 个用例）
 ├── docs/                       # 文档目录
 │   ├── deployment.md           #   部署、协议选择、订阅承载、完整配置项
 │   ├── clients.md              #   全平台客户端说明与常见问题

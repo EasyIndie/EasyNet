@@ -20,5 +20,6 @@ bootstrap_system() {
 bootstrap_security() {
     setup_firewall
     setup_auto_update
+    setup_fail2ban
     setup_cron_jobs
 }

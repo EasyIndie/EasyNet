@@ -21,6 +21,45 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
+@test "Systemd hardening drop-in uses the full unit name" {
+    TMP_DIR="$(mktemp -d)"
+    export EASYNET_SYSTEMD_UNIT_DIR="$TMP_DIR/systemd"
+    mkdir -p "$EASYNET_SYSTEMD_UNIT_DIR"
+    # shellcheck source=/dev/null
+    source "$PROJECT_ROOT/scripts/core/maintenance.sh"
+
+    maintenance_apply_systemd_hardening xray
+    [ -f "$EASYNET_SYSTEMD_UNIT_DIR/xray.service.d/easynet-hardening.conf" ]
+    [ ! -d "$EASYNET_SYSTEMD_UNIT_DIR/xray.d" ]
+    grep -q '^ProtectSystem=strict$' "$EASYNET_SYSTEMD_UNIT_DIR/xray.service.d/easynet-hardening.conf"
+
+    maintenance_apply_systemd_hardening hysteria-server.service "ReadWritePaths=/var/lib/hysteria"
+    dropin="$EASYNET_SYSTEMD_UNIT_DIR/hysteria-server.service.d/easynet-hardening.conf"
+    [ -f "$dropin" ]
+    grep -q '^ReadWritePaths=/var/lib/hysteria$' "$dropin"
+
+    rm -rf "$TMP_DIR"
+}
+
+@test "Shadowsocks service keeps its key out of the command line" {
+    run rg -q -- '-k \$\{PSK\}|--password' "$PROJECT_ROOT/scripts/protocols/shadowsocks/deploy.sh"
+    [ "$status" -eq 1 ]
+    run rg -q 'ssserver --config' "$PROJECT_ROOT/scripts/protocols/shadowsocks/deploy.sh"
+    [ "$status" -eq 0 ]
+    # `CapabilityBoundingSet=~` grants every capability; the empty set drops all.
+    run rg -q '^CapabilityBoundingSet=~' "$PROJECT_ROOT/scripts/protocols/shadowsocks/deploy.sh"
+    [ "$status" -eq 1 ]
+    run rg -q '^CapabilityBoundingSet=$' "$PROJECT_ROOT/scripts/protocols/shadowsocks/deploy.sh"
+    [ "$status" -eq 0 ]
+}
+
+@test "fail2ban is configured with an sshd jail and does not clobber jail.local" {
+    run rg -q 'maintenance_configure_fail2ban' "$PROJECT_ROOT/scripts/core/maintenance.sh" "$PROJECT_ROOT/scripts/deploy.sh"
+    [ "$status" -eq 0 ]
+    run rg -q '/etc/fail2ban/jail.d/easynet.local' "$PROJECT_ROOT/scripts/core/maintenance.sh"
+    [ "$status" -eq 0 ]
+}
+
 @test "Deploy env loader does not use export grep xargs" {
     run rg -q 'export \$\\(grep|xargs\\)' "$PROJECT_ROOT/scripts/deploy.sh"
     [ "$status" -eq 1 ]

@@ -54,6 +54,25 @@
   `tests/test_protocol_metadata.bats` 新增 Shadowrocket obfs / 国家旗帜 / mihomo amnezia-wg-option
   断言并补充 AmneziaWG 夹具；测试总数 314 → 331。
 
+### 安全性（本轮审计）
+- **Shadowsocks PSK 不再泄露**：此前 PSK 同时出现在 `ExecStart` 命令行（`/proc/<pid>/cmdline`
+  任何本地用户可读）与 world-readable（644）的 `config.json` 中。现改为 `ssserver --config`，
+  配置写入 `mode: tcp_and_udp` 并设为 `640 root:nogroup`。
+- **`CapabilityBoundingSet=~` 语义修正**：systemd 中 `~` 表示「对空集取反」= 授予全部能力
+  （运行时实测 `CapBnd=0x1ffffffffff`）。已改为空集，ssserver 现以零能力运行。
+- **新增 systemd 沙箱**：xray / hysteria-server 通过 drop-in（`easynet-hardening.conf`）
+  启用 `ProtectSystem=strict`、`ProtectHome`、`PrivateTmp`、`ProtectKernel*`、
+  `RestrictNamespaces`、`RestrictAddressFamilies` 等，不覆盖上游 unit（升级友好）。
+- **新增 fail2ban**：安装并启用 `sshd` jail（`maxretry=5`、`bantime=1h`），写入
+  `/etc/fail2ban/jail.d/easynet.local`，不覆盖用户自己的 `jail.local`。
+- **`docs/security-audit.md` 重写**：以 2025–2026 最新公开研究（SNI→DNS 一致性检查、
+  Geedge TSG 源码分析、QUIC SNI 过滤）为判据，逐协议给出抗 DPI 判定，并列出未修复项
+  （SSH root 密码登录 / 订阅直连路径默认开启）及风险等级。
+
+### 测试
+- `tests/test_hardening.bats` 新增 systemd 沙箱单元名归一化、SS 密钥不入命令行、
+  fail2ban jail 三个用例；测试总数 331 → 334。
+
 ## [0.0.10] - 2026-09-26
 
 ### 改进

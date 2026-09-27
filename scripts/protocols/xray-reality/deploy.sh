@@ -9,6 +9,7 @@ source "$CORE_DIR/download.sh"
 source "$CORE_DIR/network.sh"
 source "$CORE_DIR/display.sh"
 source "$CORE_DIR/crypto.sh"
+source "$CORE_DIR/maintenance.sh"
 
 XRAY_DIR="${XRAY_DIR:-/usr/local/etc/xray}"
 XRAY_BIN="${XRAY_BIN:-/usr/local/bin/xray}"
@@ -397,6 +398,9 @@ configure_reality() {
 create_systemd_service() {
     log_info "配置 Xray 服务..."
     systemctl enable xray
+    # Sandbox the upstream unit via drop-in (config lives in /usr/local/etc/xray,
+    # which stays readable; RuntimeDirectory=/run/xray stays writable).
+    maintenance_apply_systemd_hardening xray
     systemctl restart xray
 }
 

@@ -66,45 +66,45 @@ configure_shadowsocks() {
     log_info "配置 Shadowsocks 2022 Edition..."
     mkdir -p "$CONFIG_DIR"
 
-    if [ -f "$CONFIG_DIR/config.json" ] && grep -q "password" "$CONFIG_DIR/config.json"; then
-        log_info "检测到已有的 Shadowsocks 配置，跳过生成新密钥，直接使用现有配置。"
-        PSK=$(jq -r '.servers[0].password // empty' "$CONFIG_DIR/config.json")
-        PORT=$(jq -r '.servers[0].server_port // empty' "$CONFIG_DIR/config.json")
-        METHOD=$(jq -r '.servers[0].method // "2022-blake3-aes-256-gcm"' "$CONFIG_DIR/config.json")
-        PUBLIC_IP=$(get_public_ip)
+    local config_file="$CONFIG_DIR/config.json"
+
+    # Preserve the PSK/port across re-deploys.
+    if [ -f "$config_file" ] && grep -q "password" "$config_file"; then
+        log_info "检测到已有的 Shadowsocks 配置，保留 PSK / 端口。"
+        PSK=$(jq -r '.servers[0].password // empty' "$config_file")
+        PORT=$(jq -r '.servers[0].server_port // empty' "$config_file")
+        METHOD=$(jq -r '.servers[0].method // "2022-blake3-aes-256-gcm"' "$config_file")
     else
-        PSK=$(generate_psk)
-        PORT="${EASYNET_SHADOWSOCKS_PORT:-8388}"
-        METHOD="2022-blake3-aes-256-gcm"
-        PUBLIC_IP=$(get_public_ip)
-
-        cat > "$CONFIG_DIR/config.json" << EOF
-{
-    "servers": [
-        {
-            "server": "0.0.0.0",
-            "server_port": $PORT,
-            "method": "$METHOD",
-            "password": "$PSK"
-        }
-    ]
-}
-EOF
-
-        # Service runs as User=nobody, needs world-readable config
-        chmod 644 "$CONFIG_DIR/config.json"
-        log_info "Shadowsocks 2022 配置文件已创建"
+        PSK=""
+        PORT=""
+        METHOD=""
     fi
+
+    [ -n "$PSK" ] || PSK=$(generate_psk)
+    [ -n "$PORT" ] || PORT="${EASYNET_SHADOWSOCKS_PORT:-8388}"
+    [ -n "$METHOD" ] || METHOD="2022-blake3-aes-256-gcm"
+    PUBLIC_IP=$(get_public_ip)
+
+    # Security: the PSK must never appear on the command line (world-readable via
+    # /proc/<pid>/cmdline) and the config must not be world-readable. The service
+    # runs as nobody:nogroup, so 640 root:nogroup is enough.
+    jq -n --argjson port "$PORT" --arg method "$METHOD" --arg psk "$PSK" \
+        '{servers: [{server: "0.0.0.0", server_port: $port, method: $method, password: $psk, mode: "tcp_and_udp"}]}' \
+        > "$config_file.tmp"
+    chown root:nogroup "$config_file.tmp" 2>/dev/null || true
+    chmod 640 "$config_file.tmp"
+    mv "$config_file.tmp" "$config_file"
+    log_info "Shadowsocks 2022 配置已写入（640 root:nogroup，密钥仅存于配置文件）"
 }
 
 create_systemd_service() {
     log_info "创建 systemd 服务..."
 
-    # shadowsocks-rust >=1.24.0 requires --encrypt-method and --server-addr
-    # even when --config is provided. The CLI flags create a separate server
-    # instance that also needs -k <password> or SS_SERVER_PASSWORD env var.
-    # METHOD and PSK are set by configure_shadowsocks() before this runs.
-    cat > /etc/systemd/system/shadowsocks-rust-server.service << EOF
+    # The PSK is read from the config file only -- never from the command line,
+    # which any local user could read via /proc/<pid>/cmdline.
+    # `CapabilityBoundingSet=` (empty set) drops all capabilities; note that
+    # `CapabilityBoundingSet=~` would mean "grant everything", not "drop all".
+    cat > /etc/systemd/system/shadowsocks-rust-server.service << 'EOF'
 [Unit]
 Description=Shadowsocks-rust Server (2022 Edition)
 After=network.target nss-lookup.target
@@ -113,12 +113,21 @@ After=network.target nss-lookup.target
 Type=simple
 User=nobody
 Group=nogroup
-ProtectSystem=full
+ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 NoNewPrivileges=yes
-CapabilityBoundingSet=~
-ExecStart=/usr/local/bin/ssserver -U --encrypt-method ${METHOD} --server-addr 0.0.0.0:${PORT} -k ${PSK}
+CapabilityBoundingSet=
+AmbientCapabilities=
+ExecStart=/usr/local/bin/ssserver --config /etc/shadowsocks-rust/config.json
 Restart=on-failure
 RestartSec=5
 

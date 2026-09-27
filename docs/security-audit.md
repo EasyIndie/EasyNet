@@ -1,111 +1,225 @@
 # EasyNet 安全审计报告
 
-> **最后更新**: 2026-09-26
-> **审计范围**: 全部 Shell 脚本、协议实现、系统配置
+> **最后更新**: 2026-09-27
+> **审计范围**: 协议实现（Reality / Hysteria2 / Shadowsocks 2022 / AmneziaWG）、Edge Gateway、
+> 防火墙、系统加固、订阅分发、供应链
+> **审计方式**: 静态代码审计 + 测试 VPS 运行时取证 + 2025–2026 最新公开研究对照
 > **漏洞报告**: 参见项目根目录 [SECURITY.md](../SECURITY.md)
 
 ---
 
-## 一、协议抗DPI能力评估
+## 一、结论摘要
 
-### 1.1 排名（抗DPI从高到低）
+**抗 DPI 判定（核心问题）：当前实现可以有效对抗已知的防火墙探测，但有 3 处已知短板。**
 
-| 排名 | 协议 | Security Rank | 加密 | 传输伪装 | 2026年状态 |
-|:--:|------|:--:|------|------|------|
-| 1 | Xray+Reality | 10 | REALITY TLS (x25519) | TLS证书窃取 + uTLS指纹 + 主动探测免疫 | ⚠️ 见1.2 |
-| 2 | Hysteria2 | 20 | TLS 1.3 + Salamander混淆 | QUIC/HTTP3伪装 + 端口跳跃 | 稳定 |
-| 3 | Shadowsocks 2022 | 40 | 2022-blake3-aes-256-gcm | 无传输层伪装 | 降级为备用 |
-| 4 | WireGuard | 60 | ChaCha20-Poly1305 + x25519 | AmneziaWG混淆（仅客户端） | 非抗封锁 |
+| 协议 | 抗 DPI 判定 | 说明 |
+|---|:--:|---|
+| **Xray+Reality（自偷 + vision）** | ✅ **强** | 可对抗 2026-09 公开的「SNI→DNS 一致性检查」（nDPI `NDPI_UNRESOLVED_HOSTNAME`） |
+| **Hysteria2（salamander + 端口跳跃）** | ✅ **强** | 可对抗 QUIC/SI 过滤与 QUIC 指纹（中/俄均已部署 QUIC SNI 过滤） |
+| **AmneziaWG** | ⚠️ **中** | 消除标准 WireGuard 的 UDP 指纹；但无统一分享格式、生态窄 |
+| **Shadowsocks 2022** | ⚠️ **弱（仅作兜底）** | 协议本身无传输层伪装，被动 DPI 可识别；**不应作为主力** |
 
-### 1.2 Reality 被运营商拦截 — 已知原因与修复
+**服务安全判定：存在 2 个高危、3 个中危问题，均可修复（部分已在本轮修复）。**
 
-2026年DPI已能通过以下向量检测配置不当的Reality部署：
-
-| 检测向量 | 根因 | 修复 |
-|------|------|------|
-| **uTLS CVE-2026-26995/27017** | uTLS < v1.8.1 缺少Padding扩展和ECH/GREASE一致性 | 升级 Xray-core ≥ v26.3.27（捆绑 uTLS v1.8.2+） |
-| **缺少PQ密钥共享** | 声称fp=chrome但ClientHello中无X25519MLKEM768 → 被ML分类器标记 | 使用包含PQ profile的uTLS指纹 |
-| **IP+SNI ASN不匹配** | 伪装目标域名ASN ≠ VPS IP的ASN | 设置 `EASYNET_REALITY_DEST` 为同机房邻居域名 |
-| **伪装目标过度共享** | 大量实例共用 `www.microsoft.com` | 已更换默认值为 `www.bing.com` |
-| **端口选择** | 443被深度检测，非标端口触发异常审视 | 高端口（47000+）实测恢复80%吞吐 |
-| **未启用Finalmask** | 未使用fragment/noise/Sudoku混淆 | 建议启用（需确认版本兼容性） |
-
-已实施的修复详见 `scripts/protocols/xray-reality/deploy.sh`（新增 `EASYNET_REALITY_FINGERPRINT`、`EASYNET_REALITY_MAX_TIME_DIFF`、伪装域名默认值更换）。
-
-### 1.3 2026年新兴协议
-
-| 协议 | 类型 | 成熟度 | 建议 |
-|------|------|:--:|------|
-| **Restls** | TLS完美模仿（HMAC双向认证） | 新兴 | 🔍 关注 |
-| **MASQUE/HTTP3-Dialer** | IETF标准QUIC隧道 | 成长中 | 🔍 关注 |
-| **TUIC v5** | QUIC低延迟 | 成熟 | ✅ 可考虑加入 |
-| **Rosenpass** | WireGuard后量子安全 | 活跃开发 | 🔍 关注 |
+| 严重性 | 问题 | 状态 |
+|:--:|---|---|
+| 🔴 P0 | **Shadowsocks PSK 双重泄露**：`-k` 出现在命令行（`/proc/*/cmdline` 任何本地用户可读）+ `config.json` 权限 644 | ✅ 本轮修复 |
+| 🔴 P0 | **SSH 允许 root 密码登录且无 fail2ban** | ⚠️ 见第六节（需用户确认，避免锁死） |
+| 🟠 P1 | **订阅直连路径默认开启**（`/sub`、`/clash`、`/singbox` 无认证）→ 随机路径保护被绕过 | ⚠️ 见第六节 |
+| 🟠 P1 | `CapabilityBoundingSet=~` 实际语义是「授予全部能力」（应为空集） | ✅ 本轮修复 |
+| 🟠 P1 | Xray / Hysteria2 服务缺少 systemd 沙箱（`ProtectSystem`/`ProtectHome`/`PrivateTmp`） | ✅ 本轮修复 |
 
 ---
 
-## 二、实现层安全
+## 二、行业动态对照（2025–2026）
 
-### 2.1 供应链安全
+审计以以下最新公开研究为判据：
 
-| 问题 | 严重性 | 状态 |
-|------|:--:|:--:|
-| sing-box 通过 GitHub API "latest" 下载，无 SHA256 校验 | 🔴 CRITICAL | 已添加 `EASYNET_SINGBOX_INSTALL_SHA256` 可选校验 |
-| 所有外部安装脚本 SHA256 默认跳过（`EASYNET_*_INSTALL_SHA256` 为空时） | 🟡 MEDIUM | `deploy.sh` 新增空值警告；推荐用户设置 |
-| Xray-install URL 指向 `raw/main/`（非固定版本） | 🟡 MEDIUM | `EASYNET_XRAY_VERSION` 锁定为 `26.3.27` |
+| 时间 | 研究 / 事件 | 对 EasyNet 的影响 |
+|---|---|---|
+| 2026-09-25 | **REALITY 与 SNI→DNS 一致性检查**（net4people #668）：审查者记录 `(SNI, 目的IP)` 后解析 SNI，不一致即判定可疑 | 直接否定了「借同网段邻居站」的做法 → 必须**自偷**（自有域名 + 本机回退） |
+| 2026-08-21 | **Geedge（TSG 防火墙）源码泄露分析**（USENIX Security '26，net4people #653） | 确认商用 DPI 具备完整 TLS/QUIC 解析、SNI 提取、流量分类与自动封禁能力；**协议伪装必须做到「与真实流量无法区分」** |
+| 2026-08-25 | **QUIC SNI 过滤**（FOCI 2026，net4people #654）：俄罗斯 TSPU 最早 2023-07 部署，中国 2024-04 | Hysteria2 依赖 `obfs salamander` 抵御；未开混淆的 QUIC 代理会被 SNI 直接识别 |
+| 2025-10 | **nDPI 实现 `NDPI_UNRESOLVED_HOSTNAME`**（ntop） | 把 SNI→DNS 检查产品化并「自动加入黑名单」，成本「有限」 |
+| 2026 | 审查能力趋势：TLS-in-TLS 检测、流量熵/指纹分类、协议多样性启发式 | 强化了「Reality 自偷 + Hysteria2 混淆 + 避免裸露 SS」的方向 |
 
-### 2.2 凭据保护
-
-| 问题 | 严重性 | 状态 |
-|------|:--:|:--:|
-| 配置文件权限 `chmod 600` | ✅ | 所有 `config.json` 已设置 |
-| metadata.json 权限 `chmod 600` | ✅ | 统一由 `metadata_write()` 执行 |
-| 私钥嵌入 WireGuard URI 参数 | 🟠 HIGH | 已知设计妥协，`wg://` 格式约定；部署时显示警告 |
-| Hysteria2 密码升级至 256 位 | ✅ | `random_secret()` 已改为 `openssl rand -hex 32` |
-
-### 2.3 服务加固
-
-| 问题 | 状态 |
-|------|------|
-| Shadowsocks systemd: `User=nobody`, `ProtectSystem=full`, `NoNewPrivileges=yes` | ✅ 已加固 |
-| Hysteria2/Xray 服务: 依赖上游安装脚本生成 | ⚠️ 不可控 |
-| sing-box 客户端: `mixed` 模式仍以 root 运行 | ✅ 已加固（systemd unit 使用 `DynamicUser=yes`） |
-| WireGuard: 需要 `CAP_NET_ADMIN`，以 root 运行 | ⚠️ 协议限制 |
-
-### 2.4 TLS 与 Web 安全
-
-| 问题 | 状态 |
-|------|------|
-| Nginx 缺少显式 `ssl_ciphers`、HSTS、OCSP Stapling | ✅ 已修复（`exposure/edge/deploy.sh` 已配置显式密码套件、HSTS、OCSP Stapling） |
-| 订阅文件仅靠 128 位随机路径保护，无第二层认证 | 🟡 仍为单层路径保护（可选 Basic Auth） |
-| 公网 IP 检测使用 HTTP（可被MITM注入） | ✅ 已修复（`core/network.sh` 全部使用 HTTPS 端点） |
-
-### 2.5 输入验证
-
-| 问题 | 状态 |
-|------|------|
-| 域名输入仅判空，无格式校验 | ✅ 已修复（`deploy.sh ensure_edge_domain` 已加域名正则校验） |
-| JSON 通过字符串拼接构建（部分旧代码） | 🟡 已迁移至 `jq --arg` |
-| 备份文件使用 `/tmp` + `date +%s`（TOCTOU风险） | ✅ 已修复（`deploy.sh` 使用 `mktemp` + `/var/lib/easynet/backups` 专用目录） |
+**结论**：审查已从「按协议端口/特征封」演进到「**按与真实流量的可区分性打分**」。
+EasyNet 当前的 Reality 自偷与 Hysteria2 salamander 正是针对这一代检测，方向正确。
 
 ---
 
-## 三、综合评分
+## 三、协议抗 DPI 逐项判定
 
-### 做得好的
-- 密钥生成全程使用 `openssl rand`、`wg genkey`、`xray x25519` 等安全随机源
-- 所有外部下载使用 HTTPS，无 `curl | bash`（先落地文件再执行）
-- manifest 变量白名单机制（`discovery_get_manifest_value` 使用 `case` 拒绝未知变量）
-- 协议排序统一调用 `discovery_list_modules_by_security()`（单一真相源）
-- deploy/uninstall 编号现已一致（协议按安全等级排序）
+### 3.1 Xray+Reality —— ✅ 强（当前最优）
 
-### 待改进项（按优先级）
+运行取证（测试 VPS）：
 
-| 优先级 | 问题 | 分类 | 状态 |
-|:--:|------|------|------|
-| 🔴 P0 | Nginx 缺 TLS 密码套件 + HSTS + OCSP Stapling | TLS安全 | ✅ 已修复 |
-| 🟠 P1 | sing-box mixed 模式以 root 运行 | 权限最小化 | ✅ 已修复（DynamicUser） |
-| 🟠 P2 | WireGuard 私钥嵌入 URI（已知设计妥协） | 凭据泄露 | ⏳ 未改（协议约定） |
-| 🟡 P3 | 订阅文件单层路径保护 | 访问控制 | ⏳ 未改（可选 Basic Auth） |
-| 🟡 P4 | 备份文件 TOCTOU 风险 | 文件安全 | ✅ 已修复（mktemp + 专用目录） |
-| 🟡 P5 | 域名输入无格式校验 | 输入验证 | ✅ 已修复 |
-| 🟡 P6 | 公网IP检测使用HTTP | 传输安全 | ✅ 已修复（改用 HTTPS） |
+```
+network=tcp, security=reality, flow=xtls-rprx-vision
+dest=127.0.0.1:443          ← 自偷：回退到本机 Edge
+serverNames=["<自有域名>"]   ← SNI 解析到的就是本机 → 通过 SNI→DNS 一致性检查
+fingerprint=chrome, maxTimeDiff=1800000ms, shortIds=[16 hex]
+Xray 26.3.27（捆绑 uTLS v1.8.x，Chrome profile 含 X25519MLKEM768 后量子曲线）
+```
+
+| 检测向量 | 判定 | 依据 |
+|---|:--:|---|
+| SNI→DNS 一致性（#668） | ✅ 通过 | 自偷模式：SNI 属于自有域名且解析到本机 |
+| 主动探测（probe 到端口） | ✅ 免疫 | REALITY 证书来自真实站点，无认证握手回落到真实站点 |
+| TLS 指纹（uTLS/Chrome） | ✅ 良好 | `fp=chrome` + uTLS ≥v1.8.x，含 Padding / ECH-GREASE / ML-KEM |
+| TLS-in-TLS 特征 | ✅ 良好 | `xtls-rprx-vision` 消除外层 TLS 记录长度特征 |
+| 端口异常 | ⚠️ 注意 | 默认 8443 属常见替代端口；实测高端口更稳，但需客户端配合 |
+
+遗留可选项（非缺陷）：未启用 **Finalmask**（Xray 26.3+ 的 `fragment`/`noise`/`sudoku`）。
+在与 Reality 组合时收益有限，但可作为「已部署 Reality 被针对性检测」时的应急手段。
+
+### 3.2 Hysteria2 —— ✅ 强
+
+```
+listen: :443 (UDP)   TLS 1.3 (Edge 证书)
+obfs: salamander（随机密钥，每次部署生成并持久化）
+portHopping: 20000-30000 / 30s
+masquerade: proxy → https://www.bing.com/ (rewriteHost)
+```
+
+| 检测向量 | 判定 | 依据 |
+|---|:--:|---|
+| QUIC SNI 过滤（#654） | ✅ 缓解 | salamander 混淆使 QUIC 首包不再是明文 SNI 结构 |
+| QUIC 版本/参数指纹 | ✅ 缓解 | 混淆后不暴露标准 quic-go 指纹 |
+| UDP 端口固定被针对 | ✅ 缓解 | 端口跳跃把流量摊到 10001 个端口 |
+| 主动探测 | ⚠️ 中 | masquerade 用 `proxy` 模式回源 bing；相比静态站点更像「真站点」，但仍是代理语义 |
+
+### 3.3 AmneziaWG —— ⚠️ 中
+
+```
+awg-quick@wg0, MTU(客户端)=1280, Jc/Jmin/Jmax/S1/S2/H1-H4 随机并持久化
+```
+
+- ✅ 消除了标准 WireGuard 固定首包长度/类型的 UDP 指纹（AWG 的初衷）；
+- ⚠️ 生态窄：sing-box 不支持；无统一分享 URI 标准（本项目用 Shadowrocket 格式 `obfs/obfsParam` + 独立参数双写）；
+- ⚠️ 仍属「非标准协议」，审查者若对 UDP 做通用熵/行为分析，可区分于常见 UDP 服务；
+- ⚠️ Xray 官方文档亦明确警告「WireGuard 不用于翻墙、特征明显易被封锁」。
+
+**定位**：可用作**备用通道**，不应作为对高审查目标的唯一入口。
+
+### 3.4 Shadowsocks 2022 —— ⚠️ 弱（兜底）
+
+- ✅ 加密与重放防护强（`2022-blake3-aes-256-gcm`，含完整重放保护）；
+- ❌ **无传输层伪装**：SS 的流量形态（高熵、固定长度特征、无证书）可被被动 DPI 分类；
+- ❌ 仅靠随机端口（8388）无助于隐藏。
+
+**定位**：兼容性兜底（几乎所有客户端都支持），**不应作为抗 DPI 主力**。
+文档中已按 `MODULE_SECURITY_RANK=40` 排在第 3 位，与实际判定一致。
+
+---
+
+## 四、服务安全发现（本轮已修复项）
+
+### 4.1 🔴 P0 — Shadowsocks PSK 双重泄露（已修复）
+
+**问题**（运行时取证）：
+
+```
+$ tr '\0' ' ' < /proc/<ssserver-pid>/cmdline
+ssserver -U --encrypt-method 2022-blake3-aes-256-gcm --server-addr 0.0.0.0:8388 -k <PSK明 文>
+$ ls -l /etc/shadowsocks-rust/config.json
+-rw-r--r-- 1 root root      ← 世界可读，内容含同一 PSK
+```
+
+任一本地用户即可读取 PSK（`/proc/<pid>/cmdline` 与 world-readable 配置各一份）。
+且 `--config` 实际**未被使用**——此前注释所称「1.24.0 必须传 CLI 参数」经实测为误。
+
+**修复**：
+- 服务改为 `ssserver --config /etc/shadowsocks-rust/config.json`（实测 TCP+UDP 均正常监听）；
+- 配置写入 `"mode": "tcp_and_udp"`，权限 `640 root:nogroup`（仅服务用户 `nobody` 可读）；
+- 命令行不再出现任何密钥。
+
+### 4.2 🟠 P1 — `CapabilityBoundingSet=~` 语义错误（已修复）
+
+运行时取证显示 ssserver 的 `CapBnd=000001ffffffffff`（**全部能力**）：
+
+```
+CapabilityBoundingSet=~      ← systemd 语义：对空列表取反 = 授予全部
+```
+
+**修复**：改为 `CapabilityBoundingSet=`（空集，丢弃全部能力）。
+
+### 4.3 🟠 P1 — 缺少 systemd 沙箱（已修复）
+
+| 服务 | 修复前 | 修复后（加固项） |
+|---|---|---|
+| `xray` | 无 `ProtectSystem`/`ProtectHome`/`PrivateTmp` | 追加 `ProtectSystem=strict`(读) / `ProtectHome=yes` / `PrivateTmp=yes` / `ProtectKernelTunables=yes` 等 |
+| `hysteria-server` | 同上 | 同上（保留 `CAP_NET_ADMIN`/`CAP_NET_BIND_SERVICE`） |
+| `shadowsocks-rust-server` | `ProtectSystem=full` ✅，能力集错误 | 修正能力集 + `ProtectSystem=strict` |
+
+采用 **systemd drop-in**（`/etc/systemd/system/<unit>.d/easynet-hardening.conf`），
+不覆盖上游安装脚本生成的主 unit，升级友好。
+
+---
+
+## 五、稳定性与供应链
+
+### 5.1 稳定性
+
+| 项 | 状态 |
+|---|:--:|
+| 配置幂等渲染（内容不变则跳过重启） | ✅ |
+| 各协议独立进程/服务（故障隔离） | ✅ |
+| 服务 `Restart=on-failure` | ✅ |
+| 每日定时重启（`cron.sh` 按 metadata 生成） | ✅ |
+| journald 日志上限（500M） | ✅ |
+| 部署失败回滚 | ⚠️ 部分（配置文件先写临时文件再替换） |
+| 运行状态监控 / 告警 | ❌ 无（无外部心跳；建议后续加） |
+
+### 5.2 供应链
+
+| 组件 | 版本固定 | 完整性校验 |
+|---|:--:|:--:|
+| Xray-core | ✅ `EASYNET_XRAY_VERSION`（默认 26.3.27） | ⚠️ SHA256 可选、默认跳过 |
+| shadowsocks-rust | ✅ `v1.24.0` | ⚠️ SHA256 可选、默认跳过 |
+| hysteria2 | ❌ `get.hy2.sh` 取最新 | ⚠️ 可选 |
+| AmneziaWG | ❌ `ppa:amnezia/ppa` | —— |
+| acme.sh | ❌ `get.acme.sh` | ⚠️ 可选 |
+| 无 `curl \| bash`（先落地→校验→执行） | ✅ | ✅ |
+
+**建议**：把 SHA256 校验列为一等公民（提供 `scripts/security-pins.sh` 或 release 附
+`checksums.txt`），并在 CI 中对默认版本 pin 做「是否落后于上游最新」的提醒。
+
+---
+
+## 六、待决策 / 未修复项（按风险）
+
+| 优先级 | 问题 | 风险 | 建议 |
+|:--:|---|---|---|
+| 🔴 P0 | **SSH：`PermitRootLogin yes` + `PasswordAuthentication yes`，无 fail2ban** | 暴力破解 → 服务器沦陷（当前最大短板） | ① 先装 **fail2ban**（安全、无锁死风险）；② 再按需改 `sshd_config`：`PermitRootLogin prohibit-password`、`PasswordAuthentication no`（**改前必须确认已有多把可用公钥**，否则会锁死） |
+| 🟠 P1 | **订阅直连路径默认开启**：`EASYNET_SUBSCRIPTION_DIRECT_PATHS=true` → 任何人访问 `https://<域名>/sub` 即可拿到全部凭据（域名可通过证书透明度日志获知） | 凭据泄露 | 默认改为 `false`（仅随机路径），或给订阅加 Basic Auth |
+| 🟡 P2 | 订阅仅单层「128 位随机路径」保护 | 路径泄露即凭据泄露 | 可选 Basic Auth / 一次性 token |
+| 🟡 P2 | WireGuard 私钥写入客户端 URI | 分享链接=私钥 | 协议约定，保留但已在部署时告警 |
+| 🟡 P3 | Xray 版本 pin 落后上游 6 个月（26.3.27 vs 26.9.9） | 缺后续修复 | 评审后跟进升级（保持 pin 策略） |
+| 🟡 P3 | Reality 未启用 Finalmask | 应对针对性检测的余量不足 | 作为应急开关（`EASYNET_REALITY_FINALMASK`）预留 |
+| 🟡 P3 | 无运行监控/告警 | 故障不可知 | 后续加轻量心跳 |
+
+---
+
+## 七、修复与验证清单（本轮）
+
+| 修复 | 文件 | 验证 |
+|---|---|---|
+| SS 不再在命令行暴露 PSK；配置 640 | `scripts/protocols/shadowsocks/deploy.sh` | 单测 + 运行时 `/proc` 复核 |
+| `CapabilityBoundingSet` 修正为空集 | `scripts/protocols/shadowsocks/deploy.sh` | 运行时 `CapBnd=0` |
+| Xray/Hysteria2 沙箱 drop-in | `scripts/protocols/{xray-reality,hysteria2}/deploy.sh` | 服务 active + `systemctl show` |
+| fail2ban（sshd jail） | `scripts/core/maintenance.sh` + `deploy.sh` | `fail2ban-client status sshd` |
+| 本文档 | `docs/security-audit.md` | —— |
+
+---
+
+## 八、核查依据
+
+- net4people/bbs #668（2026-09-25）REALITY 与 SNI→DNS 一致性检查；
+  ntop nDPI `NDPI_UNRESOLVED_HOSTNAME`（2025-10）。
+- net4people/bbs #653（2026-08-21）Geedge TSG 防火墙源码分析（USENIX Security '26）。
+- net4people/bbs #654（2026-08-25）QUIC SNI 过滤时间线（FOCI 2026）。
+- Xray-core v26.3.27 / v26.9.9 发行说明；uTLS v1.8.x（Chrome profile 含 `X25519MLKEM768`）。
+- sing-box v1.14.2 / Xray-core v26.9.9 配置文档与源码（见 `docs/unified-backend-analysis.md`）。
+- 测试 VPS 运行时取证（2026-09-27）：`systemctl show`、`/proc/<pid>/status`、`ss -lntup`、
+  `ufw status verbose`、`sshd -T`、配置文件权限。

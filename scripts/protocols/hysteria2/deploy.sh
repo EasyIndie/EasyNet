@@ -10,6 +10,7 @@ source "$CORE_DIR/env.sh"
 source "$CORE_DIR/download.sh"
 source "$CORE_DIR/display.sh"
 source "$CORE_DIR/crypto.sh"
+source "$CORE_DIR/maintenance.sh"
 
 HYSTERIA2_CONFIG_DIR="${HYSTERIA2_CONFIG_DIR:-/etc/hysteria}"
 HYSTERIA2_CONFIG_FILE="${HYSTERIA2_CONFIG_FILE:-${HYSTERIA2_CONFIG_DIR:-}/config.yaml}"
@@ -199,6 +200,10 @@ EOF
 restart_hysteria2() {
     log_info "启动 Hysteria2 服务..."
     systemctl enable "${HYSTERIA2_SERVICE:-}"
+    # Sandbox the upstream unit via drop-in; keep /var/lib/hysteria (its home and
+    # WorkingDirectory) writable under ProtectSystem=strict.
+    maintenance_apply_systemd_hardening "${HYSTERIA2_SERVICE:-}" \
+        "ReadWritePaths=/var/lib/hysteria"
     systemctl restart "${HYSTERIA2_SERVICE:-}"
 }
 
