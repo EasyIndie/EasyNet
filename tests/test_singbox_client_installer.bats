@@ -253,7 +253,7 @@ setup() {
 @test "Installer prefers the subscription mirror, then GitHub" {
     run bash -c "
         source '$INSTALLER'
-        SINGBOX_CONFIG_URL='https://d.example.com/s/PREFIX/singbox'
+        CONFIG_URL='https://d.example.com/s/PREFIX/singbox'
         resolve_singbox_download
         printf '%s\n' \"\${SINGBOX_SOURCE_URLS[@]}\"
     "
@@ -267,7 +267,7 @@ setup() {
 @test "Explicit --sing-box-url is used alone (no mirror)" {
     run bash -c "
         source '$INSTALLER'
-        SINGBOX_CONFIG_URL='https://d.example.com/s/PREFIX/singbox'
+        CONFIG_URL='https://d.example.com/s/PREFIX/singbox'
         SINGBOX_URL='https://example.net/custom.tar.gz'
         SB_SHA256='$(printf '0%.0s' {1..64})'
         resolve_singbox_download
@@ -280,7 +280,7 @@ setup() {
 @test "Mirror can be disabled with EASYNET_SINGBOX_MIRROR=false" {
     run bash -c "
         source '$INSTALLER'
-        SINGBOX_CONFIG_URL='https://d.example.com/s/PREFIX/singbox'
+        CONFIG_URL='https://d.example.com/s/PREFIX/singbox'
         EASYNET_SINGBOX_MIRROR=false resolve_singbox_download
         printf '%s\n' \"\${SINGBOX_SOURCE_URLS[@]}\"
     "

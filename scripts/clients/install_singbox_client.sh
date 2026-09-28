@@ -171,10 +171,13 @@ pinned_singbox_sha256() {
 #   覆盖版本/自定义 URL → 必须显式提供 EASYNET_SINGBOX_INSTALL_SHA256，
 #                          否则拒绝继续（除非显式 EASYNET_SINGBOX_SKIP_SHA256=true）
 resolve_singbox_download() {
-    local asset_arch base
+    local asset_arch base cfg
     asset_arch="$(detect_asset_arch)"
+    # 安装器自身用 CONFIG_URL；SINGBOX_CONFIG_URL 是写进设备 env、供每日更新脚本使用的
+    # 同名变量（两种都认，便于"source 安装器 + 复用 env 文件"的场景）。
+    cfg="${CONFIG_URL:-${SINGBOX_CONFIG_URL:-}}"
     base=""
-    [ -n "${SINGBOX_CONFIG_URL:-}" ] && base="${SINGBOX_CONFIG_URL%/*}"
+    [ -n "$cfg" ] && base="${cfg%/*}"
 
     if [ -z "${SINGBOX_URL:-}" ]; then
         SINGBOX_URL="https://github.com/SagerNet/sing-box/releases/download/v${SB_VERSION}/sing-box-${SB_VERSION}-${asset_arch}.tar.gz"
