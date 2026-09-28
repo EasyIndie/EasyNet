@@ -338,9 +338,9 @@ setup() {
     local work="$BATS_TEST_TMPDIR/upd"
     mkdir -p "$work/mirror/bin" "$work/inst" "$work/bin"
     # 伪造订阅站镜像：一个 9.9.9 版本的"原包"（内含 stub sing-box）+ manifest
-    printf '#!/bin/sh\necho "sing-box version 9.9.9"\n' > "$work/stub-sing-box"
-    chmod +x "$work/stub-sing-box"
-    tar -czf "$work/mirror/bin/sing-box-9.9.9-${arch}.tar.gz" -C "$work" stub-sing-box
+    printf '#!/bin/sh\necho "sing-box version 9.9.9"\n' > "$work/sing-box"
+    chmod +x "$work/sing-box"
+    tar -czf "$work/mirror/bin/sing-box-9.9.9-${arch}.tar.gz" -C "$work" sing-box
     if command -v sha256sum >/dev/null 2>&1; then
         sha="$(sha256sum "$work/mirror/bin/sing-box-9.9.9-${arch}.tar.gz" | awk '{print $1}')"
     else
@@ -361,9 +361,10 @@ setup() {
         SINGBOX_BIN='$work/bin/sing-box'
         SINGBOX_CONFIG_URL='file://$work/mirror/singbox'
         PINNED_SINGBOX_VERSION='1.0.0'
+        bin_changed='no'
         source '$work/align.sh'
         align_singbox_binary
-        printf 'version=%s changed=%s\n' \"\$('$work/bin/sing-box' version | awk '{print \$3}')\" \"\$bin_changed\"
+        printf 'version=%s changed=%s\n' \"\$('$work/bin/sing-box' version | awk '{print \$3}')\" \"\${bin_changed:-no}\"
     "
     [ "$status" -eq 0 ]
     [[ "$output" == *"version=9.9.9"* ]]
@@ -389,9 +390,10 @@ setup() {
         SINGBOX_BIN='$work/bin/sing-box'
         SINGBOX_CONFIG_URL='https://127.0.0.1:9/s/P/singbox'
         PINNED_SINGBOX_VERSION='1.14.2'
+        bin_changed='no'
         source '$work/align.sh'
         align_singbox_binary
-        printf 'version=%s changed=%s\n' \"\$('$work/bin/sing-box' version | awk '{print \$3}')\" \"\$bin_changed\"
+        printf 'version=%s changed=%s\n' \"\$('$work/bin/sing-box' version | awk '{print \$3}')\" \"\${bin_changed:-no}\"
     "
     [ "$status" -eq 0 ]
     [[ "$output" == *"version=1.14.2"* ]]
