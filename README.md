@@ -226,6 +226,8 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 - [架构评估报告](./docs/architecture-review.md) — 代码质量与架构改进建议
 - [安全审计报告](./docs/security-audit.md) — 协议抗 DPI 与实现层安全评估
 - [统一服务端方案分析](./docs/unified-backend-analysis.md) — sing-box / Xray-core 收敛可行性与趋势（结论：维持现状，优先评估 Xray-core）
+- [服务端演进路线图](./docs/server-roadmap.md) — 现状盘点 + 业内趋势 + 演进方向（近期加固 → xray-unified PoC → 长期触发器）
+- [统一跨平台客户端方案](./docs/unified-client-analysis.md) — Flutter + sing-box 核心的 7 平台方案（仅方案）
 - [第三轮全面审计（2026-09-27）](./docs/audit-round3.md) — 重置后复验 + 历史问题闭环核验（31 项）
 - [第二轮全面审计（2026-09-27）](./docs/audit-2026-09-27.md) — 重置后全新部署验收 + 安全/稳定/性能/客户端体验
 - [SSH 加固（可选）](./scripts/security/harden_ssh.sh) — `check\|apply\|confirm\|revert`，带 10 分钟自动回滚保险
