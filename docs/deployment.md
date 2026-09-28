@@ -423,6 +423,24 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
   后，未经混淆的 QUIC 探针收不到任何响应，因此 UDP 侧的暴露面本就很小。
 - 已禁用发行版自带的 nginx 默认站点（否则未知 Host 会看到 "Welcome to nginx!" 欢迎页）。
 
+## 生产环境部署要点（实战记录）
+
+- **端口拓扑**（Edge + 协议）：nginx `443/tcp`+`80/tcp`（TLS 终止、订阅分发、伪装站）、
+  Xray Reality `8443/tcp`（客户端连这个端口，SNI 用域名；回落目标 `127.0.0.1:443` 即 nginx）、
+  Hysteria2 `443/udp` + 跳变范围（`listen: :443,20000-30000`，hysteria 自动建 nftables 重定向）。
+- **两层防火墙**：本机 UFW 由 EasyNet 自动放行；**云厂商安全组必须单独放行 UDP 20000-30000**，
+  否则端口跳跃会连到被丢包的端口（本机 UFW 放行不代表云层放行）。
+- **域名必须保持直连（Cloudflare 灰云）**：Reality/Hysteria2 是原始 TLS/QUIC，
+  经 Cloudflare 代理会直接打到 CF 边缘而失败。仅用于证书/订阅的域名同理。
+- **fail2ban `ignoreip` 只包含「部署当刻的 SSH 出口 IP」**（取自 `$SSH_CLIENT`）：
+  换网络/换设备后不再豁免。长期管理 IP 请写进 `.env` 的 `EASYNET_FAIL2BAN_IGNORE_IP`
+  （多个用空格分隔）；若已被封禁：`fail2ban-client set sshd unbanip <IP>`。
+- **分流规则集是手动步骤**：部署后跑一次 `easynet rules`（等价 `./scripts/generate_singbox_rules.sh`）。
+  未发布时 `/singbox` 订阅会自动省去远程规则集，客户端仍能正常启动代理，只是没有国内直连/广告拦截。
+- **重部署是幂等的**：已实测证书指纹、服务 `ActiveEnterTimestamp`、配置文件 md5 在重部署后
+  完全一致（零中断）。改动伪装站只会触发 nginx reload；改动 hysteria masquerade 会让该服务
+  重启一次（约 1 秒 UDP 抖动），xray 不受影响。
+
 ## 验证部署
 
 ### 服务状态
