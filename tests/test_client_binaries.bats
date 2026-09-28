@@ -10,12 +10,19 @@ setup() {
     DIR="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)"
     PROJECT_ROOT="$(cd "$DIR/.." && pwd)"
     export PROJECT_ROOT
-    export WEB_ROOT="$(mktemp -d)"
+    # 注意：source edge/deploy.sh 会按 EASYNET_WEB_ROOT 重算 WEB_ROOT，
+    # 所以测试必须以 EASYNET_WEB_ROOT 为准，且 teardown 只删自己造的临时目录。
+    export EASYNET_WEB_ROOT="$(mktemp -d)"
+    export WEB_ROOT="$EASYNET_WEB_ROOT"
     export EASYNET_CLIENT_BIN_DIR="${EASYNET_CLIENT_BIN_DIR:-$BATS_TEST_TMPDIR/client-bin}"
 }
 
 teardown() {
-    rm -rf "$WEB_ROOT"
+    case "${EASYNET_WEB_ROOT:-}" in
+        "$BATS_TEST_TMPDIR"* | /tmp/* | /var/folders/*)
+            rm -rf "$EASYNET_WEB_ROOT"
+            ;;
+    esac
 }
 
 pins() { bash -c "source '$PROJECT_ROOT/scripts/core/pins.sh'; $1"; }
@@ -83,7 +90,7 @@ lib() { bash -c "source '$PROJECT_ROOT/scripts/core/logging.sh'; source '$PROJEC
     EDGE_SUBSCRIPTION_PATH_PREFIX="/s/aaaa1111bbbb2222cccc3333dddd4444"
     EDGE_ROUTES_DIR="$BATS_TEST_TMPDIR/routes"
     mkdir -p "$EDGE_STATE_DIR" "$EDGE_ROUTES_DIR"
-    WEB_ROOT="$WEB_ROOT"
+    WEB_ROOT="$EASYNET_WEB_ROOT"
     EASYNET_SUBSCRIPTION_DIRECT_PATHS=false
 
     write_edge_subscription_routes
@@ -98,18 +105,18 @@ lib() { bash -c "source '$PROJECT_ROOT/scripts/core/logging.sh'; source '$PROJEC
 # ── 发布状态（不依赖网络）─────────────────────────────────────────────────
 
 @test "未发布时状态显示未发布" {
-    run lib "easynet_client_binaries_status '$WEB_ROOT'"
+    run lib "easynet_client_binaries_status '$EASYNET_WEB_ROOT'"
     [ "$status" -eq 0 ]
     [[ "$output" == *"未发布"* ]]
     [[ "$output" == *"manifest.json: 缺失"* ]]
 }
 
 @test "已存在但与 pin 不一致的文件被标为异常（不会当成可用）" {
-    mkdir -p "$WEB_ROOT/bin"
+    mkdir -p "$EASYNET_WEB_ROOT/bin"
     local asset
     asset="$(pins 'easynet_client_pin_asset_for singbox linux_arm64')"
-    printf 'not-the-real-binary' > "$WEB_ROOT/bin/$asset"
-    run lib "easynet_client_binaries_status '$WEB_ROOT'"
+    printf 'not-the-real-binary' > "$EASYNET_WEB_ROOT/bin/$asset"
+    run lib "easynet_client_binaries_status '$EASYNET_WEB_ROOT'"
     [ "$status" -eq 0 ]
     [[ "$output" == *"SHA256 与 pin 不一致"* ]]
 }
@@ -144,39 +151,39 @@ require_cache() {
     require_cache
     local asset
     asset="$(cached_linux_asset)"
-    run lib "easynet_client_binaries_publish '$WEB_ROOT'"
+    run lib "easynet_client_binaries_publish '$EASYNET_WEB_ROOT'"
     [ "$status" -eq 0 ]
 
-    [ -s "$WEB_ROOT/bin/$asset" ]
-    [ -s "$WEB_ROOT/bin/$asset.sha256" ]
-    grep -q "$(pins "easynet_client_pin_sha256_for singbox ${asset%%-linux-*}" 2>/dev/null || true)" "$WEB_ROOT/bin/$asset.sha256" 2>/dev/null || true
+    [ -s "$EASYNET_WEB_ROOT/bin/$asset" ]
+    [ -s "$EASYNET_WEB_ROOT/bin/$asset.sha256" ]
+    grep -q "$(pins "easynet_client_pin_sha256_for singbox ${asset%%-linux-*}" 2>/dev/null || true)" "$EASYNET_WEB_ROOT/bin/$asset.sha256" 2>/dev/null || true
 
     # manifest 必须是合法 JSON、只含 Linux 平台，且每个条目与实际文件一致
-    run jq -e '.tool == "sing-box" and (.files | length >= 1)' "$WEB_ROOT/bin/manifest.json"
+    run jq -e '.tool == "sing-box" and (.files | length >= 1)' "$EASYNET_WEB_ROOT/bin/manifest.json"
     [ "$status" -eq 0 ]
-    ! jq -e '.files[] | select(.platform | test("darwin"))' "$WEB_ROOT/bin/manifest.json" >/dev/null
+    ! jq -e '.files[] | select(.platform | test("darwin"))' "$EASYNET_WEB_ROOT/bin/manifest.json" >/dev/null
     local n i sha file
-    n="$(jq '.files | length' "$WEB_ROOT/bin/manifest.json")"
+    n="$(jq '.files | length' "$EASYNET_WEB_ROOT/bin/manifest.json")"
     for ((i = 0; i < n; i++)); do
-        sha="$(jq -r ".files[$i].sha256" "$WEB_ROOT/bin/manifest.json")"
-        file="$(jq -r ".files[$i].asset" "$WEB_ROOT/bin/manifest.json")"
-        [ -s "$WEB_ROOT/bin/$file" ]
-        [ "$(shasum -a 256 "$WEB_ROOT/bin/$file" 2>/dev/null | cut -d' ' -f1 ||
-            sha256sum "$WEB_ROOT/bin/$file" | cut -d' ' -f1)" = "$sha" ]
+        sha="$(jq -r ".files[$i].sha256" "$EASYNET_WEB_ROOT/bin/manifest.json")"
+        file="$(jq -r ".files[$i].asset" "$EASYNET_WEB_ROOT/bin/manifest.json")"
+        [ -s "$EASYNET_WEB_ROOT/bin/$file" ]
+        [ "$(shasum -a 256 "$EASYNET_WEB_ROOT/bin/$file" 2>/dev/null | cut -d' ' -f1 ||
+            sha256sum "$EASYNET_WEB_ROOT/bin/$file" | cut -d' ' -f1)" = "$sha" ]
     done
 }
 
 @test "重复发布会跳过已就绪的资产（不重新下载）" {
     require_cache
-    lib "easynet_client_binaries_publish '$WEB_ROOT'" >/dev/null 2>&1
+    lib "easynet_client_binaries_publish '$EASYNET_WEB_ROOT'" >/dev/null 2>&1
     local asset before after
     asset="$(cached_linux_asset)"
-    before="$(shasum -a 256 "$WEB_ROOT/bin/$asset" 2>/dev/null | cut -d' ' -f1 || sha256sum "$WEB_ROOT/bin/$asset" | cut -d' ' -f1)"
+    before="$(shasum -a 256 "$EASYNET_WEB_ROOT/bin/$asset" 2>/dev/null | cut -d' ' -f1 || sha256sum "$EASYNET_WEB_ROOT/bin/$asset" | cut -d' ' -f1)"
     # 把缓存挪走：若第二次仍成功，说明复用的是已发布文件而不是缓存
     mv "$EASYNET_CLIENT_BIN_DIR/$asset" "$EASYNET_CLIENT_BIN_DIR/$asset.hidden"
-    run lib "easynet_client_binaries_publish '$WEB_ROOT'"
+    run lib "easynet_client_binaries_publish '$EASYNET_WEB_ROOT'"
     mv "$EASYNET_CLIENT_BIN_DIR/$asset.hidden" "$EASYNET_CLIENT_BIN_DIR/$asset"
     [ "$status" -eq 0 ]
-    after="$(shasum -a 256 "$WEB_ROOT/bin/$asset" 2>/dev/null | cut -d' ' -f1 || sha256sum "$WEB_ROOT/bin/$asset" | cut -d' ' -f1)"
+    after="$(shasum -a 256 "$EASYNET_WEB_ROOT/bin/$asset" 2>/dev/null | cut -d' ' -f1 || sha256sum "$EASYNET_WEB_ROOT/bin/$asset" | cut -d' ' -f1)"
     [ "$before" = "$after" ]
 }
