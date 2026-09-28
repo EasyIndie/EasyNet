@@ -329,7 +329,7 @@ rollback() {
         local state_dir
         state_dir="$(easynet_state_dir)"
         if ! easynet_assert_safe_rm_path "$state_dir"; then
-            log_error "回滚中止：状态目录路径不安全，拒绝删除: $state_dir（请手动恢复: $BACKUP_FILE）"
+            log_error "回滚中止：状态目录路径不安全，拒绝删除: ${state_dir}（请手动恢复: ${BACKUP_FILE}）"
         else
             rm -rf "$state_dir" 2>/dev/null || true
             if tar xzf "$BACKUP_FILE" -C "$(dirname "$state_dir")" 2>/dev/null; then

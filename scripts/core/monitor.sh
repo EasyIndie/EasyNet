@@ -148,7 +148,7 @@ monitor_install_cron() {
             return 0
             ;;
         *)
-            log_warn "未知的 EASYNET_MONITOR_NOTIFY: $channel，跳过监控 cron。"
+            log_warn "未知的 EASYNET_MONITOR_NOTIFY: ${channel}，跳过监控 cron。"
             return 0
             ;;
     esac
@@ -162,7 +162,7 @@ monitor_install_cron() {
     project="$(easynet_project_root)"
     command="/usr/bin/bash '$project/scripts/core/monitor.sh' run >/dev/null 2>&1"
     (crontab -l 2>/dev/null | grep -v "EASYNET_MANAGED_MONITOR"; echo "$MONITOR_CRON $command # EASYNET_MANAGED_MONITOR") | crontab -
-    log_info "监控 cron 已安装（$MONITOR_CRON，推送渠道: $channel）"
+    log_info "监控 cron 已安装（${MONITOR_CRON}，推送渠道: ${channel}）"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
