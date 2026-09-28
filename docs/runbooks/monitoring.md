@@ -1,7 +1,8 @@
 # 运行监控告警配置 Runbook
 
 > 模块：`scripts/core/monitor.sh`；命令：`easynet monitor [run|check]`
-> 检查项：协议服务 / nginx / fail2ban 存活、订阅端点可达、Edge 证书 7 天到期预警。
+> 检查项：协议服务 / nginx / fail2ban 存活、订阅端点可达、Edge 证书 7 天到期预警，
+> 以及**上游维度**（运行时版本漂移 + 已知 CVE，见第 7 节）。
 > 只在失败时推送；渠道 + 凭据齐全时 `deploy.sh` 才安装 cron（`EASYNET_MONITOR_CRON`，默认 `0 9 * * *`）。
 
 ## 1. 渠道选择
@@ -116,3 +117,33 @@ easynet monitor check          # 只检查不推送，退出码 0 = 全绿
 - 手工体检：`easynet monitor check`；手工跑并推送：`easynet monitor run`。
 - 心跳时间戳：`/var/lib/easynet/monitor/last_ok`。
 - 换发件邮箱/作废授权码：改 `/root/.mailrc` 后重测 2.5 即可。
+
+## 7. 上游维度：版本漂移 + CVE
+
+每日检查里还有两项**CI 覆盖不到**的上游维度（CI 的 `pins.yml` 只比「repo pin vs 上游稳定版」；
+VPS 跑的就是 pin 的 release，所以不做重复的「pin 落后」检查）：
+
+| 检查 | 抓什么 | 原理 |
+|---|---|---|
+| **版本漂移** | 跑着的二进制版本 ≠ release pin | 发现手工替换二进制 / 升级半途失败（本应是 pin 的版本） |
+| **已知 CVE** | 运行版本命中的安全公告 | OSV.dev 查询 Xray / Hysteria2 / Shadowsocks 的运行版本 |
+
+开关（写入 `.env`）：
+
+```
+EASYNET_MONITOR_UPSTREAM=false   # 整段关闭
+EASYNET_MONITOR_CVE=false        # 只关 CVE，保留版本漂移
+```
+
+- 版本漂移：本地比较（`xray version` / `hysteria version` / `ssserver --version` vs `core/pins.sh`），
+  无网络依赖。
+- 已知 CVE：调 OSV.dev（best-effort，查询失败静默，不误报）。命中的公告会原样推给你，例如
+  `已知漏洞: hysteria2 2.12.3: GO-2026-5807: Hysteria vulnerable to server crash ...`。
+
+手工查一次：
+
+```bash
+easynet monitor check                     # 全量检查（含上游维度）
+source scripts/core/monitor.sh; monitor_upstream_findings
+bash scripts/check_upstream_pins.sh       # 对照：CI 侧的 pin 落后检查
+```

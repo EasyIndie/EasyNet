@@ -5,6 +5,11 @@
 # Usage in .bats files:
 #   load test_helper
 
+# 测试默认**不**发布客户端二进制镜像：generate_subscription.sh 会把 pinned sing-box
+# 发布到 web root（从 GitHub releases 下载），违反「测试不依赖网络」。显式测试发布
+# 逻辑的用例（test_client_binaries.bats）在自己的 setup 里重新开启。
+export EASYNET_PUBLISH_CLIENT_BINARIES=false
+
 assert_equals() {
     local expected="$1"
     local actual="$2"

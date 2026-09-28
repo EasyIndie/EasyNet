@@ -15,6 +15,8 @@ setup() {
     export EASYNET_WEB_ROOT="$(mktemp -d)"
     export WEB_ROOT="$EASYNET_WEB_ROOT"
     export EASYNET_CLIENT_BIN_DIR="${EASYNET_CLIENT_BIN_DIR:-$BATS_TEST_TMPDIR/client-bin}"
+    # 本文件显式测试发布逻辑：覆盖 test_helper 的离线默认。
+    export EASYNET_PUBLISH_CLIENT_BINARIES=true
 }
 
 teardown() {

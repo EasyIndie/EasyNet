@@ -14,6 +14,16 @@
   （默认 `60s`；设为与 `EASYNET_HYSTERIA2_PORT_HOP_INTERVAL` 相同即退回固定间隔）。
   mihomo / Shadowrocket 维持固定整数——mihomo 的范围方言（`"30-60"`）仅 1.19.x+ 支持，
   写范围会打挂更早的客户端（实测真二进制已纳入 CI 校验）。
+- **监控新增「上游维度」告警：版本漂移 + CVE**（`scripts/core/monitor.sh`）：每日检查运行中的
+  二进制版本是否与 release pin 一致（发现手工替换 / 升级半途失败），并用 OSV.dev 查询
+  Xray / Hysteria2 / Shadowsocks 运行版本的已知漏洞。开关 `EASYNET_MONITOR_UPSTREAM` /
+  `EASYNET_MONITOR_CVE`。与 CI 的 `pins.yml`（repo pin vs 上游稳定版）分工，不重复。
+
+### 修复
+- **测试不再依赖网络**：`generate_subscription.sh` 会发布客户端二进制镜像（从 GitHub 下载
+  pinned sing-box），测试 setup 触发后会在离线/受限环境挂满 `--max-time 300`。现在
+  `tests/test_helper.bash` 默认 `EASYNET_PUBLISH_CLIENT_BINARIES=false`，显式测试发布的
+  `test_client_binaries.bats` 自行开启。
 
 ## [0.0.16] - 2026-09-28
 

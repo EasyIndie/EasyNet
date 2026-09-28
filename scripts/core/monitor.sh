@@ -12,6 +12,8 @@
 #   EASYNET_MONITOR_TELEGRAM_BOT_TOKEN=<token>  EASYNET_MONITOR_TELEGRAM_CHAT_ID=<id>
 #   EASYNET_MONITOR_EMAIL_TO=admin@example.com
 #   EASYNET_MONITOR_CRON="0 9 * * *"    # 可选：覆盖每日检查时间
+#   EASYNET_MONITOR_UPSTREAM=false      # 可选：关掉「版本漂移 + CVE」上游检查
+#   EASYNET_MONITOR_CVE=false           # 可选：只关 CVE，保留版本漂移
 #
 # 未配置推送渠道时，check 仍可用于手工体检；deploy.sh 不会安装 cron。
 
@@ -22,6 +24,7 @@ source "$MONITOR_CORE_DIR/env_file.sh"
 source "$MONITOR_CORE_DIR/metadata.sh"
 source "$MONITOR_CORE_DIR/cron.sh"
 source "$MONITOR_CORE_DIR/subscription.sh"
+source "$MONITOR_CORE_DIR/pins.sh"
 
 MONITOR_CRON="${EASYNET_MONITOR_CRON:-0 9 * * *}"
 
@@ -36,6 +39,93 @@ monitor_mail_bin() {
         command -v "$b" >/dev/null 2>&1 && { printf '%s' "$b"; return 0; }
     done
     return 1
+}
+
+# ── 上游维度检查（部署后持续告警；CI 的 pin 落后检查覆盖不到） ─────
+#   1) 版本漂移：运行中的二进制版本 != release pin（发现手工替换 / 升级半途失败）
+#   2) 已知漏洞：用 OSV.dev 查运行版本对应的 CVE（best-effort，失败静默）
+# EASYNET_MONITOR_UPSTREAM=false 整段关闭；EASYNET_MONITOR_CVE=false 只关 CVE。
+
+# release pin 里该组件的版本号（未知则空）。
+monitor_pin_version() {
+    case "${1:-}" in
+        xray)        printf '%s' "${EASYNET_PIN_XRAY_VERSION:-}" ;;
+        hysteria2)   printf '%s' "${EASYNET_PIN_HYSTERIA2_VERSION:-}" ;;
+        shadowsocks) printf '%s' "${EASYNET_PIN_SHADOWSOCKS_VERSION:-}" ;;
+    esac
+}
+
+# 从任意命令输出里取第一个 semver 形态的版本（去掉前导 v）。
+monitor_parse_version() {
+    grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | sed 's/^v//' || true
+}
+
+# 当前运行的二进制版本（未安装 / 解析失败则空）。
+monitor_running_version() {
+    local out=""
+    case "${1:-}" in
+        xray)
+            if command -v xray >/dev/null 2>&1; then
+                out="$(xray version 2>/dev/null | head -n1)"
+            fi
+            ;;
+        hysteria2)
+            if command -v hysteria >/dev/null 2>&1; then
+                out="$(hysteria version 2>/dev/null | head -n1)"
+            fi
+            ;;
+        shadowsocks)
+            if command -v ssserver >/dev/null 2>&1; then
+                out="$(ssserver --version 2>/dev/null | head -n1)"
+            fi
+            ;;
+    esac
+    printf '%s' "$out" | monitor_parse_version
+}
+
+# OSV.dev 坐标：<生态>|<包名>。
+monitor_osv_package() {
+    case "${1:-}" in
+        xray)        printf 'Go|github.com/XTLS/Xray-core' ;;
+        hysteria2)   printf 'Go|github.com/apernet/hysteria' ;;
+        shadowsocks) printf 'crates.io|shadowsocks' ;;
+    esac
+}
+
+# 查询 OSV.dev，逐条打印 "<id>: <summary>"；无漏洞或查询失败都无输出。
+monitor_osv_vulns() {
+    local comp="${1:-}" version="${2:-}" coords ecosystem name json
+    [ -n "$version" ] || return 0
+    coords="$(monitor_osv_package "$comp")"
+    [ -n "$coords" ] || return 0
+    ecosystem="${coords%%|*}"
+    name="${coords#*|}"
+    json="$(curl -fsS --connect-timeout 10 --max-time 20 \
+        -H 'Content-Type: application/json' \
+        -d "{\"version\":\"${version}\",\"package\":{\"name\":\"${name}\",\"ecosystem\":\"${ecosystem}\"}}" \
+        https://api.osv.dev/v1/query 2>/dev/null || true)"
+    [ -n "$json" ] || return 0
+    printf '%s' "$json" | jq -r '.vulns[]? | "\(.id): \(.summary // "无摘要")"' 2>/dev/null || true
+}
+
+# 上游维度告警行（无则无输出）。
+monitor_upstream_findings() {
+    local comp running pinned vulns line
+    [ "${EASYNET_MONITOR_UPSTREAM:-true}" = "false" ] && return 0
+    for comp in xray hysteria2 shadowsocks; do
+        running="$(monitor_running_version "$comp")"
+        [ -n "$running" ] || continue
+        pinned="$(monitor_pin_version "$comp")"
+        if [ -n "$pinned" ] && [ "$running" != "$pinned" ]; then
+            printf '版本漂移: %s 运行 %s，release pin 为 %s\n' "$comp" "$running" "$pinned"
+        fi
+        if [ "${EASYNET_MONITOR_CVE:-true}" != "false" ]; then
+            vulns="$(monitor_osv_vulns "$comp" "$running")"
+            while IFS= read -r line; do
+                [ -n "$line" ] && printf '已知漏洞: %s %s: %s\n' "$comp" "$running" "$line"
+            done <<< "$vulns"
+        fi
+    done
 }
 
 # 逐项健康检查。每发现一项失败输出一行（无失败则无输出）。
@@ -77,6 +167,9 @@ monitor_failures() {
             printf 'Edge 证书将在 7 天内过期: %s\n' "$cert"
         fi
     fi
+
+    # 6) 上游维度：运行时版本漂移 + 已知漏洞（CI 的 pin 检查覆盖不到）
+    monitor_upstream_findings
 }
 
 # 发送告警。返回 0=已发送或无需发送，1=渠道不可用/凭据不完整。
@@ -173,7 +266,7 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
         run) monitor_run ;;
         check) monitor_failures ;;
         -h | --help | help)
-            sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+            sed -n '2,19p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
             ;;
         *)
             log_error "未知子命令: ${1:-}（可用: run | check）"

@@ -62,17 +62,20 @@
 
 ## 四、演进方向
 
-### 方向 A：近期低风险加固（hop 随机/上游告警立即做；Xray 升级推迟到 0.0.17）
+### 方向 A：近期低风险加固（hop 随机 / 上游告警已完成；Xray 升级推迟到 0.0.17）
 
 1. **Xray 升级评估（0.0.17 再做，本轮不升）**：已核实 pre-release（v26.9.9 等）的 Finalmask
    XMC/udpHop、Hysteria ChromeParrot、ECH、WireGuard 修复**对当前「仅 Reality 服务端」用法
    几乎无直接收益**（详见「隐患 3」）。升级的实际触发条件：①出现针对 Reality/xhttp 服务端的
    稳定性/安全修复；②采用 Finalmask 掩码（fragment/noise）或 `xPaddingObfsMode`；③推进
    xray-unified。届时在测试 VPS 按现成 pin 流程（SHA256）验证后再升。
-2. **Hysteria2 端口跳跃随机化**：hop 间隔由固定值改随机（对应 sing-box `hop_interval_max`），
-   降低可预测性。
-3. **上游健康度告警**：把 `check_upstream_pins.sh` 接入监控 cron——pin 落后上游最新稳定/发布
-   超 N 天即告警，避免再次出现「6 个月没发现 Xray 落后」。
+2. **Hysteria2 端口跳跃随机化 ✅ 已完成**：sing-box 订阅输出 `hop_interval_max`（默认
+   `30s`~`60s`），mihomo / Shadowrocket 保持固定整数（兼容性）。
+3. **上游维度告警（VPS）→ 改为「版本漂移 + CVE」✅ 已完成**：不做与 CI 重复的「pin 落后」
+   检查（CI 已覆盖，且 VPS 跑的就是 pin 的 release）。改为监控 cron 检查两项 CI 看不到的：
+   ①**运行时版本漂移**（跑着的二进制版本 != release pin，可发现手工替换 / 升级半途失败）；
+   ②**已知 CVE**（OSV.dev 查询 Xray / Hysteria / SS 的运行版本）。开关 `EASYNET_MONITOR_UPSTREAM`
+   / `EASYNET_MONITOR_CVE`。
 4. **salamander→gecko 评估**：gecko 目前是 sing-box 独有、官方 hysteria 没有；想用服务端 gecko
    只能换内核，挂到方向 B 一起评。
 
@@ -108,7 +111,7 @@
 
 | 时间 | 动作 | 依赖 |
 |---|---|---|
-| **现在** | 方向 A：hop 随机 + 上游健康度告警（无需测试 VPS） | — |
+| **现在** | 方向 A：hop 随机 ✅ + 上游告警（版本漂移 + CVE）✅ | 已完成 |
 | **0.0.17** | 方向 A：Xray 升级评估（pre-release 收益已核实，见隐患 3）+ 可选 Finalmask/`xPaddingObfsMode` 评估 | 测试 VPS 已释放，需临时重建 |
 | **下个迭代** | 方向 B PoC（`xray-unified` 可选后端）+ 方向 C 监控 AWG 上游 | A 验证通过 |
 | **长期复盘** | 方向 D/E 触发器：sing-box 是否加 XHTTP、ECH 是否成熟、AWG 是否弃坑 | 每季度 |
