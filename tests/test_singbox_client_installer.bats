@@ -326,3 +326,74 @@ setup() {
     # 校验失败只告警、不中断（代理照旧可用）
     [[ "$output" == *"沿用当前版本"* ]]
 }
+
+@test "Daily updater upgrades sing-box following the subscription manifest" {
+    # 平台限制：更新脚本只处理 Linux 架构（客户端安装器本身只支持 Linux）
+    case "$(uname -s)/$(uname -m)" in
+        Linux/x86_64 | Linux/amd64) arch="linux-amd64" ;;
+        Linux/aarch64 | Linux/arm64) arch="linux-arm64" ;;
+        *) skip "本平台不是 Linux（更新脚本的架构分支只覆盖 linux-amd64/arm64）" ;;
+    esac
+
+    local work="$BATS_TEST_TMPDIR/upd"
+    mkdir -p "$work/mirror/bin" "$work/inst" "$work/bin"
+    # 伪造订阅站镜像：一个 9.9.9 版本的"原包"（内含 stub sing-box）+ manifest
+    printf '#!/bin/sh\necho "sing-box version 9.9.9"\n' > "$work/stub-sing-box"
+    chmod +x "$work/stub-sing-box"
+    tar -czf "$work/mirror/bin/sing-box-9.9.9-${arch}.tar.gz" -C "$work" stub-sing-box
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha="$(sha256sum "$work/mirror/bin/sing-box-9.9.9-${arch}.tar.gz" | awk '{print $1}')"
+    else
+        sha="$(shasum -a 256 "$work/mirror/bin/sing-box-9.9.9-${arch}.tar.gz" | awk '{print $1}')"
+    fi
+    printf '{"schemaVersion":1,"tool":"sing-box","version":"9.9.9","files":[{"platform":"%s","asset":"sing-box-9.9.9-%s.tar.gz","sha256":"%s","size":1}]}\n' \
+        "${arch/-/_}" "$arch" "$sha" > "$work/mirror/bin/manifest.json"
+
+    # 现有二进制（旧版本）+ 从生成的更新脚本里取出 align 函数
+    printf '#!/bin/sh\necho "sing-box version 1.0.0"\n' > "$work/bin/sing-box"
+    chmod +x "$work/bin/sing-box"
+    bash -c "source '$INSTALLER'; INSTALL_DIR='$work/inst'; write_update_script"
+    awk '/^align_singbox_binary\(\)/,/^}/' "$work/inst/easynet-singbox-update" > "$work/align.sh"
+    grep -q 'align_singbox_binary' "$work/align.sh"
+
+    run bash -c "
+        set -u
+        SINGBOX_BIN='$work/bin/sing-box'
+        SINGBOX_CONFIG_URL='file://$work/mirror/singbox'
+        PINNED_SINGBOX_VERSION='1.0.0'
+        source '$work/align.sh'
+        align_singbox_binary
+        printf 'version=%s changed=%s\n' \"\$('$work/bin/sing-box' version | awk '{print \$3}')\" \"\$bin_changed\"
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"version=9.9.9"* ]]
+    [[ "$output" == *"changed=yes"* ]]
+}
+
+@test "Daily updater keeps the current binary when the mirror has nothing newer" {
+    case "$(uname -s)/$(uname -m)" in
+        Linux/x86_64 | Linux/amd64) arch="linux-amd64" ;;
+        Linux/aarch64 | Linux/arm64) arch="linux-arm64" ;;
+        *) skip "非 Linux 平台" ;;
+    esac
+    local work="$BATS_TEST_TMPDIR/upd2"
+    mkdir -p "$work/inst" "$work/bin"
+    printf '#!/bin/sh\necho "sing-box version 1.14.2"\n' > "$work/bin/sing-box"
+    chmod +x "$work/bin/sing-box"
+    bash -c "source '$INSTALLER'; INSTALL_DIR='$work/inst'; write_update_script"
+    awk '/^align_singbox_binary\(\)/,/^}/' "$work/inst/easynet-singbox-update" > "$work/align.sh"
+
+    # 镜像不可达 + env 里的 pin 与当前版本一致 → 什么都不做
+    run bash -c "
+        set -u
+        SINGBOX_BIN='$work/bin/sing-box'
+        SINGBOX_CONFIG_URL='https://127.0.0.1:9/s/P/singbox'
+        PINNED_SINGBOX_VERSION='1.14.2'
+        source '$work/align.sh'
+        align_singbox_binary
+        printf 'version=%s changed=%s\n' \"\$('$work/bin/sing-box' version | awk '{print \$3}')\" \"\$bin_changed\"
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"version=1.14.2"* ]]
+    [[ "$output" == *"changed=no"* ]]
+}

@@ -322,25 +322,49 @@ trap cleanup EXIT
 # 失败只告警，不影响配置更新（代理照旧可用）。
 bin_changed="no"
 align_singbox_binary() {
-    local want arch asset sha base url tmp_dir bin_path
-    want="${PINNED_SINGBOX_VERSION:-}"
-    [ -n "$want" ] || return 0
-    if [ "$("${SINGBOX_BIN:-sing-box}" version 2>/dev/null | awk 'NR==1{print $3}')" = "$want" ]; then
-        return 0
-    fi
+    local want arch asset sha base url tmp_dir bin_path manifest current
+    base="${SINGBOX_CONFIG_URL:-}"
+    base="${base%/*}"
     case "$(uname -m)" in
-        aarch64|arm64) arch="linux-arm64"; sha="${PINNED_SINGBOX_SHA256_LINUX_ARM64:-}" ;;
-        x86_64|amd64)  arch="linux-amd64"; sha="${PINNED_SINGBOX_SHA256_LINUX_AMD64:-}" ;;
+        aarch64|arm64) arch="linux-arm64" ;;
+        x86_64|amd64)  arch="linux-amd64" ;;
         *) echo "未知架构，跳过 sing-box 版本对齐" >&2; return 0 ;;
     esac
+
+    # 目标版本/哈希优先取**订阅站的 manifest**：服务器将来换了 pin，设备也能跟上
+    # （env 里的 pin 只是安装当时的快照）。取不到时回落到 env 里的 pin。
+    # 两种来源都必须提供 SHA256，下载后校验 —— manifest 本身来自我们自己的域名（HTTPS）。
+    want="${PINNED_SINGBOX_VERSION:-}"
+    sha=""
+    if [ -n "$base" ]; then
+        manifest="$(curl -fsSL --max-time 30 "${base}/bin/manifest.json" 2>/dev/null || true)"
+        if [ -n "$manifest" ]; then
+            want="$(printf '%s' "$manifest" | jq -r '.version // empty' 2>/dev/null || true)"
+            if [ -n "$want" ]; then
+                asset="sing-box-${want}-${arch}.tar.gz"
+                sha="$(printf '%s' "$manifest" |
+                    jq -r --arg a "$asset" '.files[]? | select(.asset == $a) | .sha256 // empty' 2>/dev/null || true)"
+            fi
+        fi
+    fi
+    [ -n "$want" ] || return 0
     if [ -z "$sha" ]; then
-        echo "缺少 ${arch} 的 pin 哈希，跳过 sing-box 版本对齐" >&2
+        case "$arch" in
+            linux-arm64) sha="${PINNED_SINGBOX_SHA256_LINUX_ARM64:-}" ;;
+            linux-amd64) sha="${PINNED_SINGBOX_SHA256_LINUX_AMD64:-}" ;;
+        esac
+    fi
+    if [ -z "$sha" ]; then
+        echo "缺少 ${arch} 的校验哈希，跳过 sing-box 版本对齐" >&2
+        return 0
+    fi
+
+    current="$("${SINGBOX_BIN:-sing-box}" version 2>/dev/null | awk 'NR==1{print $3}')"
+    if [ "$current" = "$want" ]; then
         return 0
     fi
 
     asset="sing-box-${want}-${arch}.tar.gz"
-    base="${SINGBOX_CONFIG_URL:-}"
-    base="${base%/*}"
     tmp_dir="$(mktemp -d)"
     for url in "${base:+${base}/bin/${asset}}" "https://github.com/SagerNet/sing-box/releases/download/v${want}/${asset}"; do
         [ -n "$url" ] || continue
@@ -357,7 +381,7 @@ align_singbox_binary() {
             continue
         fi
         install -m 0755 "$bin_path" "${SINGBOX_BIN:-/usr/local/bin/sing-box}"
-        echo "sing-box 已对齐到 ${want}（来源: ${url}）"
+        echo "sing-box 已从 ${current:-未知} 对齐到 ${want}（来源: ${url}）"
         bin_changed="yes"
         rm -rf "$tmp_dir"
         return 0

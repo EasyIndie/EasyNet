@@ -267,7 +267,8 @@ sudo bash /tmp/isb.sh --config-url "https://<域名>/s/<前缀>/singbox"
 ```
 
 每日更新服务（`easynet-singbox-update.timer`）现在也会顺带**对齐 sing-box 版本**：
-本地版本 ≠ pin 版本时，从订阅站取包、用 pin 的 SHA256 校验后替换并重启。
+以订阅站的 `bin/manifest.json` 为准（安装时写入 env 的 pin 作为回落），版本不一致时从订阅站取包、
+用 manifest 里的 SHA256 校验后替换并重启 —— 所以服务端升级 pin 后，设备会在一天内自动跟上。
 
 ### 设备端：手工兜底（订阅站也拿不到时）
 
