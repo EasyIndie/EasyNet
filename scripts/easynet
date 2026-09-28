@@ -59,6 +59,7 @@ EasyNet 统一运维命令
   ssh                 体检 SSH 加固状态
   harden-ssh <命令>   转发到 SSH 加固脚本（check/apply/confirm/revert/status）
   doctor              连通性诊断
+  monitor [run|check] 运行监控：检查服务/订阅/证书，失败时推送告警
   env                 编辑部署配置 .env
   upgrade [<tag>]     release 安装的机器升级到指定/最新版本（下载+校验+替换，保留 .env）
   update              更新程序本体（**仅 git 安装**；release 安装请用 upgrade）
@@ -378,6 +379,10 @@ cmd_doctor() {
     bash "${EASYNET_PROJECT_DIR:-}/scripts/diagnose_reachability.sh" "$@"
 }
 
+cmd_monitor() {
+    bash "${EASYNET_PROJECT_DIR:-}/scripts/core/monitor.sh" "$@"
+}
+
 cmd_env() {
     local env_file="${EASYNET_PROJECT_DIR:-}/.env"
     [ -f "$env_file" ] || {
@@ -403,7 +408,7 @@ cmd_version() {
 # 走 release 资产升级（下载 + SHA256 校验 + staging 替换，自动保留 .env），
 # 也就是"一键安装"用的那条路径，避免再引入一条无人验证的升级通道。
 cmd_upgrade() {
-    local tag="${1:-latest}" installer tmp_dir before after
+    local tag="${1:-latest}" tmp_dir before after
 
     [ -f "${EASYNET_PROJECT_DIR:-}/scripts/install.sh" ] || {
         log_error "找不到安装器: ${EASYNET_PROJECT_DIR:-}/scripts/install.sh"
@@ -454,6 +459,7 @@ main() {
         ssh) cmd_ssh ;;
         harden-ssh) cmd_harden_ssh "$@" ;;
         doctor) cmd_doctor "$@" ;;
+        monitor) cmd_monitor "$@" ;;
         env) cmd_env ;;
         version | -v | --version) cmd_version ;;
         update) cmd_update ;;

@@ -10,6 +10,7 @@ source "$PROJECT_ROOT/scripts/core/cron.sh"
 source "$PROJECT_ROOT/scripts/core/env.sh"
 source "$PROJECT_ROOT/scripts/core/env_file.sh"
 source "$PROJECT_ROOT/scripts/core/maintenance.sh"
+source "$PROJECT_ROOT/scripts/core/monitor.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
 source "$PROJECT_ROOT/scripts/core/profiles.sh"
 source "$PROJECT_ROOT/scripts/core/validate.sh"
@@ -120,6 +121,7 @@ setup_cron_jobs() {
     log_info "配置定时任务与系统日志限制..."
     maintenance_configure_logs
     cron_install_restart_job
+    monitor_install_cron
 }
 
 select_from_env() {
