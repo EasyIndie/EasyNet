@@ -440,7 +440,7 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 - **fail2ban `ignoreip` 只包含「部署当刻的 SSH 出口 IP」**（取自 `$SSH_CLIENT`）：
   换网络/换设备后不再豁免。长期管理 IP 请写进 `.env` 的 `EASYNET_FAIL2BAN_IGNORE_IP`
   （多个用空格分隔）；若已被封禁：`fail2ban-client set sshd unbanip <IP>`。
-- **分流规则集是手动步骤**：部署后跑一次 `easynet rules`（等价 `./scripts/generate_singbox_rules.sh`）。
+- **分流规则集是手动步骤（有意为之的决策）**：部署后跑一次 `easynet rules`（等价 `./scripts/generate_singbox_rules.sh`）。**不放进部署流程、也不加周期 timer**：生成需要从上游下载约 90MB 的 geosite/geoip 数据，放进部署会拖慢主流程并引入新的失败面，周期 timer 则让每台机器每周固定产生大流量下载。未发布时代价很小——订阅会自动省去远程 `rule_set`（客户端照常启动代理，只是没有国内直连/广告分流），`deploy.sh` 会打印 3 行提示，`easynet status` 也会显示"未发布"并给出补救命令。
   未发布时 `/singbox` 订阅会自动省去远程规则集，客户端仍能正常启动代理，只是没有国内直连/广告拦截。
 - **重部署是幂等的**：已实测证书指纹、服务 `ActiveEnterTimestamp`、配置文件 md5 在重部署后
   完全一致（零中断）。改动伪装站只会触发 nginx reload；改动 hysteria masquerade 会让该服务
