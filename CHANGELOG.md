@@ -5,6 +5,28 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.13] - 2026-09-28
+
+### 修复
+- **Clash / mihomo 客户端无法导入订阅（`proxy 1: invalid range: 30s`）**：hysteria2 端口跳跃的
+  间隔字段在三个客户端是三种方言，元数据里存的是 sing-box 方言 `"30s"`，而 mihomo 的
+  `hop-interval` 是**整数秒**字段——它会把 `30s` 拿去当端口范围解析，报出误导性的
+  `invalid range: 30s` 并**拒绝整份配置**（不是单节点失败）。
+  现在 `render_clash.sh` 按客户端方言换算：`30s→30`、`1m→60`、纯数字沿用；无法识别的值
+  **省略该字段**（交给客户端默认值），绝不写非法值。sing-box 侧仍输出 `"30s"`。
+- **静态文件服务下 web root 里的订阅文件被直接吐出（凭据泄露）**（0.0.12 引入的回归，随本版修复）：
+  0.0.12 把 Edge 根路径从「反代」改成「静态文件服务」后，`/var/www/html/{sub,clash,singbox}` 等
+  订阅文件可被 `try_files` 当成静态文件直接返回，`https://<域名>/sub` 即可拿到全部节点凭据
+  （旧版走反代所以看不见这些路径）。现在未开启 `EASYNET_SUBSCRIPTION_DIRECT_PATHS` 时，会从
+  **同一份端点定义**自动生成 `location = /<file> { return 404; }` 拒绝规则，新增端点自动生效。
+
+### 文档
+- `docs/clients.md` 新增《端口跳跃的客户端方言》对照表（sing-box / mihomo / Shadowrocket URI
+  三种写法与字段类型），并明确：**修改任何客户端渲染字段必须用真二进制校验**
+  （`mihomo -t` / `sing-box check`），不要只做字符串断言。
+- 验收流程新增"真客户端配置可解析性"检查（`mihomo -t` 导入 Clash 订阅 +
+  `sing-box check` 解析 sing-box 订阅 + 逐节点真实出网）。
+
 ## [0.0.12] - 2026-09-28
 
 ### 安全
