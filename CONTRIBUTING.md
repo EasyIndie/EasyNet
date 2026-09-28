@@ -290,18 +290,48 @@ bash -n scripts/my-script.sh
 ### 维护者发布检查清单
 
 ```bash
-# 1. 确认 main 分支就绪（所有测试通过、变更已合并）
+# 0. 本地预检（macOS 开发者必读）：BSD grep 不支持 --include/-P，
+#    下面的多字节 lint 在本地会**静默通过**，只有 CI 的 GNU grep 能拦到。
+#    提交前手动跑一遍：
+LC_ALL=C grep -rnE '\$[A-Za-z_][A-Za-z0-9_]*[^ -~]' scripts/ || echo OK
+
+# 1. 确认 main 分支就绪（全量 bats + shellcheck + 真客户端校验通过）
 # 2. 更新 CHANGELOG.md（按 Added / Fixed / Changed 分类）
 # 3. 提交
+bash scripts/audit_runtime.sh   # 发版前在测试 VPS 跑一次运行时体检（可选但推荐）
 git add CHANGELOG.md
 git commit -m "Release X.Y.Z"
 # 4. 推送
-git push origin main
 # 5. 打标签（严格的 semver 格式，无 v 前缀）
-git tag X.Y.Z
-git push origin X.Y.Z
 # 6. GitHub Actions 自动创建 Release
 ```
+
+### 发布后的收尾（不可省）
+
+```bash
+# 7. 确认 Release 已创建且资产齐全（easynet.tar.gz / .sha256 / easynet-install.sh）
+gh release view X.Y.Z
+
+# 8. 生产收敛：release 安装的机器升级到新版本并验证
+easynet upgrade X.Y.Z          # 或 sudo EASYNET_VERSION=X.Y.Z bash install.sh
+cat /opt/easynet/VERSION       # 应为 X.Y.Z
+systemctl is-active xray hysteria-server nginx fail2ban
+bash /opt/easynet/scripts/audit_runtime.sh   # 退出码 0
+```
+
+### tag 打错了怎么收（CI 失败时）
+
+若 CI 在 tag 上失败（例如 lint 在 Linux 才拦到的问题）：
+
+```bash
+git commit -m "fix: ..."      # 修复后新 commit
+git push origin main
+git push --delete origin X.Y.Z   # 删掉旧 tag（release job 未建成时安全）
+git tag -f X.Y.Z && git push origin X.Y.Z
+```
+
+> 只有 release job 已经跑成、产物已发布时，删除 tag 才需要手动清理 Release；
+> 测试失败导致 release 被跳过的场景，直接删 tag 重打即可。
 
 [测试与发布工作流](.github/workflows/tests.yml) 会：
 1. 运行全量测试 + ShellCheck

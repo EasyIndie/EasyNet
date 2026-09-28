@@ -229,6 +229,7 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 - [第三轮全面审计（2026-09-27）](./docs/audit-round3.md) — 重置后复验 + 历史问题闭环核验（31 项）
 - [第二轮全面审计（2026-09-27）](./docs/audit-2026-09-27.md) — 重置后全新部署验收 + 安全/稳定/性能/客户端体验
 - [SSH 加固（可选）](./scripts/security/harden_ssh.sh) — `check\|apply\|confirm\|revert`，带 10 分钟自动回滚保险
+- [运维 Runbook](./docs/runbooks/) — [VPS 运行时审计](./docs/runbooks/vps-audit.md)、[SSH 加固手册](./docs/runbooks/ssh-hardening.md)、[监控告警配置](./docs/runbooks/monitoring.md)
 
 ## 贡献指南
 

@@ -170,6 +170,11 @@ New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub inde
 - **`set -u` / `${VAR:-}`**: All scripts with `set -u` (or `set -euo pipefail`) must reference environment variables with `${VAR:-}` instead of bare `$VAR`. A bare reference crashes the script when the variable is unset. This applies to `EASYNET_*`, `NGINX_*`, `JOURNALD_*` and similar env-guided variables. Library files (*.sh sourced by set -u contexts) follow the same rule. See `tests/test_lint_unbound_vars.bats` for the regex patterns.
 - **Trap temp variables**: When using `trap ... RETURN` with a temp directory, declare `local tmp_dir=""` (initialize to empty) and use `"${tmp_dir:-}"` in the trap body. This prevents `set -u` from crashing on trap invocation.
 - **No `curl | bash`**: All external downloads go through `download.sh`'s `run_downloaded_script()` which writes to temp file, optionally verifies SHA256, then executes. Downstream installers (get.hy2.sh, Xray-install, acme.sh) are treated the same way.
+- **本地≠CI（macOS 盲区）**：CI 的 shellcheck/lint 用 GNU grep；macOS BSD grep 不支持 `--include`/`-P`，
+  导致 `tests/test_lint_unbound_vars.bats` 的「`$VAR` 后紧跟多字节字符」检查在本地**静默通过**、只有 CI 拦得到。
+  提交前手动跑：`LC_ALL=C grep -rnE '\$[A-Za-z_][A-Za-z0-9_]*[^ -~]' scripts/`。
+  同理，`set -o pipefail` 下禁用 `cmd | grep -q`（grep 提前退出 → 上游 SIGPIPE → 管道判非零），
+  改成「先捕获到变量再 `grep <<< "$var"`」（参见 `scripts/audit_runtime.sh`）。
 - **客户端配置字段必须用真二进制校验（硬规则）**：生成的 Clash/sing-box 订阅里，字段名、类型、
   单位都是**按客户端方言**区分的（例：端口跳跃间隔——sing-box 要 `hop_interval: "30s"`，mihomo 要整数秒
   `hop-interval: 30`，见 `docs/clients.md` 方言表）。字符串断言只能防回归，无法判定正确性。
@@ -181,4 +186,7 @@ New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub inde
 - **升级路径**：release 安装（生产唯一推荐）用 `easynet upgrade [<tag>]` 或
   `EASYNET_VERSION=<tag> bash scripts/install.sh`（保留 `.env`）；`easynet update` 仅对 git 安装有效。
   `deploy.sh` **不安装 git**，仓库里的 `git clone` 文档仅面向贡献者。
+  **生产变更与收敛**：优先走 release；未发版的紧急热修可 scp 工作树到 `/opt/easynet`，
+  但**发版后必须 `easynet upgrade <tag>` 收敛**（避免生产长期领先于 release），收敛后验证
+  `VERSION`、服务 active、订阅前缀不变。发布流程见 `CONTRIBUTING.md`，运行时体检见 `scripts/audit_runtime.sh`。
 - **协议排序规则 — 按抗 DPI 能力从高到低 (中心化函数)**：`MODULE_SECURITY_RANK` 值越低抗 DPI 越强。所有用户可见的协议排序必须调用 `discovery_list_modules_by_security()`（定义在 `core/discovery.sh`），不得自行实现排序逻辑。当前顺序：Xray+Reality(10) → Hysteria2(20) → Shadowsocks(40) → AmneziaWG(50)。`deploy.sh` 菜单、`profiles.sh`、`generate_subscription.sh` 均已使用。新增协议时填入对应的 rank 值使其自动插入正确位置。
