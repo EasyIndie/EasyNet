@@ -148,6 +148,27 @@ sudo bash easynet-singbox-client.sh doctor
 ### Hysteria2 端口跳变后无法连接
 
 - 确认客户端支持 port hopping 参数
+
+## 端口跳跃的客户端方言（易错点）
+
+`PORT_HOPPING` 相关字段在三个客户端是**三种不同写法**，元数据里存中立方言，渲染时各自转换：
+
+| 客户端 | 范围字段 | 间隔字段 | 间隔值的类型 |
+|--------|----------|----------|--------------|
+| sing-box | `server_ports: ["20000:30000"]` | `hop_interval` | **时长字符串** `"30s"` |
+| mihomo / Clash Verge / Clash Meta | `ports: "20000-30000"` | `hop-interval` | **整数秒** `30` |
+| Shadowrocket（URI） | URI 查询参数 `porthopping=20000-30000` | `porthopping-interval` | 未验证（无真机） |
+
+> ⚠️ **把 `"30s"` 写给 mihomo 会让整份订阅导入失败**：mihomo 的 `hop-interval` 是整数秒字段，
+> 它会把 `30s` 拿去当**端口范围**解析，报出极易误判的
+> `proxy 1: invalid range: 30s`（Clash Verge 真实报错）。
+> `scripts/protocols/hysteria2/render_clash.sh` 会用 `mihomo_hop_interval_seconds()`
+> 把 `30s→30`、`1m→60`，无法识别的值直接省略该字段（用客户端默认值），绝不写非法值。
+>
+> 新增/修改任何客户端渲染字段时，请用真二进制校验（`mihomo -t -f <config>`、
+> `sing-box check -c <config>`），不要只做字符串断言：本仓库的验收脚本
+> （`~/Desktop/easynet-acceptance/reset-acceptance.sh`）已内置这两条检查。
+
 - 确认云厂商安全组和服务器防火墙已放行跳变端口范围（如 20000-30000/udp）
 
 ### 分流规则没生效
