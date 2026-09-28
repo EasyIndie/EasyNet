@@ -8,9 +8,7 @@
 ## TL;DR
 
 1. EasyNet 当前抗 DPI 栈（Reality+xhttp + Hysteria2+salamander+端口跳跃）**仍处第一梯队**。
-2. 但有三个隐患：**Xray 稳定版停在 26.3.27（2026-03）**，新抗 DPI 特性都在 pre-release；
-   **官方 hysteria 的 Hysteria2 已落后**于 sing-box/Xray（缺 gecko/chrome-parrot/hop 随机）；
-   **AmneziaWG 是小众细分**（1.9k★、无 release），长期存疑。
+2. 隐患与紧迫性已重新校准：**Xray 稳定版停在 26.3.27（2026-03）**、新特性在 pre-release，但**核实后这些特性对 EasyNet 当前「仅 Reality 服务端」的用法几乎无直接收益**（详见下方「隐患 3」）；**官方 hysteria 的 Hysteria2 已落后**于 sing-box/Xray（缺 gecko/chrome-parrot/hop 随机）；**AmneziaWG 是小众细分**（1.9k★、无 release），长期存疑。
 3. 建议路径：**近期低风险加固 → 中期 `xray-unified` 单内核 PoC → 长期盯 ECH / sing-box 补 XHTTP
    两个触发器**。不急着推翻现状，先把「跟不上上游新特性」这个最现实的隐患补上。
 
@@ -47,26 +45,30 @@
 - 抗 DPI 栈先进：Reality 走 xhttp 传输、Hysteria2 走 salamander + 端口跳跃。
 - Ops 基建刚补齐（审计脚本、监控告警、SSH 加固、客户端二进制自愈镜像）。
 
-### 隐患（按严重程度）
+### 隐患
 
-1. **Xray 稳定版 6 个月没更新**：EasyNet pin 26.3.27，错过 Finalmask XMC/udpHop、
-   Hysteria v2.12.2 + ChromeParrot、ECH 增强、WireGuard outbound 修复。**抗 DPI 能力正在
-   被「停在旧稳定版」悄悄稀释**。这比「要不要统一内核」更紧迫。
-2. **官方 hysteria 落后**：无 gecko/chrome-parrot/hop 随机。用户若用 sing-box 客户端
-   （chrome_parrot+salamander）连我们服务器，客户端侧收益已拿到；但**服务端侧新能力
-   （gecko、hop 随机）我们拿不到**。
-3. **AmneziaWG 长期存疑**：小众、无 release、无社区规模。它是「统一到 Xray」的最大阻力，
+1. **官方 hysteria 落后于 sing-box/Xray 的 Hysteria2**：无 gecko 混淆、无 hop 间隔随机化
+   （`hop_interval_max`）、无 chrome_parrot。用户用 sing-box 客户端（chrome_parrot+salamander）
+   连我们服务器时，客户端侧收益已拿到；但**服务端侧新能力（gecko、hop 随机）我们拿不到**。
+2. **AmneziaWG 长期存疑**：小众（1.9k★、无 release）、维护者少。它是「统一到 Xray」的最大阻力，
    也是 4 协议里最可能被时代淘汰的。
+3. **Xray 稳定版 6 个月未更新（已核实：对当前用法影响有限）**：EasyNet pin 26.3.27，Finalmask
+   XMC/udpHop、Hysteria ChromeParrot、ECH 增强、WireGuard 修复都在 pre-release（v26.6/26.7/26.9）。
+   但逐一核实后：这些特性**几乎都落在 EasyNet 不用的组件上**——我们只用 Xray 的 VLESS+Reality
+   **服务端**（xhttp/tcp），而 Hysteria（官方）、WireGuard（awg-quick）、ECH（未启用）、Finalmask
+   掩码（未启用）都不经过 Xray；触及我们代码路径的 XHTTP server 变更只是重构/小修（`xPaddingObfsMode`
+   我们也没开）。→ 升级 pre-release 对当前部署几乎无直接收益，**记入 0.0.17 评估**。
 4. **4 个上游二进制维护面大**：每加一个协议就多一套 pin/installer/升级/安全审计面。
 
 ## 四、演进方向
 
-### 方向 A：近期低风险加固（建议立即做，不动架构）
+### 方向 A：近期低风险加固（hop 随机/上游告警立即做；Xray 升级推迟到 0.0.17）
 
-1. **评估跟进 Xray pre-release**：在测试 VPS（compat 全协议）用 pinned 的 pre-release
-   （如 v26.9.9，SHA256 走现成 pin 流程）跑一遍部署 + 真客户端校验 + 稳定性观察，验证
-   Finalmask/Hysteria2 新特性无回归后再决定是否升生产。风险：pre-release 无稳定性承诺，
-   必须可回滚。
+1. **Xray 升级评估（0.0.17 再做，本轮不升）**：已核实 pre-release（v26.9.9 等）的 Finalmask
+   XMC/udpHop、Hysteria ChromeParrot、ECH、WireGuard 修复**对当前「仅 Reality 服务端」用法
+   几乎无直接收益**（详见「隐患 3」）。升级的实际触发条件：①出现针对 Reality/xhttp 服务端的
+   稳定性/安全修复；②采用 Finalmask 掩码（fragment/noise）或 `xPaddingObfsMode`；③推进
+   xray-unified。届时在测试 VPS 按现成 pin 流程（SHA256）验证后再升。
 2. **Hysteria2 端口跳跃随机化**：hop 间隔由固定值改随机（对应 sing-box `hop_interval_max`），
    降低可预测性。
 3. **上游健康度告警**：把 `check_upstream_pins.sh` 接入监控 cron——pin 落后上游最新稳定/发布
@@ -80,7 +82,7 @@
 - 收益：3 个二进制 → 1；新协议 = 加一段 inbound；订阅渲染/导出差异收敛。
 - 风险：Xray 的 Hysteria2 是重实现（v2.12.2，略落后官方 2.12.3，但已带 ChromeParrot）；
   Xray release 节奏需长期盯。
-- 触发条件：方向 A 验证 Xray pre-release 稳定后，或 AWG 决定弃用后。
+- 触发条件：测试 VPS 验证 Xray 的 Hysteria2 实现（v2.12.2）稳定且三方客户端兼容后，或 AWG 决定弃用后。
 - 具体做法沿用现有插件架构，加一个 `xray-unified` 可选后端模块，测试 VPS 对比
   「官方 hysteria vs Xray hysteria」的稳定性/性能/三方客户端兼容。
 
@@ -106,12 +108,13 @@
 
 | 时间 | 动作 | 依赖 |
 |---|---|---|
-| **现在** | 方向 A：Xray pre-release 评估 + hop 随机 + 上游健康度告警 | 测试 VPS 已释放，需临时重建 |
+| **现在** | 方向 A：hop 随机 + 上游健康度告警（无需测试 VPS） | — |
+| **0.0.17** | 方向 A：Xray 升级评估（pre-release 收益已核实，见隐患 3）+ 可选 Finalmask/`xPaddingObfsMode` 评估 | 测试 VPS 已释放，需临时重建 |
 | **下个迭代** | 方向 B PoC（`xray-unified` 可选后端）+ 方向 C 监控 AWG 上游 | A 验证通过 |
 | **长期复盘** | 方向 D/E 触发器：sing-box 是否加 XHTTP、ECH 是否成熟、AWG 是否弃坑 | 每季度 |
 
 ## 六、一句话结论
 
-**别急着推翻现状**：最紧迫的不是「统一内核」，而是「跟上 Xray 的新特性」（现在停在 3 月的
-稳定版，正在悄悄掉队）。先把方向 A 的低风险加固做掉，再在测试 VPS 上验证 `xray-unified`
-单内核收敛，AmneziaWG 去留和 sing-box 补 XHTTP 作为两个长期触发器盯着即可。
+**别急着推翻现状，也暂时不用急着升 Xray**：最现实的两件事是「把 hop 随机 + 上游健康度告警做掉」
+和「在测试 VPS 验证 xray-unified 单内核收敛」。Xray pre-release 升级已核实对当前用法几乎无直接
+收益，记入 0.0.17 评估；AmneziaWG 去留与 sing-box 补 XHTTP 作为两个长期触发器盯着即可。
