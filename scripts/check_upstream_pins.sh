@@ -68,6 +68,9 @@ check "xray"        "$EASYNET_PIN_XRAY_VERSION"        "XTLS/Xray-core"         
 check "hysteria2"   "$EASYNET_PIN_HYSTERIA2_VERSION"   "apernet/hysteria"           "app/v" # ok: pins.sh 常量
 check "shadowsocks" "$EASYNET_PIN_SHADOWSOCKS_VERSION" "shadowsocks/shadowsocks-rust" "v" # ok: pins.sh 常量
 check "acme.sh"     "$EASYNET_PIN_ACME_VERSION"        "acmesh-official/acme.sh"    "" # ok: pins.sh 常量
+# 客户端校验工具：不参与部署，但它们的方言决定我们生成的订阅是否可用，需要跟着上游更新
+check "mihomo"      "$EASYNET_PIN_MIHOMO_VERSION"      "MetaCubeX/mihomo"           "v" # ok: pins.sh 常量
+check "sing-box"    "$EASYNET_PIN_SINGBOX_VERSION"     "SagerNet/sing-box"          "v" # ok: pins.sh 常量
 
 if [ "$outdated" -gt 0 ]; then
     printf '\n有 %d 个依赖落后于上游稳定版。升级步骤见 scripts/core/pins.sh 文件头注释。\n' "$outdated"

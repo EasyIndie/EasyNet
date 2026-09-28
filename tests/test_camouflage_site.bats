@@ -109,13 +109,16 @@ assert_no_third_party_urls() {
     [ "$status" -ne 0 ]
 }
 
-@test "默认伪装站包含 404 页与 robots.txt（像真站点）" {
+@test "默认伪装站包含 404 页，robots.txt 为真实站点的常见写法之一（或不存在）" {
     render "world.example.com"
     [ -s "$WEB_ROOT/404.html" ]
-    [ -s "$WEB_ROOT/robots.txt" ]
-    grep -q '^User-agent: \*' "$WEB_ROOT/robots.txt"
+    # robots.txt 按域名种子选变体；"none" 表示不生成 —— 很多真实站点也没有它，
+    # 关键是**不能所有部署都逐字节相同**（那本身就是同源模板指纹）。
+    if [ -f "$WEB_ROOT/robots.txt" ]; then
+        grep -q '^User-agent: \*' "$WEB_ROOT/robots.txt"
+        [ "$(wc -l < "$WEB_ROOT/robots.txt")" -le 6 ]
+    fi
 }
-
 @test "404 页同样自洽（canonical 缺失也无第三方引用）" {
     render "world.example.com"
     assert_no_third_party_urls "$WEB_ROOT/404.html"

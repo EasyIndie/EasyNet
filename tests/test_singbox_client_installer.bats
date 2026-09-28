@@ -164,3 +164,83 @@ setup() {
     run rg -q 'listen: "0\.0\.0\.0"' "$PROJECT_ROOT/scripts/clients/install_singbox_client.sh"
     [ "$status" -eq 1 ]
 }
+
+# ── 版本固定（pin）───────────────────────────────────────────────────────────
+# 客户端安装器运行在用户设备上并以 root 执行：裸拉 latest 等于把上游的任何
+# 字节变化直接引入设备（服务端四个组件都有 pin，客户端不能例外）。
+
+@test "Installer pins sing-box version and SHA256 per architecture" {
+    rg -q 'PINNED_SINGBOX_VERSION="[0-9]' "$INSTALLER"
+    rg -q 'PINNED_SINGBOX_SHA256_LINUX_AMD64="[0-9a-f]{64}"' "$INSTALLER"
+    rg -q 'PINNED_SINGBOX_SHA256_LINUX_ARM64="[0-9a-f]{64}"' "$INSTALLER"
+    run rg -q 'releases/latest' "$INSTALLER"
+    [ "$status" -eq 1 ]
+}
+
+@test "Installer pins stay in sync with core/pins.sh (drift guard)" {
+    local installer_version pins_version
+    installer_version="$(sed -n 's/^PINNED_SINGBOX_VERSION="\(.*\)"$/\1/p' "$INSTALLER" | awk 'NR==1')"
+    pins_version="$(bash -c "source \"$PROJECT_ROOT/scripts/core/pins.sh\"; printf '%s' \"\$EASYNET_PIN_SINGBOX_VERSION\"")"
+    [ -n "$installer_version" ]
+    [ "$installer_version" = "$pins_version" ]
+
+    local arch_var installer_hash pins_hash pins_var
+    for arch_var in LINUX_AMD64 LINUX_ARM64; do
+        pins_var="EASYNET_PIN_SINGBOX_SHA256_${arch_var}"
+        installer_hash="$(sed -n "s/^PINNED_SINGBOX_SHA256_${arch_var}=\"\\(.*\\)\"\$/\\1/p" "$INSTALLER" | awk 'NR==1')"
+        pins_hash="$(bash -c "source \"$PROJECT_ROOT/scripts/core/pins.sh\"; printf '%s' \"\$$pins_var\"")"
+        [ "$installer_hash" = "$pins_hash" ] || {
+            echo "# $arch_var 不一致: installer=$installer_hash pins=$pins_hash" >&3
+            return 1
+        }
+    done
+}
+
+@test "Pinned version resolves to the official asset URL and checksum" {
+    run bash -c "
+        source '$INSTALLER'
+        SB_VERSION=\"\$PINNED_SINGBOX_VERSION\"
+        SB_SHA256=''
+        resolve_singbox_download
+        printf '%s\n%s\n' \"\$SINGBOX_URL\" \"\$SB_SHA256\"
+    "
+    [ "$status" -eq 0 ]
+    [[ "$(printf '%s' "$output" | awk 'NR==1')" == */releases/download/v*/*.tar.gz ]]
+    [[ "$(printf '%s' "$output" | sed -n '1p')" == *"sing-box-"*"-linux-"*".tar.gz" ]]
+    [[ "$(printf '%s' "$output" | sed -n '2p')" =~ ^[0-9a-f]{64}$ ]]
+}
+
+@test "Overriding the version without a checksum is refused" {
+    run bash -c "
+        source '$INSTALLER'
+        SB_VERSION='9.9.9'
+        SB_SHA256=''
+        SB_SKIP_SHA256='false'
+        resolve_singbox_download
+    "
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"EASYNET_SINGBOX_INSTALL_SHA256"* ]]
+}
+
+@test "Overriding requires nothing when a checksum is supplied" {
+    run bash -c "
+        source '$INSTALLER'
+        SB_VERSION='9.9.9'
+        SB_SHA256='$(printf '0%.0s' {1..64})'
+        resolve_singbox_download
+        printf '%s' \"\$SINGBOX_URL\"
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"v9.9.9/sing-box-9.9.9-"* ]]
+}
+
+@test "Explicit skip flag allows an unverifiable download" {
+    run bash -c "
+        source '$INSTALLER'
+        SB_VERSION='9.9.9'
+        SB_SHA256=''
+        SB_SKIP_SHA256='true'
+        resolve_singbox_download
+    "
+    [ "$status" -eq 0 ]
+}

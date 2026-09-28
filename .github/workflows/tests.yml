@@ -104,9 +104,36 @@ jobs:
           [ -s /tmp/easynet-web/singbox ] && echo "OK: singbox generated"
           rm -rf /tmp/easynet-test /tmp/easynet-web
 
+  client-config-validation:
+    name: Client config validation (real binaries)
+    # 用**真实客户端**校验生成的订阅：mihomo 拒绝的 Clash 配置、sing-box 拒绝的
+    # 配置都在这里被拦住（0.0.13 的 `invalid range: 30s` 事故就是这样漏出去的）。
+    # 单 OS 即可；二进制按 pin 版本缓存，换 pin 才会重新下载。
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends jq bats
+
+      - name: Cache pinned client binaries
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/easynet/client-bin
+          key: clientbins-${{ runner.os }}-${{ hashFiles('scripts/core/pins.sh') }}
+
+      - name: Validate subscriptions with real mihomo / sing-box
+        env:
+          # 不允许静默跳过：拉不到二进制就是失败
+          EASYNET_REQUIRE_CLIENT_CHECK: "1"
+        run: bats --timing --formatter tap tests/test_client_config_validation.bats
+
   release:
     name: Create GitHub Release
-    needs: [automated-tests, integration-test]
+    needs: [automated-tests, integration-test, client-config-validation]
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
@@ -126,8 +153,10 @@ jobs:
             capture { print }
           ' CHANGELOG.md > /tmp/release_notes.md
           if [ ! -s /tmp/release_notes.md ]; then
-            echo "WARNING: No changelog entry found for $TAG, using fallback."
-            echo "Release $TAG" > /tmp/release_notes.md
+            # 发布说明来自 CHANGELOG：缺条目时不产出 release（0.0.13 曾因此发出
+            # 一个说明只有 "Release 0.0.13" 的 release）。补上条目后重新打 tag。
+            echo "::error::CHANGELOG.md 缺少 [$TAG] 条目：请先补 CHANGELOG 再打 tag（发布说明从这里生成）。"
+            exit 1
           fi
 
       - name: Build release assets

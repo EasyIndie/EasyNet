@@ -200,3 +200,34 @@ sudo bash easynet-singbox-client.sh doctor
    - 经代理访问国内站点，出口应等于本机直连出口；
    - 经代理访问国外站点，出口应等于代理服务器 IP。
 
+## 客户端配置的发布前校验（真二进制）
+
+我们生成的订阅是**文本**，字段名/类型/单位写错时字符串断言看不出来 —— 必须由真实客户端判定。
+`scripts/client_check.sh` 负责这件事（CI 与验收都用它）：
+
+```bash
+scripts/client_check.sh platform                 # 当前平台与 pin 可用性
+scripts/client_check.sh fetch mihomo             # 按 pin 下载 + SHA256 校验（缓存到 ~/.cache/easynet/client-bin）
+scripts/client_check.sh check-clash  /path/clash.yaml
+scripts/client_check.sh check-singbox /path/singbox.json
+```
+
+- 版本固定在 `scripts/core/pins.sh` 的 `EASYNET_PIN_MIHOMO_*` / `EASYNET_PIN_SINGBOX_*`
+  （Linux/amd64、Linux/arm64、Darwin/amd64 三个平台；缓存里的资产每次使用前都会重新校验 SHA256）。
+- CI 有独立 job `client-config-validation`，并作为 **release 的前置依赖**：真客户端拒收就发不出 release。
+  该 job 设 `EASYNET_REQUIRE_CLIENT_CHECK=1`，拉不到二进制即失败（不允许静默通过）。
+- 测试自带"校验器有效性"哨兵：故意写出 `hop-interval: "30s"`（0.0.13 事故形态）必须被 mihomo 拒绝，
+  否则说明校验形同虚设。
+
+### 客户端安装器的版本固定
+
+`scripts/clients/install_singbox_client.sh`（端点设备上执行）也按 pin 安装 sing-box：
+
+| 变量 | 作用 |
+|------|------|
+| `EASYNET_SINGBOX_VERSION` | 覆盖版本（**必须**同时给 `EASYNET_SINGBOX_INSTALL_SHA256`） |
+| `EASYNET_SINGBOX_INSTALL_SHA256` | 覆盖版本时的校验和 |
+| `EASYNET_SINGBOX_SKIP_SHA256=true` | 显式跳过校验（自行承担风险） |
+
+内联常量与 `core/pins.sh` 的一致性由 `tests/test_singbox_client_installer.bats` 断言（防漂移）。
+

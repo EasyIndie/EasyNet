@@ -31,6 +31,8 @@ EASYNET_PROJECT_DIR="${EASYNET_PROJECT_DIR:-$(cd "${EASYNET_CLI_DIR:-}/.." && pw
 . "${EASYNET_CLI_DIR:-}/core/hub.sh"
 # shellcheck source=core/logging.sh
 . "${EASYNET_CLI_DIR:-}/core/logging.sh"
+# shellcheck source=core/subscription.sh
+. "${EASYNET_CLI_DIR:-}/core/subscription.sh"
 
 usage() {
     cat << 'EOF'
@@ -55,7 +57,8 @@ EasyNet 统一运维命令
   harden-ssh <命令>   转发到 SSH 加固脚本（check/apply/confirm/revert/status）
   doctor              连通性诊断
   env                 编辑部署配置 .env
-  update              更新 EasyNet 程序本体（git 仓库）
+  upgrade [<tag>]     release 安装的机器升级到指定/最新版本（下载+校验+替换，保留 .env）
+  update              更新程序本体（**仅 git 安装**；release 安装请用 upgrade）
   version             显示版本
   help                本帮助
 
@@ -142,6 +145,13 @@ cmd_status() {
         printf '  前缀    : %s\n' "$prefix"
         printf '  链接    : https://%s%s/sub\n' \
             "$(cat "$edge_state/domain.txt" 2>/dev/null || printf '?')" "$prefix"
+        # 分流规则集是**手动步骤**：未发布时订阅会自动省去 rule_set（客户端仍可启动），
+        # 但就没有国内直连/去广告分流了，所以在这里直接给出状态和补救命令。
+        if easynet_singbox_rules_published; then
+            printf '  规则集  : 已发布（%s/rules）\n' "${EASYNET_WEB_ROOT:-/var/www/html}"
+        else
+            printf '  规则集  : \033[33m未发布\033[0m —— 运行 `easynet rules` 生成（客户端分流将缺失）\n'
+        fi
     else
         printf '  （尚未生成，请运行 bash %s/generate_subscription.sh）\n' "${EASYNET_PROJECT_DIR:-}/scripts"
     fi
@@ -367,6 +377,30 @@ cmd_version() {
     fi
 }
 
+# release 安装的机器没有 .git，`update`（git pull）不适用：这里复用官方安装器
+# 走 release 资产升级（下载 + SHA256 校验 + staging 替换，自动保留 .env），
+# 也就是"一键安装"用的那条路径，避免再引入一条无人验证的升级通道。
+cmd_upgrade() {
+    local tag="${1:-latest}" installer tmp_dir before after
+
+    [ -f "${EASYNET_PROJECT_DIR:-}/scripts/install.sh" ] || {
+        log_error "找不到安装器: ${EASYNET_PROJECT_DIR:-}/scripts/install.sh"
+        return 1
+    }
+    before="$(cmd_version 2>/dev/null || printf '未知')"
+    printf '当前版本: %s → 目标: %s\n' "$before" "$tag"
+
+    # 从临时目录执行：install.sh 会 rm -rf 安装目录，若从被删除的目录里读取脚本
+    # 自身，bash 可能在后半段读到已被替换/删除的文件。
+    tmp_dir="$(mktemp -d)"
+    trap 'rm -rf "${tmp_dir:-}"' RETURN
+    cp "${EASYNET_PROJECT_DIR:-}/scripts/install.sh" "$tmp_dir/install.sh"
+    EASYNET_VERSION="$tag" bash "$tmp_dir/install.sh" || return 1
+
+    after="$(cat "${EASYNET_PROJECT_DIR:-}/VERSION" 2>/dev/null || printf '未知')"
+    printf '升级完成: %s → %s\n' "$before" "$after"
+}
+
 cmd_update() {
     if [ ! -d "${EASYNET_PROJECT_DIR:-}/.git" ]; then
         log_error "非 git 安装，请使用安装脚本升级"
@@ -400,6 +434,7 @@ main() {
         env) cmd_env ;;
         version | -v | --version) cmd_version ;;
         update) cmd_update ;;
+        upgrade) cmd_upgrade "$@" ;;
         *)
             log_error "未知命令: $cmd"
             usage

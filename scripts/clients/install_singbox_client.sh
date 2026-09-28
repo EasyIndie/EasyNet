@@ -8,13 +8,30 @@ MODE="${EASYNET_SINGBOX_MODE:-mixed}"
 # mixed 模式监听地址。默认 0.0.0.0 便于局域网共享（安装器会提示局域网地址）；
 # 公网设备上这会成为开放代理，可用 --listen-address 127.0.0.1 收紧。
 LISTEN_ADDRESS="${EASYNET_SINGBOX_LISTEN:-0.0.0.0}"
-SINGBOX_URL="${EASYNET_SINGBOX_DOWNLOAD_URL:-}"
 INSTALL_DIR="${EASYNET_SINGBOX_INSTALL_DIR:-/usr/local/bin}"
 CONFIG_DIR="${EASYNET_SINGBOX_CONFIG_DIR:-/etc/sing-box}"
 STATE_DIR="${EASYNET_SINGBOX_STATE_DIR:-/etc/easynet}"
 SERVICE_NAME="${EASYNET_SINGBOX_SERVICE_NAME:-easynet-singbox}"
 UPDATE_NAME="${EASYNET_SINGBOX_UPDATE_NAME:-easynet-singbox-update}"
-GITHUB_API="${EASYNET_SINGBOX_RELEASE_API:-https://api.github.com/repos/SagerNet/sing-box/releases/latest}"
+
+# ---------------------------------------------------------------------------
+# sing-box 版本固定（pin）
+# ---------------------------------------------------------------------------
+# 服务端四个组件都有 pin + SHA256，客户端不能例外：这个脚本最终以 root 运行在
+# 用户设备上，裸拉 latest 等于把“上游随时换一个字节”直接引入设备。
+#
+# 与 scripts/core/pins.sh 的 EASYNET_PIN_SINGBOX_* 保持一致
+# （tests/test_singbox_client_installer.bats 有防漂移断言）。
+# 覆盖版本时必须同时给校验和：--sing-box-url 配合 EASYNET_SINGBOX_INSTALL_SHA256，
+# 或显式 EASYNET_SINGBOX_SKIP_SHA256=true 承担风险。
+PINNED_SINGBOX_VERSION="1.14.2"
+PINNED_SINGBOX_SHA256_LINUX_AMD64="a684484d7477d1437282ee411f4d131d0340aaad60a7868841ebd5d87dd8a0c6"
+PINNED_SINGBOX_SHA256_LINUX_ARM64="b43a1fb1bda131c6653576741ce527eb2bdeab7c9308ca90ee8b972abb7e4a7f"
+
+SB_VERSION="${EASYNET_SINGBOX_VERSION:-$PINNED_SINGBOX_VERSION}"
+SINGBOX_URL="${EASYNET_SINGBOX_DOWNLOAD_URL:-}"
+SB_SHA256="${EASYNET_SINGBOX_INSTALL_SHA256:-}"
+SB_SKIP_SHA256="${EASYNET_SINGBOX_SKIP_SHA256:-false}"
 ENV_FILE="$STATE_DIR/singbox-client.env"
 
 log() { printf '[INFO] %s\n' "$*"; }
@@ -32,7 +49,8 @@ Usage:
 Options:
   --config-url      EasyNet sing-box config URL, usually https://domain/s/<random>/singbox
   --mode            Client mode. mixed opens HTTP/SOCKS port only. tun enables local full-device proxy.
-  --sing-box-url    Optional sing-box release tarball URL. Auto-detected when omitted.
+  --sing-box-url    Override the download URL (requires EASYNET_SINGBOX_INSTALL_SHA256).
+                    Default: pinned sing-box release asset (see PINNED_SINGBOX_VERSION).
   --listen-address  Address the mixed proxy binds to (default 0.0.0.0 for LAN sharing).
                     Use 127.0.0.1 to keep it local-only on public / untrusted hosts.
   -h, --help        Show this help.
@@ -137,49 +155,67 @@ install_packages() {
     command -v jq >/dev/null 2>&1 || die "缺少 jq，无法生成 mixed/tun 客户端配置。"
 }
 
-resolve_singbox_url() {
-    local asset_arch
-    [ -n "${SINGBOX_URL:-}" ] && return 0
+# 已 pin 的架构 → SHA256；未 pin 的架构（armv7/armv6）由调用方决定是否接受
+pinned_singbox_sha256() {
+    case "$(detect_asset_arch)" in
+        linux-amd64) printf '%s' "$PINNED_SINGBOX_SHA256_LINUX_AMD64" ;;
+        linux-arm64) printf '%s' "$PINNED_SINGBOX_SHA256_LINUX_ARM64" ;;
+        *)           return 0 ;;
+    esac
+}
 
+# 解析下载地址与校验和。
+#   默认（pin 版本）→ 官方 release 资产地址 + 仓库内置 SHA256
+#   覆盖版本/自定义 URL → 必须显式提供 EASYNET_SINGBOX_INSTALL_SHA256，
+#                          否则拒绝继续（除非显式 EASYNET_SINGBOX_SKIP_SHA256=true）
+resolve_singbox_download() {
+    local asset_arch
     asset_arch="$(detect_asset_arch)"
-    # awk rather than head: under `set -o pipefail` an early-terminating consumer
-    # gives curl/sed SIGPIPE (141), which set -e turns into a hard failure.
-    SINGBOX_URL="$(
-        curl -fsSL "$GITHUB_API" \
-            | sed -n "s/.*\"browser_download_url\": \"\\([^\"]*sing-box-[^\"]*-${asset_arch}\\.tar\\.gz\\)\".*/\\1/p" \
-            | awk 'NR==1'
-    )"
-    [ -n "${SINGBOX_URL:-}" ] || die "无法自动找到 sing-box ${asset_arch} 下载地址，请使用 --sing-box-url 指定。"
+
+    if [ -z "${SINGBOX_URL:-}" ]; then
+        SINGBOX_URL="https://github.com/SagerNet/sing-box/releases/download/v${SB_VERSION}/sing-box-${SB_VERSION}-${asset_arch}.tar.gz"
+    fi
+
+    if [ -z "${SB_SHA256:-}" ] && [ "$SB_VERSION" = "$PINNED_SINGBOX_VERSION" ]; then
+        SB_SHA256="$(pinned_singbox_sha256)"
+    fi
+
+    if [ -z "${SB_SHA256:-}" ] && [ "$SB_SKIP_SHA256" != "true" ]; then
+        die "无法校验 sing-box ${SB_VERSION}（${asset_arch}）的完整性：未提供 SHA256。
+  请设置 EASYNET_SINGBOX_INSTALL_SHA256=<sha256>（可对照 releases 页面自行计算），
+  或显式设置 EASYNET_SINGBOX_SKIP_SHA256=true 自行承担风险。"
+    fi
 }
 
 install_singbox_binary() {
-    local tmp_dir="" tarball binary_path existing_binary
+    local tmp_dir="" tarball binary_path installed_version
 
-    # Always download the latest sing-box from GitHub to ensure XHTTP etc. support.
-    # Debian/Ubuntu apt repositories carry very old versions that may not support
-    # modern transports (XHTTP, etc.).
-    # If the user has a manually installed version at the target path, skip download.
-    if [ -f "$INSTALL_DIR/sing-box" ] && command -v sing-box >/dev/null 2>&1; then
-        existing_binary="$(command -v sing-box)"
-        if [ "$existing_binary" = "$INSTALL_DIR/sing-box" ]; then
-            log "检测到已安装最新版 sing-box: $existing_binary"
+    # 固定版本安装（不跟随 latest）：apt 仓库里的 sing-box 太旧，而裸拉 latest 会在
+    # 上游发布一个字节的差异时静默进入设备 —— 两者都不可接受。
+    # 已装且与 pin 一致则跳过（幂等、可重复执行）。
+    if [ -f "$INSTALL_DIR/sing-box" ]; then
+        installed_version="$("$INSTALL_DIR/sing-box" version 2>/dev/null | awk 'NR==1{print $3}')"
+        if [ "$installed_version" = "$SB_VERSION" ]; then
+            log "已安装 sing-box ${installed_version}（与固定版本一致），跳过下载"
             return 0
         fi
-        log "检测到旧版 sing-box: ${existing_binary}，将更新到最新版..."
+        log "检测到 sing-box ${installed_version:-未知}，将更新到固定版本 ${SB_VERSION}..."
     fi
 
-    resolve_singbox_url
+    resolve_singbox_download
     tmp_dir="$(mktemp -d /tmp/easynet-singbox.XXXXXX)"
     trap 'rm -rf "${tmp_dir:-}"' RETURN
     tarball="$tmp_dir/sing-box.tar.gz"
 
-    log "下载 sing-box: ${SINGBOX_URL:-}"
+    log "下载 sing-box ${SB_VERSION}: ${SINGBOX_URL:-}"
     curl -fL "${SINGBOX_URL:-}" -o "$tarball"
 
-    # Verify SHA256 if provided
-    if [ -n "${EASYNET_SINGBOX_INSTALL_SHA256:-}" ]; then
+    # 校验和：pin 自带；覆盖版本时由用户提供（resolve_singbox_download 已把关）
+    if [ -n "${SB_SHA256:-}" ]; then
         log "校验 sing-box 压缩包 SHA256..."
-        printf '%s  %s\n' "${EASYNET_SINGBOX_INSTALL_SHA256:-}" "$tarball" | sha256sum -c - || die "sing-box 压缩包 SHA256 校验失败，请检查下载来源或更新 EASYNET_SINGBOX_INSTALL_SHA256"
+        printf '%s  %s\n' "${SB_SHA256}" "$tarball" | sha256sum -c - || die "sing-box 压缩包 SHA256 校验失败（可能下载不完整或资产已变更）"
+    else
+        warn "已跳过 sing-box SHA256 校验（EASYNET_SINGBOX_SKIP_SHA256=true）"
     fi
 
     tar -xzf "$tarball" -C "$tmp_dir"
@@ -737,4 +773,6 @@ main() {
     fi
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

@@ -53,6 +53,21 @@ easynet_edge_site_footers() {
 EOF
 }
 
+# robots.txt 变体池：`<key>|<内容>`，一行一个变体（抽取逻辑按行取值，所以内容里的
+# 换行写成 \n，渲染时用 printf %b 还原）；key 为 `none` 表示**不生成**该文件。
+# 两台不同部署的 robots.txt 曾逐字节相同（md5 一致）—— 一个恒定文件本身就是
+# "同源模板"的指纹，所以这里按域名种子在真实站点的常见写法里挑一个。
+easynet_edge_site_robots_pool() {
+    cat <<'EOF'
+allow|User-agent: *\nAllow: /
+deny-admin|User-agent: *\nDisallow: /admin/\nDisallow: /private/
+crawl-delay|User-agent: *\nCrawl-delay: 10
+explicit-allow|User-agent: *\nDisallow:
+deny-all|User-agent: *\nDisallow: /
+none|
+EOF
+}
+
 # 强调色池（十六进制，渲染安全）
 easynet_edge_site_accents() {
     cat <<'EOF'
@@ -210,11 +225,18 @@ easynet_edge_site_render() {
     easynet_edge_site_index_html "$brand" "$domain" "$accent" "$year" \
         "$tagline" "$about" "$sections" "$footer" > "$web_root/index.html"
     easynet_edge_site_404_html "$brand" "$accent" "$year" > "$web_root/404.html"
-    cat > "$web_root/robots.txt" <<EOF
-User-agent: *
-Allow: /
-EOF
-    chmod 644 "$web_root/index.html" "$web_root/404.html" "$web_root/robots.txt" 2>/dev/null || true
+    # robots.txt：按种子选变体；选中 none 时删除旧文件（不生成）
+    local robots_pick robots_key robots_body
+    robots_pick="$(easynet_edge_site_pick "$seed" 5 easynet_edge_site_robots_pool)"
+    robots_key="${robots_pick%%|*}"
+    robots_body="${robots_pick#*|}"
+    if [ "$robots_key" = "none" ]; then
+        rm -f "$web_root/robots.txt"
+    else
+        printf '%b\n' "$robots_body" > "$web_root/robots.txt"
+    fi
+    chmod 644 "$web_root/index.html" "$web_root/404.html" 2>/dev/null || true
+    [ -f "$web_root/robots.txt" ] && chmod 644 "$web_root/robots.txt" 2>/dev/null || true
 }
 
 # 安装伪装站。

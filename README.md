@@ -151,10 +151,16 @@ sudo EASYNET_PROFILE=balanced EASYNET_DOMAIN=world.example.com bash install.sh
 sudo EASYNET_VERSION=<版本 tag> EASYNET_INSTALL_DIR=/opt/easynet bash install.sh
 ```
 
+升级（release 安装的机器，保留现有 `.env`；也可用 `easynet upgrade`）：
+
+```bash
+sudo EASYNET_VERSION=<新版本 tag> bash install.sh
+```
+
 > 安装器遵循项目「无 `curl | bash`」规范：先落地、校验 SHA256、通过后才执行；失败即中止。
 > 目标机要求 root 权限的 `Ubuntu 22.04+` / `Debian 11+`。
 
-### 从源码部署（开发 / 审计）
+### 从源码部署（**仅开发 / 审计**，生产请用上面的 release 安装）
 
 ```bash
 git clone https://github.com/EasyIndie/EasyNet.git

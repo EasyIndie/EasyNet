@@ -243,14 +243,19 @@ ENV
 cd /opt/easynet && bash scripts/deploy.sh
 ```
 
-### 3. 从源码部署（开发 / 审计）
+### 3. 从源码部署（**仅开发 / 审计**，生产请用 release 安装）
 
 ```bash
-apt update && apt install -y git
+apt update && apt install -y git          # 生产部署不需要 git（release 安装不装它）
 git clone https://github.com/EasyIndie/EasyNet.git
 cd EasyNet
 ./scripts/deploy.sh
 ```
+
+> 生产用 release 安装（第 2 节）；升级用同一条安装器路径：
+> `sudo EASYNET_VERSION=<新版本 tag> bash install.sh`，或在机器上 `easynet upgrade [<tag>]`
+> （下载 + SHA256 校验 + 替换 `/opt/easynet`，自动保留 `.env`）。
+> `easynet update` 只对 git 安装有效（`git pull`），release 安装会明确提示改用 `upgrade`。
 
 部署菜单中的编号由协议自动发现生成，按 **抗 DPI 能力从高到低**（`MODULE_SECURITY_RANK` 升序）排列：
 
@@ -658,7 +663,7 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 
 1. **交互菜单** — 显示协议列表（按安全等级 `MODULE_SECURITY_RANK` 升序排列），等待用户手动选择
 2. **Edge 网关不部署** — `EASYNET_DOMAIN` 未设，Edge（Nginx + acme.sh TLS + 订阅托管）跳过
-3. **基础环境初始化** — 系统更新 → 安装基础依赖（curl、wget、git、unzip、jq 等）→ 启用 BBR → 配置 UFW（自动开放 `22/tcp`、`80/tcp`、`443/tcp` + 各已部署协议 metadata 中声明的端口）→ 配置 `unattended-upgrades` 自动安全更新 → 写入 cron（日志维护 + 每日 4:00 各已部署协议服务重启）
+3. **基础环境初始化** — 系统更新 → 安装基础依赖（curl、wget、unzip、jq 等；**不装 git**）→ 启用 BBR → 配置 UFW（自动开放 `22/tcp`、`80/tcp`、`443/tcp` + 各已部署协议 metadata 中声明的端口）→ 配置 `unattended-upgrades` 自动安全更新 → 写入 cron（日志维护 + 每日 4:00 各已部署协议服务重启）
 4. **预检温和模式** — 工具缺失、端口冲突、DNS 未解析等问题仅告警，不中止部署；设 `EASYNET_STRICT_PRECHECK=true` 可转为中止
 5. **无回滚保护** — `EASYNET_AUTO_ROLLBACK` 默认关闭，失败不会自动恢复
 6. **随机安全凭证** — Hysteria2 密码、混淆密码、订阅路径前缀均由系统自动随机生成，无需手动指定

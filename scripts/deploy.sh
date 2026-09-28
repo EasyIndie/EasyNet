@@ -78,7 +78,9 @@ update_system() {
 
 install_dependencies() {
     log_info "安装基础依赖..."
-    apt install -y curl wget git unzip ca-certificates gnupg2 lsb-release qrencode jq gettext-base
+    # 不装 git：release 安装（唯一推荐路径）不需要它，`easynet update` 对非 git
+    # 安装会明确报错并指引用 `easynet upgrade`。仓库文档里的 git clone 仅供贡献者使用。
+    apt install -y curl wget unzip ca-certificates gnupg2 lsb-release qrencode jq gettext-base
 }
 
 enable_bbr() {

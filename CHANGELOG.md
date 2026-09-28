@@ -5,6 +5,39 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.14] - 2026-09-28
+
+### 新增
+- **发布前的真客户端校验**（`scripts/client_check.sh`）：按 pin 下载并校验 mihomo / sing-box 二进制，
+  用它校验我们生成的 Clash / sing-box 订阅。客户端字段名/类型/单位只能由真客户端判定——
+  0.0.13 的 `invalid range: 30s` 事故正是因为当时只有字符串断言（还把错误格式写成了预期值）。
+  - CI 新增 job `client-config-validation`，并作为 **release 的前置依赖**：真客户端拒收就发不出 release；
+    该 job 设 `EASYNET_REQUIRE_CLIENT_CHECK=1`，拉不到二进制即失败（不允许静默通过）。
+  - 二进制按 `scripts/core/pins.sh` 的 `EASYNET_PIN_MIHOMO_*` / `EASYNET_PIN_SINGBOX_*` 固定
+    （Linux/amd64、Linux/arm64、Darwin/amd64），缓存里的资产每次使用前重新校验 SHA256。
+  - 测试自带哨兵：把 `hop-interval` 写成 `"30s"` 必须被 mihomo 拒绝，否则说明校验器失效。
+- **`easynet upgrade [<tag>]`**：release 安装的机器也能一条命令升级（复用官方安装器的
+  下载 + SHA256 + staging 替换流程，自动保留 `.env`）。此前只能重跑安装器。
+- **`easynet status` 显示分流规则集状态**，未发布时直接给出补救命令（`easynet rules`）。
+
+### 安全
+- **客户端安装器（`install_singbox_client.sh`）改为按 pin 安装 sing-box**：此前查 GitHub
+  `latest` 且校验和可选——服务端四个组件都有 pin + SHA256，而在用户设备上以 root 运行的安装器
+  反而裸拉 latest。现在默认使用仓库内置版本与 SHA256；覆盖版本必须显式提供校验和
+  （或 `EASYNET_SINGBOX_SKIP_SHA256=true` 自担风险）。内联常量与 `core/pins.sh` 的一致性有防漂移断言。
+- **伪装站的 `robots.txt` 按域名种子随机化**（含"不生成"变体）：此前所有部署的 `robots.txt`
+  **逐字节相同**（实测两台机器 md5 一致），一个恒定文件本身就是"同源模板"指纹。
+
+### 变更
+- **发版缺少 CHANGELOG 条目时硬失败**（此前只 warn 并以占位文本发布——0.0.13 的 release notes
+  就只有 "Release 0.0.13"）。
+- **`deploy.sh` 不再安装 `git`**：release 安装（生产唯一推荐路径）用不到它；文档中的
+  `git clone` 路径明确标注为"仅开发 / 审计"，生产升级走 `easynet upgrade`。
+
+### 测试
+- 新增 `tests/test_client_config_validation.bats`（真客户端校验 + 两类哨兵 + 缓存防替换）。
+- `tests/test_singbox_client_installer.bats` 新增 pin 断言与"覆盖版本必须给校验和"等 6 项。
+
 ## [0.0.13] - 2026-09-28
 
 ### 修复
