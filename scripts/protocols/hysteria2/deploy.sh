@@ -229,6 +229,14 @@ set_hysteria2_file_permissions() {
         "${HYSTERIA2_KEY_FILE:-}"
 }
 
+# 把值写成 YAML 单引号标量（内嵌单引号按 YAML 规则双写）。
+# 操作者可能用 EASYNET_HYSTERIA2_PASSWORD/OBFS_PASSWORD/MASQUERADE_URL 覆盖默认值，
+# 值里若含 ':'、'#'、'&' 或前导 '!' 等 YAML 特殊字符，裸写会生成非法配置或被
+# 静默截断（'#' 之后被当注释）。引号包裹后任意值都安全。
+yaml_squote() {
+    printf "'%s'" "$(printf '%s' "$1" | sed "s/'/''/g")"
+}
+
 configure_hysteria2() {
     local domain port password obfs_password masquerade_url masquerade_block port_hopping hop_interval
 
@@ -248,7 +256,7 @@ configure_hysteria2() {
         masquerade_block="masquerade:
   type: proxy
   proxy:
-    url: $masquerade_url
+    url: $(yaml_squote "$masquerade_url")
     rewriteHost: true"
     else
         local masquerade_dir
@@ -263,7 +271,7 @@ configure_hysteria2() {
         masquerade_block="masquerade:
   type: file
   file:
-    dir: $masquerade_dir
+    dir: $(yaml_squote "$masquerade_dir")
     index: index.html"
     fi
 
@@ -303,14 +311,14 @@ tls:
 
 auth:
   type: password
-  password: $password
+  password: $(yaml_squote "$password")
 
 $masquerade_block
 
 obfs:
   type: salamander
   salamander:
-    password: $obfs_password
+    password: $(yaml_squote "$obfs_password")
 EOF
 
 

@@ -326,12 +326,16 @@ rollback() {
         log_warn "部署失败 (退出码: $exit_code)，正在自动回滚..."
         local state_dir
         state_dir="$(easynet_state_dir)"
-        rm -rf "$state_dir" 2>/dev/null || true
-        if tar xzf "$BACKUP_FILE" -C "$(dirname "$state_dir")" 2>/dev/null; then
-            rm -f "$BACKUP_FILE" 2>/dev/null || true
-            log_info "回滚完成，状态已恢复至部署前"
+        if ! easynet_assert_safe_rm_path "$state_dir"; then
+            log_error "回滚中止：状态目录路径不安全，拒绝删除: $state_dir（请手动恢复: $BACKUP_FILE）"
         else
-            log_error "回滚失败，请手动恢复: $BACKUP_FILE"
+            rm -rf "$state_dir" 2>/dev/null || true
+            if tar xzf "$BACKUP_FILE" -C "$(dirname "$state_dir")" 2>/dev/null; then
+                rm -f "$BACKUP_FILE" 2>/dev/null || true
+                log_info "回滚完成，状态已恢复至部署前"
+            else
+                log_error "回滚失败，请手动恢复: $BACKUP_FILE"
+            fi
         fi
     fi
 }

@@ -37,6 +37,23 @@ die() {
     exit 1
 }
 
+# 防呆：拒绝把安装目录指向根目录或系统关键目录。
+# install 流程会对 INSTALL_DIR 执行 rm -rf（原子替换），一个误设的值（如 "/"、
+# "/etc" 或 "/var"）会造成灾难性后果。这里与 core/uninstall.sh 的
+# uninstall_safe_path 保持同等护栏。
+assert_safe_install_dir() {
+    local dir="$1"
+    [ -n "$dir" ] || die "EASYNET_INSTALL_DIR 不能为空"
+    case "$dir" in
+        /*) ;;
+        *) die "EASYNET_INSTALL_DIR 必须是绝对路径: $dir" ;;
+    esac
+    case "$dir" in
+        /|/bin|/sbin|/lib|/lib64|/boot|/etc|/usr|/var|/home|/root|/opt|/srv|/proc|/sys|/dev|/run|/tmp|/mnt|/media)
+            die "EASYNET_INSTALL_DIR 指向系统关键目录，拒绝安装: $dir" ;;
+    esac
+}
+
 usage() {
     cat <<EOF
 EasyNet 自举安装器 — 无需 git clone 的一键部署
@@ -185,6 +202,7 @@ main() {
     done
 
     require_root
+    assert_safe_install_dir "$INSTALL_DIR"
     check_os
     install_dependencies
 

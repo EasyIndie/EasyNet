@@ -52,3 +52,20 @@ easynet_secure_state_dir() {
 easynet_edge_state_dir() {
     easynet_exposure_state_dir "edge"
 }
+
+# 防呆：拒绝 rm -rf 一个文件系统关键路径。状态目录与安装目录都可由
+# EASYNET_* 覆盖，误设成 "/"、"/var" 等会让后续的 rm -rf 造成灾难。
+# 返回 0=安全，1=不安全。
+easynet_assert_safe_rm_path() {
+    local path="$1"
+    [ -n "$path" ] || return 1
+    case "$path" in
+        /*) ;;
+        *) return 1 ;;
+    esac
+    case "$path" in
+        /|/bin|/sbin|/lib|/lib64|/boot|/etc|/usr|/var|/home|/root|/opt|/srv|/proc|/sys|/dev|/run|/tmp|/mnt|/media)
+            return 1 ;;
+    esac
+    return 0
+}

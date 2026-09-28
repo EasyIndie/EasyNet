@@ -9,9 +9,9 @@ download_file() {
     local sha256="${3:-}"
 
     if command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$url" -o "$output" || return 1
+        curl -fsSL --connect-timeout 15 --max-time 600 "$url" -o "$output" || return 1
     elif command -v wget >/dev/null 2>&1; then
-        wget -q -O "$output" "$url" || return 1
+        wget -q --timeout=15 --tries=2 -O "$output" "$url" || return 1
     else
         log_error "需要 curl 或 wget 下载安装文件。"
         return 1
