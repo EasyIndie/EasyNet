@@ -58,7 +58,7 @@ EOF
     # `hop-interval` must be an integer number of seconds.
     if [ -n "${hop_range:-}" ]; then
         printf '    ports: "%s"\n' "$(yaml_escape "$hop_range")"
-        hop_seconds="$(mihomo_hop_interval_seconds "${hop_interval:-}")"
+        hop_seconds="$hop_interval"   # CANARY: 故意恢复 0.0.13 的事故形态
         if [ -n "$hop_seconds" ]; then
             printf '    hop-interval: %s\n' "$hop_seconds"
         fi
