@@ -5,6 +5,45 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.12] - 2026-09-28
+
+### 安全
+- **伪装站不再反代第三方大站**（旧默认 `https://www.bing.com`）：透明反代会把「这是反代」直接
+  写进响应，任何探针一眼可辨 —— `canonical` 指向 `www.bing.com`、响应里塞十几条
+  `Set-Cookie: ...; domain=.bing.com`、`UserAgentReductionOptOut` 的 base64 解出来含
+  `"origin":"https://www.bing.com:443"`、还镜像了对方的 `/robots.txt` 与 `/sitemap.xml`，
+  并且**任意 Host 都返回同一个 bing 首页**。从一台 VPS 的 IP、用自家域名的 LE 证书返回与
+  大站首页逐字节相同的内容，是经典镜像特征（内容哈希即可识别）。
+  现改为**自托管自洽静态站**：按 `cksum(域名)` 确定性生成文案与配色（同域名重部署稳定、
+  不同部署内容不同，避免所有实例长得一样），完全自包含（内联 CSS / 内联 SVG favicon / 零外部请求）、
+  不出现任何工具名；附带 `404.html` 与 `robots.txt`。生产可用 `EASYNET_EDGE_SITE_DIR` 放自有内容。
+- **Hysteria2 masquerade 同步改为 `file →` 同一份静态站**（旧默认 `proxy → bing`）。
+  实测：开启 `obfs: salamander` 后，未经混淆的 QUIC 探针收不到任何响应，UDP 侧本就不易被扫到，
+  但配置仍保持文字一致。
+- **Reality `borrow` 模式不再提供第三方大站默认值**（原 `www.bing.com:443` /
+  `www.bing.com,www.cloudflare.com`）：默认借用大站会让所有实例共用同一伪装目标（集体指纹），
+  且从非 CDN 的 VPS IP 声称自己是某大站是不合理的 SNI→IP 映射。现在必须显式填写，否则拒绝部署。
+- **禁用发行版自带的 nginx 默认站点**：否则未知 Host 会看到 "Welcome to nginx!" 欢迎页
+  （全新安装指纹）。卸载时恢复该软链。
+
+### 修复
+- **规则集未发布时客户端启动失败**：`/singbox` 订阅过去无条件写入远程 `rule_set`，
+  而服务器上 `.srs` 尚未生成（手动步骤）时客户端拉取 404 会导致 sing-box **直接启动失败**。
+  现在未发布即自动省去 `rule_set` 与依赖它的策略规则（部署日志给出 WARN），客户端仍可正常代理。
+  （文档一直这么写，代码此前没做到 —— 现在两者一致。）
+
+### 新增
+- `easynet rules`：一键构建/更新 sing-box 分流规则集（等价 `./scripts/generate_singbox_rules.sh`）。
+- nginx 自愈：为 `nginx.service` 写 `Restart=on-failure` + `RestartSec=5` drop-in
+  （发行版默认 `Restart=no`，而 nginx 同时承担伪装站、订阅分发与 Reality 回落目标）。
+- Edge 启用 **HTTP/2**（nginx ≥1.25.1 用 `http2 on;`，旧版退回 `listen ... ssl http2`）。
+
+### 测试
+- 新增 `tests/test_camouflage_site.bats`（14 项）：无第三方引用 / 无工具名 / 同域名幂等 /
+  跨域名不同 / 手工内容不被覆盖 / 自带站点优先 / 默认值不得含大站伪装目标 等。
+- `tests/test_edge_config.bats` 改为**直接 source 真实 `deploy.sh`** 断言真实配置
+  （此前内联复刻模板，正是这样漏掉了「默认反代 bing」）。
+
 ## [0.0.11] - 2026-09-27
 
 ### 修复

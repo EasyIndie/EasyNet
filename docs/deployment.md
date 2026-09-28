@@ -324,7 +324,13 @@ EASYNET_PROFILE=compat ./scripts/deploy.sh
 - `Hysteria2` 使用 Edge 统一证书（`shared_tls` 模式），自身监听 `443/udp` 承载 QUIC 流量
 - 如同时配置 `EASYNET_DOMAIN` 与 `EASYNET_SUBSCRIPTION_DOMAIN`，两者都需要解析到当前服务器，Edge 证书会同时覆盖这两个域名
 - 如确需调整 Edge 端口，可使用高级变量 `EASYNET_EDGE_HTTPS_PORT`
-- Edge Gateway 根路径默认反向代理到 `https://www.bing.com` 以消除指纹，可通过 `EASYNET_EDGE_MASQUERADE_URL` 自定义
+- Edge Gateway 根路径默认返回一个**自托管的自洽静态站**（`/var/www/html/index.html`），
+  由 `scripts/exposure/edge/render_site.sh` 按域名确定性生成（文案/配色随机化，重部署稳定）；
+  也可用 `EASYNET_EDGE_SITE_DIR` 指定自带站点目录（生产环境推荐）
+- **不要**把根路径反向代理到第三方大站：透明镜像会把「这是反代」写进响应
+  （`canonical` 指向第三方、`Set-Cookie` 带 `domain=.第三方`、`origin` 字段点名第三方、
+  任意 Host 都返回对方首页），属于比 TLS 指纹更易被自动化识别的内容层特征。
+  如确需反代，只能指向**你自己拥有的**站点（`EASYNET_EDGE_MASQUERADE_URL`）
 - 当前订阅输出保留 **URI、Clash/Mihomo 与 sing-box** 三类入口
 - 订阅文件中的节点顺序 **按安全性从高到低**（manifest 中 `MODULE_SECURITY_RANK`）输出：`Xray+Reality`（10）、`Hysteria2`（20）、`Shadowsocks`（40）、`AmneziaWG`（50）
 
@@ -397,6 +403,25 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 - 重建订阅文件并刷新 EasyNet 管理的定时重启任务
 - 不默认卸载 apt 包；确认依赖只被 EasyNet 使用时，可设置 `EASYNET_UNINSTALL_PURGE_PACKAGES=true`
 - 如需保留配置用于迁移或排障，可设置 `EASYNET_UNINSTALL_KEEP_CONFIG=true`
+
+## 伪装站（Edge 根路径与 Hysteria2 masquerade）
+
+根路径返回的内容是主动探测时看到的第一印象，必须**自洽**：域名、证书、内容三者一致。
+
+- **默认**：`scripts/exposure/edge/render_site.sh` 按域名生成一个自托管静态站
+  （`index.html` / `404.html` / `robots.txt`，内联 CSS、内联 SVG favicon、零外部请求）。
+  文案与配色用 `cksum(域名)` 做种子抽取 —— 同一部署重部署结果稳定，不同部署内容不同
+  （否则所有 EasyNet 实例默认页逐字节一致，本身就是工具指纹）。
+- **生产推荐**：用 `EASYNET_EDGE_SITE_DIR=/path/to/my/site` 放你自己的站点内容（最强伪装）。
+- **不要反代第三方大站**：透明镜像会在响应里自曝（`canonical` 指向第三方、
+  `Set-Cookie: domain=.第三方`、base64 `origin` 字段、镜像对方 `robots.txt`、任意 Host
+  都返回对方首页）。这类内容层特征比 TLS 指纹更容易被自动化识别。
+  确需反代时只能用 `EASYNET_EDGE_MASQUERADE_URL` 指向**自己拥有的**站点。
+- **手工替换**：直接改 `/var/www/html/index.html` 后，重部署不会覆盖它
+  （状态哈希不一致即视为自定义内容）；删除该文件即恢复默认生成。
+- **Hysteria2 masquerade**：默认复用同一份静态站（`type: file`）。实测开启 `obfs: salamander`
+  后，未经混淆的 QUIC 探针收不到任何响应，因此 UDP 侧的暴露面本就很小。
+- 已禁用发行版自带的 nginx 默认站点（否则未知 Host 会看到 "Welcome to nginx!" 欢迎页）。
 
 ## 验证部署
 
@@ -514,7 +539,8 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_EDGE_CERT_DIR` | TLS 证书存放目录 | `/etc/ssl/easynet-edge` |
 | `EASYNET_EDGE_CERT_FILE` | TLS 证书文件路径（覆盖 hysteria2 等协议使用的证书路径） | `${EASYNET_EDGE_CERT_DIR}/fullchain.crt` |
 | `EASYNET_EDGE_KEY_FILE` | TLS 私钥文件路径 | `${EASYNET_EDGE_CERT_DIR}/private.key` |
-| `EASYNET_EDGE_MASQUERADE_URL` | Nginx 根路径反向代理目标（消除 TLS 指纹特征） | `https://www.bing.com` |
+| `EASYNET_EDGE_MASQUERADE_URL` | 根路径反向代理目标（留空=自托管静态站；只应指向自有站点） | 空（生成静态站） |
+| `EASYNET_EDGE_SITE_DIR` | 自带站点目录（优先级最高，生产推荐放自己的内容） | 未设置 |
 | `EASYNET_EDGE_RENEW_HOOK` | 证书续期钩子脚本路径 | `scripts/exposure/edge/cert_renew_hook.sh` |
 | `EASYNET_EDGE_STATE_DIR` | Edge Gateway 状态目录（routes、cert 等状态持久化） | `${EASYNET_STATE_DIR}/exposure/edge` |
 | `EASYNET_SUBSCRIPTION_SCHEME` | 订阅 URL 协议 | `https` |
@@ -542,8 +568,8 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 |------|------|--------|
 | `EASYNET_REALITY_PORT` | Xray 监听端口 | `8443` |
 | `EASYNET_REALITY_MODE` | 伪装模式：`auto` / `self`（自偷）/ `borrow`（借用外部站点） | `auto` |
-| `EASYNET_REALITY_DEST` | REALITY 目标/伪装服务器地址（仅 `borrow` 模式） | `www.bing.com:443` |
-| `EASYNET_REALITY_SERVER_NAME` | 逗号分隔的 SNI 名称列表（仅 `borrow` 模式） | `www.bing.com,www.cloudflare.com` |
+| `EASYNET_REALITY_DEST` | REALITY 目标/伪装服务器地址（仅 `borrow` 模式，**必填**） | 无默认值 |
+| `EASYNET_REALITY_SERVER_NAME` | 逗号分隔的 SNI 名称列表（仅 `borrow` 模式，**必填**） | 无默认值 |
 | `EASYNET_REALITY_TRANSPORT` | 传输层协议：`tcp` 或 `xhttp`（HTTP/3 伪装，仅 Xray 客户端） | `tcp` |
 | `EASYNET_REALITY_XHTTP_MODE` | XHTTP 多路复用模式：`stream-one` / `auto` / `stream-up` / `packet-up` | `stream-one` |
 | `EASYNET_REALITY_XMUX_CONCURRENCY` | XMUX 多路复用并发数（`0` = 禁用） | `0` |
@@ -561,7 +587,8 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_HYSTERIA2_PORT` | Hysteria2 监听端口 | `443` |
 | `EASYNET_HYSTERIA2_PASSWORD` | 认证密码 | 随机生成（16 字节 Hex） |
 | `EASYNET_HYSTERIA2_OBFS_PASSWORD` | Salamander 混淆密码 | 随机生成（16 字节 Hex） |
-| `EASYNET_HYSTERIA2_MASQUERADE_URL` | QUIC 伪装目标 | `https://www.bing.com/` |
+| `EASYNET_HYSTERIA2_MASQUERADE_URL` | QUIC 伪装目标（留空=复用 Edge 的静态站；只应指向自有站点） | 空（静态站） |
+| `EASYNET_HYSTERIA2_MASQUERADE_DIR` | QUIC file 伪装目录 | `${EASYNET_WEB_ROOT}`（`/var/www/html`） |
 | `EASYNET_HYSTERIA2_PORT_HOPPING` | 端口跳变范围（如 `20000-30000`，空则禁用）。服务端改成 `listen: :<基础端口>,<范围>`，由 hysteria 自己建立并回收 nftables 重定向（范围 → 基础端口） | 未设置（禁用） |
 | `EASYNET_HYSTERIA2_PORT_HOP_INTERVAL` | 端口跳变间隔 | `30s` |
 | `EASYNET_HYSTERIA2_CERT_FILE` | TLS 证书文件路径 | `${EASYNET_EDGE_CERT_DIR}/fullchain.crt` |
@@ -635,8 +662,9 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 ./scripts/generate_singbox_rules.sh --dry-run    # 只打印不写文件
 ```
 
-> ⚠️ **未发布规则集时 `/singbox` 订阅无法启动**：订阅里 `route.rule_set` 用 `remote` 指向这些
-> `.srs` 文件，拉不到（404）会让 sing-box 直接启动失败。部署后至少跑一次上面的脚本。
+> 未发布规则集时 `/singbox` 订阅会**自动省去**`route.rule_set` 与依赖它的策略规则
+> （部署日志会给出 WARN 提示），客户端仍能正常启动与代理，只是没有国内直连/广告拦截。
+> 想拿到分流规则就至少跑一次上面的脚本（或 `easynet rules`）。
 
 - 类别清单：`scripts/core/singbox-rules.conf`（`tag|source|category|action`，加类别只改一行）；
 - 生成物：`rules/<tag>.srs` 与 `rules/manifest.json`（含每个文件的 sha256）——属构建产物，**不进版本库**；

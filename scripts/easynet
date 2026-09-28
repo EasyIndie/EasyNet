@@ -48,6 +48,7 @@ EasyNet 统一运维命令
   deploy [<协议>...]  重新部署（日志自动落盘到 ~/.easynet/logs/）
   restart <服务|all>  重启服务
   sub                 显示订阅链接与二维码
+  rules              构建/更新 sing-box 分流规则集（发布到 Edge web root）
   services            列出 EasyNet 管理的 systemd 服务
   hub [--refresh]     显示/重建工作目录索引
   ssh                 体检 SSH 加固状态
@@ -319,6 +320,12 @@ cmd_sub() {
     bash "${EASYNET_PROJECT_DIR:-}/scripts/show_subscription.sh" "$@"
 }
 
+# 规则集是构建产物（不随部署自动生成，因为需要从 GitHub 下载官方数据库），
+# 很容易忘 —— 未发布时 /singbox 订阅会自动省去远程规则集（客户端仍能启动）。
+cmd_rules() {
+    bash "${EASYNET_PROJECT_DIR:-}/scripts/generate_singbox_rules.sh" "$@"
+}
+
 cmd_hub() {
     case "${1:-}" in
         --refresh) ensure_easynet_hub ;;
@@ -385,6 +392,7 @@ main() {
         deploy | redeploy) cmd_deploy "$@" ;;
         services) cmd_services ;;
         sub | subscription) cmd_sub "$@" ;;
+        rules) cmd_rules "$@" ;;
         hub) cmd_hub "$@" ;;
         ssh) cmd_ssh ;;
         harden-ssh) cmd_harden_ssh "$@" ;;

@@ -230,15 +230,42 @@ set_hysteria2_file_permissions() {
 }
 
 configure_hysteria2() {
-    local domain port password obfs_password masquerade_url port_hopping hop_interval
+    local domain port password obfs_password masquerade_url masquerade_block port_hopping hop_interval
 
     domain="$(require_domain)"
     port="${EASYNET_HYSTERIA2_PORT:-443}"
     password="$(resolve_hysteria2_secret "${EASYNET_HYSTERIA2_PASSWORD:-}" HYSTERIA2_PASSWORD)"
     obfs_password="$(resolve_hysteria2_secret "${EASYNET_HYSTERIA2_OBFS_PASSWORD:-}" HYSTERIA2_OBFS_PASSWORD)"
-    masquerade_url="${EASYNET_HYSTERIA2_MASQUERADE_URL:-https://www.bing.com/}"
+    masquerade_url="${EASYNET_HYSTERIA2_MASQUERADE_URL:-}"
     port_hopping="${EASYNET_HYSTERIA2_PORT_HOPPING:-}"
     hop_interval="${EASYNET_HYSTERIA2_PORT_HOP_INTERVAL:-30s}"
+
+    # masquerade：未授权 QUIC 请求看到的内容。
+    # 默认用与 Edge 相同的**自托管静态站**（域名/证书/内容自洽）；反代第三方大站
+    # 会把「我在镜像别人」写进响应（canonical/Cookie/origin），是可被自动化识别的
+    # 内容层特征。仍可用 EASYNET_HYSTERIA2_MASQUERADE_URL 显式反代自有站点。
+    if [ -n "$masquerade_url" ]; then
+        masquerade_block="masquerade:
+  type: proxy
+  proxy:
+    url: $masquerade_url
+    rewriteHost: true"
+    else
+        local masquerade_dir
+        masquerade_dir="${EASYNET_HYSTERIA2_MASQUERADE_DIR:-${EASYNET_WEB_ROOT:-/var/www/html}}"
+        if [ ! -f "$masquerade_dir/index.html" ]; then
+            # 没有 Edge 伪装站时（例如单独重跑 hysteria2 模块）补一个，避免
+            # 未授权探针什么都看不到。生成器与 Edge 共用。
+            source "${SCRIPT_DIR}/../../exposure/edge/render_site.sh"
+            easynet_edge_site_install "$masquerade_dir" "$domain" \
+                "${EASYNET_EDGE_STATE_DIR:-$(easynet_edge_state_dir)}" "${EASYNET_EDGE_SITE_DIR:-}"
+        fi
+        masquerade_block="masquerade:
+  type: file
+  file:
+    dir: $masquerade_dir
+    index: index.html"
+    fi
 
     # Port hopping is enforced by the *server*: hysteria binds the base port and
     # installs nftables redirects (start..end -> base) for the rest of the range.
@@ -278,11 +305,7 @@ auth:
   type: password
   password: $password
 
-masquerade:
-  type: proxy
-  proxy:
-    url: $masquerade_url
-    rewriteHost: true
+$masquerade_block
 
 obfs:
   type: salamander

@@ -110,6 +110,49 @@ EOF
     fi
 }
 
+# 只设置崩溃自愈（Restart=on-failure），不加沙箱限制。
+# 适用于不能套用 strict 沙箱的服务（例如 nginx 要写 /var/log/nginx、
+# /var/lib/nginx 与 webroot），但同样需要崩溃后自动恢复。
+# 与 maintenance_apply_systemd_hardening 共用同一个 drop-in 文件名，
+# 因此卸载时的 uninstall_remove_hardening_dropin 会一并清理。
+maintenance_apply_restart_policy() {
+    local unit="$1"
+    local unit_dir="${EASYNET_SYSTEMD_UNIT_DIR:-/etc/systemd/system}"
+    local dropin_dir dropin new_dropin
+
+    [ -n "$unit" ] || return 0
+    case "$unit" in
+        *.*) ;;
+        *) unit="${unit}.service" ;;
+    esac
+
+    dropin_dir="${unit_dir}/${unit}.d"
+    dropin="$dropin_dir/easynet-hardening.conf"
+
+    mkdir -p "$dropin_dir"
+    new_dropin="$(mktemp)"
+    cat > "$new_dropin" << 'EOF'
+[Service]
+# Crash recovery contract: distro units (e.g. nginx.service) default to
+# Restart=no, which would leave the edge gateway down after a crash.
+Restart=on-failure
+RestartSec=5
+EOF
+    chmod 644 "$new_dropin"
+
+    SYSTEMD_HARDENING_CHANGED=false
+    if ! cmp -s "$new_dropin" "$dropin"; then
+        install -m 644 "$new_dropin" "$dropin"
+        SYSTEMD_HARDENING_CHANGED=true
+    fi
+    rm -f "$new_dropin"
+
+    if [ "$SYSTEMD_HARDENING_CHANGED" = true ]; then
+        systemctl daemon-reload >/dev/null 2>&1 || true
+        log_info "已应用崩溃自愈策略: ${unit}（Restart=on-failure）"
+    fi
+}
+
 # Install and enable fail2ban with an sshd jail (brute-force protection).
 # Uses jail.d/ so a user-managed /etc/fail2ban/jail.local is never overwritten.
 maintenance_configure_fail2ban() {

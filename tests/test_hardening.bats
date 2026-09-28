@@ -155,14 +155,19 @@ setup() {
     rm -rf "$TMP_STATE"
 }
 
-@test "Masquerade route does not emit duplicate security headers" {
-    # Proxied upstream headers must be hidden, otherwise HSTS appears twice with
-    # conflicting max-age (invalid per RFC 6797 and a fingerprint).
+@test "反向代理模式会隐藏上游安全头（避免重复 HSTS）" {
+    # 默认是自托管静态站，没有上游头可冲突；只有显式设置
+    # EASYNET_EDGE_MASQUERADE_URL 时才反代，此时必须隐藏上游的安全头，
+    # 否则 HSTS 会出现两次且 max-age 冲突（违反 RFC 6797，本身也是指纹）。
     run rg -c 'proxy_hide_header Strict-Transport-Security' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
-    [ "$output" = "3" ]
+    [ "$output" = "1" ]
     run rg -q 'proxy_hide_header X-Frame-Options' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
     [ "$status" -eq 0 ]
     run rg -q 'proxy_hide_header X-Content-Type-Options' "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
+    [ "$status" -eq 0 ]
+    # 默认（未配置 URL）分支里不得出现任何 proxy_pass
+    run rg -q 'EDGE_MASQUERADE_URL="\$\{EASYNET_EDGE_MASQUERADE_URL:-\}"' \
+        "$PROJECT_ROOT/scripts/exposure/edge/deploy.sh"
     [ "$status" -eq 0 ]
 }
 

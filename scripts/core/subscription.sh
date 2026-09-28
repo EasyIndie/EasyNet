@@ -151,9 +151,24 @@ easynet_singbox_http_clients_json() {
         '[{tag:$tag, detour:$detour}]'
 }
 
+# 规则集是否已发布到 web root（由 generate_singbox_rules.sh 生成）。
+# 未发布时必须让订阅**不带**远程规则集：订阅里写了 .srs 远程 URL 而服务器上没有
+# 对应文件时，sing-box 客户端启动阶段拉取失败会直接起不来 —— 比没有分流更糟。
+easynet_singbox_rules_published() {
+    local web_root manifest
+    web_root="${EASYNET_WEB_ROOT:-/var/www/html}"
+    manifest="$web_root/rules/manifest.json"
+    [ -s "$manifest" ]
+}
+
 # 订阅里 route.rule_set 的内容：remote 指向本机 edge 发布的 .srs
 easynet_singbox_rule_sets_json() {
     local tag url out="["
+
+    if ! easynet_singbox_rules_published; then
+        printf '[]'
+        return 0
+    fi
 
     while IFS= read -r tag; do
         [ -z "$tag" ] && continue
@@ -169,6 +184,13 @@ easynet_singbox_rule_sets_json() {
 # 订阅里 route.rules 的策略部分（私有网段那条由调用方补在最前）
 easynet_singbox_policy_rules_json() {
     local tag action out="["
+
+    # 规则集未发布时策略规则也必须省略：引用了不存在的 rule_set tag 同样会让
+    # sing-box 启动失败。
+    if ! easynet_singbox_rules_published; then
+        printf '[]'
+        return 0
+    fi
 
     while IFS='|' read -r tag action; do
         [ -z "$tag" ] && continue

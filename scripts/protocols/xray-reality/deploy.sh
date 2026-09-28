@@ -266,8 +266,18 @@ resolve_reality_target() {
         dest="${EASYNET_REALITY_DEST:-127.0.0.1:${EASYNET_EDGE_HTTPS_PORT:-443}}"
         server_names="${EASYNET_REALITY_SERVER_NAME:-${EASYNET_DOMAIN:-}}"
     else
-        dest="${EASYNET_REALITY_DEST:-www.bing.com:443}"
-        server_names="${EASYNET_REALITY_SERVER_NAME:-www.bing.com,www.cloudflare.com}"
+        # 借用外部站点（borrow）：**不提供第三方大站的默认值**。默认借用 bing 会让
+        # 所有 EasyNet 实例共用同一伪装目标（集体指纹），且从非 CDN 的 VPS IP 声称
+        # 自己是某大站本身就是不合理的 SNI→IP 映射；并且我们现在把回落到本机 Edge，
+        # 必然导致「声称 bing、实际回落到自家站点」的内容矛盾。
+        if [ -z "${EASYNET_REALITY_DEST:-}" ] || [ -z "${EASYNET_REALITY_SERVER_NAME:-}" ]; then
+            log_error "borrow 模式必须显式指定 EASYNET_REALITY_DEST 与 EASYNET_REALITY_SERVER_NAME。"
+            log_error "推荐改用默认的 self/auto 模式（自偷自家域名，SNI→DNS 与内容都自洽）。"
+            log_error "若确实要借用外部站点，请填你自己拥有的域名与其真实地址。"
+            exit 1
+        fi
+        dest="${EASYNET_REALITY_DEST:-}"
+        server_names="${EASYNET_REALITY_SERVER_NAME:-}"
     fi
 
     printf '%s|%s|%s' "$dest" "$server_names" "$mode"
@@ -367,9 +377,6 @@ configure_reality() {
     else
         log_warn "Reality 借用外部站点：SNI=${server_names}，伪装目标=${dest}"
         log_warn "借用他人域名无法通过「SNI→DNS 一致性检查」；建议部署 Edge 并启用 EASYNET_REALITY_MODE=self（auto 会自动启用）"
-        if [ -z "${EASYNET_REALITY_DEST:-}" ] && [ -z "${EASYNET_REALITY_SERVER_NAME:-}" ]; then
-            log_warn "当前使用默认伪装目标 www.bing.com — 多个 EasyNet 实例共享，更易被指纹化"
-        fi
     fi
 
     # Warn about XHTTP + sing-box incompatibility

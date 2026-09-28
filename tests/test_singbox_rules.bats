@@ -66,6 +66,9 @@ teardown() {
 @test "生成的 sing-box 订阅带分流规则且 final 仍是 Proxy" {
     export EASYNET_STATE_DIR="$STATE_DIR"
     export EASYNET_WEB_ROOT="$WEB_ROOT"
+    # 规则集是构建产物：必须先发布（generate_singbox_rules.sh）订阅才会引用它们
+    mkdir -p "$WEB_ROOT/rules"
+    printf '%s\n' '{"files":[]}' > "$WEB_ROOT/rules/manifest.json"
     EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" \
         bash "$PROJECT_ROOT/scripts/generate_subscription.sh" >/dev/null 2>&1 || true
 
@@ -84,6 +87,39 @@ teardown() {
     jq -e '.outbounds[] | select(.tag == "DIRECT") | .udp_fragment == true' "$WEB_ROOT/singbox" >/dev/null
     jq -e '.route.rule_set[] | select(.tag == "cn-domains") | has("download_detour") | not' "$WEB_ROOT/singbox" >/dev/null
     jq -e '.route.rule_set[] | select(.tag == "cn-domains") | has("http_client") | not' "$WEB_ROOT/singbox" >/dev/null
+}
+
+@test "规则集未发布时订阅不写 rule_set（否则客户端启动即失败）" {
+    export EASYNET_STATE_DIR="$STATE_DIR"
+    export EASYNET_WEB_ROOT="$WEB_ROOT"
+    [ ! -f "$WEB_ROOT/rules/manifest.json" ]
+    EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" \
+        bash "$PROJECT_ROOT/scripts/generate_subscription.sh" >/dev/null 2>&1 || true
+
+    [ -s "$WEB_ROOT/singbox" ]
+    jq -e '.route.final == "Proxy"' "$WEB_ROOT/singbox" >/dev/null
+    jq -e 'has("rule_set") | not' "$WEB_ROOT/singbox" >/dev/null
+    # 只剩 sniff + 私网直连两条，且不得引用任何不存在的 rule_set tag
+    [ "$(jq '.route.rules | length' "$WEB_ROOT/singbox")" -eq 2 ]
+    jq -e '[.route.rules[] | select(has("rule_set"))] | length == 0' "$WEB_ROOT/singbox" >/dev/null
+}
+
+@test "规则集发布后同一份订阅立刻开始引用（含 http_clients）" {
+    export EASYNET_STATE_DIR="$STATE_DIR"
+    export EASYNET_WEB_ROOT="$WEB_ROOT"
+    mkdir -p "$WEB_ROOT/rules"
+    printf '%s\n' '{"files":[]}' > "$WEB_ROOT/rules/manifest.json"
+    EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" \
+        bash "$PROJECT_ROOT/scripts/generate_subscription.sh" >/dev/null 2>&1 || true
+
+    [ "$(jq '.route.rule_set | length' "$WEB_ROOT/singbox")" -eq 3 ]
+    jq -e '.http_clients[] | select(.tag == "ruleset") | .detour == "DIRECT"' "$WEB_ROOT/singbox" >/dev/null
+}
+
+@test "规则集未发布时端点清单仍完整（发布后立即生效）" {
+    run easynet_singbox_rules_endpoint_specs
+    echo "$output" | grep -q '^rules/manifest.json|rules/manifest.json|application/json$'
+    echo "$output" | grep -q '^rules/cn-domains.srs|rules/cn-domains.srs|application/octet-stream$'
 }
 
 @test "清单为空时优雅降级：无 rule_set、仍是合法配置" {

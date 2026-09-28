@@ -83,7 +83,7 @@ listen: :443,20000-30000
 # 客户端：server_ports ["20000:30000"]（sing-box）/ ports "20000-30000"（mihomo）
 #          / URI 端口与 porthopping 参数（hysteria 规范用端口多值形式）
 hopInterval: 30s
-masquerade: proxy → https://www.bing.com/ (rewriteHost)
+masquerade: file → /var/www/html（与 Edge 同一份自托管静态站）
 ```
 
 | 检测向量 | 判定 | 依据 |
@@ -91,7 +91,7 @@ masquerade: proxy → https://www.bing.com/ (rewriteHost)
 | QUIC SNI 过滤（#654） | ✅ 缓解 | salamander 混淆使 QUIC 首包不再是明文 SNI 结构 |
 | QUIC 版本/参数指纹 | ✅ 缓解 | 混淆后不暴露标准 quic-go 指纹 |
 | UDP 端口固定被针对 | ✅ 缓解 | 端口跳跃把流量摊到 10001 个端口（服务端 `listen: :443,20000-30000`，hysteria 自动建立 nftables 重定向；需云安全组放行该范围） |
-| 主动探测 | ⚠️ 中 | masquerade 用 `proxy` 模式回源 bing；相比静态站点更像「真站点」，但仍是代理语义 |
+| 主动探测 | ✅ 已修 | 旧默认 `proxy → bing` 是透明镜像（canonical 指向第三方、`domain=.bing.com` 的 Cookie、base64 origin 点名第三方），属可被自动识别的内容层特征；现默认 `file →` 自托管自洽静态站。另实测：开启 `obfs: salamander` 后未经混淆的 QUIC 探针收不到任何响应 |
 
 ### 3.3 AmneziaWG —— ⚠️ 中
 

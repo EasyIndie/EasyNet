@@ -77,9 +77,6 @@ generate_singbox_config() {
     [ -n "$rule_sets" ] || rule_sets="[]"
     [ -n "$policy_rules" ] || policy_rules="[]"
     [ -n "$http_clients" ] || http_clients="[]"
-    if [ "$rule_sets" = "[]" ]; then
-        log_warn "未找到 sing-box 分流规则清单（scripts/core/singbox-rules.conf）或其中为空，本次订阅不含分流规则。"
-    fi
 
     jq -n \
         --argjson rule_sets "$rule_sets" \
@@ -309,9 +306,9 @@ generate_singbox_config "$SB_FILE" "$SB_OUTBOUNDS_SAFE" "$SB_ENDPOINTS_SAFE" "$S
 # clients silently lose split routing (or fail to start on /singbox import), so
 # warn loudly here instead of leaving the operator guessing.
 if [ ! -f "${WEB_ROOT}/rules/manifest.json" ]; then
-    log_warn "sing-box 分流规则集尚未发布：${WEB_ROOT}/rules/ 不存在。"
-    log_warn "  → /singbox 订阅将不含分流规则（客户端仍可正常代理，但没有国内直连/广告拦截）。"
-    log_warn "  → 修复：在服务器上运行 ./scripts/generate_singbox_rules.sh"
+    log_warn "sing-box 分流规则集尚未发布：${WEB_ROOT}/rules/manifest.json 不存在。"
+    log_warn "  → /singbox 订阅已自动省去远程规则集（客户端能正常启动并代理，但没有国内直连/广告拦截）。"
+    log_warn "  → 补齐：在服务器上运行 easynet rules（等价于 ./scripts/generate_singbox_rules.sh）"
 fi
 
 # The (random) subscription path lives in the state dir and is the only secret

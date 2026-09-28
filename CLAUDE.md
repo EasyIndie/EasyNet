@@ -152,6 +152,11 @@ New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub inde
 - **Lineage**: Code is primarily Chinese + English mixed. Error messages (log_info/log_error) use Chinese; internal logic and comments use English.
 - **State dirs**: `/var/lib/easynet/` for metadata + edge state. Protocol configs in `/etc/<name>/`.
 - **Test pattern**: Tests run actual `export.sh` scripts with fixture configs, validate metadata schema, then run subscription generation pipeline. Tests never need real network or root. A lint test (`test_lint_unbound_vars.bats`) verifies that all `set -u` scripts use `${VAR:-}` for env var references.
+- **伪装站必须自洽（域名 / 证书 / 内容三者一致）**：Edge 根路径默认返回按域名生成的
+  自托管静态站（`scripts/exposure/edge/render_site.sh`，`EASYNET_EDGE_SITE_DIR` 可放自有内容）。
+  **不得**再引入「反代第三方大站」的默认值 —— 透明镜像会在响应里自曝（`canonical` 指向第三方、
+  `Set-Cookie: domain=.第三方`、base64 `origin` 字段、镜像对方 `robots.txt`、任意 Host 返回对方首页），
+  这是比 TLS 指纹更容易被自动化识别的内容层特征。回归守卫：`tests/test_camouflage_site.bats`。
 - **`set -u` / `${VAR:-}`**: All scripts with `set -u` (or `set -euo pipefail`) must reference environment variables with `${VAR:-}` instead of bare `$VAR`. A bare reference crashes the script when the variable is unset. This applies to `EASYNET_*`, `NGINX_*`, `JOURNALD_*` and similar env-guided variables. Library files (*.sh sourced by set -u contexts) follow the same rule. See `tests/test_lint_unbound_vars.bats` for the regex patterns.
 - **Trap temp variables**: When using `trap ... RETURN` with a temp directory, declare `local tmp_dir=""` (initialize to empty) and use `"${tmp_dir:-}"` in the trap body. This prevents `set -u` from crashing on trap invocation.
 - **No `curl | bash`**: All external downloads go through `download.sh`'s `run_downloaded_script()` which writes to temp file, optionally verifies SHA256, then executes. Downstream installers (get.hy2.sh, Xray-install, acme.sh) are treated the same way.

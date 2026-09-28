@@ -10,6 +10,7 @@ source "$CORE_DIR/download.sh"
 source "$CORE_DIR/pins.sh"
 source "$CORE_DIR/maintenance.sh"
 source "$CORE_DIR/subscription.sh"
+source "$SCRIPT_DIR/render_site.sh"
 
 EDGE_STATE_DIR="${EASYNET_EDGE_STATE_DIR:-$(easynet_edge_state_dir)}"
 EDGE_ROUTES_DIR="$EDGE_STATE_DIR/routes"
@@ -18,8 +19,23 @@ EDGE_DOMAIN="${EASYNET_SUBSCRIPTION_DOMAIN:-${EASYNET_DOMAIN:-}}"
 EDGE_HTTP_PORT="${EASYNET_EDGE_HTTP_PORT:-80}"
 EDGE_HTTPS_PORT="${EASYNET_EDGE_HTTPS_PORT:-443}"
 EDGE_CERT_DIR="${EASYNET_EDGE_CERT_DIR:-/etc/ssl/easynet-edge}"
+# nginx 站点目录可覆盖（测试可直接 source 本文件并断言真实生成的配置，
+# 不再内联复刻模板 —— 之前正是内联复刻漏掉了「默认反代 bing」的行为）。
+EDGE_SITES_AVAILABLE_DIR="${EASYNET_EDGE_SITES_AVAILABLE_DIR:-/etc/nginx/sites-available}"
+EDGE_SITES_ENABLED_DIR="${EASYNET_EDGE_SITES_ENABLED_DIR:-/etc/nginx/sites-enabled}"
+EDGE_SITE_FILE="${EDGE_SITES_AVAILABLE_DIR}/easynet-edge"
 EDGE_RENEW_HOOK="${EASYNET_EDGE_RENEW_HOOK:-$SCRIPT_DIR/cert_renew_hook.sh}"
-EDGE_MASQUERADE_URL="${EASYNET_EDGE_MASQUERADE_URL:-https://www.bing.com}"
+# 伪装站模式：默认**自托管静态站**（域名/证书/内容自洽）。
+# 只有显式设置 EASYNET_EDGE_MASQUERADE_URL 时才反代，且只能指向「自己拥有的」站点：
+# 反代第三方大站会把「我在镜像别人」写进响应与页面（canonical 指向第三方、
+# Set-Cookie 带 domain=.第三方、origin 字段点名第三方、任意 Host 都返回对方首页），
+# 属于比 TLS 指纹更容易被自动化识别的内容层镜像特征。详见 render_site.sh 顶部说明。
+EDGE_MASQUERADE_URL="${EASYNET_EDGE_MASQUERADE_URL:-}"
+EDGE_SITE_DIR="${EASYNET_EDGE_SITE_DIR:-}"
+EDGE_ROOT_LOCATION=""
+EDGE_ERROR_PAGE=""
+EDGE_HTTPS_LISTEN=""
+EDGE_HTTP2_DIRECTIVE=""
 EDGE_SUBSCRIPTION_PATH_PREFIX=""
 EDGE_SERVER_NAMES="$EDGE_DOMAIN"
 if [ -n "${EASYNET_DOMAIN:-}" ] && [ "${EASYNET_DOMAIN:-}" != "$EDGE_DOMAIN" ]; then
@@ -103,68 +119,86 @@ EOF
     fi
 }
 
+# nginx 1.25.1+ 推荐 `http2 on;`；旧版本（如 Ubuntu 24.04 的 1.24）必须用
+# `listen ... ssl http2`，否则配置直接加载失败。
+edge_nginx_uses_modern_http2() {
+    local ver major minor
+    ver="$(nginx -v 2>&1 | sed -n 's|.*nginx/\([0-9][0-9]*\)\.\([0-9][0-9]*\).*|\1 \2|p')"
+    [ -n "$ver" ] || return 1
+    major="${ver%% *}"
+    minor="${ver##* }"
+    [ "$major" -gt 1 ] || [ "$minor" -ge 25 ]
+}
+
+# Edge 的 location / 与 404 处理：默认自托管静态站；仅显式配置时才反代。
+setup_edge_root_location() {
+    if [ -n "$EDGE_MASQUERADE_URL" ]; then
+        log_info "伪装站: 反向代理 ${EDGE_MASQUERADE_URL}（必须是你自己拥有的站点）"
+        EDGE_ROOT_LOCATION="    location / {
+        access_log off;
+        proxy_pass ${EDGE_MASQUERADE_URL};
+        proxy_set_header Host \$proxy_host;
+        proxy_ssl_server_name on;
+        proxy_redirect off;
+        # 上游自带安全头；不透传才不会出现两个互相冲突的 HSTS（RFC 6797）
+        proxy_hide_header Strict-Transport-Security;
+        proxy_hide_header X-Frame-Options;
+        proxy_hide_header X-Content-Type-Options;
+    }"
+    else
+        # shellcheck disable=SC2016  # $uri 是 nginx 变量，必须原样写进配置
+        EDGE_ROOT_LOCATION='    location / {
+        access_log off;
+        try_files $uri $uri/ =404;
+    }'
+    fi
+    # 有自带 404 页时才引用它：否则内部重定向找不到文件会变成 500
+    if [ -f "$WEB_ROOT/404.html" ]; then
+        EDGE_ERROR_PAGE="    error_page 404 /404.html;"
+    else
+        EDGE_ERROR_PAGE=""
+    fi
+}
+
 write_edge_http_site() {
-    cat > /etc/nginx/sites-available/easynet-edge << EOF
+    cat > "$EDGE_SITE_FILE" << EOF
 server {
     listen ${EDGE_HTTP_PORT};
     server_name ${EDGE_SERVER_NAMES};
     server_tokens off;
 
     root $WEB_ROOT;
+${EDGE_ERROR_PAGE}
 
     location /.well-known/acme-challenge/ {
         root $WEB_ROOT;
     }
 
-    location / {
-        access_log off;
-        proxy_pass ${EDGE_MASQUERADE_URL};
-        proxy_set_header Host \$proxy_host;
-        proxy_ssl_server_name on;
-        proxy_redirect off;
-        # The masquerade target sends its own security headers; without hiding
-        # them we would emit duplicates with conflicting values (e.g. two HSTS
-        # max-age), which is invalid per RFC 6797 and is itself a fingerprint
-        # (a real site does not return two contradictory HSTS headers).
-        proxy_hide_header Strict-Transport-Security;
-        proxy_hide_header X-Frame-Options;
-        proxy_hide_header X-Content-Type-Options;
-    }
+${EDGE_ROOT_LOCATION}
 }
 EOF
 }
 
 write_edge_https_site() {
-    cat > /etc/nginx/sites-available/easynet-edge << EOF
+    cat > "$EDGE_SITE_FILE" << EOF
 server {
     listen ${EDGE_HTTP_PORT};
     server_name ${EDGE_SERVER_NAMES};
     server_tokens off;
 
     root $WEB_ROOT;
+${EDGE_ERROR_PAGE}
 
     location /.well-known/acme-challenge/ {
         root $WEB_ROOT;
     }
 
-    location / {
-        access_log off;
-        proxy_pass ${EDGE_MASQUERADE_URL};
-        proxy_set_header Host \$proxy_host;
-        proxy_ssl_server_name on;
-        proxy_redirect off;
-        # The masquerade target sends its own security headers; without hiding
-        # them we would emit duplicates with conflicting values (e.g. two HSTS
-        # max-age), which is invalid per RFC 6797 and is itself a fingerprint
-        # (a real site does not return two contradictory HSTS headers).
-        proxy_hide_header Strict-Transport-Security;
-        proxy_hide_header X-Frame-Options;
-        proxy_hide_header X-Content-Type-Options;
-    }
+${EDGE_ROOT_LOCATION}
 }
 
 server {
-    listen ${EDGE_HTTPS_PORT} ssl;
+    ${EDGE_HTTPS_LISTEN}
+${EDGE_HTTP2_DIRECTIVE}
     server_name ${EDGE_SERVER_NAMES};
     server_tokens off;
 
@@ -185,23 +219,11 @@ server {
     add_header X-Frame-Options "DENY" always;
 
     root $WEB_ROOT;
+${EDGE_ERROR_PAGE}
 
     include ${EDGE_ROUTES_DIR}/*.conf;
 
-    location / {
-        access_log off;
-        proxy_pass ${EDGE_MASQUERADE_URL};
-        proxy_set_header Host \$proxy_host;
-        proxy_ssl_server_name on;
-        proxy_redirect off;
-        # The masquerade target sends its own security headers; without hiding
-        # them we would emit duplicates with conflicting values (e.g. two HSTS
-        # max-age), which is invalid per RFC 6797 and is itself a fingerprint
-        # (a real site does not return two contradictory HSTS headers).
-        proxy_hide_header Strict-Transport-Security;
-        proxy_hide_header X-Frame-Options;
-        proxy_hide_header X-Content-Type-Options;
-    }
+${EDGE_ROOT_LOCATION}
 }
 EOF
 }
@@ -247,8 +269,30 @@ setup_edge_nginx() {
     apt install -y nginx
     mkdir -p "$WEB_ROOT" "$EDGE_ROUTES_DIR"
 
+    if edge_nginx_uses_modern_http2; then
+        EDGE_HTTPS_LISTEN="listen ${EDGE_HTTPS_PORT} ssl;"
+        EDGE_HTTP2_DIRECTIVE="    http2 on;"
+    else
+        EDGE_HTTPS_LISTEN="listen ${EDGE_HTTPS_PORT} ssl http2;"
+        EDGE_HTTP2_DIRECTIVE=""
+    fi
+
+    # 伪装站：默认渲染「属于本域名」的自洽静态站（见 render_site.sh）；
+    # EASYNET_EDGE_SITE_DIR 可指向自带站点目录。
+    easynet_edge_site_install "$WEB_ROOT" "$EDGE_DOMAIN" "$EDGE_STATE_DIR" "$EDGE_SITE_DIR"
+    setup_edge_root_location
+
+    # Ubuntu/Debian 自带的默认站点占着 80/443 的 default_server 并返回
+    # "Welcome to nginx!" 欢迎页 —— 这是「刚装完 nginx」的指纹，且让未知 Host
+    # 看到与本站无关的内容。禁用它，让 Edge 站点成为唯一的默认 server。
+    if [ -L "$EDGE_SITES_ENABLED_DIR/default" ]; then
+        rm -f "$EDGE_SITES_ENABLED_DIR/default"
+        log_info "已禁用 nginx 默认站点（其欢迎页是全新安装的指纹）"
+    fi
+
     write_edge_http_site
-    ln -sf /etc/nginx/sites-available/easynet-edge /etc/nginx/sites-enabled/
+    mkdir -p "$EDGE_SITES_ENABLED_DIR"
+    ln -sf "$EDGE_SITE_FILE" "$EDGE_SITES_ENABLED_DIR/easynet-edge"
     systemctl enable nginx
     if ! nginx -t; then
         log_error "Nginx HTTP 配置测试失败，请检查语法错误。"
@@ -272,6 +316,10 @@ setup_edge_nginx() {
         ufw allow "${EDGE_HTTP_PORT}/tcp" >/dev/null 2>&1 || true
         ufw allow "${EDGE_HTTPS_PORT}/tcp" >/dev/null 2>&1 || true
     fi
+
+    # nginx 同时承担伪装站、订阅分发与 Reality 回落目标：崩溃后必须自愈
+    # （发行版默认 Restart=no，而 xray/hysteria 都已有 on-failure）。
+    maintenance_apply_restart_policy nginx
 }
 
 main() {
@@ -281,4 +329,7 @@ main() {
     log_info "Edge Gateway 已配置: https://${EDGE_DOMAIN}"
 }
 
-main "$@"
+# 允许被测试脚本 source：只加载函数，不执行部署。
+if [ "${BASH_SOURCE[0]:-$0}" = "$0" ]; then
+    main "$@"
+fi
