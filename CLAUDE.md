@@ -114,8 +114,9 @@ generated `README.md` index:
 
 `ensure_easynet_hub()` runs at the end of every deploy/uninstall (pure `mkdir`/`ln` — deleting
 the hub is always safe). `scripts/easynet` is the unified CLI (`status`, `where`, `path`,
-`config`, `edit`, `logs`, `restart`, `sub`, `services`, `hub`, `ssh`, `doctor`, `env`,
-`deploy`, `update`); `ensure_easynet_hub` also symlinks it to `/usr/local/bin/easynet`.
+`config`, `edit`, `logs`, `restart`, `sub`, `rules`, `clients`, `services`, `hub`, `ssh`,
+`harden-ssh`, `doctor`, `monitor`, `env`, `deploy`, `upgrade`, `update`, `version`);
+`ensure_easynet_hub` also symlinks it to `/usr/local/bin/easynet`.
 `easynet deploy` tees output to `~/.easynet/logs/deploy-<timestamp>.log` (`latest.log`).
 
 New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub indexes them.

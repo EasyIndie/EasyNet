@@ -5,6 +5,26 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.16] - 2026-09-28
+
+### 新增
+- **运行监控告警**（`scripts/core/monitor.sh` + `easynet monitor [run|check]`）：每日检查
+  协议服务 / nginx / fail2ban 存活、订阅端点可达、Edge 证书 7 天到期预警；失败时经
+  `email` / `ntfy` / `telegram` 推送告警，成功时写心跳 `last_ok`。渠道由
+  `EASYNET_MONITOR_*` 配置，仅当渠道 + 凭据齐全时 `deploy.sh` 才安装 cron（
+  `EASYNET_MONITOR_CRON`，默认 `0 9 * * *`）。
+
+### 修复
+- **`rm -rf` 安全护栏**：`install.sh` 与 `deploy.sh` 回滚路径现在拒绝把
+  `EASYNET_INSTALL_DIR` / `EASYNET_STATE_DIR` 指向 `/`、`/etc`、`/var` 等文件系统
+  关键目录（与 `core/uninstall.sh` 的 `uninstall_safe_path` 对齐，补齐此前安装/回滚
+  两条路径缺失的护栏）。
+- **Hysteria2 配置 YAML 值引号化**：auth/obfs 密码与 masquerade url/dir 改为 YAML
+  单引号标量（`yaml_squote`），操作者用 `EASYNET_HYSTERIA2_*` 覆盖时，值含 `:`/`#`/`&`
+  等特殊字符不再生成非法或被静默截断的配置。
+- **下载加超时**：`core/download.sh` 的 curl/wget 增加 connect/max 超时，避免网络抖动时
+  部署无限挂起。
+
 ## [0.0.15] - 2026-09-28
 
 ### 新增

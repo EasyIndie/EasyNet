@@ -660,6 +660,22 @@ openssl x509 -in /etc/ssl/easynet-edge/fullchain.crt -noout -enddate
 | `EASYNET_JOURNALD_MAX_USE` | systemd journald 磁盘使用上限 | `500M` |
 | `EASYNET_NGINX_LOGROTATE_FILE` | Nginx logrotate 配置文件路径 | `/etc/logrotate.d/easynet-nginx` |
 
+#### 运行监控
+
+| 变量 | 作用 | 默认值 |
+|------|------|--------|
+| `EASYNET_MONITOR_NOTIFY` | 告警推送渠道：`email` / `ntfy` / `telegram` / `none` | `none`（不安装 cron） |
+| `EASYNET_MONITOR_EMAIL_TO` | email 渠道收件人 | 未设置 |
+| `EASYNET_MONITOR_NTFY_TOPIC_URL` | ntfy 渠道 topic URL | 未设置 |
+| `EASYNET_MONITOR_TELEGRAM_BOT_TOKEN` | Telegram Bot Token | 未设置 |
+| `EASYNET_MONITOR_TELEGRAM_CHAT_ID` | Telegram Chat ID | 未设置 |
+| `EASYNET_MONITOR_CRON` | 每日检查时间（cron 表达式） | `0 9 * * *` |
+
+监控脚本 `scripts/core/monitor.sh`（`easynet monitor run|check`）检查：协议服务 / nginx /
+fail2ban 存活、订阅端点可达、Edge 证书 7 天到期预警；失败时按渠道推送，成功时写心跳
+`/var/lib/easynet/monitor/last_ok`。仅当渠道 + 凭据齐全时 `deploy.sh` 才安装 cron；
+未配置渠道时可手工 `easynet monitor check` 体检。
+
 ### 默认部署行为
 
 当 **不设置任何环境变量** 直接运行 `./scripts/deploy.sh` 时，系统按以下默认逻辑执行：

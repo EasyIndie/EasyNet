@@ -17,12 +17,12 @@
   - **AmneziaWG** — WireGuard + AmneziaWG 混淆（Jc/Jmin/Jmax/S1/S2/H1-H4），默认启用，消除 UDP 指纹
 - 🔒 强安全架构：REALITY 无证书 TLS、Edge Gateway 反代伪装
 - ⚡ 性能优化：BBR 拥塞控制、XHTTP 多路复用 (XMUX)、QUIC 0-RTT
-- 🔄 自动化运维：系统更新、证书续期 hook（自动修正权限并重启服务）、日志限额与 logrotate
+- 🔄 自动化运维：系统更新、证书续期 hook（自动修正权限并重启服务）、日志限额与 logrotate、运行监控告警（每日心跳 + email/ntfy/telegram 推送）
 - 🤖 无交互部署：支持 `.env` 或环境变量进行一键安装
 - 🔗 节点订阅：配置域名后自动生成 URI / Clash / sing-box 订阅链接和二维码
 - 📱 全平台客户端支持（推荐：Clash Verge Rev / Clash Meta for Android / Shadowrocket / sing-box）
 - 💰 成本可控（$5–$15/月）
-- 🛡️ 安全稳定，自带 366 个测试用例（28 套件）保护核心逻辑
+- 🛡️ 安全稳定，自带 455 个测试用例（34 套件）保护核心逻辑
 
 ## 协议对比与防探测等级
 

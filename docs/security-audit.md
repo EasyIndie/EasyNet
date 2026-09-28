@@ -1,6 +1,6 @@
 # EasyNet 安全审计报告
 
-> **最后更新**: 2026-09-27
+> **最后更新**: 2026-09-28
 > **审计范围**: 协议实现（Reality / Hysteria2 / Shadowsocks 2022 / AmneziaWG）、Edge Gateway、
 > 防火墙、系统加固、订阅分发、供应链
 > **审计方式**: 静态代码审计 + 测试 VPS 运行时取证 + 2025–2026 最新公开研究对照
@@ -173,7 +173,7 @@ CapabilityBoundingSet=~      ← systemd 语义：对空列表取反 = 授予全
 | 每日定时重启（`cron.sh` 按 metadata 生成） | ✅ |
 | journald 日志上限（500M） | ✅ |
 | 部署失败回滚 | ⚠️ 部分（配置文件先写临时文件再替换） |
-| 运行状态监控 / 告警 | ❌ 无（无外部心跳；建议后续加） |
+| 运行状态监控 / 告警 | ✅ 每日心跳 + 失败推送（`scripts/core/monitor.sh`，email/ntfy/telegram） |
 
 ### 5.2 供应链
 
@@ -211,7 +211,7 @@ CapabilityBoundingSet=~      ← systemd 语义：对空列表取反 = 授予全
 | 🟡 P2 | WireGuard 私钥写入客户端 URI | 分享链接=私钥 | 协议约定，保留但已在部署时告警 |
 | 🟡 P3 | Xray 版本 pin 落后上游 6 个月（26.3.27 vs 26.9.9） | 缺后续修复 | 评审后跟进升级（保持 pin 策略） |
 | 🟡 P3 | Reality 未启用 Finalmask | 应对针对性检测的余量不足 | 作为应急开关（`EASYNET_REALITY_FINALMASK`）预留 |
-| 🟡 P3 | 无运行监控/告警 | 故障不可知 | 后续加轻量心跳 |
+| ✅ 已解决 | 无运行监控/告警 | 故障不可知 | 0.0.16 新增 `scripts/core/monitor.sh` + `easynet monitor`：每日检查服务/订阅/证书，失败经 email/ntfy/telegram 推送 |
 
 ---
 
