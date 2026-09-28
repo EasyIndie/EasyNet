@@ -112,3 +112,30 @@ setup() {
     [ -z "$output" ]
     rm -rf "$dir"
 }
+
+@test "monitor_osv_vulns 只报可修复（有 fixed）的漏洞" {
+    curl() {
+        printf '%s' '{"vulns":[{"id":"GO-2026-9999","summary":"actionable","affected":[{"ranges":[{"events":[{"introduced":"0"},{"fixed":"1.2.4"}]}]}]},{"id":"GO-2026-0000","summary":"unfixed","affected":[{"ranges":[{"events":[{"introduced":"0"}]}]}]}]}'
+    }
+    run monitor_osv_vulns xray 1.0.0
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"GO-2026-9999"* ]]
+    [[ "$output" == *"修复于 1.2.4"* ]]
+    [[ "$output" != *"GO-2026-0000"* ]]
+}
+
+@test "monitor_upstream_diff 只报新增（去重），并更新状态文件" {
+    local dir
+    dir="$(mktemp -d)"
+    export EASYNET_STATE_DIR="$dir"
+    run monitor_upstream_diff "$(printf 'A\nB')"
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s\n' "$output" | grep -c .)" -eq 2 ]
+    run monitor_upstream_diff "$(printf 'A\nB')"
+    [ -z "$output" ]
+    run monitor_upstream_diff "$(printf 'A\nB\nC')"
+    [ "$output" = "C" ]
+    run monitor_upstream_diff ""
+    [ -z "$output" ]
+    rm -rf "$dir"
+}

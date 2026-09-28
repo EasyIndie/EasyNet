@@ -105,7 +105,13 @@ monitor_osv_vulns() {
         -d "{\"version\":\"${version}\",\"package\":{\"name\":\"${name}\",\"ecosystem\":\"${ecosystem}\"}}" \
         https://api.osv.dev/v1/query 2>/dev/null || true)"
     [ -n "$json" ] || return 0
-    printf '%s' "$json" | jq -r '.vulns[]? | "\(.id): \(.summary // "无摘要")"' 2>/dev/null || true
+    # 只报有 fixed 版本的漏洞：无修复版本的公告报了也无法处理，只会造成告警疲劳。
+    printf '%s' "$json" | jq -r '
+        .vulns[]?
+        | ([.affected[]?.ranges[]?.events[]? | select(has("fixed")) | .fixed] | sort) as $fx
+        | select(($fx | length) > 0)
+        | "\(.id): \(.summary // "无摘要")（修复于 \($fx[0])）"
+    ' 2>/dev/null || true
 }
 
 # 上游维度告警行（无则无输出）。
@@ -128,8 +134,22 @@ monitor_upstream_findings() {
     done
 }
 
-# 逐项健康检查。每发现一项失败输出一行（无失败则无输出）。
-monitor_failures() {
+# 与上次记录的上游发现比较，打印**新增**项；随后把当前完整列表写入状态文件。
+# 同一 CVE / 漂移只在首次出现时告警，不再每天刷屏（monitor run 用；check 不走这里）。
+monitor_upstream_diff() {
+    local current="${1:-}" state_file prev line
+    state_file="$(easynet_state_dir)/monitor/upstream_state"
+    mkdir -p "$(dirname "$state_file")" 2>/dev/null || true
+    prev="$(cat "$state_file" 2>/dev/null || true)"
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        grep -qxF "$line" <<< "$prev" || printf '%s\n' "$line"
+    done <<< "$current"
+    printf '%s\n' "$current" | sed '/^$/d' > "$state_file" 2>/dev/null || true
+}
+
+# 健康检查（服务 / 端点 / 证书）。每发现一项失败输出一行（无失败则无输出）。
+monitor_health_failures() {
     local svc domain url cert
 
     # 1) 协议服务（按 metadata 枚举）
@@ -168,7 +188,11 @@ monitor_failures() {
         fi
     fi
 
-    # 6) 上游维度：运行时版本漂移 + 已知漏洞（CI 的 pin 检查覆盖不到）
+}
+
+# 全量检查（健康 + 上游），供 `monitor check` 手工查看。
+monitor_failures() {
+    monitor_health_failures
     monitor_upstream_findings
 }
 
@@ -208,11 +232,24 @@ monitor_send() {
 }
 
 monitor_run() {
-    local failures text state_dir
-    failures="$(monitor_failures)"
+    local state_dir health upstream_all upstream_new findings text host now
     state_dir="$(easynet_state_dir)/monitor"
 
-    if [ -z "$failures" ]; then
+    # 健康问题每次都报（服务/端点/证书是即时状态）；上游发现（版本漂移 + 可修复
+    # CVE）只报**新增**，避免同一漏洞每天刷屏。
+    health="$(monitor_health_failures)"
+    upstream_all="$(monitor_upstream_findings)"
+    upstream_new="$(monitor_upstream_diff "$upstream_all")"
+
+    if [ -n "$health" ] && [ -n "$upstream_new" ]; then
+        findings="$(printf '%s\n%s' "$health" "$upstream_new")"
+    elif [ -n "$health" ]; then
+        findings="$health"
+    else
+        findings="$upstream_new"
+    fi
+
+    if [ -z "$findings" ]; then
         mkdir -p "$state_dir" 2>/dev/null && date +%s > "$state_dir/last_ok" 2>/dev/null || true
         log_info "监控检查通过"
         return 0
@@ -220,8 +257,8 @@ monitor_run() {
 
     host="$(hostname)"
     now="$(date '+%F %T')"
-    text="$(printf '[EasyNet] %s 检查失败 %s\n' "$host" "$now")${failures}"
-    log_warn "$(printf '%s\n' "$failures")"
+    text="$(printf '[EasyNet] %s 检查告警 %s\n' "$host" "$now")${findings}"
+    log_warn "$(printf '%s\n' "$findings")"
     if ! monitor_send "$text"; then
         log_warn "告警发送失败（推送渠道未配置或不可用）"
     fi

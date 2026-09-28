@@ -18,6 +18,7 @@
   二进制版本是否与 release pin 一致（发现手工替换 / 升级半途失败），并用 OSV.dev 查询
   Xray / Hysteria2 / Shadowsocks 运行版本的已知漏洞。开关 `EASYNET_MONITOR_UPSTREAM` /
   `EASYNET_MONITOR_CVE`。与 CI 的 `pins.yml`（repo pin vs 上游稳定版）分工，不重复。
+  **防刷屏**：CVE 只报有 `fixed` 版本（可修复）的；上游发现去重，只在首次出现时推送。
 
 ### 修复
 - **测试不再依赖网络**：`generate_subscription.sh` 会发布客户端二进制镜像（从 GitHub 下载
