@@ -155,9 +155,16 @@ sudo bash easynet-singbox-client.sh doctor
 
 | 客户端 | 范围字段 | 间隔字段 | 间隔值的类型 |
 |--------|----------|----------|--------------|
-| sing-box | `server_ports: ["20000:30000"]` | `hop_interval` | **时长字符串** `"30s"` |
-| mihomo / Clash Verge / Clash Meta | `ports: "20000-30000"` | `hop-interval` | **整数秒** `30` |
+| sing-box | `server_ports: ["20000:30000"]` | `hop_interval` + `hop_interval_max` | **时长字符串** `"30s"`（随机区间上限到 `"60s"`） |
+| mihomo / Clash Verge / Clash Meta | `ports: "20000-30000"` | `hop-interval` | **整数秒** `30`（EasyNet 只写单值，见下） |
 | Shadowrocket（URI） | URI 查询参数 `porthopping=20000-30000` | `porthopping-interval` | 未验证（无真机） |
+
+> **随机化只加在 sing-box**：sing-box ≥1.14 的 `hop_interval_max` 让客户端在
+> `[hop_interval, hop_interval_max]` 间随机取间隔（EasyNet 默认 `30s`~`60s`，由
+> `EASYNET_HYSTERIA2_PORT_HOP_INTERVAL_MAX` 控制）。mihomo ≥1.19.x 的 `hop-interval`
+> 其实也支持范围方言（`"30-60"` = 随机），但那之前的版本会报 `invalid range: 30-60`
+> 拒绝整份订阅，因此 EasyNet **故意只给 mihomo 写单个整数**（固定间隔）；Shadowrocket
+> 的 `porthopping-interval` 无真机验证，同样保持固定。
 
 > ⚠️ **把 `"30s"` 写给 mihomo 会让整份订阅导入失败**：mihomo 的 `hop-interval` 是整数秒字段，
 > 它会把 `30s` 拿去当**端口范围**解析，报出极易误判的

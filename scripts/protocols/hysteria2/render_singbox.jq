@@ -12,6 +12,9 @@
     server_ports: (if ($c["hop-range"] // "") == "" then null
                    else $c["hop-range"] | split("-") | ["\(.[0]):\(.[1])"] end),
     hop_interval: ($c["hop-interval"] // null),
+    # Randomized hop interval upper bound (sing-box >=1.14). Omitted when unset
+    # or equal to hop_interval (that would be equivalent to a fixed interval).
+    hop_interval_max: (if (($c["hop-interval-max"] // "") == "") or ($c["hop-interval-max"] == $c["hop-interval"]) then null else $c["hop-interval-max"] end),
     obfs: {
         type: ($c.obfs // "salamander"),
         password: $c["obfs-password"]

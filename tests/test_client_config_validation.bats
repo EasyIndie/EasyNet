@@ -38,7 +38,7 @@ JSON
 JSON
     # 端口跳跃：元数据里存的是 sing-box 方言的 "30s"（mihomo 需要整数秒，渲染时换算）
     cat > "$STATE_DIR/modules/hysteria2/metadata.json" <<'JSON'
-{"schemaVersion":1,"module":"hysteria2","enabled":true,"protocol":"hysteria2","port":443,"client":{"uri":"hysteria2://password1111111111@example.com:443/?sni=example.com&obfs=salamander&obfs-password=obfspass&porthopping=20000-30000&porthopping-interval=30s#EasyNet-Hysteria2","clash":{"name":"EasyNet-Hysteria2","type":"hysteria2","server":"example.com","port":443,"password":"password1111111111","sni":"example.com","obfs":"salamander","obfs-password":"obfspass","up":"100 Mbps","down":"100 Mbps","hop-range":"20000-30000","hop-interval":"30s"}}}
+{"schemaVersion":1,"module":"hysteria2","enabled":true,"protocol":"hysteria2","port":443,"client":{"uri":"hysteria2://password1111111111@example.com:443/?sni=example.com&obfs=salamander&obfs-password=obfspass&porthopping=20000-30000&porthopping-interval=30s#EasyNet-Hysteria2","clash":{"name":"EasyNet-Hysteria2","type":"hysteria2","server":"example.com","port":443,"password":"password1111111111","sni":"example.com","obfs":"salamander","obfs-password":"obfspass","up":"100 Mbps","down":"100 Mbps","hop-range":"20000-30000","hop-interval":"30s","hop-interval-max":"60s"}}}
 JSON
 
     EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" \
@@ -95,6 +95,18 @@ JSON
         run bash "$PROJECT_ROOT/scripts/client_check.sh" check-clash "$out"
         [ "$status" -eq 0 ]
     done
+}
+
+@test "sing-box 接受随机跳跃区间（hop_interval_max）" {
+    skip_unless_client singbox
+    local meta="$TMP_DIR/hy2-singbox.json" out="$TMP_DIR/singbox-hop.json" ob
+    cat > "$meta" <<'JSON'
+{"module":"hysteria2","client":{"clash":{"name":"EasyNet-Hysteria2","type":"hysteria2","server":"example.com","port":443,"password":"pw","sni":"example.com","obfs":"salamander","obfs-password":"op","up":"100 Mbps","down":"100 Mbps","hop-range":"20000-30000","hop-interval":"30s","hop-interval-max":"60s"}}}
+JSON
+    ob="$(jq -c -f "$PROJECT_ROOT/scripts/protocols/hysteria2/render_singbox.jq" "$meta")"
+    jq -n --argjson o "$ob" '{log:{disabled:true},inbounds:[{type:"mixed",listen:"127.0.0.1",listen_port:7891}],outbounds:[$o]}' > "$out"
+    run bash "$PROJECT_ROOT/scripts/client_check.sh" check-singbox "$out"
+    [ "$status" -eq 0 ]
 }
 
 @test "校验器本身有效：hop-interval 写成 \"30s\" 必须被 mihomo 拒绝（0.0.13 事故哨兵）" {

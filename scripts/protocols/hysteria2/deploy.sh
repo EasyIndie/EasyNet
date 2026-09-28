@@ -238,7 +238,7 @@ yaml_squote() {
 }
 
 configure_hysteria2() {
-    local domain port password obfs_password masquerade_url masquerade_block port_hopping hop_interval
+    local domain port password obfs_password masquerade_url masquerade_block port_hopping hop_interval hop_interval_max
 
     domain="$(require_domain)"
     port="${EASYNET_HYSTERIA2_PORT:-443}"
@@ -247,6 +247,10 @@ configure_hysteria2() {
     masquerade_url="${EASYNET_HYSTERIA2_MASQUERADE_URL:-}"
     port_hopping="${EASYNET_HYSTERIA2_PORT_HOPPING:-}"
     hop_interval="${EASYNET_HYSTERIA2_PORT_HOP_INTERVAL:-30s}"
+    # 随机跳跃区间上限（sing-box >=1.14 的 hop_interval_max）：客户端在
+    # [hop_interval, hop_interval_max] 之间随机取间隔，让跳跃节奏不可预测。
+    # 默认 2 倍基础间隔；设为与基础间隔相同则退化为固定间隔。
+    hop_interval_max="${EASYNET_HYSTERIA2_PORT_HOP_INTERVAL_MAX:-60s}"
 
     # masquerade：未授权 QUIC 请求看到的内容。
     # 默认用与 Edge 相同的**自托管静态站**（域名/证书/内容自洽）；反代第三方大站
@@ -287,6 +291,9 @@ configure_hysteria2() {
             && [ "${BASH_REMATCH[1]}" -lt "${BASH_REMATCH[2]}" ]; then
             listen_spec="$port,$port_hopping"
             log_info "Port Hopping 已启用: $port_hopping (基础端口 ${port}，间隔 $hop_interval)"
+            if [ "$hop_interval_max" != "$hop_interval" ]; then
+                log_info "  跳跃间隔随机化: ${hop_interval} ~ ${hop_interval_max}（仅 sing-box 客户端）"
+            fi
             log_info "  服务器将把 $port_hopping/udp 全部重定向到 $port/udp，并自动管理 nftables 规则"
         else
             log_warn "EASYNET_HYSTERIA2_PORT_HOPPING 格式无效（应为 起始-结束，如 20000-30000）: ${port_hopping}，已忽略"
@@ -330,6 +337,7 @@ EOF
     if [ -n "$port_hopping" ]; then
         write_env_var "$new_env" HYSTERIA2_PORT_HOPPING "$port_hopping"
         write_env_var "$new_env" HYSTERIA2_PORT_HOP_INTERVAL "$hop_interval"
+        write_env_var "$new_env" HYSTERIA2_PORT_HOP_INTERVAL_MAX "$hop_interval_max"
     fi
 
     # Idempotent apply: replace only when something changed, so a re-deploy does

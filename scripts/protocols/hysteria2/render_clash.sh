@@ -26,6 +26,10 @@ hop_interval=$(jq -r '.client.clash."hop-interval" // empty' "$METADATA_FILE")
 # 发 "30s" 会被当成端口范围解析 → `invalid range: 30s`，整份订阅被拒绝导入
 # （Clash Verge 实测）。元数据存的是中立值时长相时长（"30s"），这里按客户端方言转换：
 # 纯数字直接沿用；30s/1m/1h 归一化成秒；无法识别的省略该字段（mihomo 用默认值）。
+#
+# 注：mihomo >=1.19.x 的 hop-interval 其实支持范围方言（"30-60" = 随机跳跃），
+# 但那之前的版本会直接报 `invalid range: 30-60` 拒绝整份订阅。为了不打挂老客户端，
+# 这里**故意**只写单个整数（固定间隔）——随机化只加在 sing-box 订阅（v1.14+ 本就要求）。
 mihomo_hop_interval_seconds() {
     local raw="$1" num unit
     [ -n "$raw" ] || return 0

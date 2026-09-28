@@ -5,6 +5,16 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [未发布]
+
+### 新增
+- **Hysteria2 端口跳跃间隔随机化（sing-box）**：订阅生成器现在为 sing-box 客户端输出
+  `hop_interval_max`（v1.14+ 的随机跳跃区间），客户端在 `[hop_interval, hop_interval_max]`
+  间随机取跳变间隔，跳跃节奏不再固定。由 `EASYNET_HYSTERIA2_PORT_HOP_INTERVAL_MAX` 控制
+  （默认 `60s`；设为与 `EASYNET_HYSTERIA2_PORT_HOP_INTERVAL` 相同即退回固定间隔）。
+  mihomo / Shadowrocket 维持固定整数——mihomo 的范围方言（`"30-60"`）仅 1.19.x+ 支持，
+  写范围会打挂更早的客户端（实测真二进制已纳入 CI 校验）。
+
 ## [0.0.16] - 2026-09-28
 
 ### 新增

@@ -20,7 +20,7 @@ export_hysteria2_metadata() {
         source "$HYSTERIA2_ENV_FILE"
     fi
 
-    local domain port password obfs_password sni port_hopping hop_interval uri metadata_json
+    local domain port password obfs_password sni port_hopping hop_interval hop_interval_max uri metadata_json
     domain="${HYSTERIA2_DOMAIN:-${EASYNET_DOMAIN:-}}"
     port="${HYSTERIA2_PORT:-${EASYNET_HYSTERIA2_PORT:-443}}"
     password="${HYSTERIA2_PASSWORD:-${EASYNET_HYSTERIA2_PASSWORD:-}}"
@@ -28,6 +28,7 @@ export_hysteria2_metadata() {
     sni="${HYSTERIA2_SNI:-$domain}"
     port_hopping="${HYSTERIA2_PORT_HOPPING:-${EASYNET_HYSTERIA2_PORT_HOPPING:-}}"
     hop_interval="${HYSTERIA2_PORT_HOP_INTERVAL:-30s}"
+    hop_interval_max="${HYSTERIA2_PORT_HOP_INTERVAL_MAX:-60s}"
 
     if [ -z "$domain" ] || [ -z "$port" ] || [ -z "$password" ] || [ -z "$obfs_password" ]; then
         echo "Hysteria2 metadata is incomplete" >&2
@@ -78,6 +79,7 @@ export_hysteria2_metadata() {
         --arg obfs_password "$obfs_password" \
         --arg port_hopping "$port_hopping" \
         --arg hop_interval "$hop_interval" \
+        --arg hop_interval_max "$hop_interval_max" \
         --arg uri "$uri" \
         --argjson port "$port" \
         --argjson firewall "$firewall_json" \
@@ -108,7 +110,10 @@ export_hysteria2_metadata() {
                     # render_singbox.jq (`server_ports`); null when hopping is off
                     # so the renderers omit the field entirely.
                     "hop-range": (if $port_hopping == "" then null else $port_hopping end),
-                    "hop-interval": (if $port_hopping == "" then null else $hop_interval end)
+                    "hop-interval": (if $port_hopping == "" then null else $hop_interval end),
+                    # Upper bound for randomized hopping (sing-box hop_interval_max);
+                    # render_singbox.jq omits it when equal to hop-interval.
+                    "hop-interval-max": (if $port_hopping == "" then null else $hop_interval_max end)
                 }
             },
             firewall: $firewall,
