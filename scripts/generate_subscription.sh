@@ -16,6 +16,7 @@ source "$PROJECT_ROOT/scripts/core/subscription.sh"
 source "$PROJECT_ROOT/scripts/core/display.sh"
 source "$PROJECT_ROOT/scripts/core/discovery.sh"
 source "$PROJECT_ROOT/scripts/core/subscription_clash.sh"
+source "$PROJECT_ROOT/scripts/core/client_binaries.sh"
 
 WEB_ROOT="${EASYNET_WEB_ROOT:-/var/www/html}"
 SUB_FILE="${WEB_ROOT}/sub"
@@ -305,6 +306,14 @@ generate_singbox_config "$SB_FILE" "$SB_OUTBOUNDS_SAFE" "$SB_ENDPOINTS_SAFE" "$S
 # root. They are a manual build step; if they were never published, sing-box
 # clients silently lose split routing (or fail to start on /singbox import), so
 # warn loudly here instead of leaving the operator guessing.
+# 客户端二进制镜像（设备代理失效时从这里自愈下载）。best-effort：失败只 WARN。
+easynet_client_binaries_publish "$WEB_ROOT"
+if [ ! -f "${WEB_ROOT}/bin/manifest.json" ]; then
+    log_warn "客户端二进制未发布：${WEB_ROOT}/bin/manifest.json 不存在。"
+    log_warn "  → 设备代理失效时无法从订阅站下载 sing-box 自愈（只能回落到 GitHub，国内常失败）。"
+    log_warn "  → 补齐：在服务器上运行 easynet clients"
+fi
+
 if [ ! -f "${WEB_ROOT}/rules/manifest.json" ]; then
     log_warn "sing-box 分流规则集尚未发布：${WEB_ROOT}/rules/manifest.json 不存在。"
     log_warn "  → /singbox 订阅已自动省去远程规则集（客户端能正常启动并代理，但没有国内直连/广告拦截）。"

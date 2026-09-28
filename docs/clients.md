@@ -231,3 +231,54 @@ scripts/client_check.sh check-singbox /path/singbox.json
 
 内联常量与 `core/pins.sh` 的一致性由 `tests/test_singbox_client_installer.bats` 断言（防漂移）。
 
+## 设备恢复手册（代理失效时怎么救回来）
+
+设备（树莓派、软路由、旧机）最常见的失效场景是：**服务端换了凭据/地址，而设备拉不到新配置**。
+此时设备往往还在"旧配置能启动、但连不通"的状态，而它又**无法直连 GitHub 下载 sing-box 自救**
+（实测国内访问 GitHub release 会卡死：90 秒 0 字节后 `curl: (18)`）。
+
+我们的做法：**服务端把 pinned 的 sing-box 也发布到订阅站**，设备只依赖"域名可达"即可自愈。
+
+### 服务端：发布镜像
+
+```bash
+easynet clients            # 发布/刷新（每日部署时也会自动做一次，best-effort）
+easynet clients status     # 查看各平台是否就绪
+```
+
+发布内容（`/var/www/html/bin/`，通过随机前缀暴露）：
+
+```
+bin/sing-box-<版本>-linux-arm64.tar.gz        + .sha256
+bin/sing-box-<版本>-linux-amd64.tar.gz        + .sha256
+bin/manifest.json                             （版本 + 各平台 SHA256/大小）
+```
+
+设备侧地址即 `${订阅前缀}/bin/<asset>`，例如
+`https://<域名>/s/<前缀>/bin/sing-box-1.14.2-linux-arm64.tar.gz`。
+
+### 设备端：正常恢复（推荐）
+
+```bash
+# 1) 取最新安装器（它优先从订阅站下载 sing-box，GitHub 兜底）
+curl -fsSL "https://<域名>/s/<前缀>/singbox-client.sh" -o /tmp/isb.sh
+# 2) 重装：会自动校验 SHA256、写新订阅地址、修好 systemd unit
+sudo bash /tmp/isb.sh --config-url "https://<域名>/s/<前缀>/singbox"
+```
+
+每日更新服务（`easynet-singbox-update.timer`）现在也会顺带**对齐 sing-box 版本**：
+本地版本 ≠ pin 版本时，从订阅站取包、用 pin 的 SHA256 校验后替换并重启。
+
+### 设备端：手工兜底（订阅站也拿不到时）
+
+```bash
+# 在能上网的机器上下载官方包，核对 pin 哈希后 scp 到设备
+sha256sum sing-box-1.14.2-linux-arm64.tar.gz     # 见 scripts/core/pins.sh 的 EASYNET_PIN_SINGBOX_*
+sudo EASYNET_SINGBOX_DOWNLOAD_URL=file:///tmp/sing-box-1.14.2-linux-arm64.tar.gz \
+     EASYNET_SINGBOX_INSTALL_SHA256=<pin 哈希> \
+  bash /tmp/isb.sh --config-url "https://<域名>/s/<前缀>/singbox"
+```
+
+> 相关开关：`EASYNET_PUBLISH_CLIENT_BINARIES=false`（服务端不发布镜像）、
+> `EASYNET_SINGBOX_MIRROR=false`（设备端只用 GitHub）。
+

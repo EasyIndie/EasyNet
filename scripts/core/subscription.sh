@@ -3,6 +3,8 @@
 EASYNET_SUBSCRIPTION_CORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 source "$EASYNET_SUBSCRIPTION_CORE_DIR/env.sh"
 source "$EASYNET_SUBSCRIPTION_CORE_DIR/metadata.sh"
+# 客户端二进制镜像的端点由 pin 表推导（见 core/client_binaries.sh）
+source "$EASYNET_SUBSCRIPTION_CORE_DIR/pins.sh"
 
 easynet_subscription_domain() {
     if [ -n "${EASYNET_SUBSCRIPTION_DOMAIN:-}" ]; then
@@ -214,6 +216,20 @@ easynet_singbox_rules_endpoint_specs() {
     printf 'rules/manifest.json|rules/manifest.json|application/json\n'
 }
 
+# 客户端二进制镜像端点（$WEB_ROOT/bin/）：设备代理失效时唯一的自愈通道，
+# 见 core/client_binaries.sh 的说明。端点名由 pin 版本推导。
+easynet_client_binary_endpoint_specs() {
+    local platform asset
+    while IFS= read -r platform; do
+        [ -z "$platform" ] && continue
+        asset="$(easynet_client_pin_asset_for singbox "$platform")"
+        [ -n "$asset" ] || continue
+        printf 'bin/%s|bin/%s|application/gzip\n' "$asset" "$asset"
+        printf 'bin/%s.sha256|bin/%s.sha256|text/plain\n' "$asset" "$asset"
+    done < <(easynet_client_binary_platforms)
+    printf 'bin/manifest.json|bin/manifest.json|application/json\n'
+}
+
 easynet_subscription_endpoint_specs() {
     cat <<'EOF'
 sub|sub|text/plain
@@ -222,6 +238,7 @@ singbox|singbox|application/json
 singbox-client.sh|easynet-singbox-client.sh|text/x-shellscript
 EOF
     easynet_singbox_rules_endpoint_specs
+    easynet_client_binary_endpoint_specs
 }
 
 easynet_write_subscription_routes() {

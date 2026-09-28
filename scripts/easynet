@@ -33,6 +33,8 @@ EASYNET_PROJECT_DIR="${EASYNET_PROJECT_DIR:-$(cd "${EASYNET_CLI_DIR:-}/.." && pw
 . "${EASYNET_CLI_DIR:-}/core/logging.sh"
 # shellcheck source=core/subscription.sh
 . "${EASYNET_CLI_DIR:-}/core/subscription.sh"
+# shellcheck source=core/client_binaries.sh
+. "${EASYNET_CLI_DIR:-}/core/client_binaries.sh"
 
 usage() {
     cat << 'EOF'
@@ -51,6 +53,7 @@ EasyNet 统一运维命令
   restart <服务|all>  重启服务
   sub                 显示订阅链接与二维码
   rules              构建/更新 sing-box 分流规则集（发布到 Edge web root）
+  clients [status]   发布/查看客户端二进制镜像（设备代理失效时的自愈下载源）
   services            列出 EasyNet 管理的 systemd 服务
   hub [--refresh]     显示/重建工作目录索引
   ssh                 体检 SSH 加固状态
@@ -336,6 +339,25 @@ cmd_rules() {
     bash "${EASYNET_PROJECT_DIR:-}/scripts/generate_singbox_rules.sh" "$@"
 }
 
+# 客户端二进制镜像：设备端（树莓派等）代理失效后无法直连 GitHub 下载 sing-box，
+# 所以由 Edge 托管一份 pinned 二进制，设备只依赖"域名可达"即可自愈。
+cmd_clients() {
+    case "${1:-publish}" in
+        status)
+            easynet_client_binaries_status "${EASYNET_WEB_ROOT:-/var/www/html}"
+            ;;
+        publish | '')
+            easynet_client_binaries_publish "${EASYNET_WEB_ROOT:-/var/www/html}"
+            printf '\n'
+            easynet_client_binaries_status "${EASYNET_WEB_ROOT:-/var/www/html}"
+            ;;
+        *)
+            log_error "未知参数: $1（可用: publish | status）"
+            return 1
+            ;;
+    esac
+}
+
 cmd_hub() {
     case "${1:-}" in
         --refresh) ensure_easynet_hub ;;
@@ -427,6 +449,7 @@ main() {
         services) cmd_services ;;
         sub | subscription) cmd_sub "$@" ;;
         rules) cmd_rules "$@" ;;
+        clients) cmd_clients "$@" ;;
         hub) cmd_hub "$@" ;;
         ssh) cmd_ssh ;;
         harden-ssh) cmd_harden_ssh "$@" ;;

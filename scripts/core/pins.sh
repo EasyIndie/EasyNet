@@ -65,6 +65,17 @@ EASYNET_PIN_SINGBOX_SHA256_LINUX_AMD64="a684484d7477d1437282ee411f4d131d0340aaad
 EASYNET_PIN_SINGBOX_SHA256_LINUX_ARM64="b43a1fb1bda131c6653576741ce527eb2bdeab7c9308ca90ee8b972abb7e4a7f"
 EASYNET_PIN_SINGBOX_SHA256_DARWIN_AMD64="b0bfb0dc70a5fc708710b9f5ea98b9ee76d40fa4169928d25d73edc4331df2fe"
 
+# 我们 pin 的客户端平台（用于校验工具；与运行机器无关）。
+easynet_client_platforms() {
+    printf 'linux_amd64\nlinux_arm64\ndarwin_amd64\n'
+}
+
+# 需要**发布到 Edge** 供设备下载的平台。只含 Linux：客户端安装器本身只支持
+# Linux（systemd/apt），把 macOS 包也放上去纯属浪费带宽与磁盘。
+easynet_client_binary_platforms() {
+    printf 'linux_amd64\nlinux_arm64\n'
+}
+
 # 当前平台标识：linux_amd64 / linux_arm64 / darwin_amd64（不支持则无输出）
 easynet_client_platform() {
     local os arch
@@ -81,11 +92,10 @@ easynet_client_platform() {
     printf '%s_%s' "$os" "$arch"
 }
 
-# 当前平台上某个客户端工具的 pin 哈希（未 pin 该平台则无输出）
-easynet_client_pin_sha256() {
-    local platform
-    platform="$(easynet_client_platform)"
-    case "${1:-}:${platform}" in
+# 指定平台上某个客户端工具的 pin 哈希（未 pin 该平台则无输出）
+easynet_client_pin_sha256_for() {
+    local tool="${1:-}" platform="${2:-}"
+    case "${tool}:${platform}" in
         mihomo:linux_amd64)   printf '%s' "$EASYNET_PIN_MIHOMO_SHA256_LINUX_AMD64" ;;
         mihomo:linux_arm64)   printf '%s' "$EASYNET_PIN_MIHOMO_SHA256_LINUX_ARM64" ;;
         mihomo:darwin_amd64)  printf '%s' "$EASYNET_PIN_MIHOMO_SHA256_DARWIN_AMD64" ;;
@@ -96,11 +106,10 @@ easynet_client_pin_sha256() {
     esac
 }
 
-# 官方 release 资产名（mihomo 是 .gz，sing-box 是 .tar.gz）
-easynet_client_pin_asset() {
-    local platform
-    platform="$(easynet_client_platform)"
-    case "${1:-}" in
+# 指定平台的官方 release 资产名（mihomo 是 .gz，sing-box 是 .tar.gz）
+easynet_client_pin_asset_for() {
+    local tool="${1:-}" platform="${2:-}"
+    case "$tool" in
         mihomo)
             case "$platform" in
                 linux_amd64)  printf 'mihomo-linux-amd64-v%s.gz' "$EASYNET_PIN_MIHOMO_VERSION" ;;
@@ -118,15 +127,28 @@ easynet_client_pin_asset() {
     esac
 }
 
-# 官方 release 下载 URL（未 pin 当前平台则无输出）
-easynet_client_pin_url() {
-    local asset
-    asset="$(easynet_client_pin_asset "${1:-}")"
+# 指定平台的官方 release 下载 URL（未 pin 该平台则无输出）
+easynet_client_pin_url_for() {
+    local tool="${1:-}" platform="${2:-}" asset
+    asset="$(easynet_client_pin_asset_for "$tool" "$platform")"
     [ -n "$asset" ] || return 0
-    case "${1:-}" in
+    case "$tool" in
         mihomo)  printf 'https://github.com/MetaCubeX/mihomo/releases/download/v%s/%s' "$EASYNET_PIN_MIHOMO_VERSION" "$asset" ;;
         singbox) printf 'https://github.com/SagerNet/sing-box/releases/download/v%s/%s' "$EASYNET_PIN_SINGBOX_VERSION" "$asset" ;;
     esac
+}
+
+# ── 以下三个是"当前运行平台"的便捷封装（工具/校验脚本用） ──
+easynet_client_pin_sha256() {
+    easynet_client_pin_sha256_for "${1:-}" "$(easynet_client_platform)"
+}
+
+easynet_client_pin_asset() {
+    easynet_client_pin_asset_for "${1:-}" "$(easynet_client_platform)"
+}
+
+easynet_client_pin_url() {
+    easynet_client_pin_url_for "${1:-}" "$(easynet_client_platform)"
 }
 
 # Pinned SHA256 for a component on the current architecture.

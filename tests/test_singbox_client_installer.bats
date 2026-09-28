@@ -244,3 +244,85 @@ setup() {
     "
     [ "$status" -eq 0 ]
 }
+
+# ── 订阅站镜像（设备自愈）────────────────────────────────────────────────────
+# 设备（树莓派等）在国内常无法直连 GitHub release（实测卡死），所以服务端把
+# pinned 原包也发布到订阅站；安装器与每日更新都优先走镜像，GitHub 兜底，
+# 两个来源都必须通过同一个 pin 哈希。
+
+@test "Installer prefers the subscription mirror, then GitHub" {
+    run bash -c "
+        source '$INSTALLER'
+        SINGBOX_CONFIG_URL='https://d.example.com/s/PREFIX/singbox'
+        resolve_singbox_download
+        printf '%s\n' \"\${SINGBOX_SOURCE_URLS[@]}\"
+    "
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s\n' "$output" | grep -c .)" -eq 2 ]
+    [ "$(printf '%s\n' "$output" | sed -n 1p)" = "https://d.example.com/s/PREFIX/bin/sing-box-${PINNED_VERSION:-}$(printf '')" ] || \
+        [[ "$(printf '%s\n' "$output" | sed -n 1p)" == https://d.example.com/s/PREFIX/bin/sing-box-*.tar.gz ]]
+    [[ "$(printf '%s\n' "$output" | sed -n 2p)" == https://github.com/SagerNet/sing-box/releases/download/* ]]
+}
+
+@test "Explicit --sing-box-url is used alone (no mirror)" {
+    run bash -c "
+        source '$INSTALLER'
+        SINGBOX_CONFIG_URL='https://d.example.com/s/PREFIX/singbox'
+        SINGBOX_URL='https://example.net/custom.tar.gz'
+        SB_SHA256='$(printf '0%.0s' {1..64})'
+        resolve_singbox_download
+        printf '%s\n' \"\${SINGBOX_SOURCE_URLS[@]}\"
+    "
+    [ "$status" -eq 0 ]
+    [ "$output" = "https://example.net/custom.tar.gz" ]
+}
+
+@test "Mirror can be disabled with EASYNET_SINGBOX_MIRROR=false" {
+    run bash -c "
+        source '$INSTALLER'
+        SINGBOX_CONFIG_URL='https://d.example.com/s/PREFIX/singbox'
+        EASYNET_SINGBOX_MIRROR=false resolve_singbox_download
+        printf '%s\n' \"\${SINGBOX_SOURCE_URLS[@]}\"
+    "
+    [ "$status" -eq 0 ]
+    [ "$(printf '%s\n' "$output" | grep -c .)" -eq 1 ]
+    [[ "$output" == https://github.com/* ]]
+}
+
+@test "Installer writes the pinned version and service name into the client env" {
+    local dir="$BATS_TEST_TMPDIR/install"
+    mkdir -p "$dir"
+    run bash -c "
+        source '$INSTALLER'
+        INSTALL_DIR='$dir'
+        STATE_DIR='$BATS_TEST_TMPDIR/state'
+        CONFIG_DIR='$BATS_TEST_TMPDIR/etc-sing-box'
+        CONFIG_URL='https://d.example.com/s/P/singbox'
+        write_state
+        cat '$BATS_TEST_TMPDIR/state/singbox-client.env'
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PINNED_SINGBOX_VERSION=${PINNED_VERSION:-}"* ]]
+    [[ "$output" == *"PINNED_SINGBOX_SHA256_LINUX_ARM64="* ]]
+    [[ "$output" == *"SINGBOX_SERVICE="* ]]
+}
+
+@test "Generated daily updater aligns the sing-box binary version" {
+    local dir="$BATS_TEST_TMPDIR/updater"
+    mkdir -p "$dir"
+    run bash -c "
+        source '$INSTALLER'
+        INSTALL_DIR='$dir'
+        write_update_script
+        cat '$dir/easynet-singbox-update'
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"align_singbox_binary"* ]]
+    # 镜像优先：base/bin/<asset>，随后 GitHub
+    [[ "$output" == *'${base}/bin/${asset}'* ]]
+    [[ "$output" == *"releases/download/v\${want}/\${asset}"* ]]
+    # 二进制变化也要触发重启
+    [[ "$output" == *'[ "${bin_changed:-no}" = "yes" ]'* ]]
+    # 校验失败只告警、不中断（代理照旧可用）
+    [[ "$output" == *"沿用当前版本"* ]]
+}

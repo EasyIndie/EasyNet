@@ -5,6 +5,29 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，
 本项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
+## [0.0.15] - 2026-09-28
+
+### 新增
+- **客户端二进制镜像（Edge 托管）**，修掉"设备自举死角"：设备（树莓派等）一旦代理失效，
+  就无法从 GitHub 下载 sing-box 自救——实测国内直连 GitHub release **卡死**（90 秒 0 字节后
+  `curl: (18)`），而订阅站通常是通的。现在部署时会把 pinned 的 sing-box 发布到
+  `$WEB_ROOT/bin/`（含 `.sha256` 与 `manifest.json`），通过随机前缀暴露给设备：
+  `/s/<前缀>/bin/sing-box-<版本>-<平台>.tar.gz`。best-effort：失败只告警、不中断部署；
+  `easynet clients` 可查看/刷新，`easynet clients status` 查看各平台状态。
+- **安装器与每日更新支持"订阅站优先、GitHub 兜底"的双源下载**：两个来源都必须通过
+  `pins.sh` 的同一个 SHA256，因此镜像不可信也不影响完整性（`--sing-box-url` 仍可强制指定来源）。
+- **每日更新服务现在会对齐 sing-box 版本**：本地版本 ≠ pin 版本时，从订阅站取包、校验后替换并重启
+  （此前更新只刷新配置/规则集，sing-box 本体永远停在安装当天的版本）。
+- `docs/clients.md` 新增《设备恢复手册》：正常恢复 / 手工兜底（`file://` + pin 哈希）两条路径。
+
+### 变更
+- 新增开关：`EASYNET_PUBLISH_CLIENT_BINARIES=false`（服务端不发布镜像）、
+  `EASYNET_SINGBOX_MIRROR=false`（设备端只用 GitHub）。
+
+### 测试
+- 新增 `tests/test_client_binaries.bats`（平台/资产/端点映射、Edge 前缀路由、状态、真实发布与幂等）。
+- `test_singbox_client_installer.bats` 新增 5 项（双源顺序、显式 URL、镜像开关、env 写入 pin、更新脚本对齐）。
+
 ## [0.0.14] - 2026-09-28
 
 ### 新增

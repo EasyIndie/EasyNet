@@ -176,6 +176,7 @@ New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub inde
   CI 的 `client-config-validation` job 是 release 的硬前置（真客户端拒收则发不出 release）。
   历史事故：0.0.13 之前把 `"30s"` 写给 mihomo，报 `invalid range: 30s` 并**拒绝整份订阅**。
 - **分流规则集保持手动（决策，勿自动加 timer）**：`easynet rules` 是有意的手动步骤。生成需从上游下载约 90MB 数据，放进部署会拖慢主流程并增加失败面；周期 timer 会让每台机器每周固定产生大流量下载。未发布时订阅自动省去 `rule_set`（客户端仍可正常代理），`deploy.sh` 打 WARN、`easynet status` 显示状态 —— 可观测性已足够。
+- **客户端二进制镜像（设备自愈）**：部署时会把 pinned 的 sing-box 发布到 `$WEB_ROOT/bin/`（`easynet clients` / `easynet clients status`），设备端安装器与每日更新按"订阅站优先、GitHub 兜底"取包，两个来源都必须过 `pins.sh` 的同一 SHA256。动因：国内设备直连 GitHub release 会卡死，代理失效后无法自救。服务端侧 best-effort（失败只 WARN），开关 `EASYNET_PUBLISH_CLIENT_BINARIES=false`。
 - **升级路径**：release 安装（生产唯一推荐）用 `easynet upgrade [<tag>]` 或
   `EASYNET_VERSION=<tag> bash scripts/install.sh`（保留 `.env`）；`easynet update` 仅对 git 安装有效。
   `deploy.sh` **不安装 git**，仓库里的 `git clone` 文档仅面向贡献者。

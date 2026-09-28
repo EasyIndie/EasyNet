@@ -32,6 +32,8 @@ SB_VERSION="${EASYNET_SINGBOX_VERSION:-$PINNED_SINGBOX_VERSION}"
 SINGBOX_URL="${EASYNET_SINGBOX_DOWNLOAD_URL:-}"
 SB_SHA256="${EASYNET_SINGBOX_INSTALL_SHA256:-}"
 SB_SKIP_SHA256="${EASYNET_SINGBOX_SKIP_SHA256:-false}"
+SINGBOX_MIRROR_URL="${EASYNET_SINGBOX_MIRROR_URL:-}"
+SINGBOX_SOURCE_URLS=()
 ENV_FILE="$STATE_DIR/singbox-client.env"
 
 log() { printf '[INFO] %s\n' "$*"; }
@@ -169,12 +171,22 @@ pinned_singbox_sha256() {
 #   覆盖版本/自定义 URL → 必须显式提供 EASYNET_SINGBOX_INSTALL_SHA256，
 #                          否则拒绝继续（除非显式 EASYNET_SINGBOX_SKIP_SHA256=true）
 resolve_singbox_download() {
-    local asset_arch
+    local asset_arch base
     asset_arch="$(detect_asset_arch)"
+    base=""
+    [ -n "${SINGBOX_CONFIG_URL:-}" ] && base="${SINGBOX_CONFIG_URL%/*}"
 
     if [ -z "${SINGBOX_URL:-}" ]; then
         SINGBOX_URL="https://github.com/SagerNet/sing-box/releases/download/v${SB_VERSION}/sing-box-${SB_VERSION}-${asset_arch}.tar.gz"
+        # 未显式指定 URL 时，优先用订阅站托管的同版本原包（easynet clients 发布）
+        if [ -n "$base" ] && [ "${EASYNET_SINGBOX_MIRROR:-true}" != "false" ]; then
+            SINGBOX_MIRROR_URL="${base}/bin/sing-box-${SB_VERSION}-${asset_arch}.tar.gz"
+        fi
     fi
+    # 来源列表：镜像在前、GitHub 在后（显式 --sing-box-url 时只用显式来源）
+    SINGBOX_SOURCE_URLS=()
+    [ -n "${SINGBOX_MIRROR_URL:-}" ] && SINGBOX_SOURCE_URLS+=("${SINGBOX_MIRROR_URL}")
+    [ -n "${SINGBOX_URL:-}" ] && SINGBOX_SOURCE_URLS+=("${SINGBOX_URL}")
 
     if [ -z "${SB_SHA256:-}" ] && [ "$SB_VERSION" = "$PINNED_SINGBOX_VERSION" ]; then
         SB_SHA256="$(pinned_singbox_sha256)"
@@ -207,14 +219,30 @@ install_singbox_binary() {
     trap 'rm -rf "${tmp_dir:-}"' RETURN
     tarball="$tmp_dir/sing-box.tar.gz"
 
-    log "下载 sing-box ${SB_VERSION}: ${SINGBOX_URL:-}"
-    curl -fL "${SINGBOX_URL:-}" -o "$tarball"
-
-    # 校验和：pin 自带；覆盖版本时由用户提供（resolve_singbox_download 已把关）
-    if [ -n "${SB_SHA256:-}" ]; then
-        log "校验 sing-box 压缩包 SHA256..."
-        printf '%s  %s\n' "${SB_SHA256}" "$tarball" | sha256sum -c - || die "sing-box 压缩包 SHA256 校验失败（可能下载不完整或资产已变更）"
-    else
+    # 取源顺序：订阅站镜像 → GitHub。设备（树莓派等）在国内常无法直连 GitHub
+    # release，而订阅站通常是通的；两个来源都必须通过同一个 pin 哈希，
+    # 所以镜像即使不可信也不影响完整性。
+    local downloaded="no" url
+    for url in "${SINGBOX_SOURCE_URLS[@]}"; do
+        log "下载 sing-box ${SB_VERSION}: $url"
+        if ! curl -fsSL --max-time 300 "$url" -o "$tarball"; then
+            warn "下载失败，尝试下一个来源: $url"
+            continue
+        fi
+        if [ -n "${SB_SHA256:-}" ]; then
+            if printf '%s  %s\n' "${SB_SHA256}" "$tarball" | sha256sum -c - >/dev/null 2>&1; then
+                log "SHA256 校验通过（来源: ${url}）"
+                downloaded="yes"
+                break
+            fi
+            warn "SHA256 校验失败（可能下载不完整或资产已变更），尝试下一个来源: $url"
+            continue
+        fi
+        downloaded="yes"
+        break
+    done
+    [ "$downloaded" = "yes" ] || die "无法取得可校验的 sing-box 原包（镜像与 GitHub 均不可用）"
+    if [ -z "${SB_SHA256:-}" ]; then
         warn "已跳过 sing-box SHA256 校验（EASYNET_SINGBOX_SKIP_SHA256=true）"
     fi
 
@@ -240,6 +268,10 @@ SINGBOX_CONFIG_FILE='$CONFIG_DIR/config.json'
 SINGBOX_BIN='$INSTALL_DIR/sing-box'
 SINGBOX_MODE='$MODE'
 SINGBOX_LISTEN='$LISTEN_ADDRESS'
+SINGBOX_SERVICE='$SERVICE_NAME'
+PINNED_SINGBOX_VERSION='$PINNED_SINGBOX_VERSION'
+PINNED_SINGBOX_SHA256_LINUX_AMD64='$PINNED_SINGBOX_SHA256_LINUX_AMD64'
+PINNED_SINGBOX_SHA256_LINUX_ARM64='$PINNED_SINGBOX_SHA256_LINUX_ARM64'
 EOF
     chmod 600 "$STATE_DIR/singbox-client.env"
 }
@@ -279,6 +311,59 @@ tmp_file="$(mktemp /tmp/easynet-singbox-config.XXXXXX)"
 mode_file="$(mktemp /tmp/easynet-singbox-mode.XXXXXX)"
 cleanup() { rm -f "$tmp_file" "$mode_file"; }
 trap cleanup EXIT
+
+# ── 二进制版本对齐 ─────────────────────────────────────────────────────────
+# 每日更新原本只刷新配置/规则集，sing-box 本体永远停在安装那天的版本。
+# 这里按安装器写入的 pin 对齐版本：优先订阅站镜像（设备在国内常无法直连
+# GitHub release），GitHub 兜底；两个来源都必须通过 pin 的 SHA256。
+# 失败只告警，不影响配置更新（代理照旧可用）。
+bin_changed="no"
+align_singbox_binary() {
+    local want arch asset sha base url tmp_dir bin_path
+    want="${PINNED_SINGBOX_VERSION:-}"
+    [ -n "$want" ] || return 0
+    if [ "$("${SINGBOX_BIN:-sing-box}" version 2>/dev/null | awk 'NR==1{print $3}')" = "$want" ]; then
+        return 0
+    fi
+    case "$(uname -m)" in
+        aarch64|arm64) arch="linux-arm64"; sha="${PINNED_SINGBOX_SHA256_LINUX_ARM64:-}" ;;
+        x86_64|amd64)  arch="linux-amd64"; sha="${PINNED_SINGBOX_SHA256_LINUX_AMD64:-}" ;;
+        *) echo "未知架构，跳过 sing-box 版本对齐" >&2; return 0 ;;
+    esac
+    if [ -z "$sha" ]; then
+        echo "缺少 ${arch} 的 pin 哈希，跳过 sing-box 版本对齐" >&2
+        return 0
+    fi
+
+    asset="sing-box-${want}-${arch}.tar.gz"
+    base="${SINGBOX_CONFIG_URL:-}"
+    base="${base%/*}"
+    tmp_dir="$(mktemp -d)"
+    for url in "${base:+${base}/bin/${asset}}" "https://github.com/SagerNet/sing-box/releases/download/v${want}/${asset}"; do
+        [ -n "$url" ] || continue
+        if ! curl -fsSL --max-time 300 "$url" -o "$tmp_dir/$asset" 2>/dev/null; then
+            continue
+        fi
+        if [ "$(sha256sum "$tmp_dir/$asset" | awk '{print $1}')" != "$sha" ]; then
+            echo "SHA256 不匹配，跳过该来源: $url" >&2
+            continue
+        fi
+        tar -xzf "$tmp_dir/$asset" -C "$tmp_dir" || continue
+        bin_path="$(find "$tmp_dir" -type f -name sing-box -perm -111 -print -quit)"
+        if [ -z "$bin_path" ]; then
+            continue
+        fi
+        install -m 0755 "$bin_path" "${SINGBOX_BIN:-/usr/local/bin/sing-box}"
+        echo "sing-box 已对齐到 ${want}（来源: ${url}）"
+        bin_changed="yes"
+        rm -rf "$tmp_dir"
+        return 0
+    done
+    rm -rf "$tmp_dir"
+    echo "WARN: sing-box ${want} 获取/校验失败（订阅站与 GitHub 均不可用），沿用当前版本" >&2
+    return 0
+}
+align_singbox_binary
 
 curl -fL "${SINGBOX_CONFIG_URL:-}" -o "$tmp_file"
 
@@ -448,10 +533,10 @@ fi
 install -m 0644 "$mode_file" "$config_path"
 
 # 服务在跑就重启让新配置生效；停着的调用方（switch-mode / update 子命令）自己会起
-if [ "$config_changed" = "yes" ] &&
+if { [ "$config_changed" = "yes" ] || [ "${bin_changed:-no}" = "yes" ]; } &&
     systemctl is-active --quiet "${SINGBOX_SERVICE:-easynet-singbox}.service" 2>/dev/null; then
     systemctl restart "${SINGBOX_SERVICE:-easynet-singbox}.service"
-    echo "配置已更新并重启服务"
+    echo "配置/二进制已更新并重启服务"
 else
     echo "配置已更新（内容无变化或服务未运行，未重启）"
 fi
