@@ -189,3 +189,48 @@ teardown() {
     run ensure_edge_subscription_path_prefix
     [ "$status" -ne 0 ]
 }
+
+# ============================================================
+# 静态文件服务下的凭据保护（回归：0.0.12 曾把 /sub 直接吐出来）
+# ============================================================
+
+@test "未开启直连路径时显式拒绝 web root 里的可猜路径" {
+    export EASYNET_STATE_DIR="$TMP_DIR/state"
+    EDGE_STATE_DIR="$EASYNET_STATE_DIR/exposure/edge"
+    EDGE_SUBSCRIPTION_PATH_PREFIX="/s/aaaa1111bbbb2222cccc3333dddd4444"
+    EDGE_ROUTES_DIR="$TMP_DIR/routes"
+    mkdir -p "$EDGE_STATE_DIR" "$EDGE_ROUTES_DIR"
+    WEB_ROOT="$EASYNET_WEB_ROOT"
+    EASYNET_SUBSCRIPTION_DIRECT_PATHS=false
+
+    write_edge_subscription_routes
+
+    local conf="$EDGE_ROUTES_DIR/subscription.conf"
+    # 随机前缀可用
+    grep -q "location = /s/aaaa1111bbbb2222cccc3333dddd4444/sub {" "$conf"
+    # 可猜路径必须 404（静态文件服务会把它们当文件返回）
+    for p in sub clash singbox easynet-singbox-client.sh; do
+        grep -q "location = /${p} {" "$conf" || {
+            echo "# 缺少对 /${p} 的拒绝规则" >&3
+            return 1
+        }
+    done
+    # 未加前缀的 /sub 必须是 404，而不是 alias 到真实文件
+    grep -A1 '^location = /sub {' "$conf" | grep -q 'return 404' 
+}
+
+@test "开启直连路径时改为 alias（不再是 404）" {
+    export EASYNET_STATE_DIR="$TMP_DIR/state"
+    EDGE_STATE_DIR="$EASYNET_STATE_DIR/exposure/edge"
+    EDGE_SUBSCRIPTION_PATH_PREFIX="/s/aaaa1111bbbb2222cccc3333dddd4444"
+    EDGE_ROUTES_DIR="$TMP_DIR/routes"
+    mkdir -p "$EDGE_STATE_DIR" "$EDGE_ROUTES_DIR"
+    WEB_ROOT="$EASYNET_WEB_ROOT"
+    EASYNET_SUBSCRIPTION_DIRECT_PATHS=true
+
+    write_edge_subscription_routes
+
+    local conf="$EDGE_ROUTES_DIR/subscription.conf"
+    grep -q "location = /sub {" "$conf"
+    grep -q "alias ${EASYNET_WEB_ROOT}/sub;" "$conf"
+}

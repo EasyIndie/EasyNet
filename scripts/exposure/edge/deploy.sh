@@ -116,6 +116,21 @@ location = /${endpoint} {
 
 EOF
         done < <(easynet_subscription_endpoint_specs)
+    else
+        # 订阅文件就放在 web root 根目录（$WEB_ROOT/sub 等），随机前缀是唯一保护。
+        # 但 location / 现在是**静态文件服务**（try_files）：不显式拒绝的话，
+        # /sub、/clash、/singbox 这些可猜到的路径会被直接当成静态文件返回，
+        # 等于把全部节点凭据公开（旧版走反代时看不见，换成静态站后就会暴露）。
+        # 拒绝清单与直连路径走同一份端点定义，新增端点时自动生效。
+        while IFS='|' read -r endpoint file_name content_type; do
+            [ -z "$file_name" ] && continue
+            cat >> "$EDGE_ROUTES_DIR/subscription.conf" <<EOF
+location = /${file_name} {
+    return 404;
+}
+
+EOF
+        done < <(easynet_subscription_endpoint_specs)
     fi
 }
 
