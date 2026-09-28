@@ -236,7 +236,9 @@ easynet_edge_site_render() {
         printf '%b\n' "$robots_body" > "$web_root/robots.txt"
     fi
     chmod 644 "$web_root/index.html" "$web_root/404.html" 2>/dev/null || true
-    [ -f "$web_root/robots.txt" ] && chmod 644 "$web_root/robots.txt" 2>/dev/null || true
+    if [ -f "$web_root/robots.txt" ]; then
+        chmod 644 "$web_root/robots.txt" 2>/dev/null || true
+    fi
 }
 
 # 安装伪装站。

@@ -32,7 +32,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: /usr/local/bin/shellcheck
-          key: shellcheck-${{ runner.os }}-v0.10.0
+          key: shellcheck-${{ runner.os }}-v0.11.0
 
       - name: Install test dependencies
         run: |
@@ -42,7 +42,7 @@ jobs:
       - name: Install shellcheck
         if: steps.cache-shellcheck.outputs.cache-hit != 'true'
         run: |
-          SC_VERSION="v0.10.0"
+          SC_VERSION="v0.11.0"
           wget -q "https://github.com/koalaman/shellcheck/releases/download/$SC_VERSION/shellcheck-$SC_VERSION.linux.x86_64.tar.xz"
           tar -xf "shellcheck-$SC_VERSION.linux.x86_64.tar.xz"
           sudo mv "shellcheck-$SC_VERSION/shellcheck" /usr/local/bin/shellcheck
