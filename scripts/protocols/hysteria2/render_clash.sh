@@ -22,6 +22,25 @@ down=$(jq -r '.client.clash.down // "100 Mbps"' "$METADATA_FILE")
 hop_range=$(jq -r '.client.clash."hop-range" // empty' "$METADATA_FILE")
 hop_interval=$(jq -r '.client.clash."hop-interval" // empty' "$METADATA_FILE")
 
+# mihomo 的 hop-interval 是**整数秒**，不是 sing-box 的时长字符串：
+# 发 "30s" 会被当成端口范围解析 → `invalid range: 30s`，整份订阅被拒绝导入
+# （Clash Verge 实测）。元数据存的是中立值时长相时长（"30s"），这里按客户端方言转换：
+# 纯数字直接沿用；30s/1m/1h 归一化成秒；无法识别的省略该字段（mihomo 用默认值）。
+mihomo_hop_interval_seconds() {
+    local raw="$1" num unit
+    [ -n "$raw" ] || return 0
+    num="${raw%%[!0-9]*}"
+    [ -n "$num" ] || return 0
+    unit="${raw#"$num"}"
+    num=$((10#${num}))
+    case "$unit" in
+        ''|s|sec|secs|second|seconds) printf '%s\n' "$num" ;;
+        m|min|mins|minute|minutes) printf '%s\n' "$((num * 60))" ;;
+        h|hr|hrs|hour|hours) printf '%s\n' "$((num * 3600))" ;;
+        *) return 0 ;;
+    esac
+}
+
 cat << EOF
   - name: "$(yaml_escape "$name")"
     type: hysteria2
@@ -35,8 +54,12 @@ cat << EOF
     up: "$(yaml_escape "$up")"
     down: "$(yaml_escape "$down")"
 EOF
-    # mihomo port hopping: `ports` accepts a "start-end" string (or a list).
+    # mihomo port hopping: `ports` accepts a "start-end" string (or a list),
+    # `hop-interval` must be an integer number of seconds.
     if [ -n "${hop_range:-}" ]; then
         printf '    ports: "%s"\n' "$(yaml_escape "$hop_range")"
-        [ -n "${hop_interval:-}" ] && printf '    hop-interval: "%s"\n' "$(yaml_escape "$hop_interval")"
+        hop_seconds="$(mihomo_hop_interval_seconds "${hop_interval:-}")"
+        if [ -n "$hop_seconds" ]; then
+            printf '    hop-interval: %s\n' "$hop_seconds"
+        fi
     fi

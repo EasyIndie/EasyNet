@@ -157,7 +157,10 @@ JSON
     run bash "$PROJECT_ROOT/scripts/protocols/hysteria2/render_clash.sh" "$meta"
     [ "$status" -eq 0 ]
     [[ "$output" == *'ports: "20000-30000"'* ]]
-    [[ "$output" == *'hop-interval: "30s"'* ]]
+    # mihomo 的 hop-interval 是**整数秒**：发 "30s" 会被它当端口范围解析，
+    # 报 `invalid range: 30s` 并拒绝整份订阅（真实客户端实测）。
+    [[ "$output" == *'hop-interval: 30'* ]]
+    [[ "$output" != *'hop-interval: "30s"'* ]]
 
     run jq -r '.client.uri' "$meta"
     [[ "$output" == *"porthopping=20000-30000"* ]]
@@ -177,4 +180,37 @@ JSON
     run bash "$PROJECT_ROOT/scripts/protocols/hysteria2/render_clash.sh" "$meta"
     [ "$status" -eq 0 ]
     [[ "$output" != *"ports:"* ]]
+}
+
+@test "Hysteria2 mihomo hop-interval is always integer seconds (regression)" {
+    # 回归：mihomo 只接受整数秒（Clash Verge 曾报 "proxy 1: invalid range: 30s"）。
+    # 元数据里存的是 sing-box 方言 "30s"，渲染 mihomo 时必须换算。
+    render_with_interval() {
+        local meta="$BATS_TEST_TMPDIR/hy2_$1.json"
+        cat > "$meta" <<JSON
+{"schemaVersion":1,"module":"hysteria2","protocol":"hysteria2","port":443,
+ "client":{"clash":{"name":"EasyNet-Hysteria2","type":"hysteria2","server":"d.example.com","port":443,"password":"pw","hop-range":"20000-30000","hop-interval":"$1"}}}
+JSON
+        bash "$PROJECT_ROOT/scripts/protocols/hysteria2/render_clash.sh" "$meta"
+    }
+
+    [ "$(render_with_interval 30s | awk '/hop-interval/{print $2}')" = "30" ]
+    [ "$(render_with_interval 30 | awk '/hop-interval/{print $2}')" = "30" ]
+    [ "$(render_with_interval 1m | awk '/hop-interval/{print $2}')" = "60" ]
+    # 无法识别的值：省略字段（mihomo 用自己的默认值），绝不把非法值写进去
+    run render_with_interval bogus
+    [ "$status" -eq 0 ]
+    [[ "$output" == *'ports: "20000-30000"'* ]]
+    [[ "$output" != *"hop-interval"* ]]
+    # 任何情况下写出去的 hop-interval 值都必须是不带单位的纯整数
+    for v in 30s 1m 1h bogus 30; do
+        local rendered value
+        rendered="$(render_with_interval "$v")"
+        value="$(printf '%s\n' "$rendered" | awk '/hop-interval/{print $2}')"
+        if [ -n "$value" ] && [[ ! "$value" =~ ^[0-9]+$ ]]; then
+            echo "# hop-interval 值非法（应为纯整数秒）: $value" >&3
+            return 1
+        fi
+    done
+    return 0
 }
