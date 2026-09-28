@@ -145,6 +145,15 @@ New protocols must declare `MODULE_CONFIG_DIR` in their manifest so the hub inde
   `bash ~/Desktop/easynet-acceptance/reset-acceptance.sh --release <tag>`
   （改动了尚未发版的代码时才用不带 `--release` 的本地工作树模式）。
 
+## 已评估但不做（勿重复提议，除非有新证据）
+
+- **伪装站「模板级」随机化**（多套版式让各部署看起来不同）：模板在开源仓库里人人可读，随机化只抬高扫描成本；已有域名级内容/配色/`robots.txt` 随机化（`exposure/edge/render_site.sh`）。收益低、成本高。
+- **分流规则集的自动生成 / 周期 timer**：见上文决策——手动 `easynet rules`，未发布时订阅自动降级并有两处提示。
+- **AmneziaWG 版本 pin**：上游只发 PPA/源码，无静态资产可校验；apt GPG 已是该渠道最强校验，接受为残余风险。
+- **Reality 节点用 IP 而非域名**（`EASYNET_REALITY_SERVER_HOST`）：自偷模式下 `server=域名` + `SNI=同一域名` 恰好自洽，改成 IP 反而制造不一致。
+- **URI 方言（`porthopping*`）自动校验**：mihomo 的 URI 解析器不读这些参数，Shadowrocket 需真机 → 无法自动化；已在 `docs/clients.md` 标注"未验证"。
+- **服务端 UDP masquerade 探测**：`obfs: salamander` 使未混淆 QUIC 探针收不到响应，属验证局限而非缺陷。
+
 ## Important Practices
 
 - **ShellCheck**: All scripts must pass `--severity=style`. Suppressions use targeted `# shellcheck disable=CODE` with justification comment.
