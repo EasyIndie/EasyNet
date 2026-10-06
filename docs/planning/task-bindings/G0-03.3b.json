@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-03.3b",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-03.1a-c/2a-c reviewed draft v1; capability baseline v1"
+  ],
+  "implementation_files": [
+    "docs/planning/adr/ADR-002-protocol-runtime.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-03.3b",
+      "expected": "exit 0 plan checks only; review evidence validates decision separately"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Native runtime preservation and explicit protocol/runtime/profile contracts; Bash remains compatibility driver, metadata v1 unchanged; #5 closed not_planned runtime direction does not mandate sing-box replacement. AWG != WG, unsupported formats/methods refuse; extensions only evidence+ADR. Inspect manifests/legacy client boundary as needed, do not change it. Sol high decision/review; preserve full G0-G6 final merge gate. Write only ADR+own report. If unsafe contract inconsistency requires code changes, return exact issue for scope-bound repair rather than ignore."
+}
