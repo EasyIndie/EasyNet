@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "profiles": [
+    {
+      "id": "hysteria-example", "revision": 1, "targetId": "existing-example",
+      "runtimeId": "hysteria2-native", "protocolId": "hysteria2",
+      "format": "hysteria2-native-config",
+      "endpoint": {"host": "vpn.example.com", "port": 443},
+      "configRef": "config_hysteria_example"
+    },
+    {
+      "id": "awg-example", "revision": 1, "targetId": "existing-example",
+      "runtimeId": "amneziawg-native", "protocolId": "amneziawg",
+      "format": "amneziawg-native-config",
+      "endpoint": {"host": "192.0.2.10", "port": 51820},
+      "configRef": "config_awg_example"
+    }
+  ]
+}

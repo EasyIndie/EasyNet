@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-03.2a",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-03.1a-c draft v1 contracts; G1-07 accepted task requirements"
+  ],
+  "implementation_files": [
+    "docs/planning/contracts/operation.md",
+    "docs/planning/contracts/operation.examples.json",
+    "docs/planning/contracts/validate-operation.jq"
+  ],
+  "test_files": [
+    "tests/test_operation_contract.bats"
+  ],
+  "commands": [
+    {
+      "command": "bats tests/test_operation_contract.bats",
+      "expected": "valid transition histories pass; terminal resurrection, local disconnect reported success, cancellation without remote evidence, cross-target/operation-ID history rejected"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Draft Operation identity/state/transition contract only, not remote lock or deploy implementation. Specify remote factual state separate from local connection/process outcome; request cancel != confirmed cancelled, reconnect reconcile before retry; plan/target binding, concurrent per-target change ownership. Reference examples carry evidence for remote terminal conclusions and no secret data. No server commands or language selection. ≤3 contract files+1 Bats."
+}
