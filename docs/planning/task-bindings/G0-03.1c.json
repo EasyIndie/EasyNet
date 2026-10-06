@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-03.1c",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-03.1a ServerTarget v1 and G0-03.1b runtime draft v1"
+  ],
+  "implementation_files": [
+    "docs/planning/contracts/profile.md",
+    "docs/planning/contracts/profile.examples.json",
+    "docs/planning/contracts/validate-profile.jq"
+  ],
+  "test_files": [
+    "tests/test_profile_contract.bats"
+  ],
+  "commands": [
+    {
+      "command": "bats tests/test_profile_contract.bats",
+      "expected": "valid reference-only profiles pass; raw URI/password/token/config payload, bad endpoint and mismatched or unsupported runtime/format rejected"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Controller profile descriptor stores stable IDs/revision/runtime/protocol/endpoint and opaque secret config references; no plaintext credentials/native config URI in ordinary inventory. Preserve metadata v1 existing secure file without claiming retroactive redaction. Draft language-neutral descriptor/checker, not actual exporter or client renderer; examples use reserved hosts. No system/network/liveclient; changes to actual renderers prohibited."
+}

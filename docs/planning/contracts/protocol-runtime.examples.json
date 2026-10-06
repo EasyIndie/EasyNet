@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "runtimes": [
+    {
+      "runtimeId": "hysteria2-native", "protocolId": "hysteria2", "moduleId": "hysteria2",
+      "capabilities": {
+        "describe": {"state": "supported", "evidence": "source-identity"},
+        "install": {"state": "unknown", "evidence": "unverified"},
+        "exportNative": {"state": "unknown", "evidence": "unverified"},
+        "exportSingboxNative": {"state": "unknown", "evidence": "unverified"},
+        "nativeWireguard": {"state": "unsupported", "evidence": "format-boundary"}
+      }
+    },
+    {
+      "runtimeId": "amneziawg-native", "protocolId": "amneziawg", "moduleId": "wireguard",
+      "capabilities": {
+        "describe": {"state": "supported", "evidence": "source-identity"},
+        "install": {"state": "unknown", "evidence": "unverified"},
+        "exportNative": {"state": "unknown", "evidence": "unverified"},
+        "exportSingboxNative": {"state": "unsupported", "evidence": "format-boundary"},
+        "nativeWireguard": {"state": "unsupported", "evidence": "format-boundary"}
+      }
+    }
+  ],
+  "request": {"runtimeId": "hysteria2-native", "targetId": "existing-example", "method": "describe"}
+}

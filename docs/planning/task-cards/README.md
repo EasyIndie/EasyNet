@@ -29,8 +29,8 @@
 | [G0-02.2](G0/G0-02.2.md) | Luna medium | verified | 为每种支持组合登记 fixture 和验证入口 |
 | [G0-02.3](G0/G0-02.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查 supported/unknown 边界并冻结首批支持矩阵 |
 | [G0-03.1a](G0/G0-03.1a.md) | GPT-6.1 Sol medium | verified | ServerTarget 合同与两目标示例 |
-| [G0-03.1b](G0/G0-03.1b.md) | GPT-6.1 Sol medium | ready | ProtocolRuntime 合同与 native/AWG 能力示例 |
-| [G0-03.1c](G0/G0-03.1c.md) | GPT-6.1 Sol medium | locked | Profile 合同与 secret 引用示例 |
+| [G0-03.1b](G0/G0-03.1b.md) | GPT-6.1 Sol medium | verified | ProtocolRuntime 合同与 native/AWG 能力示例 |
+| [G0-03.1c](G0/G0-03.1c.md) | GPT-6.1 Sol medium | ready | Profile 合同与 secret 引用示例 |
 | [G0-03.2a](G0/G0-03.2a.md) | GPT-6.1 Sol medium | locked | Operation 状态与转移表 |
 | [G0-03.2b](G0/G0-03.2b.md) | GPT-6.1 Sol medium | locked | 事件 schema 与序列样例 |
 | [G0-03.2c](G0/G0-03.2c.md) | GPT-6.1 Sol medium | locked | 错误码与失败结果样例 |
