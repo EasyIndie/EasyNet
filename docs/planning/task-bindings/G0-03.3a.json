@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-03.3a",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-03.1a-c/2a-c reviewed draft v1; capability baseline v1"
+  ],
+  "implementation_files": [
+    "docs/planning/adr/ADR-001-local-first.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-03.3a",
+      "expected": "exit 0 plan checks only; review evidence validates decision separately"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Review local-first app-service boundary: CLI/GUI share service, device-local inventory/journal and credential store refs, no central account required, controller failure not backend data-plane failure; reconcile target/operation/events/errors draft contracts and missing target lookup/secret-field issues. ADR records accepted evolution design versus unimplemented capabilities. No controller/GUI/store language selection. Sol high decision/review; preserve full G0-G6 final merge gate. Write only ADR+own report. If unsafe contract inconsistency requires code changes, return exact issue for scope-bound repair rather than ignore."
+}
