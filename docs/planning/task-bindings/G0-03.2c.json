@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-03.2c",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-03.1a-c/2a-b draft v1 contracts"
+  ],
+  "implementation_files": [
+    "docs/planning/contracts/errors.md",
+    "docs/planning/contracts/errors.examples.json",
+    "docs/planning/contracts/validate-errors.jq"
+  ],
+  "test_files": [
+    "tests/test_error_contract.bats"
+  ],
+  "commands": [
+    {
+      "command": "bats tests/test_error_contract.bats",
+      "expected": "typed unsupported/trust/auth/preflight/permission/secret/remote-state failures pass; unknown version/code/raw-secret message/unsafe retry for trust or ambiguous remote side effect rejected"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Draft stable machine error code registry/result envelope. Safe actionable generic errors no raw upstream stderr/secret/token/URI. Retry vs reconciliation/user action explicit; hostkey change never autoaccept/retry; unknown remote operation must reconcile not replay deploy. No claims of implemented transport/redaction. Keep state/event names compatible with predecessor; if need change stop for root scope extension."
+}
