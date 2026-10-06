@@ -42,14 +42,17 @@ teardown() {
 
     module="perm-module"
     json='{"schemaVersion":1,"module":"perm-module","enabled":true,"protocol":"test","port":9999,"client":{"uri":"test://example","clash":{}}}'
+    local meta_file="$EASYNET_STATE_DIR/modules/$module/metadata.json"
 
     metadata_write "$module" "$json"
     local first_perm
-    first_perm=$(stat -f "%Lp" "$EASYNET_STATE_DIR/modules/$module/metadata.json" 2>/dev/null || stat -c "%a" "$EASYNET_STATE_DIR/modules/$module/metadata.json" 2>/dev/null)
+    # GNU stat 在前（CI 是 Linux）。反过来会踩坑：GNU stat 把 "%Lp" 当文件名，
+    # 打印含空闲块数的文件系统信息——并行跑测试时这些数字会变，导致误报。
+    first_perm=$(stat -c "%a" "$meta_file" 2>/dev/null || stat -f "%Lp" "$meta_file" 2>/dev/null)
 
     metadata_write "$module" "$json"
     local second_perm
-    second_perm=$(stat -f "%Lp" "$EASYNET_STATE_DIR/modules/$module/metadata.json" 2>/dev/null || stat -c "%a" "$EASYNET_STATE_DIR/modules/$module/metadata.json" 2>/dev/null)
+    second_perm=$(stat -c "%a" "$meta_file" 2>/dev/null || stat -f "%Lp" "$meta_file" 2>/dev/null)
 
     [ -n "$first_perm" ]
     [ "$first_perm" = "$second_perm" ]
