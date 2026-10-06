@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.1a",
+  "status": "frozen",
+  "contract_versions": [
+    "Accepted-for-evolution-design ADR-001/002/003; G0-03 bounded research v1"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/rust-evidence.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "functions.exec: text(await tools.web__run({\"search_query\": [{\"q\": \"ssh2 Rust KnownHosts host key nonblocking timeout official API\", \"domains\": [\"docs.rs\"]}, {\"q\": \"Rust platform support aarch64 apple darwin\", \"domains\": [\"doc.rust-lang.org\"]}, {\"q\": \"keyring Rust macOS Keychain credential storage official API\", \"domains\": [\"docs.rs\"]}], \"response_length\": \"long\"}));",
+      "expected": "read official project/package primary docs; capture exact version, source URL and access date; distinguish documented API from untested behavior"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.1a",
+      "expected": "exit 0 plan only; root source review still required"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0; new-file whitespace separately checked"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "One Rust candidate evidence table only, assigned Luna medium. Evaluate SSH key/agent auth, host-key trust, timeout/cancel, vault lifecycle, serialization strictness, macOS arm64 packaging/license/maintenance as documented/unknown. No install/build/SSH/keychain writes or language selection; pricing and binary-size claims unknown without evidence. Public official docs read-only authorized by user evolution research. Output <=120 lines + own result. Root/Sol review selects later same-task PoC candidates; do not assert PoC success."
+}
