@@ -220,6 +220,8 @@ EASYNET_UNINSTALL_MODULE=edge ./scripts/uninstall.sh
 
 ## 文档
 
+- [项目演进计划](./docs/planning/README.md) — Self-hosted BYOS/BYOC 产品路线、仓库审计与 Phase 1 拆分方案
+
 - [部署说明](./docs/deployment.md) — 部署、协议选择、订阅承载、完整配置项清单
 - [客户端说明](./docs/clients.md) — 全平台客户端安装、导入与常见问题
 - [故障排查指南](./docs/troubleshooting-guide.md) — 分协议、分场景的排障流程

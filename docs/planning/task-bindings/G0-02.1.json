@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-02.1",
+  "status": "frozen",
+  "contract_versions": [
+    "baseline 1d288dc747862486c930d5d21042b3fc4339e16f; G0-01.3 reviewed evidence"
+  ],
+  "implementation_files": [
+    "docs/planning/capability-matrix.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "bash -c 'source scripts/core/profiles.sh; profile_resolve strict; profile_resolve balanced; profile_resolve compat'",
+      "expected": "strict=xray-reality; balanced=xray-reality+hysteria2; compat=all four in security order; exit 0"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-02.1",
+      "expected": "exit 0 plan check only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Read-only code evidence matrix. No root deployment/no network installation. Record code eligibility separately from tested support; Ubuntu 24.04/26.04, Debian versions, amd64/ARM64, sudo/root, fresh/redeploy/external ownership must not be called end-to-end supported without evidence. Do not read private .env."
+}

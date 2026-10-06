@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "task_id": "REPLACE_WITH_CARD_ID",
+  "status": "draft",
+  "contract_versions": [],
+  "implementation_files": [],
+  "test_files": [],
+  "commands": [],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": null,
+  "reviewed_by": null,
+  "note": "Copy to the card binding path. Freeze exact paths, contract versions, behavior commands and exit/result expectations; this draft cannot unlock any card."
+}
