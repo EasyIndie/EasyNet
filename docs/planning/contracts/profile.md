@@ -1,6 +1,6 @@
 # Profile descriptor — draft v1
 
-G0-03.1c offline research draft, pending joint ADR/high review. This is ordinary
+G0-03.1c reviewed offline research draft; design ADRs are accepted (see [index](README.md)). This is ordinary
 controller inventory, not a native exporter, client renderer or production importer.
 The envelope has exactly `schemaVersion: 1` and a nonempty `profiles` array.
 Each descriptor has exactly the fields below; unknown fields fail at every level.

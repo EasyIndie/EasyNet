@@ -102,3 +102,13 @@ G0-01.3 的 commit 只在已明确授权提交时进行；台账须保留未提�
 该命令只验证任务计划，不执行任何行为测试，也不把 locked 卡自动升级为 ready。
 完成时增加 completion.evidence_path 和 completion.reviewed_by；不适用另需 ADR 路径。
 实机/云/签名验收必须记录实际目标和报告；纯文档核对不能当作已通过系统验收。
+
+## 已接受的首批设计与后续实现门槛
+
+G0-01/02/03 的限定范围已完成，见 [本批记录](progress-2026-10-06.md)。
+ADR-001/002/003 接受的是演进设计，不是已实现或实机验收。
+[六份合同](contracts/README.md) 是离线样例，不能直接复制成生产 schema/能力注册表。
+后续准备者必须按 [ADR-002](adr/ADR-002-protocol-runtime.md) 冻结并审查 successor
+生产合同，分开方法实现、格式语义、目标资格和 live acceptance。SSH/授权/回执/锁的
+未实现边界按 [ADR-003](adr/ADR-003-ssh-first.md) 的 task gate 落实。
+下一张 ready 是 G0-04.1a Rust 证据表；证据收集不等于选定 Rust。

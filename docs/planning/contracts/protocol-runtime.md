@@ -1,6 +1,6 @@
 # ProtocolRuntime example contract — draft v1
 
-G0-03.1b research draft, pending joint ADR/high review. Native runtimes remain
+G0-03.1b reviewed research draft; design ADRs are accepted (see [index](README.md)). Native runtimes remain
 independent of any management agent. No sing-box server replacement, controller
 language, driver implementation or production capability decision is introduced.
 Legacy metadata/manifest v1, discovery, pins and actual renderers stay unchanged.
@@ -49,4 +49,4 @@ permitted. Even supported requires later target preflight, trust and authorizati
 This offline reference checker is not a full JSON Schema validator, importer,
 native exporter or live acceptance result. Evidence enums are claims checked for
 shape, not independently authenticated evidence. Broader methods, real native
-config validation and lifecycle/security semantics await ADR/high review.
+config validation and lifecycle/security semantics require successor-contract review before production implementation.

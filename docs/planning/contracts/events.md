@@ -1,6 +1,6 @@
 # Application-service events — draft v1
 
-G0-03.2b offline draft, pending joint ADR/high review. Existing human logs are
+G0-03.2b reviewed offline draft; design ADRs are accepted (see [index](README.md)). Existing human logs are
 unchanged; stdout/stderr and local SSH process exit are not automation events.
 An envelope has exactly `schemaVersion: 1` and a nonempty `events` array for one
 operation. Each event has exactly `seq`, `type`, `payload`:

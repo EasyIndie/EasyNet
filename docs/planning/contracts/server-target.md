@@ -1,6 +1,6 @@
 # ServerTarget example contract — draft v1
 
-G0-03.1a research artifact, reviewed by Sol high; ADR acceptance is pending. This is a proposed
+G0-03.1a research artifact, reviewed by Sol high; design ADRs are accepted (see [index](README.md)). This is a proposed
 controller inventory contract, not an implemented controller or accepted ADR.
 It preserves legacy module metadata v1 and all existing CLI/protocol consumers.
 

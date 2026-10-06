@@ -11,7 +11,8 @@ root README. Technical choices require evidence and an ADR before implementation
 - [Executable phased backlog](execution-backlog.md) — current task IDs, dependencies, deliverables and gates
 - [Product evolution roadmap](product-evolution-roadmap.md) — consolidated product direction and staged capabilities
 - [Frozen capability baseline](capability-matrix.md) — code eligibility, tested fixtures, and unknown live support
-- [ServerTarget draft contract](contracts/server-target.md) — reviewed inventory boundary and executable examples
+- [Reviewed application-service contract examples](contracts/README.md) — six bounded examples and production extension gates
+- [G0 first-batch completion](progress-2026-10-06.md) — accepted design decisions, checks and next ready card
 - [Repository audit and gap analysis](repository-audit-2026-10-06.md)
 - [Phase 1 proposed issues](phase-1-issue-plan.md)
 - [Total Epic body](self-hosted-epic.md) — published as [#13](https://github.com/EasyIndie/EasyNet/issues/13)

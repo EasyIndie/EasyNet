@@ -1,6 +1,6 @@
 # Error results — draft v1
 
-G0-03.2c offline draft, pending joint ADR/high security review. No runtime logging,
+G0-03.2c reviewed offline draft; design ADRs are accepted (see [index](README.md)). No runtime logging,
 redaction, transport or controller implementation is claimed. Legacy metadata v1
 and human logs remain unchanged. Event v1 still only carries `operation.snapshot`.
 

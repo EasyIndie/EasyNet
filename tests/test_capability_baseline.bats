@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+
+# shellcheck disable=SC2030,SC2031 # Bats isolates tests; each ARCH_FIXTURE is consumed in its own test.
 load test_helper
 
 setup() {
@@ -8,6 +10,7 @@ setup() {
 }
 
 @test "architecture names normalize to canonical server architecture values" {
+    # shellcheck disable=SC2329 # detect_arch invokes this uname stub through the sourced crypto library.
     uname() { printf '%s\n' "$ARCH_FIXTURE"; }
 
     ARCH_FIXTURE=x86_64
@@ -21,6 +24,7 @@ setup() {
 }
 
 @test "ARMv7 and ARMv6 architecture target branches are represented" {
+    # shellcheck disable=SC2329 # detect_arch invokes this uname stub through the sourced crypto library.
     uname() { printf '%s\n' "$ARCH_FIXTURE"; }
 
     ARCH_FIXTURE=armv7l
@@ -34,6 +38,7 @@ setup() {
 }
 
 @test "unknown architecture remains unknown and has no Rust target" {
+    # shellcheck disable=SC2329 # detect_arch invokes this uname stub through the sourced crypto library.
     uname() { printf '%s\n' "$ARCH_FIXTURE"; }
     ARCH_FIXTURE=riscv64
 

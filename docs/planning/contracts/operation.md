@@ -1,6 +1,6 @@
 # Operation identity and transitions — draft v1
 
-G0-03.2a offline draft, pending joint ADR/high review; no production state engine.
+G0-03.2a reviewed offline draft; design ADRs are accepted (see [index](README.md)); no production state engine.
 The envelope has exactly `schemaVersion: 1` and nonempty `history`, describing
 one mutation operation against one ServerTarget. Snapshots have exactly these fields:
 
