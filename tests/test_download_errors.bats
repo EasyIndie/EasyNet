@@ -156,25 +156,22 @@ SCRIPT
 @test "run_downloaded_script: cleans up temp file after success" {
     make_fake_curl 'while [[ $# -gt 0 ]]; do case "$1" in -o) shift; printf "#!/bin/bash\nexit 0\n" > "$1"; break ;; *) shift ;; esac; done; exit 0'
 
-    local tmp_count_before
-    tmp_count_before=$(ls -1 /tmp/easynet-install.* 2>/dev/null | wc -l)
+    # 私有 TMPDIR：并行运行时 /tmp 下会有别的文件创建的 easynet-install.*，不能数全局。
+    export TMPDIR="$TMP_DIR/private-tmp"
+    mkdir -p "$TMPDIR"
     PATH="$FAKE_BIN:$PATH" run run_downloaded_script "https://example.com/install.sh"
-    local tmp_count_after
-    tmp_count_after=$(ls -1 /tmp/easynet-install.* 2>/dev/null | wc -l)
-    [ "$tmp_count_after" -le "$tmp_count_before" ]
+    [ "$status" -eq 0 ]
+    [ -z "$(find "$TMPDIR" -name 'easynet-install.*' -print -quit)" ]
 }
 
 @test "run_downloaded_script: cleans up temp file even on script failure" {
     make_fake_curl 'while [[ $# -gt 0 ]]; do case "$1" in -o) shift; printf "#!/bin/bash\nexit 42\n" > "$1"; break ;; *) shift ;; esac; done; exit 0'
 
-    local tmp_count_before
-    tmp_count_before=$(ls -1 /tmp/easynet-install.* 2>/dev/null | wc -l)
+    export TMPDIR="$TMP_DIR/private-tmp"
+    mkdir -p "$TMPDIR"
     PATH="$FAKE_BIN:$PATH" run run_downloaded_script "https://example.com/install-fail.sh"
-    local rc=$status
-    local tmp_count_after
-    tmp_count_after=$(ls -1 /tmp/easynet-install.* 2>/dev/null | wc -l)
-    [ "$tmp_count_after" -le "$tmp_count_before" ]
-    [ "$rc" -eq 42 ]
+    [ "$status" -eq 42 ]
+    [ -z "$(find "$TMPDIR" -name 'easynet-install.*' -print -quit)" ]
 }
 
 @test "run_downloaded_script: returns the script exit code on success" {

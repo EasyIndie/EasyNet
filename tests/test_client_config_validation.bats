@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# bats file_tags=client
 # 用**真实客户端二进制**校验我们生成的订阅。
 #
 # 这是 0.0.13 事故（mihomo 报 `invalid range: 30s` 拒绝整份订阅）之后补的闸门：
@@ -16,7 +17,10 @@ setup() {
     export TMP_DIR="$(mktemp -d)"
     export STATE_DIR="$TMP_DIR/state"
     export WEB_ROOT="$TMP_DIR/web"
-    export EASYNET_CLIENT_BIN_DIR="${EASYNET_CLIENT_BIN_DIR:-$TMP_DIR/client-bin}"
+    # 复用 client_check.sh 的持久缓存（CI 的 actions/cache 缓存的正是这个目录）。
+    # 不要默认到 TMP_DIR：那会让每个用例（以及每次 client_check.sh 调用）都从
+    # GitHub 重新下载 ~55MB 的 mihomo/sing-box 资产，实测单文件从 ~3s 涨到 ~108s。
+    export EASYNET_CLIENT_BIN_DIR="${EASYNET_CLIENT_BIN_DIR:-${HOME:-/root}/.cache/easynet/client-bin}"
 
     mkdir -p "$STATE_DIR/exposure/edge" \
         "$STATE_DIR/modules/xray-reality" "$STATE_DIR/modules/shadowsocks" \

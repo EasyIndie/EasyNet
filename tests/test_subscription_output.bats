@@ -2,12 +2,13 @@
 
 load test_helper
 
-setup() {
-    DIR="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)"
-    PROJECT_ROOT="$(cd "$DIR/.." && pwd)"
-    export TMP_DIR=$(mktemp -d)
-    export STATE_DIR="$TMP_DIR/state"
-    export WEB_ROOT="$TMP_DIR/web"
+setup_file() {
+    # 订阅生成是只读 fixture：由 setup() 每用例跑一次 generate_subscription（~1.5s）纯属浪费。
+    # 生成一次后各测试只读共享产物（bats 会自动清理 BATS_FILE_TMPDIR）。
+    PROJECT_ROOT="$(cd "$(dirname "${BATS_TEST_FILENAME}")/.." && pwd)"
+    export PROJECT_ROOT
+    export STATE_DIR="$BATS_FILE_TMPDIR/state"
+    export WEB_ROOT="$BATS_FILE_TMPDIR/web"
     mkdir -p "$STATE_DIR/exposure/edge" "$STATE_DIR/modules/xray-reality" "$STATE_DIR/modules/shadowsocks" "$STATE_DIR/modules/wireguard" "$STATE_DIR/modules/hysteria2"
 
     echo "example.com" > "$STATE_DIR/exposure/edge/domain.txt"
@@ -30,10 +31,6 @@ JSON
 
     EASYNET_STATE_DIR="$STATE_DIR" EASYNET_WEB_ROOT="$WEB_ROOT" \
         bash "$PROJECT_ROOT/scripts/generate_subscription.sh" >/dev/null 2>&1 || true
-}
-
-teardown() {
-    rm -rf "$TMP_DIR"
 }
 
 # -- File existence --

@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# bats file_tags=network
 # Download URL + pin integrity tests
 #
 # EasyNet installs every dependency from a pinned release asset in
@@ -24,13 +25,19 @@ TIMEOUT=10
 
 # Helper: check if a URL returns a successful HTTP status (2xx or 3xx)
 # Retries once on failure to handle transient network issues.
-# Usage: url_ok <url>
+# Uses HEAD so reachability does not download the whole ~20MB release asset
+# (`-o /dev/null` with GET still transfers the body). Falls back to a 1-byte
+# Range GET for servers that reject HEAD. Usage: url_ok <url>
 url_ok() {
     local url="$1"
     local code
     local attempt
     for attempt in 1 2; do
-        code=$(curl -fsSL -o /dev/null -w "%{http_code}" --connect-timeout "$TIMEOUT" --max-time 15 "$url" 2>/dev/null || echo "000")
+        code=$(curl -fsSIL -o /dev/null -w "%{http_code}" --connect-timeout "$TIMEOUT" --max-time 15 "$url" 2>/dev/null || echo "000")
+        case "$code" in
+            2* | 3*) return 0 ;;
+        esac
+        code=$(curl -fsSL -o /dev/null -w "%{http_code}" -H "Range: bytes=0-0" --connect-timeout "$TIMEOUT" --max-time 15 "$url" 2>/dev/null || echo "000")
         if [ "$code" != "000" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
             return 0
         fi
@@ -115,7 +122,7 @@ check_network() {
     local asset digest
     asset="$(easynet_pin_asset xray)"
     [ -n "$asset" ] || skip "当前架构无 pin"
-    digest=$(curl -fsSL --connect-timeout "$TIMEOUT" --max-time 30 \
+    digest=$(curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout "$TIMEOUT" --max-time 30 \
         "https://github.com/XTLS/Xray-core/releases/download/v${EASYNET_PIN_XRAY_VERSION}/${asset}.dgst" 2>/dev/null |
         awk -F'= ' '/SHA2-256/{print $2}')
     [ -n "$digest" ]
@@ -139,7 +146,7 @@ check_network() {
     local asset expected
     asset="$(easynet_pin_asset hysteria2)"
     [ -n "$asset" ] || skip "当前架构无 pin"
-    expected=$(curl -fsSL --connect-timeout "$TIMEOUT" --max-time 30 \
+    expected=$(curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout "$TIMEOUT" --max-time 30 \
         "https://github.com/apernet/hysteria/releases/download/app/v${EASYNET_PIN_HYSTERIA2_VERSION}/hashes.txt" 2>/dev/null |
         awk -v a="build/$asset" '$2 == a {print $1}')
     [ -n "$expected" ]
@@ -163,7 +170,7 @@ check_network() {
     local asset expected
     asset="$(easynet_pin_asset shadowsocks)"
     [ -n "$asset" ] || skip "当前架构无 pin"
-    expected=$(curl -fsSL --connect-timeout "$TIMEOUT" --max-time 30 \
+    expected=$(curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout "$TIMEOUT" --max-time 30 \
         "https://github.com/shadowsocks/shadowsocks-rust/releases/download/v${EASYNET_PIN_SHADOWSOCKS_VERSION}/${asset}.sha256" 2>/dev/null |
         awk '{print $1}')
     [ -n "$expected" ]

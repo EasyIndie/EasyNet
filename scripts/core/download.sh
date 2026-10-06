@@ -28,7 +28,8 @@ run_downloaded_script() {
     shift 2 || true
     local tmp_script status
 
-    tmp_script="$(mktemp /tmp/easynet-install.XXXXXX)"
+    # 尊重 TMPDIR：通用最佳实践，也让并行测试用私有临时目录隔离。
+    tmp_script="$(mktemp "${TMPDIR:-/tmp}/easynet-install.XXXXXX")"
     if ! download_file "$url" "$tmp_script" "$sha256"; then
         rm -f "$tmp_script"
         return 1
