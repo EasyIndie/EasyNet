@@ -57,7 +57,7 @@ monitor_pin_version() {
 
 # 从任意命令输出里取第一个 semver 形态的版本（去掉前导 v）。
 monitor_parse_version() {
-    grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -n1 | sed 's/^v//' || true
+    grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | awk 'NR==1' | sed 's/^v//' || true
 }
 
 # 当前运行的二进制版本（未安装 / 解析失败则空）。
@@ -66,17 +66,17 @@ monitor_running_version() {
     case "${1:-}" in
         xray)
             if command -v xray >/dev/null 2>&1; then
-                out="$(xray version 2>/dev/null | head -n1)"
+                out="$(xray version 2>/dev/null | awk 'NR==1')"
             fi
             ;;
         hysteria2)
             if command -v hysteria >/dev/null 2>&1; then
-                out="$(hysteria version 2>/dev/null | head -n1)"
+                out="$(hysteria version 2>/dev/null | awk 'NR==1')"
             fi
             ;;
         shadowsocks)
             if command -v ssserver >/dev/null 2>&1; then
-                out="$(ssserver --version 2>/dev/null | head -n1)"
+                out="$(ssserver --version 2>/dev/null | awk 'NR==1')"
             fi
             ;;
     esac
