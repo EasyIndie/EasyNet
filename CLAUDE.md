@@ -11,6 +11,7 @@ EasyNet is a Bash-based server deployment tool that installs and manages proxy p
 | Command | Description |
 |---------|-------------|
 | `bats tests/*.bats` | Run all tests (真客户端校验在有二进制时才跑，CI 里强制) |
+| `bash tests/run_all_tests.bash` | 本地快速迭代：跳过 network/client 用例并自动并行（`--full` 跑全量） |
 | `bats tests/test_protocol_metadata.bats` | Run a single test file |
 | `bats --formatter tap tests/` | TAP output (used in CI) |
 | `shellcheck --rcfile=.shellcheckrc --shell=bash --severity=style scripts/` | Lint all scripts |

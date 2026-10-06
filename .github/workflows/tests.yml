@@ -37,7 +37,7 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends jq ripgrep bats
+          sudo apt-get install -y --no-install-recommends jq ripgrep bats parallel
 
       - name: Install shellcheck
         if: steps.cache-shellcheck.outputs.cache-hit != 'true'
@@ -70,7 +70,14 @@ jobs:
           exit $fail
 
       - name: Run all tests
-        run: bats --timing --formatter tap tests/*.bats
+        # 并行：GNU parallel 按文件拆分（--no-parallelize-within-files），避免用例内
+        # 共享状态互相踩踏。真客户端用例（file_tags=client）由独立的
+        # client-config-validation job 强制跑，这里跳过以免重复下载 ~55MB 二进制。
+        run: >
+          bats --timing --formatter tap
+          --jobs "$(nproc)" --no-parallelize-within-files
+          --filter-tags '!client'
+          tests/*.bats
 
   integration-test:
     name: Integration test (config generation)
