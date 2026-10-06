@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-03.1b",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-03.1a target v1; metadata/manifest v1 unchanged; G0-02.3 frozen matrix"
+  ],
+  "implementation_files": [
+    "docs/planning/contracts/protocol-runtime.md",
+    "docs/planning/contracts/protocol-runtime.examples.json",
+    "docs/planning/contracts/validate-protocol-runtime.jq"
+  ],
+  "test_files": [
+    "tests/test_protocol_runtime_contract.bats"
+  ],
+  "commands": [
+    {
+      "command": "bats tests/test_protocol_runtime_contract.bats",
+      "expected": "native runtime and AWG examples valid; duplicate runtime identities/unknown methods/unsupported request/false native WG capability rejected"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Draft contract, no unified sing-box replacement. runtime ID differs from protocol and module IDs; capabilities supported/unsupported/unknown with evidence; unsupported methods deterministic refusal. AWG not native WireGuard or sing-box format; manifest legacy untouched. No driver implementation/real native config renderer/newlanguage/SSH/root/network. Independent examples+bounded jq checker, not full schema."
+}

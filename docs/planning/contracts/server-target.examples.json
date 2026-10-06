@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "targets": [
+    {
+      "id": "existing-example",
+      "kind": "ExistingServer",
+      "ssh": { "host": "existing.example.com", "port": 22, "user": "root" },
+      "credentialRef": "cred_existing_example",
+      "privilege": { "mode": "effective-root" }
+    },
+    {
+      "id": "cloud-example",
+      "kind": "CloudServer",
+      "ssh": { "host": "cloud.example.com", "port": 2222, "user": "operator" },
+      "credentialRef": "cred_cloud_example",
+      "privilege": { "mode": "sudo", "sudoPolicy": "noninteractive-root" },
+      "cloud": { "provider": "example-provider", "resourceId": "example-resource" }
+    }
+  ]
+}
