@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-02.3",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-02.1 matrix and G0-02.2 fixture evidence reviewed"
+  ],
+  "implementation_files": [
+    "docs/planning/capability-matrix.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "bats tests/test_capability_baseline.bats",
+      "expected": "isolated tests pass; no live deployment"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol high review only. Correct claims and freeze baseline matrix with no unconditional supported platform; exact version/platform acceptance stays unknown. Verify two earlier missed existing-fixture references corrected. No runtime modifications/architecture choice/cloud/real identifiers."
+}

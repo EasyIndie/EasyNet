@@ -25,10 +25,10 @@
 | [G0-01.1](G0/G0-01.1.md) | Luna low | verified | 核对 Agent 指引与 planning 导航并修复失效引用 |
 | [G0-01.2](G0/G0-01.2.md) | Luna low | verified | 校对演进目标、分支和任务状态文案 |
 | [G0-01.3](G0/G0-01.3.md) | Luna low | verified | 汇总文档检查结果并提交到演进分支 |
-| [G0-02.1](G0/G0-02.1.md) | Luna low | ready | 从代码列出现有 OS、架构、权限与协议能力 |
-| [G0-02.2](G0/G0-02.2.md) | Luna medium | locked | 为每种支持组合登记 fixture 和验证入口 |
-| [G0-02.3](G0/G0-02.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | locked | 审查 supported/unknown 边界并冻结首批支持矩阵 |
-| [G0-03.1a](G0/G0-03.1a.md) | GPT-6.1 Sol medium | locked | ServerTarget 合同与两目标示例 |
+| [G0-02.1](G0/G0-02.1.md) | Luna low | verified | 从代码列出现有 OS、架构、权限与协议能力 |
+| [G0-02.2](G0/G0-02.2.md) | Luna medium | verified | 为每种支持组合登记 fixture 和验证入口 |
+| [G0-02.3](G0/G0-02.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查 supported/unknown 边界并冻结首批支持矩阵 |
+| [G0-03.1a](G0/G0-03.1a.md) | GPT-6.1 Sol medium | ready | ServerTarget 合同与两目标示例 |
 | [G0-03.1b](G0/G0-03.1b.md) | GPT-6.1 Sol medium | locked | ProtocolRuntime 合同与 native/AWG 能力示例 |
 | [G0-03.1c](G0/G0-03.1c.md) | GPT-6.1 Sol medium | locked | Profile 合同与 secret 引用示例 |
 | [G0-03.2a](G0/G0-03.2a.md) | GPT-6.1 Sol medium | locked | Operation 状态与转移表 |

@@ -346,7 +346,7 @@
       "parent": "G0-02",
       "phase": "G0",
       "title": "从代码列出现有 OS、架构、权限与协议能力",
-      "status": "ready",
+      "status": "verified",
       "mode": "research",
       "dependencies": [
         "G0-01.3"
@@ -443,7 +443,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-02.1.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6-luna",
+        "reasoning_effort": "low",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-02.2",
@@ -451,7 +458,7 @@
       "parent": "G0-02",
       "phase": "G0",
       "title": "为每种支持组合登记 fixture 和验证入口",
-      "status": "locked",
+      "status": "verified",
       "mode": "implementation",
       "dependencies": [
         "G0-02.1"
@@ -466,24 +473,37 @@
       },
       "inputs": [
         {
-          "path": "scripts/deploy.sh",
-          "selector": "支持矩阵 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/capability-matrix.md",
+          "selector": "all matrix combinations"
         },
         {
           "path": "scripts/core/crypto.sh",
-          "selector": "支持矩阵 相关函数/配置；用 rg 定位后只读局部"
+          "selector": "architecture helpers"
         },
         {
-          "path": "scripts/core/profiles.sh",
-          "selector": "支持矩阵 相关函数/配置；用 rg 定位后只读局部"
+          "path": "scripts/deploy.sh",
+          "selector": "check_root/check_os only"
+        },
+        {
+          "path": "tests/test_deploy_module_resolution.bats",
+          "selector": "profile assertions"
+        },
+        {
+          "path": "tests/test_deploy_idempotency.bats",
+          "selector": "partial fixture scope"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-02.2.md",
       "binding": "docs/planning/task-bindings/G0-02.2.json",
       "allowed_writes": [
+        "tests/test_capability_baseline.bats",
+        "docs/planning/capability-matrix.md",
         "docs/planning/task-results/G0/G0-02.2.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "docs/planning/capability-matrix.md",
+        "tests/test_capability_baseline.bats"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -519,10 +539,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "前置卡尚未 verified/accepted-not-applicable",
-        "task binding 尚未冻结具体实现文件/接口/定向测试命令"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 Sol",
         "涉及新 trust/secret/权限/销毁边界立即审查",
@@ -540,7 +557,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-02.2.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6-luna",
+        "reasoning_effort": "medium",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-02.3",
@@ -548,7 +572,7 @@
       "parent": "G0-02",
       "phase": "G0",
       "title": "审查 supported/unknown 边界并冻结首批支持矩阵",
-      "status": "locked",
+      "status": "verified",
       "mode": "review",
       "dependencies": [
         "G0-02.2"
@@ -563,24 +587,39 @@
       },
       "inputs": [
         {
+          "path": "docs/planning/capability-matrix.md",
+          "selector": "all capability claims"
+        },
+        {
+          "path": "tests/test_capability_baseline.bats",
+          "selector": "isolated fixture limits"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-02.1.md",
+          "selector": "extraction/review evidence"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-02.2.md",
+          "selector": "fixture outputs"
+        },
+        {
           "path": "scripts/deploy.sh",
-          "selector": "支持矩阵 相关函数/配置；用 rg 定位后只读局部"
+          "selector": "OS/root/main order"
         },
         {
           "path": "scripts/core/crypto.sh",
-          "selector": "支持矩阵 相关函数/配置；用 rg 定位后只读局部"
-        },
-        {
-          "path": "scripts/core/profiles.sh",
-          "selector": "支持矩阵 相关函数/配置；用 rg 定位后只读局部"
+          "selector": "arch normalization"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-02.3.md",
       "binding": "docs/planning/task-bindings/G0-02.3.json",
       "allowed_writes": [
+        "docs/planning/capability-matrix.md",
         "docs/planning/task-results/G0/G0-02.3.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "docs/planning/capability-matrix.md"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -616,9 +655,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "前置卡尚未 verified/accepted-not-applicable"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
         "涉及新 trust/secret/权限/销毁边界立即审查",
@@ -636,7 +673,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-02.3.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "high",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-03.1a",
@@ -644,7 +688,7 @@
       "parent": "G0-03",
       "phase": "G0",
       "title": "ServerTarget 合同与两目标示例",
-      "status": "locked",
+      "status": "ready",
       "mode": "research",
       "dependencies": [
         "G0-02.3"
@@ -659,24 +703,37 @@
       },
       "inputs": [
         {
-          "path": "scripts/core/metadata.schema.json",
-          "selector": "应用服务合同 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/capability-matrix.md",
+          "selector": "frozen code/fixture/live boundary"
         },
         {
-          "path": "scripts/core/discovery.sh",
-          "selector": "应用服务合同 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/product-evolution-roadmap.md",
+          "selector": "目标与产品边界/ServerTarget/credentials"
+        },
+        {
+          "path": "scripts/core/metadata.schema.json",
+          "selector": "legacy v1 stays unchanged"
         },
         {
           "path": "scripts/core/env_file.sh",
-          "selector": "应用服务合同 相关函数/配置；用 rg 定位后只读局部"
+          "selector": "env namespace/secret compatibility only"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-03.1a.md",
       "binding": "docs/planning/task-bindings/G0-03.1a.json",
       "allowed_writes": [
+        "docs/planning/contracts/server-target.md",
+        "docs/planning/contracts/server-target.examples.json",
+        "docs/planning/contracts/validate-server-target.jq",
+        "tests/test_server_target_contract.bats",
         "docs/planning/task-results/G0/G0-03.1a.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "docs/planning/contracts/server-target.md",
+        "docs/planning/contracts/server-target.examples.json",
+        "docs/planning/contracts/validate-server-target.jq",
+        "tests/test_server_target_contract.bats"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -712,10 +769,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "前置卡尚未 verified/accepted-not-applicable",
-        "需要按本卡范围冻结 PoC/证据命令与单目标环境；不能运行所有候选"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
         "涉及新 trust/secret/权限/销毁边界立即审查",

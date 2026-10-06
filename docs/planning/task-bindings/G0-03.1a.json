@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-03.1a",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-02.3 frozen capability matrix; metadata v1 unchanged"
+  ],
+  "implementation_files": [
+    "docs/planning/contracts/server-target.md",
+    "docs/planning/contracts/server-target.examples.json",
+    "docs/planning/contracts/validate-server-target.jq"
+  ],
+  "test_files": [
+    "tests/test_server_target_contract.bats"
+  ],
+  "commands": [
+    {
+      "command": "bats tests/test_server_target_contract.bats",
+      "expected": "two independent valid targets pass; bad version, injection endpoint, invalid port, embedded credential, duplicate target IDs rejected; no SSH/network calls"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Draft v1 controller contract and independently runnable examples; not controller implementation or accepted language choice. ExistingServer/CloudServer same connection boundary; inventory holds only opaque credential references, trust is separate and never accepted by imported inventory, root vs explicit sudo policy; cloud resource identity cannot imply ownership/deletion authority. Write jq reference checker narrowly described as example-contract check, not full JSON Schema validator. ≤3 contract files +1 test; no production changes."
+}

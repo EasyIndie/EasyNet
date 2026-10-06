@@ -98,4 +98,3 @@ ADR-006 Backup / Recovery Format。
 
 ## Planning Artifacts
 本次本地工作树形成 `AGENTS.md`（通用入口，CLAUDE.md 为兼容引用）、`docs/planning/repository-audit-2026-10-06.md` 和 `docs/planning/phase-1-issue-plan.md`，包含证据、复用/缺口/成本矩阵及各提案验收标准。尚未提交/推送，因此这里不提供会失效的 main 文件链接。
-

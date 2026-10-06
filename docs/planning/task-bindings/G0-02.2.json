@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-02.2",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-02.1 reviewed matrix v1; baseline 60604ce"
+  ],
+  "implementation_files": [
+    "docs/planning/capability-matrix.md"
+  ],
+  "test_files": [
+    "tests/test_capability_baseline.bats"
+  ],
+  "commands": [
+    {
+      "command": "bats tests/test_capability_baseline.bats tests/test_deploy_module_resolution.bats tests/test_deploy_idempotency.bats",
+      "expected": "all targeted tests pass; no deploy/network/root execution"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Add isolated architecture normalization/unknown and effective non-root rejection fixtures; no main/deploy execution. Register existing fixtures or explicit integration gaps for every matrix row. OS hardcoded /etc/os-release is not injectable: document version-specific gap; do not modify production code merely for fixtures. Keep ≤200 diff and report commands. No real identifiers."
+}
