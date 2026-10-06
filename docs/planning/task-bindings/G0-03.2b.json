@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-03.2b",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-03.2a operation v1 draft; profile v1 secret boundary"
+  ],
+  "implementation_files": [
+    "docs/planning/contracts/events.md",
+    "docs/planning/contracts/events.examples.json",
+    "docs/planning/contracts/validate-events.jq"
+  ],
+  "test_files": [
+    "tests/test_event_contract.bats"
+  ],
+  "commands": [
+    {
+      "command": "bats tests/test_event_contract.bats",
+      "expected": "well-formed sequenced events pass; sequence gap/reordering/conflicting duplicate/mixed operation ID/raw secret/log payload/false terminal rejected or explicit incomplete outcome per contract"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Draft versioned application-service event envelope + sequence/replay policy, independent from current human stdout. Allowlisted typed payloads and bounded message metadata; no raw stdout/stderr/free-form secrets or config URI. Forward compatibility defined conservatively; uncertain/incomplete stream cannot certify operation completion. Reuse operation contract states rather than reimplement state engine. No production log modification/system/network."
+}
