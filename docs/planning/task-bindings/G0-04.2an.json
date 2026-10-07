@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2an",
+  "status": "frozen",
+  "contract_versions": [
+    "RustBridge-v1; reviewed Command-stage-v1; CommandFaultFixture-v1; dispatch-evidence matrix-v1"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/rust-dispatch-fault-results.md"
+  ],
+  "test_files": [
+    "poc/controller-language/go/bridge_command_fault_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -timeout 30s -run '^$' .",
+      "expected": "compile-onlyexit0 noTCP/child"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -race -timeout 90s -count=1 -json -run '^TestBridgeCommandFault$' . > /tmp/easynet-rust-dispatch-fault-gate.json",
+      "expected": "12subcases+parent actualpass0fail/skip/race rootindependentcount"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -race -timeout 90s -count=1 -json . > /tmp/easynet-go-command-fixture-regression.json",
+      "expected": "allGo nonbridge taggedregression actualpass independentcount, no personalvault orRustchild"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -race -timeout 90s -count=1 -json -run '^TestBridge(Transport|ChildIPCLifecycle|Auth|Command)$' . > /tmp/easynet-rust-fault-fixture-regression.json",
+      "expected": "existing28subcases+4parents actualpass0fail/skip/race, fixturechangedmandatoryregression"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Exactly12cases: channel-deadline/C/EOF(modeChannelOpenStall; noack Exec0Commands0 terminalnotdispatch); ack-deadline/C/EOF(modeExecAckStall; noack Exec1Commands0 terminalunknown); acklost-C/EOF(modeAckLost fixedcommand1 noack Exec1Commands1 pending1); no-status/nonzero42(mode4/5 fixedcommand0 expectack terminalunknownSSHexit2); no-close-deadline(mode6 cmd0 expectack phase reached thennaturaldeadline SSH2unknown); invalid-command-control(mode6cmd0 expectack phase reached then one rawX ownedIPC write deadline1s IO2unknown). Eachfixtureconstructor onlyownedNewCommandFaultFixture dynamicloopback,generatedinmemorycredential bridgeAuthFrame signed-success thenframebyte12 command1onlyAckLost else0; deadline500msfor naturaldeadline byte[8:12] BE,others3000. AfterreadyG consumeauthenticated; consumeackONLYmodes4/5/6, nofalseack; stalls waitPhaseReached (channel/ack/no-close) orindependentBlockReached AckLost with2sboundedtimer no sleeps. Naturaldeadline cases mustreachphasebeforeWait toproverealfault; C/EOF onlyafterphase. Deadline/statusfail exit2fixedSSH ErrBridgeChildIO; invalidrawXexit2fixedIO; allC/EOF0stagecontainmentexception. Remainingeventsexact terminal+joined(noack leakage), eventstreamclosed descriptorclosed cappedIPC<=4096 immutableWait. AllAuth>=1; exactExec/Commandsperabove no replay. AllstallsdoneOPENafterchildWait; pendingBlocks1onlyAckLost thenfixtureClosejoins pending0, otherstalls0. LIFO childbeforefixture. No rawlogs/keys/arbitraryendpoint/shell/profile/vault. NewGo tests<=250lines >300stop; reportaggregate+mandatory. No Rustchange or candidateDverified. FirstsourcefinalSolhighreview BEFOREactual12runtime. Go fixturechanged -> mandatoryfullGo ordinaryrace +28 existingRustsubcases; rootcounts allJSONinclparents separately no skip/fail/race, ordinaryGo count maynewinvalidunitadditional. No repeatsunchangedRustbuild/authcode/Bash beyondtheseaffectedfixtures. Savefailureifany <=2targetedrepairs; rootdirect newagentlimitnoexpensivesubmodelfallback; reviewedsource sameboundedexistingSolhigh. Realbytecaptelemetry stillsource/syntheticnotIPC. Eventwrite/cleanupfailureinjectedcoverage and fullcandidateexitsemantics/vault/JSON/ADRremainpendingexplicitly."
+}

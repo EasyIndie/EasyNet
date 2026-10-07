@@ -76,7 +76,7 @@
 | [G0-04.2ak](G0/G0-04.2ak.md) | GPT-6.1 Sol medium | verified | Rust 固定命令状态机与桥接编译 |
 | [G0-04.2al](G0/G0-04.2al.md) | GPT-6.1 Sol medium | verified | Rust 命令执行真实故障验收 |
 | [G0-04.2am](G0/G0-04.2am.md) | GPT-6.1 Sol medium | verified | Go 命令故障 fixture 准备 |
-| [G0-04.2an](G0/G0-04.2an.md) | GPT-6.1 Sol medium | locked | Rust 派发与完成证据故障验收 |
+| [G0-04.2an](G0/G0-04.2an.md) | GPT-6.1 Sol medium | verified | Rust 派发与完成证据故障验收 |
 | [G0-04.2d](G0/G0-04.2d.md) | GPT-6.1 Sol medium | locked | 候选 B SSH PoC |
 | [G0-04.2e](G0/G0-04.2e.md) | GPT-6.1 Sol medium | locked | 候选 B vault PoC |
 | [G0-04.2f](G0/G0-04.2f.md) | GPT-6.1 Sol medium | locked | 候选 B result/打包 PoC |

@@ -5938,7 +5938,7 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "Rust 派发与完成证据故障验收",
-      "status": "locked",
+      "status": "verified",
       "mode": "acceptance",
       "dependencies": [
         "G0-04.2am"
@@ -5953,40 +5953,49 @@
       },
       "inputs": [
         {
-          "path": "poc/controller-language/rust/src/bin/ssh_auth_fixture.rs",
-          "selector": "existing bootstrap/auth/deadline/cancel/retained cleanup"
-        },
-        {
-          "path": "poc/controller-language/rust/src/bin/common/mod.rs",
-          "selector": "shared owned fd and fixed events"
-        },
-        {
-          "path": "poc/controller-language/rust/src/transport.rs",
-          "selector": "handle_mut and close_join"
-        },
-        {
-          "path": "poc/controller-language/rust/src/lib.rs",
-          "selector": "Credentials and decode_frame"
-        },
-        {
           "path": "poc/controller-language/go/fixture.go",
-          "selector": "fixed command behavior"
+          "selector": "commandfaultphase/Stats/PendingBlocks/Close"
         },
         {
-          "path": "docs/planning/poc/controller-language/rust-ssh-lab-contract.md",
-          "selector": "dispatch acknowledgement/output/owner/join"
+          "path": "poc/controller-language/go/command_fault.go",
+          "selector": "typedmodesconstructorPhaseReached"
         },
         {
-          "path": "docs/planning/task-results/G0/G0-04.2aj.md",
-          "selector": "verified auth gate"
+          "path": "poc/controller-language/go/bridge_command_test.go",
+          "selector": "ownedcommandbinary/phaseevent/blockhelper"
+        },
+        {
+          "path": "poc/controller-language/go/bridge_auth_test.go",
+          "selector": "bridgeAuthFrame memorycredentialencoding"
+        },
+        {
+          "path": "poc/controller-language/go/bridge_child_test.go",
+          "selector": "ownedready/wait/remainingevents"
+        },
+        {
+          "path": "poc/controller-language/go/bridge_child.go",
+          "selector": "Control/CloseControl/ownedconn/Wait"
+        },
+        {
+          "path": "poc/controller-language/rust/src/bin/ssh_command_fixture.rs",
+          "selector": "reviewedphaseexceptionandjoined"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2am.md",
+          "selector": "verifiedfixturepreparation"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-04.2an.md",
       "binding": "docs/planning/task-bindings/G0-04.2an.json",
       "allowed_writes": [
+        "docs/planning/poc/controller-language/rust-dispatch-fault-results.md",
+        "poc/controller-language/go/bridge_command_fault_test.go",
         "docs/planning/task-results/G0/G0-04.2an.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "docs/planning/poc/controller-language/rust-dispatch-fault-results.md",
+        "poc/controller-language/go/bridge_command_fault_test.go"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -6020,9 +6029,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "实现与命令尚未冻结"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
         "涉及新 trust/secret/权限/销毁边界立即审查",
@@ -6040,7 +6047,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-04.2an.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "root-direct",
+        "reasoning_effort": "model-telemetry-unavailable",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-04.2d",
