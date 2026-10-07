@@ -6407,6 +6407,109 @@
       }
     },
     {
+      "id": "G0-04.2aq",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Rust vault 数据 ABI 与原生符号链接探针",
+      "status": "active",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2ap"
+      ],
+      "model": {
+        "tier": "C",
+        "type": "低成本编码模型",
+        "example": "Luna medium",
+        "review": "主 Agent 核对官方出处与事实；平台权限或安全结论交 Sol 审查",
+        "reason": "已冻结C/Rust数据ABI机械适配，严格禁止nativeAPI调用，unsafe边界经Sol审查",
+        "context": "≤6k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/controller-language/rust-vault-ffi-evidence.md",
+          "selector": "pinnedABI/source/build facts"
+        },
+        {
+          "path": "poc/controller-language/go/vault/native.h",
+          "selector": "all13exactdecls andVaultProbe"
+        },
+        {
+          "path": "poc/controller-language/go/vault/native.c",
+          "selector": "linkonly reviewedhelper noAPIcall"
+        },
+        {
+          "path": "docs/planning/poc/controller-language/vault-lab-contract.md",
+          "selector": "isolatedPoCnotprod/no personalKeychain"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2aq.md",
+      "binding": "docs/planning/task-bindings/G0-04.2aq.json",
+      "allowed_writes": [
+        "poc/controller-language/rust-vault/ffi.rs",
+        "poc/controller-language/rust-vault/abi_probe.c",
+        "poc/controller-language/rust-vault/abi_probe.rs",
+        "docs/planning/task-results/G0/G0-04.2aq.md"
+      ],
+      "implementation_writes": [
+        "poc/controller-language/rust-vault/ffi.rs",
+        "poc/controller-language/rust-vault/abi_probe.c",
+        "poc/controller-language/rust-vault/abi_probe.rs"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "实现冻结数据ABI探针与handwrittenextern声明",
+        "仅运行冻结编译/数据检查，不调用vault_*"
+      ],
+      "acceptance": [
+        "13symbol linked; C/Rust bool/layout/integer ABI assertions",
+        "no vault/Keychain/nativeSecurity API call"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2aq",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "data-only ABI and13symbol link check",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤4k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-04.2e",
       "source_id": "G0-04.2",
       "parent": "G0-04",
@@ -6415,7 +6518,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-04.2ap"
+        "G0-04.2aq"
       ],
       "model": {
         "tier": "I",

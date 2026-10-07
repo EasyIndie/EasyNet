@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2aq",
+  "status": "frozen",
+  "contract_versions": [
+    "NativeVaultLab-v1; handwritten ABI-probe-v1 reviewed Sol high"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust-vault/ffi.rs",
+    "poc/controller-language/rust-vault/abi_probe.c",
+    "poc/controller-language/rust-vault/abi_probe.rs"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "mkdir -p /tmp/easynet-poc-cache/rust-vault",
+      "expected": "create taskowned builddir only"
+    },
+    {
+      "command": "shasum -a 256 poc/controller-language/go/vault/native.c poc/controller-language/go/vault/native.h",
+      "expected": "6c2b3e83f3c32f3baa248b4253b019976a154421353a7cc8637dd9d4e51c0dbc and89b5cd41f79adc02520c9fbabf83149f42c0d92705144e90babc84d2069aa771 beforecompile"
+    },
+    {
+      "command": "xcrun clang -std=c11 -Wall -Wextra -Werror -Wno-deprecated-declarations -c poc/controller-language/go/vault/native.c -o /tmp/easynet-poc-cache/rust-vault/native.o",
+      "expected": "exit0 reviewedC compiled only; deprecated fileKeychainexplicitqualificationlimit"
+    },
+    {
+      "command": "xcrun clang -std=c11 -Wall -Wextra -Werror -Wno-deprecated-declarations -c poc/controller-language/rust-vault/abi_probe.c -o /tmp/easynet-poc-cache/rust-vault/abi_probe.o",
+      "expected": "exit0 data-only Cshim compile"
+    },
+    {
+      "command": "xcrun ar rcs /tmp/easynet-poc-cache/rust-vault/libeasynet_vault_native.a /tmp/easynet-poc-cache/rust-vault/native.o /tmp/easynet-poc-cache/rust-vault/abi_probe.o",
+      "expected": "exit0 ownedstaticarchive only"
+    },
+    {
+      "command": "/tmp/easynet-poc-toolchains/rust/bin/rustc --edition=2024 poc/controller-language/rust-vault/abi_probe.rs -L native=/tmp/easynet-poc-cache/rust-vault -l static=easynet_vault_native -l framework=Security -l framework=CoreFoundation -o /tmp/easynet-poc-cache/rust-vault/abi_probe",
+      "expected": "exit0 no newcrate/Cargo changes; symbols resolve"
+    },
+    {
+      "command": "/tmp/easynet-poc-cache/rust-vault/abi_probe",
+      "expected": "only fixed ABI/link checks passed line; dataABI assertions pass; NOvault/KeychainSecurityAPIcalls"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "AQreviewapproved by Sol high onAPsource facts: reuseC permitted equivalentnativeinteropPoC notproductionbindingselection. Luna medium C mechanical≤6k oldagentboundedreusebecausefreshthreadlimit noexpensivefallback. Exactly3newsource +mandatoryreport <=220lines >300stop. ffi.rs stdffi c_char/c_void/c_int, OSStatusi32 UInt32u32, reprC VaultProbe{pubpath_guard_ok:bool,pubstage:c_int,pubstatus:i32}, unsafeexternC13native.hsignatures only, no wrappers/deref/Cloneownedhandle. TypeVaultc_voidopaque pointersnever dereferenced. Linkall13functionaddresses withstdhintblack_box topreventoptimization, assertnonzero, NEVER call anyvault_* inclprobe/has/release. CABIprobe include../go/vault/native.h correctrelative ../go/vault/native.h fromrust-vault; only puredata6functions: uint64_t abi_value(UInt32 index) static13values indices0sizeofbool1alignbool2sizeofOSStatus3alignOSStatus4((OSStatus)-1<0)5sizeofUInt326alignUInt327((UInt32)-1>0)8sizeofVaultProbe9align10offsetofpath_guard_ok11offsetstage12offsetstatus; unknownindexUINT64_MAX. bool abi_echo_bool(bool), void abi_flip_bool(bool*), VaultProbe abi_return_probe(void) fixedtrue/42/-50, OSStatus abi_echo_status(OSStatus), UInt32 abi_echo_u32(UInt32). C staticassert OSStatus signed4/UInt32unsigned4 allowed; RuntimeRustasserts all13Cvalues vsstd::memsize/align/offset_of reprC +signedunsignedknown; bothtrue/false argsreturns/out-pointer togglesonvalidRustbool storage; fixedstruct return matchesfields; status -50+0 andu32MAX+0roundtrip. Onlyunsafe data calls withdocumentedvalidpointer noforeignAPI. Rustmainnoargs nofile/key/env/network/Keychain; outputfixed singleline, noDebugcredentialpotential; noactualvaultAPI guard/RAII/runtimequalification. Buildcommands onlyfixedowned/tmp paths, nativeC/hhashesmustmatchbeforecompile. sdk27 Appleclang21 arselectedtaskrustc1.99. -Wno-deprecated-declarations makesknownlegacyAPIscompilednotacceptedproduction; warnings/allcompilerfailuresrecord. ABIprobe RUN allowed worker since data-only no nativeAPI (allotherhelpers NEVERlaunch). FinalSolhighsource review needed beforeverified, realnativehelperAR+acceptanceASlater. ≤2targetedrepairthenescalate unsafe/layoutuncertainty neverabandonABIguard. ExistingSSH Cargo/Go/Chelper/mainbranch zeroedits."
+}
