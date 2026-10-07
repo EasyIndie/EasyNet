@@ -1,5 +1,6 @@
-//! IPC-only bootstrap: no SSH task, connection or command is started.
-use easynet_ssh_lab::{control::{Control, ControlToken}, decode_frame};
+//! KEX-only bridge stage: no authentication, channel or command is started.
+use easynet_ssh_lab::{control::{Control, ControlToken}, decode_frame, Credentials,
+    transport::{Transport, TransportError}};
 use std::io::{Read, Write};
 use std::os::fd::{FromRawFd, RawFd};
 use std::os::unix::net::UnixStream;
@@ -7,6 +8,8 @@ use std::time::Duration;
 
 const IO_FAILURE: &str = "fixture I/O failure";
 const INVALID_INPUT: &str = "invalid fixture input";
+const SSH_FAILURE: &str = "fixture SSH failure";
+const CLEANUP_FAILURE: &str = "fixture cleanup failure";
 
 fn validate_socket(fd: RawFd) -> Result<(), &'static str> {
     let mut kind: libc::c_int = 0;
@@ -49,23 +52,59 @@ fn event(line: &[u8]) -> Result<(), &'static str> {
     output.write_all(line).and_then(|_| output.flush()).map_err(|_| IO_FAILURE)
 }
 
-async fn bootstrap(stream: UnixStream, deadline_ms: u32) -> Result<(), &'static str> {
-    let deadline = tokio::time::Instant::now() + Duration::from_millis(u64::from(deadline_ms));
+async fn bootstrap(stream: UnixStream, credentials: Credentials) -> Result<(), &'static str> {
+    let deadline = tokio::time::Instant::now()
+        + Duration::from_millis(u64::from(credentials.deadline_ms));
     let mut control = Control::new(stream).map_err(|_| IO_FAILURE)?;
-    let result: Result<(), &'static str> = async {
-        event(b"ready\n")?;
-        loop {
-            let token = tokio::time::timeout_at(deadline, control.next()).await
-                .map_err(|_| IO_FAILURE)?.map_err(|_| IO_FAILURE)?;
-            if token == ControlToken::Cancel { return Ok(()); }
-            // G only permits waiting for cancellation in this bootstrap.
-            // No transport, SSH operation or detached task exists here.
+    event(b"ready\n")?;
+    let token = tokio::time::timeout_at(deadline, control.next()).await
+        .map_err(|_| IO_FAILURE)?.map_err(|_| IO_FAILURE)?;
+    if token == ControlToken::Cancel {
+        drop(control);
+        event(b"not-dispatched\n")?;
+        return event(b"joined\n");
+    }
+
+    let mut owner = Transport::new(credentials.port, credentials.host_key)
+        .map_err(|_| SSH_FAILURE)?;
+    let mut cancellation = None;
+    let outcome = {
+        // The future borrows control and its recorded outcome. End both borrows
+        // before inspecting cancellation or dropping the owned IPC stream.
+        let mut cancel = Box::pin(async {
+            cancellation = Some(match control.next().await {
+                Ok(ControlToken::Cancel) => Ok(()),
+                Ok(ControlToken::Go) | Err(_) => Err(IO_FAILURE),
+            });
+        });
+        let result = owner.connect_until(deadline, cancel.as_mut()).await;
+        drop(cancel);
+        result
+    };
+    // Every path after owner creation must prove cleanup. A failed retained
+    // owner stays alive until process containment; it must never unwind/drop.
+    let proof = match owner.close_join().await {
+        Ok(proof) => proof,
+        Err(_) => {
+            let _ = writeln!(std::io::stderr().lock(), "{CLEANUP_FAILURE}");
+            std::process::exit(2);
         }
-    }.await;
+    };
     drop(control);
-    result?;
+    let result = match cancellation {
+        Some(Err(_)) => Err(IO_FAILURE),
+        _ => match outcome {
+            Ok(()) => Ok(()),
+            Err(TransportError::Cancelled) if cancellation == Some(Ok(())) => Ok(()),
+            Err(_) => Err(SSH_FAILURE),
+        },
+    };
+    // This stage's success/cancel exit 0 is only a KEX experiment exception.
+    // Neither event asserts auth, exec or a completed fixture operation.
+    let _joined = proof;
     event(b"not-dispatched\n")?;
-    event(b"joined\n")
+    event(b"joined\n")?;
+    result
 }
 
 fn run() -> Result<(), &'static str> {
@@ -76,7 +115,7 @@ fn run() -> Result<(), &'static str> {
     let stream = inherited_control()?;
     let runtime = tokio::runtime::Builder::new_current_thread().enable_all()
         .build().map_err(|_| IO_FAILURE)?;
-    runtime.block_on(bootstrap(stream, credentials.deadline_ms))
+    runtime.block_on(bootstrap(stream, credentials))
 }
 
 fn main() {
