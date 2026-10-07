@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2k",
+  "status": "frozen",
+  "contract_versions": [
+    "SSH lab v1; ADR003 design; Go x/crypto v0.57.0"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/fixture.go",
+    "poc/controller-language/go/client.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/transport_faults_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -race -count=1 ./...",
+      "expected": "actual partialhandshake and realSSH authnegotiation stalls return boundedtimeout before1s using100msctx deadline; zeroexec; fixtureauth callback reached aftertrustedKEX; Closejoinsownedworkers"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2k",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0 plus newfilewhitespace"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol medium <=200 addedlines. Frozen additionalFixture API NewAuthStallFixture()(*Fixture,error), AuthReached()<-chan struct{} optionalchannel usablebothnormal/fault. Internal newFixture(stallAuth bool) buildsimmutableconfig BEFOREgoroutines; PublicKeyCallback incrementsstats thenclosesauthReachedonce and waits f.done withoutholdingmu onlyinstallaAuthStall; f.Close releases. DefaultNewFixture samebehavior. Hook is unsignedpubkey authentication-negotiation phase, no signedauthsuccessclaim. Handshake-stalltest usesownedloopbacklistener writesvalidSSHbanner andwithholdsKEX; knownexpectedkey fromephemeralFixture only. Dialctx100ms usesexistingabsoluteconn deadline; assert realerror deadline/timeout elapsed<1s, zeroexec afterjoinedclose; authstall stats>0 and observableauthReached. Testtimeout30s race. No productiondriver/usercredentials/systemresources. Livecontextcancelwithoutdeadline nexti; ctxdeadline+3sabsolute retainedcapsfutureRun. Preserveallpriortests andconstructor publicAPI."
+}

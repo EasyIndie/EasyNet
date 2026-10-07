@@ -2274,7 +2274,7 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "Go SSH key auth 与 host trust",
-      "status": "active",
+      "status": "verified",
       "mode": "implementation",
       "dependencies": [
         "G0-04.2j"
@@ -2365,6 +2365,207 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-04.2h.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "medium",
+        "token_usage": "unavailable"
+      }
+    },
+    {
+      "id": "G0-04.2k",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Go SSH handshake auth deadline 验证",
+      "status": "active",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2h"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "涉及平台 adapter、多个失败路径或跨边界集成，低档返工风险较高",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/controller-language/ssh-lab-contract.md",
+          "selector": "transport/auth stall metrics"
+        },
+        {
+          "path": "poc/controller-language/go/fixture.go",
+          "selector": "constructor authcallback and cleanup"
+        },
+        {
+          "path": "poc/controller-language/go/client.go",
+          "selector": "absolute min deadline"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2h.md",
+          "selector": "reviewed trust beforeauth"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2k.md",
+      "binding": "docs/planning/task-bindings/G0-04.2k.json",
+      "allowed_writes": [
+        "poc/controller-language/go/fixture.go",
+        "poc/controller-language/go/client.go",
+        "poc/controller-language/go/transport_faults_test.go",
+        "docs/planning/task-results/G0/G0-04.2k.md"
+      ],
+      "implementation_writes": [
+        "poc/controller-language/go/fixture.go",
+        "poc/controller-language/go/client.go",
+        "poc/controller-language/go/transport_faults_test.go"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "检查分支和前置证据，只加载本卡输入；目标：候选 A SSH PoC",
+        "按冻结合同处理当前单目标；案例：仅验证「候选 A SSH PoC」这一范围；每候选复现 key auth/host mismatch/cancel/vault locked/JSON result",
+        "运行绑定的定向行为检查；失败最多两次局部修复后升级；记录 diff/命令/结果"
+      ],
+      "acceptance": [
+        "仅验证「候选 A SSH PoC」这一范围；每候选复现 key auth/host mismatch/cancel/vault locked/JSON result",
+        "只修改允许路径；输出案例和负例证据，不用结构校验替代实运行",
+        "提交前/无授权时保留未提交 diff；不创建空 commit"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2a",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "仅验证「候选 A SSH PoC」这一范围；每候选复现 key auth/host mismatch/cancel/vault locked/JSON result",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
+      "id": "G0-04.2l",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Go SSH bounded execution output 验证",
+      "status": "locked",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2k"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "涉及平台 adapter、多个失败路径或跨边界集成，低档返工风险较高",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/controller-language/ssh-lab-contract.md",
+          "selector": "same metrics, transport/execution bounds"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2l.md",
+      "binding": "docs/planning/task-bindings/G0-04.2l.json",
+      "allowed_writes": [
+        "docs/planning/task-results/G0/G0-04.2l.md"
+      ],
+      "implementation_writes": [],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "检查分支和前置证据，只加载本卡输入；目标：候选 A SSH PoC",
+        "按冻结合同处理当前单目标；案例：仅验证「候选 A SSH PoC」这一范围；每候选复现 key auth/host mismatch/cancel/vault locked/JSON result",
+        "运行绑定的定向行为检查；失败最多两次局部修复后升级；记录 diff/命令/结果"
+      ],
+      "acceptance": [
+        "仅验证「候选 A SSH PoC」这一范围；每候选复现 key auth/host mismatch/cancel/vault locked/JSON result",
+        "只修改允许路径；输出案例和负例证据，不用结构校验替代实运行",
+        "提交前/无授权时保留未提交 diff；不创建空 commit"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2a",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "仅验证「候选 A SSH PoC」这一范围；每候选复现 key auth/host mismatch/cancel/vault locked/JSON result",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [
+        "前置卡尚未 verified/accepted-not-applicable",
+        "task binding 尚未冻结具体实现文件/接口/定向测试命令"
+      ],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
       ]
     },
     {
@@ -2376,7 +2577,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-04.2h"
+        "G0-04.2l"
       ],
       "model": {
         "tier": "I",
