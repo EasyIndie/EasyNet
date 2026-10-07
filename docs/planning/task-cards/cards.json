@@ -4612,8 +4612,8 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "Go–Rust 真实 IPC bootstrap 验收",
-      "status": "locked",
-      "mode": "implementation",
+      "status": "active",
+      "mode": "acceptance",
       "dependencies": [
         "G0-04.2ac"
       ],
@@ -4627,16 +4627,37 @@
       },
       "inputs": [
         {
-          "path": "docs/planning/poc/controller-language/vault-lab-contract.md",
-          "selector": "bounded native interoperability v1"
+          "path": "docs/planning/poc/controller-language/rust-ssh-lab-contract.md",
+          "selector": "ownedsyntheticfixture controls/events/cleanup assertions"
+        },
+        {
+          "path": "poc/controller-language/go/bridge_child.go",
+          "selector": "reviewed parent APIs and summary"
+        },
+        {
+          "path": "poc/controller-language/go/bridge_frame.go",
+          "selector": "memory encoding only"
+        },
+        {
+          "path": "poc/controller-language/go/fixture.go",
+          "selector": "NewFixture ownmemorykeys publicstats/Close"
+        },
+        {
+          "path": "poc/controller-language/rust/src/bin/ssh_fixture.rs",
+          "selector": "IPC-only fixedevents/failures"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-04.2ad.md",
       "binding": "docs/planning/task-bindings/G0-04.2ad.json",
       "allowed_writes": [
+        "poc/controller-language/go/bridge_child_test.go",
+        "docs/planning/poc/controller-language/go-rust-ipc-results.md",
         "docs/planning/task-results/G0/G0-04.2ad.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "docs/planning/poc/controller-language/go-rust-ipc-results.md",
+        "poc/controller-language/go/bridge_child_test.go"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -4670,10 +4691,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "前置卡尚未 verified",
-        "实现与命令尚未冻结"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
         "涉及新 trust/secret/权限/销毁边界立即审查",

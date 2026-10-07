@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ad",
+  "status": "frozen",
+  "contract_versions": [
+    "reviewed IPC-only GoParent-v1/RustBootstrap-v1; no SSHruntimeacceptance"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/go-rust-ipc-results.md"
+  ],
+  "test_files": [
+    "poc/controller-language/go/bridge_child_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo build --locked --offline --manifest-path poc/controller-language/rust/Cargo.toml --bin ssh_fixture",
+      "expected": "exit0 freshownedRustbinary build noSSH/network"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -timeout 30s -run ^$ .",
+      "expected": "exit0 compileonly beforesecurityreview NO testfunctions"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -race -timeout 90s -count=1 -json -run ^TestBridgeChild .",
+      "expected": "AFTER rootsecuritygoahead only; exit0 actualUnixchild+ownedGo loopbackfixture tests; noRustSSHconnection"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "First implement +COMPILEONLY; Solhigh reviews credential/stdout/ownedprocess tests then root executes scoped actualcommand (loopbackmayneedescalation). Testfile //go:build unix && bridgeipc. KnownabsoluteRustbin /tmp/easynet-poc-cache/rust-target/debug/ssh_fixture freshlybuilt byexactcommand. No arbitrarybinary/shell/resources/personalkeys/env. NewFixture() loopback0 ONLYownedGo fixture, syntheticEd25519keys in memory; extractportfromownedEndpoint, expectedhostblob=HostKey().Marshal, client CryptoSigner MarshalPrivateKey pem.EncodeToMemory; EncodeBridgeFrame validinput. t.Cleanup fixture.Close andchild.Close ensuresreapedafter anyfailedassert; ready beforeG/C viaboundedselectcontext1s or2s max NOsleeps. StandardDeadlineMS3000; timeoutcase100ms waitnaturallynomadeupsleep. Cases: GthenC expectedready not-dispatched joined exit0/fixedemptyDiagnostic; Cfirstsame; CloseControlEOFsame; malformedframe childExit2 ErrBridgeChildIO Diagnosticinvalid fixture input/stdout0; noGcontrol deadlineExit2 ErrBridgeChildIO Diagnosticfixture I/O failure/readyonly; externalctxcancelafterready mustnonzero ErrBridgeChildIO noclaiminternaljoin; invalidControlX beforeG ErrBridgeProtocol adaptercancelchild (do notsendunknownbyte) thenreapnonzero; concurrentWaitcallers returnidenticalimmutableSummary andafterWaitmultipleClose nilsuccessfulcase. Observe actualc.conn writeafterWait errors.Is(net.ErrClosed) toproveparentowneddescriptorclosed (peerEPIPEinsufficient). CompleteallEvents drainchannelbounded/Wait5sctx ceiling external90suite rootwrapper; SummaryBytes<=4096 each fixedDiagnostic only; no rawinput/output/key/errorformat anywhere. Assert fixtureStatsAuth/Exec/Commandsall0 becausebootstrapmustnotconnectSSH (loopbacklistenerownedbutnoRustTCP). Root mayallowreadable>200testlines formeaningfulcases. No actualtest execution untilrootgoahead; workerbuild+compile allowed. Missing/wrongfd CLInegative notnewscopealreadyborrowedFDunit, positiveinheritedFDtestreal. NoGo/Rustsource/metadata changes exceptown_test, nodeps/release/deploy/commits/state. Stageactualrunrootreport withJSONcounts timelimits/failurefacts afterreview. Own aggregate go-rust-ipc-results.md <=40lines caninitiallyrecordcompile-only/reviewpending thenfillactualcounts afterrootrun; neverclaimpassbeforetest. It is an allowed acceptance document, no implementationcode edits."
+}
