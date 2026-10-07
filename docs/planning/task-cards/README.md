@@ -47,7 +47,7 @@
 | [G0-04.2l](G0/G0-04.2l.md) | GPT-6.1 Sol medium | verified | Go SSH combined output 上限验证 |
 | [G0-04.2m](G0/G0-04.2m.md) | GPT-6.1 Sol medium | verified | Go SSH bounded Run 与未知结果 |
 | [G0-04.2i](G0/G0-04.2i.md) | GPT-6.1 Sol medium | verified | Go SSH deadline output cancel 故障 |
-| [G0-04.2a](G0/G0-04.2a.md) | GPT-6.1 Sol medium | active | 候选 A SSH PoC |
+| [G0-04.2a](G0/G0-04.2a.md) | GPT-6.1 Sol medium | verified | 候选 A SSH PoC |
 | [G0-04.2b](G0/G0-04.2b.md) | GPT-6.1 Sol medium | locked | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | locked | 候选 A result/打包 PoC |
 | [G0-04.2d](G0/G0-04.2d.md) | GPT-6.1 Sol medium | locked | 候选 B SSH PoC |
