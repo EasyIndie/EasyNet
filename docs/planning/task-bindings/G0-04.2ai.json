@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ai",
+  "status": "frozen",
+  "contract_versions": [
+    "RustBridge-v1; TransportOwner-v1; Auth-only stage-v1 (root pinned API freeze)"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust/src/bin/common/mod.rs",
+    "poc/controller-language/rust/src/bin/ssh_fixture.rs",
+    "poc/controller-language/rust/src/bin/ssh_auth_fixture.rs"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo test --manifest-path poc/controller-language/rust/Cargo.toml --locked --offline --bins",
+      "expected": "exit0 shared owned fd unit tests only; no actual TCP/SSH sessions or children"
+    },
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo build --manifest-path poc/controller-language/rust/Cargo.toml --locked --offline --bins",
+      "expected": "exit0 owned KEX/auth binaries built only, do not launch"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Root frozen existing reviewedSSHLab-v1 signed auth scope; no framework/language/agent decision. Only3specifiedsources+report. Extract EXACT existingvalidate_socket/inherited_control/event and theirtwoinlinefdtests into bin/common/mod.rs; pub(super) functions/constants toparentbin, mod common inKEX andnewAUTHbin; keep fd3 borrowedvalidation and singleFromRawFd ownership unchanged; no duplicateunsafe or newdeps. ExistingKEX binary semantics unchanged (sourceimport refactor only), regressionahrequiredlaterbecauseartifact rebuilt. Newssh_auth_fixture noargs/sameframe/inheritedfd3/runtime/caps/events; owner constructedonce G-after exacthostkey; G-before C/EOF success not-dispatchedjoined/noTCP, invalid/deadline fixedIO failure asKEX. One absoluteInstant frombootstrap once <=3000ms spansKEX/auth, additionalfirst1000ms retainedowner cleanup. BorrowedcancelFuture control.next state expectedC/EOF vsinvalid/read; keep same pinnedfuture acrossKEX andAUTH, neverrepoll completedfuture: ifKEX Cancelled/error skipAUTH, endborrowbeforestateinspect. auth usesowner.handle_mut borrowedHandle; no cloned/movedHandle; fixedusernamefixture; pinnedrusshclient/mod.rs466-480 authenticate_publickey(user,russh::keys::PrivateKeyWithHashAlg::new(Arc::new(credentials.private_key),None))->AuthResult, auth.rs153-168 Success only .success(); Ed25519validatedframe. Authfailure/partialsuccess/rawerrs fixedSSHfailure; selectbiasedcancel thenabsolute deadline thenauthfuture, nottimeout resetting, no auth retries/fallback/agent/password/certs. Dropauthborrow thencancelborrow beforeclosejoin; retainedowner awaitsHandle+StreamDrop oncancelledpendingauth. Recordauthsuccess privately; authenticated event ONLY ifAuthResultSuccess, beforecleanup forparentfuturephase but handleeventwritefailure asrecordedIO andstillclosejoin (no ? droppingowner). Everyownerpath close_join includingevents/errors; CleanupFailure fixedcleanupstderr directprocess::exit2 WHILE owneralive, nojoined. AfterproofdropControl thennot-dispatchedjoined; authsuccess/C/EOF exit0 stageexception notcommand/operationacceptance; cancelledauth whenexpectedC success0; auth/Ssh/deadline fixedSSHexit2; invalidcontrol/read/eventfailure fixedIOexit2; onlySuccess emitsauthenticated. Newbinary no channel/exec/PTY/subsystem/forwarding/command/knownhosts/personalvault. PrivateKey neverDebug/log/file/argv; fieldscommand/id noeventpayload. Unittests sharedexactownedfdtests compiledforbothbins (expected4unitchecks); nochild/noTCP inthiscard. sourcechange target<=300,>400orunsafeinvariantchangeescalate. WorkerSolmedium freshforknone, <=8k boundedinputs; finaloneSolhighsource review mandatorybeforeactualaj. No repeatedupstreamresearch, pinnedAPIselectors supplied; norealSSH/authgateclaimuntilaj. Two targetedrepairlimit. Existing unchangedlibunitnotrerun. Reportconfiguredmodel/tokenunavailable/realfixedunitcount/compilerwarnings/durations/phaseexceptions. aj willprove Go AuthReached unsignedprobe only notsuccessfulsig; successrequiresactualserverAuthResult,wrongcredential/host/authstallmatrixseparate."
+}
