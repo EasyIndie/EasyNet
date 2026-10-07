@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2z",
+  "status": "frozen",
+  "contract_versions": [
+    "task-IDv1 backwardscompatible boundedsuffixextension"
+  ],
+  "implementation_files": [
+    "docs/planning/validate_task_cards.py"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py",
+      "expected": "exit0 all240existingcards remainvalid"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Only replace cardID regex [a-z]? with [a-z]{0,2}, keep G0–G6 and two-digit workpackage and .1–.3 exactboundaries unchanged. No other logic/state/coverage/path exemptions. Report oldvalidIDs remain, newaa/zz proposedformat, upper/threeletter invalid by grammar review; no testmirrorimplementationneeded. Root willvalidateactualaa nextcard. <=10sourcechangedlines. No runtime/network/commits/statewrites. Boundedreuse available Luna medium: fresh/resume Luna low threadlimit refused, modelcard explicitlyupdated. Both Luna dispatches refused threadlimit; routing now Sol medium available worker for one-line correction."
+}
