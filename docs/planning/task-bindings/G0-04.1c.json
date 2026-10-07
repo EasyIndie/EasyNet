@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.1c",
+  "status": "frozen",
+  "contract_versions": [
+    "Accepted-for-evolution-design ADR-001/002/003; G0-03 bounded research v1"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/native-evidence.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "functions.exec: text(await tools.web__run({\"search_query\": [{\"q\": \"Swift Foundation Process terminate terminationHandler\", \"domains\": [\"developer.apple.com\"]}, {\"q\": \"Apple SecItemCopyMatching errSecInteractionNotAllowed\", \"domains\": [\"developer.apple.com\"]}, {\"q\": \"OpenSSH ssh StrictHostKeyChecking IdentitiesOnly BatchMode ConnectTimeout\", \"domains\": [\"man.openbsd.org\"]}], \"response_length\": \"long\"}));",
+      "expected": "read primary official APIs/source; dated version/license/platform evidence; no PoC or language-selection claim"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.1c",
+      "expected": "exit 0 plan only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0, new-file whitespace separately checked"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "One native candidate evidence table only, Luna medium. Same SSH key/agent auth, host-key trust, local timeout/cancel versus remote ownership, vault lifecycle, strict serialization, macOS arm64 packaging/license/maintenance metrics as Rust. Primary source links/date/version required; unknown where undocumented or untested. No installs/builds/SSH/keychain or production language selection. <=120 lines + own report. Native candidate is Swift shared-service plus system OpenSSH process and Apple Security API; assess Windows/Linux portability limits without choosing GUI framework."
+}

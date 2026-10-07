@@ -38,8 +38,8 @@
 | [G0-03.3b](G0/G0-03.3b.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 评审 ADR-002 Protocol Runtime |
 | [G0-03.3c](G0/G0-03.3c.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 评审 ADR-003 SSH-only/Agent optional |
 | [G0-04.1a](G0/G0-04.1a.md) | Luna medium | verified | Rust 候选证据表 |
-| [G0-04.1b](G0/G0-04.1b.md) | Luna medium | active | Go 候选证据表 |
-| [G0-04.1c](G0/G0-04.1c.md) | Luna medium | locked | 平台原生候选证据表 |
+| [G0-04.1b](G0/G0-04.1b.md) | Luna medium | verified | Go 候选证据表 |
+| [G0-04.1c](G0/G0-04.1c.md) | Luna medium | active | 平台原生候选证据表 |
 | [G0-04.2a](G0/G0-04.2a.md) | GPT-6.1 Sol medium | locked | 候选 A SSH PoC |
 | [G0-04.2b](G0/G0-04.2b.md) | GPT-6.1 Sol medium | locked | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | locked | 候选 A result/打包 PoC |
