@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2y",
+  "status": "frozen",
+  "contract_versions": [
+    "rootreviewed B bridgev1; RustControlv1 frozen APIs"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust/src/lib.rs",
+    "poc/controller-language/rust/src/control.rs"
+  ],
+  "test_files": [
+    "poc/controller-language/rust/tests/control.rs"
+  ],
+  "commands": [
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo test --locked --offline --manifest-path poc/controller-language/rust/Cargo.toml --test control",
+      "expected": "exit0 actual ownedUnixsocketpair tests only noTCP/SSH/nativevault"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "UnixPoC only; exportpubmodcontrol. Control takes std::os::unix::net::UnixStream (alreadytyped ownedFD) setsnonblocking and TokioUnixStream::from_std INSIDE active runtime; Handle::try_current outside returnsfixedIO error notpanic. PublicControl::new(stream)->Result<Self,ControlError>; async next(&mut self)->Result<ControlToken,ControlError>. Token enums Go Cancel; Error enums InvalidToken IoFailure Displayfixed fixture I/O failure Debugfixedvariant no rawos errors. State initial acceptsG once (nonterminal) orC(terminal); afterG acceptsC only, repeatedG/unknown=>ErrInvalidToken markterminal; EOF=>OkCancel markterminal; otherreadfailure=>ErrIoFailure terminal; afternext terminal returnsErrInvalidToken withoutread. Readerretainedborrowfuture; nospawn/task/thread/detached reader; Drop closes ownedstream. No rawfd/unsafe/inheritedfd3 conversion inthiscard (laterCLI explicitlyvalidateSO_TYPE/AF_UNIX beforeFromRawFd). Tests actual stdUnixStream::pair registeredTokio inasync tests, G-C,Cfirst,EOFinitial/afterG, duplicate/unknown, terminalcannotreadmore, outsideRuntime error; test Drop peerEOF observable via nonblockingTokio pair finite timeout1s. No fixedsleeps; noSSH/TCP/keyread/system/personal IO. Existingdependenciesonly. <=200authoredlines target. stdout/reportnoendpoint/credentials. Threadlimitrequiresbounded reuse shortRustworker; no previous unrelated rereads."
+}
