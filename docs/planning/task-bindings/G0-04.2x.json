@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2x",
+  "status": "frozen",
+  "contract_versions": [
+    "root reviewed B bridgev1 byteframe; Go encoder w verified"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust/Cargo.toml",
+    "poc/controller-language/rust/Cargo.lock",
+    "poc/controller-language/rust/src/lib.rs"
+  ],
+  "test_files": [
+    "poc/controller-language/rust/tests/bridge_frame.rs"
+  ],
+  "commands": [
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo test --locked --offline --manifest-path poc/controller-language/rust/Cargo.toml --test bridge_frame",
+      "expected": "exit0 purememory keygen/framing positives+negative; no SSH/socket/native"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Exact public Credentials {port:u16, deadline_ms:u32, command:u8, operation_id:String, host_key:Option<russh::keys::PublicKey>, private_key:russh::keys::PrivateKey}; no Clone/Debug derive on Credentials. decode_frame(&[u8])->Result<Credentials,LabError>; LabError::InvalidInput Debug onlyfixedvariant Display fixed invalid fixture input; no rawparser errors. Bounds/header fromcontract18bytes; checked arithmetic/total equality<=8192, validUTF8ASCIIID, keylen bounds; decodehost PublicKey::from_bytes algorithmEd25519; private armor trimouterwhitespace exact OPENSSH PRIVATE KEY header LF, no headers/preamble/trailingjunk, PrivateKey::from_openssh or guardeddecode_secret_key textNone with actual unencrypted+Ed25519. HostSome onlyvalidframe; typedNone reservedunknowntrustfuturetest. Add [dev-dependencies] rand = =0.10.3 onlyalreadylocked/downloaded for ephemeralkeys in memory; offline cargo generate-lockfile aftermanifest change permitted updatesrootentry only, failif otherchangesneeded. Tests keygen PrivateKey::random(&mut rand::rng(),Algorithm::Ed25519), to_openssh then bytes; neverkeyfiles/staticPEM/vectors/logs; independentheaderbuilder matchesGo layout, inspectdecodedpublicfields only. Truncation everyprefix/extra/oversize/magic/ranges/lengths/IDUTF8/typekeyformat/encryptedkeyifcheapallfixederrors noinputdump. Key material no Debug/output. <=200authoredlines goal generatedlockexception rootentrydiff only. No newdeps/network/SSH/native/child/runtime. Freshthreadlimit same shortRustcompileworker reuseboundedexception."
+}
