@@ -10,7 +10,7 @@
 - 记录中的 Luna dispatch/resume 曾遇到线程限制，随后采用可用 worker 或既有历史恢复。此事实不提供历史复用的 token 数或费用。
 - 记录显示 Sol medium 用于编号规则等范围明确的机械工作；这类工作原属 D 档，可优先由 Luna low 处理。线程限制本身不构成提升模型档位的理由。
 - 部分安全/IPC 任务经历 Sol high 设计或绑定审阅、再次核对和代码预审等多回合。未来应将边界设计冻结一次，并在最终 diff 做一次安全审查；同一局部修复留在同一 agent，避免重复长历史核对。
-- 主 Agent 和 Sol high 审查合计发现三项实际 bug：Drop 通知先于底层资源释放；`from_std` 失败路径未清理 shutdown clone；取消 close future 后 handle 仍可借用。这些发现说明安全/所有权审查仍必要；相关修复尚待复审。
+- 主 Agent 和 Sol high 审查合计发现三项实际 bug：Drop 通知先于底层资源释放；`from_std` 失败路径未清理 shutdown clone；取消 close future 后 handle 仍可借用。这些发现说明安全/所有权审查仍必要；相关修复已通过独立 Sol high 最终源码审查；8 项内存单元通过，真实 SSH 验收仍未执行。
 
 ## 路由与操作建议
 
