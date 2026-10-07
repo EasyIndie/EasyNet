@@ -48,8 +48,8 @@
 | [G0-04.2m](G0/G0-04.2m.md) | GPT-6.1 Sol medium | verified | Go SSH bounded Run 与未知结果 |
 | [G0-04.2i](G0/G0-04.2i.md) | GPT-6.1 Sol medium | verified | Go SSH deadline output cancel 故障 |
 | [G0-04.2a](G0/G0-04.2a.md) | GPT-6.1 Sol medium | verified | 候选 A SSH PoC |
-| [G0-04.2n](G0/G0-04.2n.md) | GPT-6.1 Sol medium | active | Go native vault 创建隔离助手（仅编译） |
-| [G0-04.2o](G0/G0-04.2o.md) | GPT-6.1 Sol medium | locked | Go native vault 显式作用域 CRUD（仅编译） |
+| [G0-04.2n](G0/G0-04.2n.md) | GPT-6.1 Sol medium | verified | Go native vault 创建隔离助手（仅编译） |
+| [G0-04.2o](G0/G0-04.2o.md) | GPT-6.1 Sol medium | active | Go native vault 显式作用域 CRUD（仅编译） |
 | [G0-04.2p](G0/G0-04.2p.md) | GPT-6.1 Sol medium | locked | Go native vault 隔离进程与锁定实测 |
 | [G0-04.2b](G0/G0-04.2b.md) | GPT-6.1 Sol medium | locked | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | locked | 候选 A result/打包 PoC |

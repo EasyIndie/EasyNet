@@ -11,10 +11,16 @@ Do not test the default personal keychain or claim the wrapper library was accep
 Use a dedicated helper process with a task-owned temporary directory outside HOME,
 an ephemeral password and synthetic secret. SecKeychainCreate must use a private
 temporary path, promptUser=false and an explicit returned SecKeychainRef.
+Reject root. Only use an euid-owned mode-0700 non-symlink direct
+`/tmp/easynet-vault-lab-*` directory resolving below `/private/tmp`, with fixed
+nonexisting `fixture.keychain` basename. Reject other paths before Security APIs.
 Never use a name containing `/login.keychain`. Disable user interaction in this
 helper with SecKeychainSetUserInteractionAllowed(false); bound the process externally.
 Set no-UI query behavior too. No real keys, credentials or user-item access.
 
+After an unchanged creation snapshot, explicitly call SecKeychainUnlock only on
+ownedRef with the same ephemeral in-memory password (usePassword=true), and require
+unlocked status before CRUD. Noninteractive creation is not assumed unlocked.
 Add only to `kSecUseKeychain=ownedRef`; constrain every get/update/delete to
 `kSecMatchSearchList=[ownedRef]`. Use fixed synthetic service/account namespaces.
 Verify create/add/read/update/delete with only fixture values; compare in memory,

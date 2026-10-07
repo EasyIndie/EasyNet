@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2o",
+  "status": "frozen",
+  "contract_versions": [
+    "Native vault lab v1; build-only explicit owned-ref CRUD"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/vault/native.h",
+    "poc/controller-language/go/vault/native.c"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build CGO_ENABLED=1 /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go build -o /tmp/easynet-go-vault-helper ./vault",
+      "expected": "exit0 CGo helpercompiles; NEVERexecute helper/nativecalls"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2o",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol high accepted exact o interfaces: OSStatus vault_unlock(Vault*,const void* password,UInt32 length); vault_is_unlocked(Vault*,bool*); vault_add/update(Vault*,const void*bytes,UInt32 length); vault_read_equals(Vault*,const void*bytes,UInt32 length,bool*equal,bool*dataReturned); vault_delete(Vault*). <=200 addedauthoredlines native.h/.c only+ownreport. All native mutation must require owned&&ready, unlock explicitusePasswordtrue onlyownedRef, returnactualUnlock OSStatus; is_unlocked separatelychecksstatusnativeUnlockStatebit. CF genericpassword fixedsyntheticservice/account. SecItemAdd uses kSecUseKeychain ownedRef; read/update/delete explicit kSecMatchSearchList=[ownedRef]. QuerynoUIFail plusnprocessinteractionfalse. Readrequest kSecReturnData,MatchLimitOne; clearflagsBEFOREvalidation; CFData type/lengthchecked,memcmpmemoryonly, releaseeverypathinclnativefailure/unexpectedresult. No secretdataexports/logs, implicitdefaultselector or authfallback. Subsequent vault_unchanged must revokeready onmetadataerror/change sofuturemutationsrefuse. After readiness revoked onlyreadmetadata/release allowed; neverprefsrestore. CheckCFalloc/pointers andactualstatus; mainstaysinert untouched, NO nativehelper/testexecution inthiscard. FuturepactualCRUD/lockfailuresunverified, nolanguagechoice."
+}
