@@ -2,6 +2,7 @@
 pub mod control;
 pub mod owned_stream;
 pub mod transport;
+pub mod ssh_run;
 use russh::keys::{Algorithm, PrivateKey, PublicKey};
 
 pub struct Credentials {
