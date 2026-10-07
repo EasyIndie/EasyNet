@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ae",
+  "status": "frozen",
+  "contract_versions": [
+    "SSHlabv1 preservefixturebehavior; matchingcredentialAPIv1 frozen"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/fixture.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/fixture_credential_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -run ^$ .",
+      "expected": "exit0 COMPILEONLY beforesecurityreview nofixture/socketcalls"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -race -timeout 90s -count=1 -json .",
+      "expected": "AFTERrootgoahead/scopedloopback only exit0 fullGoSSHpackage regressions+newcredential tests noRustchild/nativevault"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Implement Fixture.ClientPrivateKeyPEM()([]byte,error), fixedErrFixtureCredential, nilbytesonerror. NewFixture key generator returnsSigner+ed25519.PrivateKey; hostdiscardraw, client signer unchanged originalprivate key; retainSEPARATECOPY clientPrivate ed25519.PrivateKey insideFixture, notalias originalwrappedSignersoClose cannotbreakexistingClientSigner. Getter nilf/invalidkeylen/closed rejects underf.mu (selectdone default), snapshots independentprivate copy underlock; marshalssh.MarshalPrivateKey(copy,emptycomment) pem.EncodeToMemory in memory, defersclear transientcopy; no password/disk/log/rawerror. Close once.Do afterdoneclose existingconnlock addclearstoredcopy+nil underf.mu; keepalllisteners/workers/once/method behavior and originalsignerimmutable. Inflightgetter startedbeforeClose mayreturnsnapshotafterClose; doNOTclaimrevocation/completezerolibrarykeys. AfterClose newgetterrejectsfixederror; existingSigner retainedforlegacyPoC consumers. Tests NewFixture dynamicloopback0 t.CleanupClose; PEM parsed withssh.ParsePrivateKey PublicKey.Marshal bytesmatchClientSigner; mutatefirstPEM copy thensecondvalid;8concurrentexports+Close race fixederrors withoutkeydump; postClose/nil/zero invalidfixederror nilbytes. Tests defaultGo package unlikeblocked adtagbridgeipc; actualfullpackage rootrun onlyafterSolhighreview confirmsmemoryownership/logredaction/legacyfixturebehavior. <=200addedauthoredlines; no existingfixtureTestmutations orrawsignerAPIhack/reflection/unsafe/newdeps/Gomodchanges. No actualtest/socket/SSH/Rustchild runbyworker beforegoahead; compileonlyallowed. Parentadtest source remainsblocked unchanged untilaeverified; no alternateclientkey tohideAPIgap. Report≤12lines model/tokenunavailable. SameavailableSolworker boundedreuse."
+}

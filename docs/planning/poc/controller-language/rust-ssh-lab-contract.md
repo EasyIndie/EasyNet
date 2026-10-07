@@ -32,8 +32,10 @@ Commands 0/1/2 map only to `fixture.complete`/`fixture.block`/`fixture.large`.
 Host bytes are the SSH wire public-key blob, 1..256 bytes; an absent key is a
 separate typed untrusted test input, rejected before dial (not an empty wire blob).
 Private key is UTF-8 unencrypted OpenSSH PEM, 1..4096 bytes, Ed25519 only.
-Go uses `ClientSigner().(ssh.CryptoSigner).CryptoSigner()` and
-`ssh.MarshalPrivateKey(..., "")`, then `pem.EncodeToMemory`; no key file.
+Go must use the prepared `Fixture.ClientPrivateKeyPEM()` API (G0-04.2ae)
+for a fresh in-memory OpenSSH PEM matching ClientSigner; no key file. The pinned
+x/crypto Signer has no CryptoSigner accessor; ad compilation exposed the earlier
+proposal error before runtime, so the matching-key helper is a new prerequisite.
 Rust uses memory-only `russh::keys::decode_secret_key(text, None)`; never
 `load_secret_key`, known-hosts/agent APIs, HOME, personal vault or subprocess SSH.
 Parser support is an interface proposal, not a passed Go-to-Rust key decode test.
