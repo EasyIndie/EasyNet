@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2s",
+  "status": "frozen",
+  "contract_versions": [
+    "Native vault lab v1; reviewed no-create probe at dceb3ca; sandbox environment comparison"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/go-vault-preflight-results.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build CGO_ENABLED=1 /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags nativeprobe -timeout 45s -count=1 -json ./vault > /tmp/easynet-go-vault-probe-unsandboxed.json",
+      "expected": "ONE require_escalated exactnoCreateprobe; keepsUIDnonroot; boundedstatus/booleans stage observation knownschema, ownedcleanup, no rawlogs/items/Keychainmutations. Nativegetterrefusal isvaliddiagnosticnotvaultpass."
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2s",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Rootscope reviewed: same exactSolhigh-reviewed no-create branch/harness/code at dceb3ca, compare knownsandbox CopySearchListstage12/-50 againstONE require_escalated run, escalationremovesexecsandboxdoesNOTsudo/root. ExplicituserlocalPoCauthorizationcoversownedtemporaryfixture andread-onlymetadatagetters; no additionaluserchoice needed. Agent mustrequest preciseautomaticreviewscope localreadonlySecurity-service access. No SecKeychainCreate/Unlock/itemquery/CRUD/Lock/Delete/prefs writes reachablein--probe; no nativevaulttag/mutatingrerun, no codewrites. VerifycodeSHA256 beforecommand: {\"poc/controller-language/go/vault/native.h\": \"89b5cd41f79adc02520c9fbabf83149f42c0d92705144e90babc84d2069aa771\", \"poc/controller-language/go/vault/native.c\": \"6c2b3e83f3c32f3baa248b4253b019976a154421353a7cc8637dd9d4e51c0dbc\", \"poc/controller-language/go/vault/main.go\": \"d8b6a8f2295fbcbbe0def72ca9b8561e81b18df9f3202022e56c98483bfd2b18\", \"poc/controller-language/go/vault/probe_test.go\": \"b579911e7a57365d2a4ea76ccddf15a703e2e1c569d608e4fa21cf95a7dc2808\"} . Onhashmismatch stop; onauto-reviewrejection stopandreportreason (no retryfallback). Singleexecution, useyield1000+boundedpolluserprogress, runtime10s+WaitDelay1s compiler15s+WaitDelay1s under45outer, output4096runtime/65536compilerfailoverflow. Parsefixedallowlistedstatus/booleans ONLY andJSON terminalcounts, nevercapturedrawdata/personalpaths. Write<=80linescomparison+ownreport. Compare ractualsandboxstage12, notgenerallibrary/platformfailure; statusesnativegetter refusalmayunknownenvironment. ResultisdiagnosticnotCRUD acceptance, p remainsblocked untilrootreviewdisposition. No state/commit/main/global resource changes."
+}
