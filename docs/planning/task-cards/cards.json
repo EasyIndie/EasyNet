@@ -1948,7 +1948,7 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "平台原生候选证据表",
-      "status": "active",
+      "status": "verified",
       "mode": "research",
       "dependencies": [
         "G0-04.1b"
@@ -2045,7 +2045,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-04.1c.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6-luna",
+        "reasoning_effort": "medium",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-04.2a",
