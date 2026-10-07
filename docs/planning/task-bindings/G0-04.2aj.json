@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2aj",
+  "status": "frozen",
+  "contract_versions": [
+    "RustBridge-v1; reviewed Auth-only stage-v1; signed-auth faultmatrix-v1"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/rust-auth-results.md"
+  ],
+  "test_files": [
+    "poc/controller-language/go/bridge_auth_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -timeout 30s -run ^$ .",
+      "expected": "exit0 compileonly no testfunctions/listeners/children"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -race -timeout 90s -count=1 -json -run ^TestBridgeAuth .",
+      "expected": "rootONLYaftersecurityreview:8cases+parentpackage pass0fail/skip/race; actualownedloopback/authbinaryreaped"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -race -timeout 90s -count=1 -json -run '^TestBridge(Transport|ChildIPCLifecycle)$' .",
+      "expected": "rootONLYafterreview:14subtests+2parents passno race/fail; rebuiltsharedhelper KEX/IPCregression necessary"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Only test+aggregate+mandatoryresult report, no sources/deps/state/commit. unix&&bridgeipc tag. Fixed freshownauthbinary /tmp/easynet-poc-cache/rust-target/debug/ssh_auth_fixture noargs. TestBridgeAuth cases signed-success,wrong-client-key,host-mismatch,auth-deadline,auth-cancel,auth-eof,invalid-auth-control,pre-cancel. useNewAuthStallFixture forauth-deadline/cancel/eof/invalid othersNewFixture, matchingClientPrivateKeyPEM; helperEncodeBridgeFrame originalfixtureport/key anddeadline500ms auth-deadline else3000; OperationIDfixture-auth,Command0 ignorednoexec. wrongkey substitutesownedsecondFixture'sPrivatePEM ONLY (host/portoriginal), mismatchsecondownedHostKey ONLY(privateoriginal); no TOFU. ReturnedPEM/frame cleared transient testbuffers, no %v/%x/rawerrors/keys/frame logging. Fixture/servercleanup registeredbeforechildcleanup LIFOchildfirst; boundedbridgehelpersreuse. Ready thenG exceptpreC; authstallcases waitfixture.AuthReached2s beforetrigger. AuthReached onlyserverunsignedpublickeycallback/probe entry, NOTfullsignedauthsuccess; actualsuccessrequireschildauthenticated event fromreviewedAuthResultSuccess andservercallbackcount>=1. Auth-cancel sendsC,auth-eofCloseControl,invalid-auth-control writesONEfixedXbyte directly child.conn (negativeinput bypassparentControlonlyownedIPC), auth-deadline waitsnaturaldeadline. signed-success eventsauthenticated,not-dispatched,joined; allothercasesnot-dispatched,joined only, eventchannelclosed. hostmismatch/wrongkey/authdeadline fixedSSHerror exit2ErrBridgeChildIO; invalidcontrol fixedIOerror exit2same; otherssuccess0nilerror/no diagnostic phaseonly notoperation. Stats originalAuthCallbacks>=1 forsuccessful/wrongkey/authstall, 0formismatch/preC; ALWAYSExecAttempts=Commands=0; secondfixtureStatsall0. ChildWait beforeclosingfixture; afterauthstallchildjoin originalfixture.done stillOPEN (sourcecallback waitsforfixtureClose, cannotclaimremoteauthrequestcancel/reconcile), fixtureClose cleanupthenjoinsserverworkers. ObserveactualparentconnWrite net.ErrClosedafterWait; caps each4096. Wait/phasebounded nosleeps/newgoroutineunbounded. Cleanupbothserverfixturesowned resource only, noproxy/forwarding. TokenmodelknownconfigSolmedium telemetryunavailable. targetsource<=230,>300stop/split. compileonlyworker no child/TCP actualrootaftercode securityreview. Reports runtimepending untilrootactual JSON independentlycounted, preservefailures stop2repairs. ExistingKEX+IPC14casesrootregressionneededbecausehelperrefactored/rebuilt; no unchangedGo/Bashfullsuite. Signedclientkeyauth/cancellation evidenceonly noexec/output/fullB/vault/JSON/ADR004 claim."
+}
