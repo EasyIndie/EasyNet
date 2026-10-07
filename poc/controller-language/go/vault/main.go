@@ -59,6 +59,7 @@ func run(directory string) (result report) {
 	var vault *C.Vault
 	var unchanged C.bool
 	status := C.vault_create(path, unsafe.Pointer(&password[0]), C.UInt32(len(password)), &vault, &unchanged)
+	result.Checks["create_handle_present"] = vault != nil
 	defer func() {
 		defer C.vault_release(vault)
 		var final C.bool

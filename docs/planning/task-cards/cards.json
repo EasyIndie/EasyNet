@@ -3146,7 +3146,7 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "Go native vault 隔离进程与锁定实测",
-      "status": "active",
+      "status": "blocked",
       "mode": "implementation",
       "dependencies": [
         "G0-04.2q"
