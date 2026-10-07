@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2m",
+  "status": "frozen",
+  "contract_versions": [
+    "SSH lab v1; ADR003 design; Go x/crypto v0.57.0"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/run.go",
+    "poc/controller-language/go/fixture.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/run_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -race -count=1 ./...",
+      "expected": "actualSSH fixturecomplete observedbytes, fixture.large combinedoverflow returnsfixedErrOutputLimit unknownowned andexec1; invalidinputs/prectxcancel zeroexecnotdispatched; no rawcopyover4096 orautoRetry"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2m",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0 plus newfilewhitespace"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol medium <=200 authoredaddedlines target. Lab-only Result{OperationID string, Outcome string, OwnerRetained bool, Output []byte}; Run(ctx context.Context,client *ssh.Client,operationID,command string)(Result,error) takes exclusiveownershipclient always Closejoins ownedSSH reader goroutines onexit. Nonempty fixtureoperationID max64simpleASCII namespace only; closedtokens complete/block/large; invalidctx/client/id/command rejected BEFORE NewSession/Start => not-dispatched,false,noexec. Mark possible dispatch IMMEDIATELY BEFORE Start (Start errors may remoteaccepted) => anylocalerror unknown,true,sameid,noRetry. Observed successful exit+fixedbytes outcome fixture-complete-observed, OwnerRetained=true (never productionreceipt release); erroroutput retained<=4096 copy. ONE synchronizedboundedOutput for Stdout/Stderr; onoverflow ownedclient Close unblocks/joins session reads, returnunknown,true fixedErrOutputLimit even ifSessionWait reportssecondarycloseerror. Run earlier ctxdeadline/cancel hooked ownedclient via context.AfterFunc; stop/join hookcleanup (avoidgoroutineleak); successobserved checks never productionpolicy. Change fixture.large to stdout4096+stderr4096 withowned goroutines onlyifrequired (allfixtureworkersjoined); test sharedcap integration actualSSH concurrent output pluswriterboundaryalreadyl. i later livecancel handshake/auth+postackblock, notclaim completehere. No newports arbitraryhosts credentialsKeychain."
+}
