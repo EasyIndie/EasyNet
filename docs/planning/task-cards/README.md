@@ -14,8 +14,8 @@
 | 档位 | 默认模型类型/示例 | 卡数 |
 |---|---|---:|
 | D | Luna low | 5 |
-| C | Luna medium | 79 |
-| I | GPT-6.1 Sol medium | 127 |
+| C | Luna medium | 81 |
+| I | GPT-6.1 Sol medium | 125 |
 | R | GPT-6.1 Sol high；冲突难解时 Astra high | 35 |
 
 ## G0
@@ -77,8 +77,8 @@
 | [G0-05.2a](G0/G0-05.2a.md) | GPT-6.1 Sol medium | locked | JSON 崩溃与并发 PoC |
 | [G0-05.2b](G0/G0-05.2b.md) | GPT-6.1 Sol medium | locked | SQLite 崩溃与并发 PoC |
 | [G0-05.3](G0/G0-05.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | locked | 比较证据并接受 ADR-005 |
-| [G0-06.1a](G0/G0-06.1a.md) | GPT-6.1 Sol medium | locked | Flutter/sing-box 路线证据表 |
-| [G0-06.1b](G0/G0-06.1b.md) | GPT-6.1 Sol medium | locked | SwiftUI/原生路线证据表 |
+| [G0-06.1a](G0/G0-06.1a.md) | Luna medium | locked | Flutter/sing-box 路线证据表 |
+| [G0-06.1b](G0/G0-06.1b.md) | Luna medium | locked | SwiftUI/原生路线证据表 |
 | [G0-06.2a](G0/G0-06.2a.md) | GPT-6.1 Sol medium | locked | 候选 A engine 生命周期 PoC |
 | [G0-06.2b](G0/G0-06.2b.md) | GPT-6.1 Sol medium | locked | 候选 A 系统权限 PoC |
 | [G0-06.2c](G0/G0-06.2c.md) | GPT-6.1 Sol medium | locked | 候选 A 签名打包 PoC |

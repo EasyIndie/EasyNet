@@ -5894,12 +5894,12 @@
         "G0-03.3c"
       ],
       "model": {
-        "tier": "I",
-        "type": "中档推理编码模型",
-        "example": "GPT-6.1 Sol medium",
-        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
-        "reason": "涉及平台 adapter、多个失败路径或跨边界集成，低档返工风险较高",
-        "context": "≤8k"
+        "tier": "C",
+        "type": "低成本编码模型",
+        "example": "Luna medium",
+        "review": "主 Agent 核对官方出处与事实；平台权限或安全结论交 Sol 审查",
+        "reason": "固定表的单候选官方证据收集；不执行平台 PoC，不作框架取舍，ADR由后续R卡决定",
+        "context": "≤6k"
       },
       "inputs": [
         {
@@ -5987,12 +5987,12 @@
         "G0-06.1a"
       ],
       "model": {
-        "tier": "I",
-        "type": "中档推理编码模型",
-        "example": "GPT-6.1 Sol medium",
-        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
-        "reason": "涉及平台 adapter、多个失败路径或跨边界集成，低档返工风险较高",
-        "context": "≤8k"
+        "tier": "C",
+        "type": "低成本编码模型",
+        "example": "Luna medium",
+        "review": "主 Agent 核对官方出处与事实；平台权限或安全结论交 Sol 审查",
+        "reason": "固定表的单候选官方证据收集；不执行平台 PoC，不作框架取舍，ADR由后续R卡决定",
+        "context": "≤6k"
       },
       "inputs": [
         {
