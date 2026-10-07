@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2b",
+  "status": "frozen",
+  "contract_versions": [
+    "Native vault lab v1; verified p real scopedacceptance; evidencegateonly"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/go-vault-results.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 -c 'import json,collections,pathlib; rows=[json.loads(s) for s in pathlib.Path(\"/tmp/easynet-go-vault-gate-unsandboxed.json\").read_text().splitlines()]; c=collections.Counter((\"package\" if \"Test\" not in r else \"sub\" if \"/\" in r[\"Test\"] else \"top\",r[\"Action\"]) for r in rows if r[\"Action\"] in (\"pass\",\"fail\",\"skip\")); assert c=={(\"package\",\"pass\"):1,(\"top\",\"pass\"):1,(\"sub\",\"pass\"):5}; print(\"actual terminal gate: package1/top1/sub5 pass; fail0 skip0\")'",
+      "expected": "exit0 cachedactualstructuredcounts no nativeAPI rerun"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2b",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Luna low mechanicalevidence gate <=30lineownreport +existingresultsfooter≤3lines. Actualimplementation n/o/q/p +diagnosticsr/s verified. No sourcechanges/native rerun/toolchain orplatformresearch. Compare countsfromcachedownedJSON, limitsbasedfrozenresults; marksummaryacceptedonlyrootafterreview. Do not reinterpret sandbox-50precisecause or Go keyring/default/dataProtection/crossplatform/productionlanguage accepted. No code/secret/nativeops/userresource/commits/states. ModelretierfromI→D becauseadapter implementation andrealacceptance alreadyverifiedbeforethisgate, no weakersecurityimplementation."
+}
