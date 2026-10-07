@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2af",
+  "status": "frozen",
+  "contract_versions": [
+    "RustBridge-v1; TransportOwner-v1 reviewed source contract"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust/src/owned_stream.rs",
+    "poc/controller-language/rust/src/transport.rs",
+    "poc/controller-language/rust/src/lib.rs"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo test --manifest-path poc/controller-language/rust/Cargo.toml --locked --offline --lib",
+      "expected": "exit0 pure trust/constructor/unit checks; no TCP listener or SSH session"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol high source design review accepted TransportOwner-v1 (2026-10-07). API Transport::new(u16,Option<PublicKey>)->Result<Self,TransportError>; async connect_until(&mut self, tokio::time::Instant, Pin<&mut impl Future<Output=()>>)->Result<(),TransportError>; handle_mut()->Option<&mut russh::client::Handle<ExpectedHost>>; async close_join(&mut self)->Result<JoinedProof,TransportError>. Owner/JoinedProof no Clone/Debug, private fields; pending pinned boxed connect future and Handle retained in owner, not consumed on CleanupFailure. new rejects port0, unknowntrust, nonEd beforeanydial/runtime; exact plain PublicKey Ed wirebytes only, Certificate refused. Literal127.0.0.1 only, one attempt ever. Dial is pre-russhspawn; prioritized cancel/deadline can drop only dial future. Stream tokio->std; clone exclusively shutdownBoth thenregisteroriginal; OwnedStream AsyncRead/Write forwarding Unpin Send drop oneshot once. select borrows storedfuture; cancelled/deadline/errors cleanupshutdown and await SAME future thenanyreturnedHandle underone additional1000ms cleanupdeadline, verifyDrop alongside joinedfuture/handle; close_join repeated success idempotent. Pendingfuture/Handle survives timeout inowner, stickyCleanupFailure no reconnect/handleborrow; futurebridge must retainowner thenimmediateexit2 nojoined (processcontainment notjoin). After failure no silent retry connection. Ssh underlying error normalized fixed variants Untrusted/Cancelled/Deadline/Io/Ssh/CleanupFailure/InvalidState Display no rawexceptions. ExpectedHost Handler Error From<russh::Error> fixedSsh, may Debug onlyfixederrorvariant no keys. No binary/controlintegration/auth/channel/exec/real TCP/russhsession inthiscard. Inline unit tests in allowedmodules: pure generatedtrust/type/port/errors, memoryduplex forwarding/drop notifier, fakependingfuture cleanup timeout retention and stickyrefusal, fakecompletedfuture drop evidence missing=>cleanupfailure; no sleepingtests use paused? Tokio test-utilnotenabled no featurechange; bounded timers for fakepending acceptable. Offline --lib compile/test only. Review afterimplementation mandatory before verified/realgate. <=3implementation files plusreport; expected~300lines owner+unit tests readability exception rootapproved, escalateif>400 or designunclear. Source paths pinnedrussh client/mod.rs1110-1235/2703-2743 and cert.rs; review contract no further wholehistory. Existing available Solmedium worker reused due actualfreshagentthreadlimit; token unavailable."
+}

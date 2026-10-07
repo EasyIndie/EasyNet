@@ -38,7 +38,8 @@ x/crypto Signer has no CryptoSigner accessor; ad compilation exposed the earlier
 proposal error before runtime, so the matching-key helper is a new prerequisite.
 Rust uses memory-only `russh::keys::decode_secret_key(text, None)`; never
 `load_secret_key`, known-hosts/agent APIs, HOME, personal vault or subprocess SSH.
-Parser support is an interface proposal, not a passed Go-to-Rust key decode test.
+G0-04.2ad passed actual Go-to-Rust matching credential decoding in the IPC-only
+bootstrap; SSH authentication with that credential remains pending.
 Wrong-key cases substitute an independently generated ephemeral client key;
 host mismatch substitutes independently generated expected bytes. Expected trust
 is supplied by the parent and never learned from the connection under test.

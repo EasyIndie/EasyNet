@@ -5,7 +5,7 @@ The current implementation remains the Bash deployment tool documented in the
 root README. Technical choices require evidence and an ADR before implementation.
 
 - [Agent execution and feature branch policy](agent-execution-policy.md) — low-cost task cards and final merge gate
-- [Task cards and per-card models](task-cards/README.md) — 245 independent cards with prerequisites, behavior cases and unlock conditions
+- [Task cards and per-card models](task-cards/README.md) — 246 independent cards with prerequisites, behavior cases and unlock conditions
 - [Model routing and cost calibration](model-routing.md) — Luna/Sol/Astra roles, review and escalation
 - [Atomic task catalog](atomic-task-catalog.md) — 168 original entries mapped to the concrete task cards
 - [Executable phased backlog](execution-backlog.md) — current task IDs, dependencies, deliverables and gates
@@ -15,6 +15,7 @@ root README. Technical choices require evidence and an ADR before implementation
 - [Go SSH candidate gate](poc/controller-language/go-ssh-results.md) — reviewed loopback SSH fault matrix; production language selection pending
 - [Go scoped vault evidence](poc/controller-language/go-vault-results.md) — owned temporary file-Keychain pass; production vault selection pending
 - [Go result CLI and host packaging](poc/controller-language/go-result-results.md) — strict redacted record and actual host artifact facts
+- [Go–Rust IPC gate](poc/controller-language/go-rust-ipc-results.md) — owned child lifecycle passed; Rust SSH sessions remain pending
 - [Rust SSH bridge contract](poc/controller-language/rust-ssh-lab-contract.md) — reviewed design; dependency/frame/control gates passed, full SSH runtime pending
 - [Rust SSH source preparation](poc/controller-language/rust-ssh-preparation.md) — pending candidate, ack and task-join pitfalls
 - [Native vault experiment contract](poc/controller-language/vault-lab-contract.md) — scoped temporary helper and safety gates

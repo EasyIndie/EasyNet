@@ -26,7 +26,7 @@ Source inspected from the checksum-verified russh 0.64.1 crate used by the
   refusal requests, phase-observed timeout/cancel, combined cap, actual ack,
   retained unknown ownership/no replay, independent pending-state and cleanup
   matrix. Ephemeral credentials travel through owned pipes, never CLI arguments,
-  personal files or logs. A fixture bridge remains unimplemented.
+  personal files or logs. The owned IPC-only fixture bridge passed G0-04.2ad; Rust SSH integration remains pending.
 
 Primary artifact: [russh 0.64.1 crate](https://crates.io/crates/russh/0.64.1),
 SHA256 `ba61e87b9ec9a39a59a6bbed4c0b8ff7fb07073405b24a767a1f2c8560ac8f58`.
