@@ -5708,7 +5708,7 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "Rust 命令执行真实故障验收",
-      "status": "active",
+      "status": "verified",
       "mode": "acceptance",
       "dependencies": [
         "G0-04.2ak"
@@ -5813,7 +5813,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-04.2al.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "root-direct",
+        "reasoning_effort": "model-telemetry-unavailable",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-04.2d",
