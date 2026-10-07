@@ -253,3 +253,27 @@ OSStatus vault_delete(Vault *vault) {
     CFRelease(query);
     return status;
 }
+
+OSStatus vault_lock(Vault *vault) {
+    OSStatus status = vault_guard(vault);
+    if (status != errSecSuccess) return status;
+    return SecKeychainLock(vault->owned);
+}
+OSStatus vault_read_status(Vault *vault, bool *dataReturned, bool *queried) {
+    if (dataReturned) *dataReturned = false;
+    if (queried) *queried = false;
+    if (!dataReturned || !queried) return errSecParam;
+    OSStatus status = vault_guard(vault);
+    if (status != errSecSuccess) return status;
+    CFMutableDictionaryRef query = item_query(vault, false);
+    if (!query) return errSecAllocate;
+    CFDictionarySetValue(query, kSecReturnData, kCFBooleanTrue);
+    CFDictionarySetValue(query, kSecMatchLimit, kSecMatchLimitOne);
+    CFTypeRef returned = NULL;
+    *queried = true;
+    status = SecItemCopyMatching(query, &returned);
+    CFRelease(query);
+    *dataReturned = returned != NULL;
+    if (returned) CFRelease(returned);
+    return status;
+}

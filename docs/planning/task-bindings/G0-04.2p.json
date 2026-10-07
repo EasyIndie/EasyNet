@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2p",
+  "status": "frozen",
+  "contract_versions": [
+    "Native vault lab v1; scoped real macOS temporary fixture acceptance"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/vault/main.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/vault/vault_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build CGO_ENABLED=1 /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags nativevault -c -o /tmp/easynet-vault-tests ./vault",
+      "expected": "exit0 buildonly FIRST; NEVERruncompiledtest/helper until exactharnessreview runtime-go-ahead"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build CGO_ENABLED=1 /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags nativevault -timeout 90s -count=1 -json ./vault > /tmp/easynet-go-vault-gate.json",
+      "expected": "exit0 onlyifactualpositiveCRUD+lockedreadqueriederror/noobject+immediate/finalmetadataunchanged+joinedprocess/cleanup plusnegativepathguards; refusal/timeout/malformed/overflow isfailblocked notfakepass. ParseJSON terminaltestevents andknownstatus/flags neverrawsecret output."
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2p",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol high reviewed isolatednativeexecution scope; no furtheruserchoice needed underauthorizedownedfixture work. ONLY nativevault-tagged vault_test.go executes helper; defaulttests noKeychainAPI. <=200addedlinesmainoptionalcorrection+test+ownreport. Singleparenttest buildshelperfirst absolute /tmp/easynet-poc-toolchains/go/bin/go15s CommandContext WaitDelay1s outputown/tmpbinary, noHOMEcache (inheritsfrozenENV). Parent creates/records /tmp/easynet-vault-lab-*0700 nonroot dirs; childrenargvONLYdirectory ornone,10sCommandContext WaitDelay1s each; alwayskill/wait beforeRemoveAll onlyrecordedowndirs. Separate cappedstdout/stderr4096 each Write returnslen(p)/discardexcess withOVERFLOW flag, FAILoverflow evenvalidprefixJSON; neverprint rawcapturedbytes/errors; strictouterJSONdecoder knownOutcome/stage/checkkeys, onlyknownintbool logs. Casesemptyargv reject beforeAPI; badprefix ownedtemp, mode0755 ownedvalidprefix, symlink parent-ownedtarget/link rejectbeforeSecuritycreate_guarderrSecParam/nohandle/nofile. Singleparent t.Run returns immediatelyonanyfailednegative/blockedattempt toavoidfurthernativeops. Validfixtureone actualCRUDunlock+observedunlocked; everyfixednamedcheckpresentandtrue incllocked_read_queried/error/noobject, immediate/finalmetadataguards. Exactlockedrawstatus knownstage logged notinventedErrLocked; returneddata/malformedreport/refusal/timeout failstop. No retry/KeychainDelete/defaultitemaccess/prefsrestore/productionlanguage. Parent removesonlyrecordedowndirs afterchildexit, explicitlyverifycleanup. Outer90s covers15sbuild+5x10schild+WaitDelays; toolcaller yield1000 foruserprogress not90sblocking. Localfixture executionmayneed require_escalated toaccessownedSecurityservice under sandbox; request preciseboundedscope, notpersonalKeychain privilege. On automaticreviewrejection ormetadatachange stop andreport, nounboundedfallback. Require explicitlocked_read_data_returned key present false foractualsuccessfulfixture; this rawflag is intentionallyoutside helper all-true checks. Two-stage p execution: write harness and compile only FIRST; do not run nativevault tests or helper until root/Sol high review exact harness and sends runtime-go-ahead. Compiler command may use go test -tags nativevault -c -o /tmp/easynet-vault-tests ./vault with frozenGo/env. No test init/package init nativecalls. This is technical safety review within current authorization, no userpermission flow."
+}

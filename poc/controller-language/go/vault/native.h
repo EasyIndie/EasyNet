@@ -13,5 +13,7 @@ OSStatus vault_update(Vault *vault, const void *bytes, UInt32 length);
 OSStatus vault_read_equals(Vault *vault, const void *bytes, UInt32 length,
                           bool *equal, bool *dataReturned);
 OSStatus vault_delete(Vault *vault);
+OSStatus vault_lock(Vault *vault);
+OSStatus vault_read_status(Vault *vault, bool *dataReturned, bool *queried);
 void vault_release(Vault *vault);
 #endif

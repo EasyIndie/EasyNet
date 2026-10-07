@@ -27,6 +27,8 @@ Verify create/add/read/update/delete with only fixture values; compare in memory
 never print secret/password/path values. Release all native buffers/references.
 Lock only ownedRef, confirm locked status, then attempt a no-UI read: require an
 error and no returned secret, recording exact OSStatus, not an invented ErrLocked.
+Require an explicit query-entered observation: guard/allocation failure before
+SecItemCopyMatching cannot count as a passed locked-read case.
 Do not simulate success if the OS refuses the experiment, prompts, or times out.
 
 Snapshot default/search-list metadata read-only before creation, immediately after
