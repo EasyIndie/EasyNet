@@ -1,6 +1,6 @@
 # 任务卡与模型分配索引
 
-已将 168 条原任务进一步拆为 **241 张独立卡**，覆盖 56 个工作包。
+已将 168 条原任务进一步拆为 **242 张独立卡**，覆盖 56 个工作包。
 每卡单独文件，可只把本卡和相关合同交给执行模型，无需读整个目录。
 已完成卡的状态见下表与对应 task-result；其余已具备目标/案例/依赖/模型评估，
 但标为 locked：尚未实施前置项；未来工程语言/路径/行为命令须冻结后才能执行。
@@ -15,7 +15,7 @@
 |---|---|---:|
 | D | Luna low | 5 |
 | C | Luna medium | 79 |
-| I | GPT-6.1 Sol medium | 122 |
+| I | GPT-6.1 Sol medium | 123 |
 | R | GPT-6.1 Sol high；冲突难解时 Astra high | 35 |
 
 ## G0
@@ -62,6 +62,7 @@
 | [G0-04.2y](G0/G0-04.2y.md) | GPT-6.1 Sol medium | verified | 候选 B Rust 所属 IPC 控制状态机 |
 | [G0-04.2z](G0/G0-04.2z.md) | GPT-6.1 Sol medium | verified | 小卡编号支持两字母后缀 |
 | [G0-04.2aa](G0/G0-04.2aa.md) | GPT-6.1 Sol medium | verified | 候选 B 继承 IPC descriptor 与 bridge 启动门槛 |
+| [G0-04.2ab](G0/G0-04.2ab.md) | GPT-6.1 Sol medium | active | Go 父进程有界 bridge 输出解析 |
 | [G0-04.2b](G0/G0-04.2b.md) | Luna low | verified | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | verified | 候选 A result/打包 PoC |
 | [G0-04.2d](G0/G0-04.2d.md) | GPT-6.1 Sol medium | locked | 候选 B SSH PoC |

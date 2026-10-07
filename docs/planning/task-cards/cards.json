@@ -4405,6 +4405,99 @@
       }
     },
     {
+      "id": "G0-04.2ab",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Go 父进程有界 bridge 输出解析",
+      "status": "active",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2aa"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "冻结解析器本可 Luna medium；线程派发限制下复用可用 Sol medium，严格限制本卡输入和实现",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/controller-language/rust-ssh-lab-contract.md",
+          "selector": "fixed stdout/stderr lines and caps only"
+        },
+        {
+          "path": "poc/controller-language/rust/src/bin/ssh_fixture.rs",
+          "selector": "bootstrap exactmessages/event names"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2ab.md",
+      "binding": "docs/planning/task-bindings/G0-04.2ab.json",
+      "allowed_writes": [
+        "poc/controller-language/go/bridge_output.go",
+        "poc/controller-language/go/bridge_output_test.go",
+        "docs/planning/task-results/G0/G0-04.2ab.md"
+      ],
+      "implementation_writes": [
+        "poc/controller-language/go/bridge_output.go",
+        "poc/controller-language/go/bridge_output_test.go"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "按冻结合同实现：Go 父进程有界 bridge 输出解析",
+        "仅运行绑定检查并报告真实限制"
+      ],
+      "acceptance": [
+        "固定事件/错误行 allowlist，64 字节行与4096字节总量，非阻塞8事件队列，线程安全关闭；不启动进程",
+        "不超出冻结文件、命令与临时资源范围"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2ab",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "固定事件/错误行 allowlist，64 字节行与4096字节总量，非阻塞8事件队列，线程安全关闭；不启动进程",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-04.2b",
       "source_id": "G0-04.2",
       "parent": "G0-04",
@@ -4625,7 +4718,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-04.2aa"
+        "G0-04.2ab"
       ],
       "model": {
         "tier": "I",

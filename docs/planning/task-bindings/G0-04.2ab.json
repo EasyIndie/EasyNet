@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ab",
+  "status": "frozen",
+  "contract_versions": [
+    "B bridgev1 fixed output bytes; parser-only notphase/SSHacceptance"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/bridge_output.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/bridge_output_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -race -timeout 30s -count=1 -run ^TestBridgeOutput .",
+      "expected": "exit0 race-free purewriter tests nochild/socket/SSH"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Unexported type bridgeOutput implementsio.Writer noembeddedbuffer/ReaderFrom. newBridgeOutput(eventStream bool)*bridgeOutput; Events()<-chan string eventchanbuffer8 (nilforstderr); Snapshot() bridgeOutputSnapshot {Bytes int, Diagnostic string, Failed bool}; Finish()error idempotent marksclosed rejects laterwrite, closeeventchannelONLYonce underwriter mutex. Mutexguardsallmutablefields writes/snapshot/finish; nonblocking event enqueue queuefull fixedErrBridgeProtocol. Fixedsentinels ErrBridgeOutputLimit,ErrBridgeProtocol; no rawerrors. Independentlymax4096acceptedbytes perstream, reject oversizedchunk before retaining; maximumpartialline64 includingnewline; newlineLFonly; noempty/NUL/nonASCIImatches. Partiallinebufferonly<=64; decodechunks split atanybyte; stdoutallowlist ready authenticated ack not-dispatched unknown fixture-complete-observed joined, doNOTclaimphaseorderingproof (parentmatrixlater). stderrallowlist invalid fixture input / fixture I/O failure / fixture SSH failure / fixture cleanup failure with exactnewline, onlyonediagnostic; Snapshotretainsfixeddiagnostic only NEVER rawbytes. Stickyfirstfixedfailure; unknown/oversize/queuefull/laterwrite errorsfixed nochunkdump; Finish rejects leftoverpartialline, allpathscloseownedqueue once. No usercredentials/rawinput/output inassertions onfailure. Tests fragmented/multiplefixedlines/livequeue, stderrfixed/duplicate/unknownredaction, unfinishedline/65byte/4097chunk, finishidempotency/writeafterfinish, queuefull9th,8concurrentreadywrites withWaitGroup (allowlistcodec only noteventorder), no rawhex/assertions. <=200code target; no process/files/socket/native/newdeps/modchanges/runtimeSSH. ThreadlimitboundedavailableSolworkerreuse."
+}
