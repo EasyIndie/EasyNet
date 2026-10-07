@@ -1,6 +1,6 @@
 # 任务卡与模型分配索引
 
-已将 168 条原任务进一步拆为 **255 张独立卡**，覆盖 56 个工作包。
+已将 168 条原任务进一步拆为 **256 张独立卡**，覆盖 56 个工作包。
 每卡单独文件，可只把本卡和相关合同交给执行模型，无需读整个目录。
 已完成卡的状态见下表与对应 task-result；其余已具备目标/案例/依赖/模型评估，
 但标为 locked：尚未实施前置项；未来工程语言/路径/行为命令须冻结后才能执行。
@@ -14,7 +14,7 @@
 | 档位 | 默认模型类型/示例 | 卡数 |
 |---|---|---:|
 | D | Luna low | 5 |
-| C | Luna medium | 81 |
+| C | Luna medium | 82 |
 | I | GPT-6.1 Sol medium | 134 |
 | R | GPT-6.1 Sol high；冲突难解时 Astra high | 35 |
 
@@ -79,6 +79,7 @@
 | [G0-04.2an](G0/G0-04.2an.md) | GPT-6.1 Sol medium | verified | Rust 派发与完成证据故障验收 |
 | [G0-04.2ao](G0/G0-04.2ao.md) | GPT-6.1 Sol medium | verified | Rust 完整命令退出契约收敛 |
 | [G0-04.2d](G0/G0-04.2d.md) | GPT-6.1 Sol medium | verified | 候选 B SSH PoC |
+| [G0-04.2ap](G0/G0-04.2ap.md) | Luna medium | verified | Rust vault 原生 C ABI 与构建事实 |
 | [G0-04.2e](G0/G0-04.2e.md) | GPT-6.1 Sol medium | locked | 候选 B vault PoC |
 | [G0-04.2f](G0/G0-04.2f.md) | GPT-6.1 Sol medium | locked | 候选 B result/打包 PoC |
 | [G0-04.3](G0/G0-04.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | locked | 比较相同验收结果并接受 ADR-004 |

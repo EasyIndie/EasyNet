@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ap",
+  "status": "frozen",
+  "contract_versions": [
+    "nativeVaultLab-v1; reviewed existing C helper source only"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/rust-vault-ffi-evidence.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "shasum -a 256 poc/controller-language/go/vault/native.c poc/controller-language/go/vault/native.h",
+      "expected": "native.c6c2b3e83... native.h89b5cd41... hashes only"
+    },
+    {
+      "command": "xcrun --show-sdk-path",
+      "expected": "installed SDK path facts only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Purefactualresearch6kbound, C Luna medium. Reuse available /root/subagent_routing_adjust originallyLunamedium becausefreshagentthreadlimit; no model switch/highfallback; notarchitecturedecision. Only2docfiles, ≤100linesaggregate+≤12resultlines. ReadexactlocalCAPI/header andSDKselectedtypedefs only; pinned C/h hashes. Fact table exactsignatures RustABI candidate equivalents i32OSStatus/u32UInt32/c_voidopaque/c_charpath/boolC, ownership create*out evenonfailure mustrelease once/nullsafe; length/pointers/noUI/defaultmetadata onlyCguard. Bool/structlayout not actuallycompiled/verified, labelunverifieduntildedicatedABIcheck (source typedef alone not sizeproof). Existinghelper nativepathguard/options privateowned0700 directtmp no symlinks; no personalkeys changes. Feasibility only buildcommands proposal fixedclang/ar+rustc standalone linking existingC Security/CoreFoundation, no crates/Cargomodification; SDK/toolversions record only read commands rustc--version clang--version permitted. Noactualcompile/link/symbol-size check/CAPI/no-createprobe/mutation/ownedtempkeychain/secretreading. Native C semantics sourcefacts notruntimecertification, previousGoactualreportdistinct Rustactualpending. No web/architecture/framework/newlanguagechoice/sourceunsafeimplementation. Candidate RustFFI can be explicitly selected onlynextSolhighdesignfreeze. EscalateunknownABI/proposedCchanges. Handoff tokenactualunavailable/configuredLunamedium, modeltelemetryunavailable; future actualhelper/nativegate separated."
+}
