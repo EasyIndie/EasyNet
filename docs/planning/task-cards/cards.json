@@ -6176,8 +6176,8 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "候选 B SSH PoC",
-      "status": "locked",
-      "mode": "implementation",
+      "status": "verified",
+      "mode": "acceptance",
       "dependencies": [
         "G0-04.2ao"
       ],
@@ -6191,20 +6191,51 @@
       },
       "inputs": [
         {
-          "path": "docs/planning/product-evolution-roadmap.md",
-          "selector": "语言 PoC 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/poc/controller-language/rust-ssh-lab-contract.md",
+          "selector": "SSH scope and vault/JSON separate"
         },
         {
-          "path": "docs/unified-client-analysis.md",
-          "selector": "语言 PoC 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/task-results/G0/G0-04.2u.md",
+          "selector": "pinned dependency/toolchain isolated build"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2x.md",
+          "selector": "strict frame and typed unknowntrust refusal"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2af.md",
+          "selector": "ownedfuture cleanup memorytests and source review"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2ah.md",
+          "selector": "actual7transportcases"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2aj.md",
+          "selector": "actual8authcases"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2ak.md",
+          "selector": "typedoutput/IDowner synthetic evidence"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2an.md",
+          "selector": "actual12dispatchfaults/46Goand28Rustregression"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2ao.md",
+          "selector": "actual18commandcasescomplete-onlyexit currenthash"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-04.2d.md",
       "binding": "docs/planning/task-bindings/G0-04.2d.json",
       "allowed_writes": [
+        "docs/planning/poc/controller-language/rust-ssh-results.md",
         "docs/planning/task-results/G0/G0-04.2d.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "docs/planning/poc/controller-language/rust-ssh-results.md"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -6212,14 +6243,12 @@
         "未绑定路径和非本任务功能"
       ],
       "steps": [
-        "检查分支和前置证据，只加载本卡输入；目标：候选 B SSH PoC",
-        "按冻结合同处理当前单目标；案例：仅验证「候选 B SSH PoC」这一范围；每候选复现 key auth/host mismatch/cancel/vault locked/JSON result",
-        "运行绑定的定向行为检查；失败最多两次局部修复后升级；记录 diff/命令/结果"
+        "汇总已验证 Rust SSH 门槛，不重复未改变的测试",
+        "保留 vault E、JSON F 和生产选型独立前置"
       ],
       "acceptance": [
-        "仅验证「候选 B SSH PoC」这一范围；每候选复现 key auth/host mismatch/cancel/vault locked/JSON result",
-        "只修改允许路径；输出案例和负例证据，不用结构校验替代实运行",
-        "提交前/无授权时保留未提交 diff；不创建空 commit"
+        "only Rust candidate B SSH: trust/auth/deadline/cancel/ack/output/join",
+        "no vault/JSON/production acceptance claim"
       ],
       "verification": {
         "planning_checks": [
@@ -6236,14 +6265,11 @@
             "expectation": "exit 0；卡结构校验不代表功能测试通过"
           }
         ],
-        "behavior_check": "仅验证「候选 B SSH PoC」这一范围；每候选复现 key auth/host mismatch/cancel/vault locked/JSON result",
+        "behavior_check": "aggregate existing33SSHcases plus7IPCphase and reviewedtyped/memoryevidence",
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "前置卡尚未 verified/accepted-not-applicable",
-        "task binding 尚未冻结具体实现文件/接口/定向测试命令"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
         "涉及新 trust/secret/权限/销毁边界立即审查",
@@ -6261,7 +6287,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-04.2d.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "root-direct",
+        "reasoning_effort": "unavailable",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-04.2e",

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2d",
+  "status": "frozen",
+  "contract_versions": [
+    "RustBridge-v1; reviewed TransportOwner-v1; signedAuth-v1; Command-stage-v2; candidate B SSH aggregate-v1"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/rust-ssh-results.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 -c 'import json\nsets=[('\"'\"'/tmp/easynet-auth-shared-bridge-regression.json'\"'\"',16),('\"'\"'/tmp/easynet-rust-auth-gate.json'\"'\"',9),('\"'\"'/tmp/easynet-rust-command-full-exit-gate.json'\"'\"',20),('\"'\"'/tmp/easynet-go-command-fixture-regression.json'\"'\"',46)]\nfor path,count in sets:\n rows=[json.loads(line) for line in open(path)]\n assert not any(row['\"'\"'Action'\"'\"'] in ('\"'\"'fail'\"'\"','\"'\"'skip'\"'\"') or '\"'\"'DATA RACE'\"'\"' in row.get('\"'\"'Output'\"'\"','\"'\"''\"'\"') for row in rows)\n assert sum(row['\"'\"'Action'\"'\"']=='\"'\"'pass'\"'\"' and '\"'\"'Test'\"'\"' in row for row in rows)==count\n assert sum(row['\"'\"'Action'\"'\"']=='\"'\"'pass'\"'\"' and '\"'\"'Test'\"'\"' not in row for row in rows)==1\n print(path,count,'\"'\"'test-pass; package-pass; no fail/skip/race'\"'\"')\n'",
+      "expected": "existing actualJSON re-countpass; 16+9+20+46Testpasses,4packagepasses,zero fail/skip/race; no new runtime launched"
+    },
+    {
+      "command": "shasum -a 256 /tmp/easynet-poc-cache/rust-target/debug/ssh_command_fixture",
+      "expected": "6a0edea6fd8233904d688cac4779b289d3d9e7942555b19da294523cd1512a5f current owned artifact"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Aggregate only, no source/dependency/runtime changes/new tests. modeacceptance evidenceaggregation; existing cardpreviousvault/JSON wording is broadworkpackageproposal, E/F separatelydependD so correctDlimitedSSH explicitly, nevermarkE/Fcomplete. 7actualtransport+8actualauth+18fullcommand distinctcases =33SSHcases, plus7IPCphasecases. Typedunknowntrust pre-dial unit/source, not realwireemptyhost; exactkeysignedauth actual; ASCIIoperationID preservedtypedmemory source+synthetic, noIPCsecretpayload; SSHcap4096 syntheticreviewed+realoverflowunknown, notretainedbyte runtime telemetry; actualack/stat/pending/close+reviewedretainedjoin provesboundedtestedpaths. OriginalAL/ANstage0 oldhashhistorical, AOcurrentcommandcomplete-onlyexit0, independentAuth/KEX0phaseexceptions keepseparate. No actualstdoutwritefailure/forcedcleanupfailure injection: disclose source/memory evidence and optional qualificationgap, read-onlySolhighminimalgapreview confirms not requiredextraDslots inoriginalacceptedcontract, no silentlydroppingG0–G6commitment. PinnedRust1.99hostnot1.89MSRV/platform/release/supplychainsecurityqualification. FullGoaffectedfixture46passes reused, unchangedBashnotrerun. FinalSolhighaggregateevidence reviewmandatorythenverified onlySSHcandidateB gate; ADR004productionselection+E vault+FJSONremainlockeduntilprepared. Rootdirect nofreshagentthreads noexpensivefallback, actualmodel/tokenunavailable. Exact current evidence filecounts/artifacthash validate beforecompletion, fixed summaries onlyno rawoutputs."
+}

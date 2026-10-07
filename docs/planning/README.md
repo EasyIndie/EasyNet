@@ -19,6 +19,7 @@ root README. Technical choices require evidence and an ADR before implementation
 - [Rust KEX transport gate](poc/controller-language/rust-transport-results.md) — reviewed owned-loopback success/refusal/deadline/cancel pass; auth and dispatch pending
 - [Rust signed-auth gate](poc/controller-language/rust-auth-results.md) — actual signed success/refusal/deadline/cancel pass; commands pending
 - [Rust fixed-command gate](poc/controller-language/rust-command-results.md) — six actual completion/overflow/deadline/cancel cases passed; full fault qualification pending
+- [Rust candidate B SSH gate](poc/controller-language/rust-ssh-results.md) — 33 actual SSH scenarios, full command exit semantics; Rust vault/result and language choice pending
 - [Rust SSH bridge contract](poc/controller-language/rust-ssh-lab-contract.md) — reviewed design; dependency/frame/control gates passed, full SSH runtime pending
 - [Rust SSH source preparation](poc/controller-language/rust-ssh-preparation.md) — pending candidate, ack and task-join pitfalls
 - [Native vault experiment contract](poc/controller-language/vault-lab-contract.md) — scoped temporary helper and safety gates
