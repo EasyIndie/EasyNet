@@ -65,7 +65,7 @@
 | [G0-04.2ab](G0/G0-04.2ab.md) | GPT-6.1 Sol medium | verified | Go 父进程有界 bridge 输出解析 |
 | [G0-04.2ac](G0/G0-04.2ac.md) | GPT-6.1 Sol medium | verified | Go 父进程所属 bridge 启动与回收 |
 | [G0-04.2ad](G0/G0-04.2ad.md) | GPT-6.1 Sol medium | blocked | Go–Rust 真实 IPC bootstrap 验收 |
-| [G0-04.2ae](G0/G0-04.2ae.md) | GPT-6.1 Sol medium | active | Go fixture 所属临时凭据导出 API |
+| [G0-04.2ae](G0/G0-04.2ae.md) | GPT-6.1 Sol medium | verified | Go fixture 所属临时凭据导出 API |
 | [G0-04.2b](G0/G0-04.2b.md) | Luna low | verified | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | verified | 候选 A result/打包 PoC |
 | [G0-04.2d](G0/G0-04.2d.md) | GPT-6.1 Sol medium | locked | 候选 B SSH PoC |

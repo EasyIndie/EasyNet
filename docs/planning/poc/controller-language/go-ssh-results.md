@@ -67,3 +67,5 @@ Rust B matrix, language ADR disposition, deployment/remote privilege acceptance,
 macOS signed packaging and real-platform/client acceptance remain unverified here.
 No production adapter or language selection, deployment, root/service changes,
 Bats acceptance claim, task state changes or commits result from this gate.
+
+2026-10-07 matching fixture credential API follow-up: full Go package race rerun after the fixture change passed, 26 top-level +19 subtests, fail0skip0, elapsed2.242s. This preserves the earlier SSH fault matrix while adding memory-only credential export tests; Rust SSH runtime remains pending.

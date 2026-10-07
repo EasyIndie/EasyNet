@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"crypto/rand"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -12,6 +14,9 @@ import (
 )
 
 type FixtureStats struct{ AuthCallbacks, ExecAttempts, Commands int }
+
+var ErrFixtureCredential = errors.New("invalid fixture credential")
+
 type Fixture struct {
 	blockReached  chan struct{}
 	blockOnce     sync.Once
@@ -20,6 +25,7 @@ type Fixture struct {
 	authOnce      sync.Once
 	listener      net.Listener
 	host, client  ssh.Signer
+	clientPrivate ed25519.PrivateKey
 	config        *ssh.ServerConfig
 	mu            sync.Mutex
 	stats         FixtureStats
@@ -35,18 +41,19 @@ func (f *Fixture) BlockReached() <-chan struct{} { return f.blockReached }
 func (f *Fixture) PendingBlocks() int            { f.mu.Lock(); defer f.mu.Unlock(); return f.pendingBlocks }
 func (f *Fixture) AuthReached() <-chan struct{}  { return f.authReached }
 func newFixture(stallAuth bool) (*Fixture, error) {
-	key := func() (ssh.Signer, error) {
+	key := func() (ssh.Signer, ed25519.PrivateKey, error) {
 		_, private, err := ed25519.GenerateKey(rand.Reader)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		return ssh.NewSignerFromKey(private)
+		signer, err := ssh.NewSignerFromKey(private)
+		return signer, private, err
 	}
-	host, err := key()
+	host, _, err := key()
 	if err != nil {
 		return nil, err
 	}
-	client, err := key()
+	client, private, err := key()
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +62,8 @@ func newFixture(stallAuth bool) (*Fixture, error) {
 		return nil, err
 	}
 	f := &Fixture{blockReached: make(chan struct{}), listener: listener, host: host, client: client, connections: make(map[net.Conn]bool), done: make(chan struct{})}
+	// Separate storage: closing the fixture must not mutate the legacy signer.
+	f.clientPrivate = append(ed25519.PrivateKey(nil), private...)
 	if stallAuth {
 		f.authReached = make(chan struct{})
 	}
@@ -80,12 +89,45 @@ func newFixture(stallAuth bool) (*Fixture, error) {
 func (f *Fixture) Endpoint() string         { return f.listener.Addr().String() }
 func (f *Fixture) HostKey() ssh.PublicKey   { return f.host.PublicKey() }
 func (f *Fixture) ClientSigner() ssh.Signer { return f.client }
-func (f *Fixture) Stats() FixtureStats      { f.mu.Lock(); defer f.mu.Unlock(); return f.stats }
+
+// ClientPrivateKeyPEM returns a fresh, matching in-memory credential snapshot.
+// A snapshot begun before Close may finish afterward; this is not revocation.
+func (f *Fixture) ClientPrivateKeyPEM() ([]byte, error) {
+	if f == nil {
+		return nil, ErrFixtureCredential
+	}
+	f.mu.Lock()
+	select {
+	case <-f.done:
+		f.mu.Unlock()
+		return nil, ErrFixtureCredential
+	default:
+	}
+	if len(f.clientPrivate) != ed25519.PrivateKeySize {
+		f.mu.Unlock()
+		return nil, ErrFixtureCredential
+	}
+	private := append(ed25519.PrivateKey(nil), f.clientPrivate...)
+	f.mu.Unlock()
+	defer clear(private)
+	block, err := ssh.MarshalPrivateKey(private, "")
+	if err != nil {
+		return nil, ErrFixtureCredential
+	}
+	encoded := pem.EncodeToMemory(block)
+	if encoded == nil {
+		return nil, ErrFixtureCredential
+	}
+	return encoded, nil
+}
+func (f *Fixture) Stats() FixtureStats { f.mu.Lock(); defer f.mu.Unlock(); return f.stats }
 func (f *Fixture) Close() error {
 	f.once.Do(func() {
 		close(f.done)
 		_ = f.listener.Close()
 		f.mu.Lock()
+		clear(f.clientPrivate)
+		f.clientPrivate = nil
 		for conn := range f.connections {
 			_ = conn.Close()
 		}
