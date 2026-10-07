@@ -52,3 +52,5 @@ and the exact Security-service/environment cause is not established.
 
 Root independently counted 1 package/1 top test/5 subtest passes with no
 fail/skip events; private-identifier Bats 3 passed. No production acceptance.
+
+G0-04.2b cached evidence gate: package1/top1/sub5 pass; fail0 skip0; validator and diff check passed. Composite harness events include wrapper checks and are not all raw native calls. See [G0-04.2b report](../../task-results/G0/G0-04.2b.md) for evidence limits and unverified production choices.
