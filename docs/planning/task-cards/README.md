@@ -56,7 +56,7 @@
 | [G0-04.2s](G0/G0-04.2s.md) | GPT-6.1 Sol medium | verified | Go vault 无创建沙箱外对照 |
 | [G0-04.2t](G0/G0-04.2t.md) | Luna medium | verified | 候选 A 严格脱敏结果编码 |
 | [G0-04.2b](G0/G0-04.2b.md) | Luna low | verified | 候选 A vault PoC |
-| [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | ready | 候选 A result/打包 PoC |
+| [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | verified | 候选 A result/打包 PoC |
 | [G0-04.2d](G0/G0-04.2d.md) | GPT-6.1 Sol medium | locked | 候选 B SSH PoC |
 | [G0-04.2e](G0/G0-04.2e.md) | GPT-6.1 Sol medium | locked | 候选 B vault PoC |
 | [G0-04.2f](G0/G0-04.2f.md) | GPT-6.1 Sol medium | locked | 候选 B result/打包 PoC |
