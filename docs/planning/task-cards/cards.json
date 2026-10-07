@@ -4108,7 +4108,7 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "候选 B Rust 所属 IPC 控制状态机",
-      "status": "active",
+      "status": "verified",
       "mode": "implementation",
       "dependencies": [
         "G0-04.2x"
@@ -4195,7 +4195,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-04.2y.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "medium",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-04.2b",

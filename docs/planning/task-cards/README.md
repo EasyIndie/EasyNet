@@ -59,7 +59,7 @@
 | [G0-04.2v](G0/G0-04.2v.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 候选 B SSH 传输与 fixture 桥接合同 |
 | [G0-04.2w](G0/G0-04.2w.md) | Luna medium | verified | 候选 B Go 侧有界凭据帧编码 |
 | [G0-04.2x](G0/G0-04.2x.md) | GPT-6.1 Sol medium | verified | 候选 B Rust 凭据帧解码与密钥校验 |
-| [G0-04.2y](G0/G0-04.2y.md) | GPT-6.1 Sol medium | active | 候选 B Rust 所属 IPC 控制状态机 |
+| [G0-04.2y](G0/G0-04.2y.md) | GPT-6.1 Sol medium | verified | 候选 B Rust 所属 IPC 控制状态机 |
 | [G0-04.2b](G0/G0-04.2b.md) | Luna low | verified | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | verified | 候选 A result/打包 PoC |
 | [G0-04.2d](G0/G0-04.2d.md) | GPT-6.1 Sol medium | locked | 候选 B SSH PoC |

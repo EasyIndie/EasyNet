@@ -1,4 +1,5 @@
 //! Memory-only credential framing for the isolated Rust SSH lab.
+pub mod control;
 use russh::keys::{Algorithm, PrivateKey, PublicKey};
 
 pub struct Credentials {
