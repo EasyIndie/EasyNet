@@ -5823,6 +5823,226 @@
       }
     },
     {
+      "id": "G0-04.2am",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Go 命令故障 fixture 准备",
+      "status": "verified",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2al"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "所属跨语言进程/IPC生命周期或真实故障验收，需中档编码和安全审查",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "poc/controller-language/go/fixture.go",
+          "selector": "constructors/ownedworkers/serve/session/Stats/Close"
+        },
+        {
+          "path": "poc/controller-language/go/fixture_test.go",
+          "selector": "legacy complete acceptance"
+        },
+        {
+          "path": "docs/planning/poc/controller-language/ssh-lab-contract.md",
+          "selector": "fixedcommands/nonrootownedfixture"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2al.md",
+          "selector": "verified blockownershipgate"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2am.md",
+      "binding": "docs/planning/task-bindings/G0-04.2am.json",
+      "allowed_writes": [
+        "poc/controller-language/go/fixture.go",
+        "poc/controller-language/go/command_fault.go",
+        "poc/controller-language/go/command_fault_test.go",
+        "docs/planning/task-results/G0/G0-04.2am.md"
+      ],
+      "implementation_writes": [
+        "poc/controller-language/go/fixture.go",
+        "poc/controller-language/go/command_fault.go",
+        "poc/controller-language/go/command_fault_test.go"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "按 frozen binding 实现单一目标",
+        "仅运行定向检查并保留未验证边界"
+      ],
+      "acceptance": [
+        "Go 命令故障 fixture 准备",
+        "no replay; owned loopback only"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2am",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "Go 命令故障 fixture 准备",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤4k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-04.2am.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "root-direct",
+        "reasoning_effort": "model-telemetry-unavailable",
+        "token_usage": "unavailable"
+      }
+    },
+    {
+      "id": "G0-04.2an",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Rust 派发与完成证据故障验收",
+      "status": "locked",
+      "mode": "acceptance",
+      "dependencies": [
+        "G0-04.2am"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "所属跨语言进程/IPC生命周期或真实故障验收，需中档编码和安全审查",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "poc/controller-language/rust/src/bin/ssh_auth_fixture.rs",
+          "selector": "existing bootstrap/auth/deadline/cancel/retained cleanup"
+        },
+        {
+          "path": "poc/controller-language/rust/src/bin/common/mod.rs",
+          "selector": "shared owned fd and fixed events"
+        },
+        {
+          "path": "poc/controller-language/rust/src/transport.rs",
+          "selector": "handle_mut and close_join"
+        },
+        {
+          "path": "poc/controller-language/rust/src/lib.rs",
+          "selector": "Credentials and decode_frame"
+        },
+        {
+          "path": "poc/controller-language/go/fixture.go",
+          "selector": "fixed command behavior"
+        },
+        {
+          "path": "docs/planning/poc/controller-language/rust-ssh-lab-contract.md",
+          "selector": "dispatch acknowledgement/output/owner/join"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-04.2aj.md",
+          "selector": "verified auth gate"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2an.md",
+      "binding": "docs/planning/task-bindings/G0-04.2an.json",
+      "allowed_writes": [
+        "docs/planning/task-results/G0/G0-04.2an.md"
+      ],
+      "implementation_writes": [],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "按 frozen binding 实现单一目标",
+        "仅运行定向检查并保留未验证边界"
+      ],
+      "acceptance": [
+        "Rust 派发与完成证据故障验收",
+        "no replay; owned loopback only"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2an",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "Rust 派发与完成证据故障验收",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [
+        "实现与命令尚未冻结"
+      ],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤4k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-04.2d",
       "source_id": "G0-04.2",
       "parent": "G0-04",
@@ -5831,7 +6051,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-04.2al"
+        "G0-04.2an"
       ],
       "model": {
         "tier": "I",

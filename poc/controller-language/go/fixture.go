@@ -18,6 +18,9 @@ type FixtureStats struct{ AuthCallbacks, ExecAttempts, Commands int }
 var ErrFixtureCredential = errors.New("invalid fixture credential")
 
 type Fixture struct {
+	fault         CommandFault
+	phaseReached  chan struct{}
+	phaseOnce     sync.Once
 	blockReached  chan struct{}
 	blockOnce     sync.Once
 	pendingBlocks int
@@ -35,12 +38,12 @@ type Fixture struct {
 	workers       sync.WaitGroup
 }
 
-func NewFixture() (*Fixture, error)              { return newFixture(false) }
-func NewAuthStallFixture() (*Fixture, error)     { return newFixture(true) }
+func NewFixture() (*Fixture, error)              { return newFixture(false, noCommandFault) }
+func NewAuthStallFixture() (*Fixture, error)     { return newFixture(true, noCommandFault) }
 func (f *Fixture) BlockReached() <-chan struct{} { return f.blockReached }
 func (f *Fixture) PendingBlocks() int            { f.mu.Lock(); defer f.mu.Unlock(); return f.pendingBlocks }
 func (f *Fixture) AuthReached() <-chan struct{}  { return f.authReached }
-func newFixture(stallAuth bool) (*Fixture, error) {
+func newFixture(stallAuth bool, fault CommandFault) (*Fixture, error) {
 	key := func() (ssh.Signer, ed25519.PrivateKey, error) {
 		_, private, err := ed25519.GenerateKey(rand.Reader)
 		if err != nil {
@@ -61,7 +64,7 @@ func newFixture(stallAuth bool) (*Fixture, error) {
 	if err != nil {
 		return nil, err
 	}
-	f := &Fixture{blockReached: make(chan struct{}), listener: listener, host: host, client: client, connections: make(map[net.Conn]bool), done: make(chan struct{})}
+	f := &Fixture{fault: fault, phaseReached: make(chan struct{}), blockReached: make(chan struct{}), listener: listener, host: host, client: client, connections: make(map[net.Conn]bool), done: make(chan struct{})}
 	// Separate storage: closing the fixture must not mutate the legacy signer.
 	f.clientPrivate = append(ed25519.PrivateKey(nil), private...)
 	if stallAuth {
@@ -172,6 +175,11 @@ func (f *Fixture) serve(conn net.Conn) {
 			_ = next.Reject(ssh.Prohibited, "fixture session only")
 			continue
 		}
+		if f.fault == ChannelOpenStall {
+			f.reachPhase()
+			<-f.done
+			return // Never accept after releasing the owned stall.
+		}
 		channel, reqs, err := next.Accept()
 		if err != nil {
 			continue
@@ -197,10 +205,17 @@ func (f *Fixture) session(channel ssh.Channel, requests <-chan *ssh.Request) {
 			_ = request.Reply(false, nil)
 			continue
 		}
+		if f.fault == ExecAckStall {
+			f.reachPhase()
+			<-f.done
+			return // No acknowledgement or execution after fixture Close.
+		}
 		f.mu.Lock()
 		f.stats.Commands++
 		f.mu.Unlock()
-		_ = request.Reply(true, nil)
+		if f.fault != AckLost {
+			_ = request.Reply(true, nil)
+		}
 		switch payload.Command {
 		case "fixture.complete":
 			_, _ = channel.Write([]byte("fixture complete\n"))
@@ -221,7 +236,18 @@ func (f *Fixture) session(channel ssh.Channel, requests <-chan *ssh.Request) {
 			f.mu.Unlock()
 			return
 		}
-		_, _ = channel.SendRequest("exit-status", false, ssh.Marshal(struct{ Status uint32 }{0}))
+		if f.fault == NoStatus {
+			return
+		}
+		status := uint32(0)
+		if f.fault == NonzeroStatus {
+			status = 42
+		}
+		_, _ = channel.SendRequest("exit-status", false, ssh.Marshal(struct{ Status uint32 }{status}))
+		if f.fault == NoClose {
+			f.reachPhase()
+			<-f.done
+		}
 		return
 	}
 }

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2am",
+  "status": "frozen",
+  "contract_versions": [
+    "SSHLab-v1; reviewed CommandFaultFixture-v1"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/fixture.go",
+    "poc/controller-language/go/command_fault.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/command_fault_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -run '^TestCommandFaultRejectsInvalid$' .",
+      "expected": "invalidenumcasespass; no listener/child/TCP"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -timeout 30s -run '^$' .",
+      "expected": "exit0 compile-only; no listener/child/TCP"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol high /root/command_stage_design approved read-only design. newstrongtypedCommandFault uint8 enum zerointernalNoFault,1ChannelOpenStall,2ExecAckStall,3AckLost,4NoStatus,5NonzeroStatus,6NoClose. ExportedNewCommandFaultFixture rejects0/>6 withfixed ErrFixtureFault BEFORE generatingkeys/listener/newFixture. OldNewFixture/NewAuthStallFixture callnewFixture(false/true,0), keepbehavior. Constructor initializes immutablemode+PhaseReached chan/sync.Once BEFOREaccept goroutine starts; phasefuncclosesonce nonblocking. ChannelStall onvalidsession request beforeAccept signalsphase waitsfixture.done thenreturn (neverAcceptafterclose), zeroexec. ExecAckStall validexecincrementsExecAttemptsexistingcounter, Commands0 thenphase signalwaitdone return noReply/executeafterClose. AckLost skipReply only,enterfixedcommand1block Commands1pending1BlockReached thenwaitdone; nofalseack. NoStatus command0exactoutput thenreturnClose withoutstatus; NonzeroStatus command0sameoutputstatus42thenClose; NoClose command0sameoutputstatus0 thensignalphasewaitdone returnClose onlyfixtureClose. Commandsmeansenteredexecution notack; counterupdatesbeforephasesignal, nolockedwaiting. Allstallsownedexistingworker wait onlydone, no freegoroutines/time.Sleep; clientclose doesnotFixtureClose. Fixedusername/keytrust/allowedcommands rejectedcapabilities/deadlines unchanged. Filechangedtarget<=200 >300stop; newconstructorunitinvalid0/7/255 checksnilfixederr withoutvalidconstructor(noTCP). Compile-onlycard no realfaulttestacceptance, no fullGo/Rust rerununtil anchangesverified. Rootdirect duefreshagentthreadlimit, finalsamecontextSolhighdiffreview; exactmodelunknown noexpensivesubmodelfallback. No commitbyworker/deployment/personalkeys."
+}
