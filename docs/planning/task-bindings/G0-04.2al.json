@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2al",
+  "status": "frozen",
+  "contract_versions": [
+    "RustBridge-v1; reviewed Command-stage-v1; six-case owned command matrix-v1"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/rust-command-results.md"
+  ],
+  "test_files": [
+    "poc/controller-language/go/bridge_command_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -timeout 30s -run ^$ .",
+      "expected": "exit0 compile-only; no actualchild/TCP"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -race -timeout 90s -count=1 -json -run '^TestBridgeCommand$' . > /tmp/easynet-rust-command-gate.json",
+      "expected": "actual sixsubcases+parent pass; root independent JSON count zero fail/skip/race; no candidateB acceptance claim"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Exactly six cases: complete(command0), output-overflow(command2), block-deadline(command1deadline500ms), block-cancel(command1), block-eof(command1), pre-cancel(command1noG). Owned dynamicloopback Go NewFixture via existing helpers; frame frombridgeFixtureFrame thenmutate fixed command byte12 only (frozen framing18bytes); no keylogs/files/envargv. Originaldeadline3s except500ms. Afterready sendG exceptpreC; Gcases consumeauthenticated thenactualack via bounded2shelper. Blockcases additionally independently awaitfixture.BlockReached2s beforeC/CloseControl/deadlineWait; no sleeps. AllGcases server AuthCallbacks>=1 ExecAttempts1 Commands1; preCStatszero. Complete terminalfixture-complete-observedjoined0emptydiagnil; overflow/deadlineunknownjoined2fixedSSHfailure ErrBridgeChildIO; expectedC/EOFstagecontainmentunknownjoined0emptydiag, preCnotdispatchjoined0. AfterchildWait blockPendingBlocks1 andfixture.doneopen; explicitlyfixture.Close releases/join thenPendingBlocks0; clientcancel neverremotejobcancel/reconciled. LIFO childcleanup beforefixturecleanup. Allcases eventclosed descriptor net.ErrClosed fixed stdout/stderrcaps<=4096 immutableWait. Realoverflowfault provesunknownfailure; actualretainedSSHoutputlen notexposedbyevents, cap is reviewedsource+syntheticunit notruntime byte telemetry. No rawX/additionalfixtures/listeners thiscard; no modifyingexistingRustGo sources/deps/production. Tests <=230lines, >300stop; reportonly knowncounts/timings/hash/failurepreservation/modelunavailable rootdirectbecausefreshthreadlimit, finalSolhighreview beforeactualruntime. Newbinary means unchangedKEX/auth/sharedhelper sources no mandatoryrepeat22alreadygreen tests; al integrationruns only newcommands. Remaining channel-open/exec-ack stalls/acklost/statusclosemissing/cleanupfailure separatelyprepare afterthiscard, NOTsilentlycompleted or parentDverified. Fullcandidate exit0onlycomplete contract pending finalgate, do notmislabelstageexceptions."
+}
