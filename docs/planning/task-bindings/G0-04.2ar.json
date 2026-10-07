@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ar",
+  "status": "frozen",
+  "contract_versions": [
+    "NativeVaultLab-v1; ABI-probe-v1; scoped Rust helper-v1 reviewed Sol high"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust-vault/vault_fixture.rs"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "/tmp/easynet-poc-toolchains/rust/bin/rustc --edition=2024 poc/controller-language/rust-vault/vault_fixture.rs -L native=/tmp/easynet-poc-cache/rust-vault -l static=easynet_vault_native -l framework=Security -l framework=CoreFoundation --test -o /tmp/easynet-poc-cache/rust-vault/vault_fixture_tests",
+      "expected": "compilepuretest binary only, noC/vaultAPI"
+    },
+    {
+      "command": "/tmp/easynet-poc-cache/rust-vault/vault_fixture_tests",
+      "expected": "pureparameter/report tests only, noC/vaultAPI/root/metadata action"
+    },
+    {
+      "command": "/tmp/easynet-poc-toolchains/rust/bin/rustc --edition=2024 poc/controller-language/rust-vault/vault_fixture.rs -L native=/tmp/easynet-poc-cache/rust-vault -l static=easynet_vault_native -l framework=Security -l framework=CoreFoundation -o /tmp/easynet-poc-cache/rust-vault/vault_fixture",
+      "expected": "buildnativehelper only, NEVERlaunch/--probe thiscard"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Build-onlyI card: recovered existing /root/auth_bridge_impl configuredSolmedium afterfresh-agent thread limit; boundedexistingIreuse noexpensivefallback/no model switch, finalsameSolhighsource reviewmandatory. Onlynewvault_fixture.rs+report; existingC/h/ffi/Cargo/Go unchangedpinshaABISDK27rustc1.99. Strictargs_os acceptsdir or --probe dir only, rejectnonUTF8/empty/NUL/len>4096/extraargs viaPUREparser, appendfixed /fixture.keychain WITHOUTnormalizecallerpath. Bothnative modesgeteuid()==0rejectbeforeSecurity: localSDKsys/_types/_uid_t.h31 uid_t=__darwin_uid_t; sys/_types.h87 __uint32_t (getuidexternCreturnu32systemsymbol); unitparser/report notgeteuid/nativeAPI. Run rootreject/rejectedreportfix no genericlibrary/process::exitwhileowner. Noasync/passwordargfiles/stdpersonal. Readexact32 /dev/urandom freshhex64bytepassword, syntheticfixture-one/two only; ownedSecretspw/raw/value arrays Dropfill0 allnormalpaths nozeroizationguarantee. Ccalls synchronous borrowedlive validptr checkedlengths<=u32, CStringvalidNULterm path lifetimealive. Aftervault_create immediatelywraprawpointerOwnedVault inclerrornonnull/null; noCloneDebug/deref/wrappingbeforeCreate; Dropcallsnullsafevault_release exactlyonce; final vault_unchanged beforeDrop everypostcreatepath; no panic/error ? bypassownership. Outputbroken afterrunreturns cannotretainowner. Ccreatefailure/status!=0/metadatafalse stopsfurtherCRUD. SameGo18fixedrequiredchecks+create_wrapper_present/create_keychain_ref_present/locked_read_data_returned extras,15allowlistedstatusstagekeys integeronly, outcome rejected/blocked/pass. checkqueryentered native flag, deletestatus exacterrSecItemNotFound=-25300 localSDKSecBase.h353, invalidparam=-50 line332; no fakeErrLocked. Lockedconfirmstatus0false thenreadqueriedtrue/nonzerostatus/nodata. GenerateJSONmanuallyONLYconstwhitelistkeys bool i32/outcomeconst, no deps/userstrings/rawnativeerrors/password/path/value logs; passonly18required true afterfinalmetadata. --probe parsedmode callsCguardedprobe (readonlymetadatabutstillNativeAPI) output fixedpath_guard_ok/stage/status; no ARrun allowed. RusttestonlyPUREargument/report tests meaningfulinvalidUTF8/empty/NUL/long/extra args rejection, closedreportfixedknownvalues/outputbound NOTsimulatingnativepassed; testreportbadNative outcomesnottruthnative. mainnoargs rejectedJSONexit1; probeinvalid/rejectedroot outputsfalse0-50 exit0 matchingGo, normalreportpass0others1, stdoutIOerrorfixedexit1 AFTERownerrelease. Source target<=260,>350stop/readabilityexceptionrequiresroot; <=2targetedrepairs, recordwarnings/durations/counts. Native actualtempKeychain E stayslockeduntilhelper+testharnesssource reviewed andexactcommandsbounded actualtarget. No actualvault/helper/--probe launch inAR; no CLI/network/deploy/platform/production binding decision. Handwrittenffiunsafe comments tiecallvalidity/returnedwrapper ownership toCsource; allstatusdataredacted."
+}
