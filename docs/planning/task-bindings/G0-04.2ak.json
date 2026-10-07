@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ak",
+  "status": "frozen",
+  "contract_versions": [
+    "RustBridge-v1; Command-stage-v1 reviewed by fresh GPT-6.1 Sol high"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust/src/bin/ssh_command_fixture.rs",
+    "poc/controller-language/rust/src/ssh_run.rs",
+    "poc/controller-language/rust/src/lib.rs"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo test --manifest-path poc/controller-language/rust/Cargo.toml --locked --offline --bin ssh_command_fixture --lib ssh_run",
+      "expected": "exit0 synthetic command observations and shared fd tests if separately targeted; no TCP/child; report exact count"
+    },
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo test --manifest-path poc/controller-language/rust/Cargo.toml --locked --offline --bin ssh_command_fixture",
+      "expected": "exit0 shared fd units only; no TCP/child"
+    },
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo build --manifest-path poc/controller-language/rust/Cargo.toml --locked --offline --bin ssh_command_fixture",
+      "expected": "exit0 compile owned command binary; never launch"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Three sources only + mandatory report. lib.rs ONLY pub mod ssh_run. Independent bin reuses common without changing other bins, lib transport, deps or fd unsafe. Reuse reviewed auth bootstrap, one absolute <=3000ms deadline covering KEX/auth/channel-open/exec/output plus separately retained cleanup1000ms. Auth success emits authenticated immediately BEFORE command to enable rendezvous; event errors record IO then cleanup. Fixed commands 0/1/2 fixture.complete/block/large only, usernamefixture; no PTY/shell/subsystem/env/forwarding/password/agent. Small adapter API named ssh_run::run (worker may choose concrete signature but no generic framework); borrowed owner handle, pinned same cancellation across phases, once complete immediately end operation never repoll. Before first exec future poll set result outcome unknown and owner retained; failures after maybesent never downgrade/replay. Preserve decoded operation_id in result memory only, ASCIIvalidated frame; no output/id/keys logged. Channel::exec(true,..).await only queues (pinned channels/mod.rs235-240/540); only wait ChannelMsg::Success emits fixed ack, no other replyrequesting channel op. Drop channel-open future on cancellation and all channel receivers/borrows BEFORE retained transport.close_join. Consider whether pending open unknown/session receiver resource cleanup requires owner shutdown. On cleanupfailure fixedstderr directexit2 with owneralive, nojoined. Single terminal event not-dispatched/unknown/fixture-complete-observed thenjoined only proof. ExpectedC/EOF cancellation exit0 evenunknown stageexception; invalidcontrol/read/eventfixedIO2; deadline/Ssh/outputoverflow fixedSSH2. Commands1/2 nevercompleted. Command0 completion requires ack, exactstdout fixture complete newline, empty stderr, exitstatus0, explicitClose; EOF unnecessary, None NOT Close; missing/duplicate status, Failure/ExitSignal/unexpected events => conservativeunknown. Combined Data+ExtendedData retained <=4096, overflow triggers interruption fixedSSH; only ext1 stderr accepted. Avoid rawerror diagnostics. WindowAdjusted can be safely ignored; no vector beyond cap; bounded status/reply duplicates. Exact4096 allowed,4097overflow; synthetic observation tests ideally inline ssh_run test module covering mixeddata, exactlimit, partial/duplicate status/missingclose/ack and IDowner preservation. Never claim synthetic tests prove actualSSH; al realmatrix later. Source total target<=300changedlines, >400 or new unsafe/trust design stop. Review received from fresh /root/command_stage_design Sol high (primary pinned exec/Success/Close/EOF APIs); final same-card source review before actualruntime. Worker Solmedium fresh fork none <=8k no repeated upstream research, <=2targetedrepair. No deployment/personalsecrets/vault/JSON/productionlanguageADR/commit byworker."
+}
