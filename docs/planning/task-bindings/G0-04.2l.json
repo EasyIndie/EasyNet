@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2l",
+  "status": "frozen",
+  "contract_versions": [
+    "SSH lab v1; ADR003 design; Go x/crypto v0.57.0"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/output.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/output_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -race -count=1 ./...",
+      "expected": "combinedstdoutstderr writer exact4096 pass4097reject, concurrentrace writes preserve<=4096 retained; returnedfixed ErrOutputLimit and no partialoverlimit retention"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2l",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0 plus newfilewhitespace"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol medium, <=200lines. Current l only bounded writer, execution separate additional m. Frozen API internaltype boundedOutput {mu sync.Mutex;...}; methods Write([]byte)(int,error), Bytes()[]byte returningcopy; ErrOutputLimit fixed sentinel; constant outputLimit4096. Use ONE shared writer for future stdout/stderr; exactly4096 bytes total allowed, first excess marks persistentoverflow and returns ErrOutputLimit, neverretains>4096 nor discards overflowerror; afteroverflow futurewrites reject. Ensure io.Writer n/error semantics unambiguous when write straddles boundary (may acceptremainingprefix then n< len err limit). Threadsafe writes/read snapshot; test zero,exact4096,4097, boundarysplitandconcurrentbothstreams using goroutines. No Run/SSH changes, credentials/JSON/Keychain. Testing newwriterpure no newnetwork besides existingSSHpackage suite; timeout30sracebindingexistingfixture authorized. Later Run must close ownedclient andjoinreaders onoverflow thenunknown retainedowner, notproductionreceipt."
+}

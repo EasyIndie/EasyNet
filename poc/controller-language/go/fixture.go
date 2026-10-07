@@ -13,6 +13,8 @@ import (
 
 type FixtureStats struct{ AuthCallbacks, ExecAttempts, Commands int }
 type Fixture struct {
+	authReached  chan struct{}
+	authOnce     sync.Once
 	listener     net.Listener
 	host, client ssh.Signer
 	config       *ssh.ServerConfig
@@ -24,7 +26,10 @@ type Fixture struct {
 	workers      sync.WaitGroup
 }
 
-func NewFixture() (*Fixture, error) {
+func NewFixture() (*Fixture, error)             { return newFixture(false) }
+func NewAuthStallFixture() (*Fixture, error)    { return newFixture(true) }
+func (f *Fixture) AuthReached() <-chan struct{} { return f.authReached }
+func newFixture(stallAuth bool) (*Fixture, error) {
 	key := func() (ssh.Signer, error) {
 		_, private, err := ed25519.GenerateKey(rand.Reader)
 		if err != nil {
@@ -45,10 +50,18 @@ func NewFixture() (*Fixture, error) {
 		return nil, err
 	}
 	f := &Fixture{listener: listener, host: host, client: client, connections: make(map[net.Conn]bool), done: make(chan struct{})}
+	if stallAuth {
+		f.authReached = make(chan struct{})
+	}
 	f.config = &ssh.ServerConfig{PublicKeyCallback: func(meta ssh.ConnMetadata, public ssh.PublicKey) (*ssh.Permissions, error) {
 		f.mu.Lock()
 		f.stats.AuthCallbacks++
 		f.mu.Unlock()
+		if f.authReached != nil {
+			f.authOnce.Do(func() { close(f.authReached) })
+			<-f.done
+			return nil, fmt.Errorf("fixture authentication stopped")
+		}
 		if meta.User() != "fixture" || !bytes.Equal(public.Marshal(), client.PublicKey().Marshal()) {
 			return nil, fmt.Errorf("fixture authentication rejected")
 		}
