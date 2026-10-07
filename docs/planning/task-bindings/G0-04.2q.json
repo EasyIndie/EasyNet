@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2q",
+  "status": "frozen",
+  "contract_versions": [
+    "Native vault lab v1; build-only result helper; no runtime acceptance"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/vault/main.go",
+    "poc/controller-language/go/vault/native.h",
+    "poc/controller-language/go/vault/native.c"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build CGO_ENABLED=1 /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go build -o /tmp/easynet-go-vault-helper ./vault",
+      "expected": "exit0 CGo helpercompile only; NEVERexecute helper/nativecalls"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2q",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol high approved q design, <=200addedauthoredlines3impl+ownreport. Add native vault_lock(Vault*) actualSecKeychainLock status owned&&ready; vault_read_status(Vault*,bool *dataReturned) clearsflag beforevalidation, ownedquery kSecReturnData true/MatchLimitOne, returnsactualSecItemCopyMatching status, conservative anyobjectreturnedflag, releaseCF onallpaths. Reuseis_unlocked forconfirmbeforeCRUD andafterlock inversion. main helper ONLY compiledinthiscard NOTRUN. Go run(directory) namedreport withfixedOutcome pass/blocked/rejected, mapstatusesstageints and mapchecks namedbools; argvONLYownedtmpdirpath, nosecret. Fixedfilejoin fixture.keychain Cprivateguard; randomcrypto/rand32byte hexcanonicalUTF8 password64bytes memoryonly zero buffers afteruse; useGo byteptr Ccall readsynchronously storesnopointers; allocatedCpath free. Reject empty/extraargsbeforenative. Defer vault_release immediatelyaftercreate returns incl nonnilerrorhandle, finalmetadata check before release and aftererrors, only encodeJSON afterrun defers finish. Creation maywrappererror, label create_guard; CRUDread checkedwrapper label read_checked; unlock/lock/rawlockedread actualstatuslabel. Require create_guard0+immediateunchanged, explicitunlock0+confirmedunlocked beforeCRUD. Sequence add/read fixture1 update/read fixture2 delete readerrSecItemNotFound+noreturneddata readd/read fixture1 thenlock0 confirmedlocked rawreaderror+noreturneddata thenfinalmetadataunchanged. Initialize namedchecks false, no missingchecks canpass. Stopfurthermutations onanystatus/comparisonfailure andmetadatachange; noauthfallback/retry. Recordbool/status only neverprintpassword/secret/paths/rawerrors/nativeoutput; nonpass exitnonzero, decodedreportsnoproductionclaims. Parentp10s externalboundONLYfuture nativevault taggedtest willrun; defaulttests freeofKeychainnativeexecution. No SecKeychainDelete/systemprefs, no productionchoice. If>200keep safestructure andreport splitneeded ratherthancompress."
+}

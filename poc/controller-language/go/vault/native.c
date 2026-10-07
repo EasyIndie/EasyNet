@@ -109,11 +109,14 @@ void vault_release(Vault *vault) {
     free(vault);
 }
 OSStatus vault_unchanged(Vault *vault, bool *equal) {
-    if (!vault || !vault->owned || !equal) return errSecParam;
-    *equal = false;
+    if (equal) *equal = false;
+    if (!vault || !vault->owned || !equal) {
+        if (vault) vault->ready = false;
+        return errSecParam;
+    }
     Snapshot current = {0};
     OSStatus status = snapshot_read(&current);
-    if (status != errSecSuccess) return status;
+    if (status != errSecSuccess) { vault->ready = false; return status; }
     bool same = vault->baseline.count == current.count &&
         strcmp(vault->baseline.defaultPath, current.defaultPath) == 0;
     for (CFIndex i = 0; same && i < current.count; i++) {
@@ -121,6 +124,7 @@ OSStatus vault_unchanged(Vault *vault, bool *equal) {
     }
     snapshot_release(&current);
     *equal = same;
+    if (!same) vault->ready = false;
     return errSecSuccess;
 }
 OSStatus vault_create(const char *path, const void *password, UInt32 length,
@@ -143,4 +147,109 @@ OSStatus vault_create(const char *path, const void *password, UInt32 length,
     if (status != errSecSuccess) return status;
     vault->ready = *metadataUnchanged;
     return vault->ready ? errSecSuccess : errSecNotAvailable;
+}
+
+static OSStatus vault_guard(Vault *vault) {
+    return vault && vault->owned && vault->ready ? errSecSuccess : errSecNotAvailable;
+}
+OSStatus vault_unlock(Vault *vault, const void *password, UInt32 length) {
+    OSStatus status = vault_guard(vault);
+    if (status != errSecSuccess) return status;
+    if (!password || !length) return errSecParam;
+    return SecKeychainUnlock(vault->owned, length, password, true);
+}
+OSStatus vault_is_unlocked(Vault *vault, bool *unlocked) {
+    if (unlocked) *unlocked = false;
+    if (!unlocked) return errSecParam;
+    OSStatus status = vault_guard(vault);
+    if (status != errSecSuccess) return status;
+    SecKeychainStatus state = 0;
+    status = SecKeychainGetStatus(vault->owned, &state);
+    if (status == errSecSuccess) *unlocked = (state & kSecUnlockStateStatus) != 0;
+    return status;
+}
+static CFMutableDictionaryRef item_query(Vault *vault, bool adding) {
+    CFMutableDictionaryRef query = CFDictionaryCreateMutable(NULL, 0,
+        &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    if (!query) return NULL;
+    CFDictionarySetValue(query, kSecClass, kSecClassGenericPassword);
+    CFDictionarySetValue(query, kSecAttrService, CFSTR("easynet.fixture.vault"));
+    CFDictionarySetValue(query, kSecAttrAccount, CFSTR("synthetic"));
+    CFDictionarySetValue(query, kSecUseAuthenticationUI, kSecUseAuthenticationUIFail);
+    if (adding) {
+        CFDictionarySetValue(query, kSecUseKeychain, vault->owned);
+    } else {
+        const void *owned = vault->owned;
+        CFArrayRef search = CFArrayCreate(NULL, &owned, 1, &kCFTypeArrayCallBacks);
+        if (!search) { CFRelease(query); return NULL; }
+        CFDictionarySetValue(query, kSecMatchSearchList, search);
+        CFRelease(search);
+    }
+    return query;
+}
+static OSStatus item_write(Vault *vault, const void *bytes, UInt32 length, bool update) {
+    OSStatus status = vault_guard(vault);
+    if (status != errSecSuccess) return status;
+    if (!bytes) return errSecParam;
+    CFDataRef data = CFDataCreate(NULL, bytes, length);
+    if (!data) return errSecAllocate;
+    CFMutableDictionaryRef query = item_query(vault, !update);
+    if (!query) { CFRelease(data); return errSecAllocate; }
+    if (update) {
+        const void *keys[] = {kSecValueData};
+        const void *values[] = {data};
+        CFDictionaryRef attributes = CFDictionaryCreate(NULL, keys, values, 1,
+            &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        if (!attributes) status = errSecAllocate;
+        else { status = SecItemUpdate(query, attributes); CFRelease(attributes); }
+    } else {
+        CFDictionarySetValue(query, kSecValueData, data);
+        status = SecItemAdd(query, NULL);
+    }
+    CFRelease(query);
+    CFRelease(data);
+    return status;
+}
+OSStatus vault_add(Vault *vault, const void *bytes, UInt32 length) {
+    return item_write(vault, bytes, length, false);
+}
+OSStatus vault_update(Vault *vault, const void *bytes, UInt32 length) {
+    return item_write(vault, bytes, length, true);
+}
+OSStatus vault_read_equals(Vault *vault, const void *bytes, UInt32 length,
+                          bool *equal, bool *dataReturned) {
+    if (equal) *equal = false;
+    if (dataReturned) *dataReturned = false;
+    if (!bytes || !equal || !dataReturned) return errSecParam;
+    OSStatus status = vault_guard(vault);
+    if (status != errSecSuccess) return status;
+    CFMutableDictionaryRef query = item_query(vault, false);
+    if (!query) return errSecAllocate;
+    CFDictionarySetValue(query, kSecReturnData, kCFBooleanTrue);
+    CFDictionarySetValue(query, kSecMatchLimit, kSecMatchLimitOne);
+    CFTypeRef returned = NULL;
+    status = SecItemCopyMatching(query, &returned);
+    CFRelease(query);
+    *dataReturned = returned != NULL;
+    if (status == errSecSuccess) {
+        if (!returned || CFGetTypeID(returned) != CFDataGetTypeID()) status = errSecDecode;
+        else {
+            CFDataRef data = (CFDataRef)returned;
+            CFIndex count = CFDataGetLength(data);
+            const UInt8 *contents = CFDataGetBytePtr(data);
+            if (count < 0 || (count && !contents)) status = errSecDecode;
+            else *equal = count == length && (length == 0 || memcmp(contents, bytes, length) == 0);
+        }
+    }
+    if (returned) CFRelease(returned);
+    return status;
+}
+OSStatus vault_delete(Vault *vault) {
+    OSStatus status = vault_guard(vault);
+    if (status != errSecSuccess) return status;
+    CFMutableDictionaryRef query = item_query(vault, false);
+    if (!query) return errSecAllocate;
+    status = SecItemDelete(query);
+    CFRelease(query);
+    return status;
 }
