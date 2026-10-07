@@ -50,7 +50,7 @@ def validate(manifest, selected=None):
     chosen = [by_id[selected]] if selected in by_id else cards
     for card in chosen:
         tid = card['id']
-        if not re.fullmatch(r'G[0-6]-\d{2}\.[1-3][a-z]?', tid):
+        if not re.fullmatch(r'G[0-6]-\d{2}\.[1-3][a-z]{0,2}', tid):
             errors.append(f'{tid}: invalid ID')
         if card['status'] not in STATES:
             errors.append(f'{tid}: invalid status')

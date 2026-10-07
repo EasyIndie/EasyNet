@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2aa",
+  "status": "frozen",
+  "contract_versions": [
+    "root reviewed bridgev1; bootstrap-v1 NO SSH/nativevault"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust/Cargo.toml",
+    "poc/controller-language/rust/Cargo.lock",
+    "poc/controller-language/rust/src/bin/ssh_fixture.rs"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo test --locked --offline --manifest-path poc/controller-language/rust/Cargo.toml --bin ssh_fixture",
+      "expected": "exit0 memory/ownedUnix IPC unit cases; noTCP/SSH"
+    },
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo build --locked --offline --manifest-path poc/controller-language/rust/Cargo.toml --bin ssh_fixture",
+      "expected": "exit0 actual bridgebinary only; realparentintegration later"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Build Unix-only bootstrap binary with noargs; stdin read boundedtake8193 throughEOF, decodervalidate before anyevents or TCP. Add direct libc =0.2.190 existinglock/cache only; offline generate-lockfile rootdependencyentry only. fd3 validator unsafe FFI getsockopt SOL_SOCKET SO_TYPE ==SOCK_STREAM with exactlength then getpeername sockaddr_storage checksAF_UNIX andsaneaddrlen; missing/nonUnix/nonstream/unconnected rejectfixedIO before FromRawFd. ConvertONLYfd3 once aftervalidated, stdUnixStream singleownership; nootherfds/takeSTDIO/personalresources. FFI unsafe narrowlydocumented no rawerrorlogs. RuntimeBuilder new_current_thread().enable_all().build fixederror; noimplicitruntimepanic. Bootstrap controlonly: emitready; waitG/C/EOF underframe.deadline_ms absolute. OnG retaincontroldelay waitC/EOF, NO TCP/connect/dispatch, always not-dispatched sinceSSH notimplemented. CloseControl before emit terminal not-dispatched+joined (joined documents noSSHtaskexists and ownedIPCclosed), exit0 forC/EOF expectedbootstrap completion; invalidtokens/timeouts/errors exit2 fixed fixture I/O failure; allfailurepathsdropcontrol, no falselycompleteSSH event. Fixedstderr invalid fixture input or fixture I/O failure; noargsinvalidinput; no rawexceptions/keys/IDs/output. Writes checked failuresnonzero; partialoutputallowed. Unit validate_socket(fd borrowed) canuseactualUnixStream::pair, UnixDatagram::pair wrongtype, -1invalid; onlyinherited_control usesFromRawFd. No globalFD3 mutation tests; realGo parent tests later. Puredecoderalreadytested; avoidstatickeyfixtures. <=200authoredlines target testsinline allowed. NoTCP/SSH/nativevault/network/release/commits/state. Freshthreadlimit boundedsameworkerreuse; securityreview mandatorybeforeverified."
+}
