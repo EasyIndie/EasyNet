@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2w",
+  "status": "frozen",
+  "contract_versions": [
+    "root reviewed RustB bridgev1 byteframe; no runtime proof"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/bridge_frame.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/bridge_frame_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -count=1 -run ^TestBridgeFrame .",
+      "expected": "exit0 pure codec generated-memory keys no sockets"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Exact API BridgeInput struct fields Port uint16, DeadlineMS uint32, Command byte, OperationID string, HostKey []byte, PrivateKey []byte; EncodeBridgeFrame(BridgeInput)([]byte,error), fixed ErrInvalidBridgeFrame with nil bytes onerror. Validate frame limits fromcontract and host SSH publicblob ParsePublicKey Ed25519 only, private OpenSSH PEM ParseRawPrivateKey =>ed25519.PrivateKey only, UTF8valid. No suppliedpassword/default credentials. Encode fixed18byte header magic6+u16port+u32deadline+u8cmd+u8IDlen+u16hostlen+u16keylen networkorder pluscopybytes; <=8192 total. Must deepcopy callerbuffers; mutationcaller input cannotchangeframe. Tests generateded25519memory signer MarshalPrivateKey+PEM only no keyfiles/logs, independentlyinspect headerlengths/payload exact, 64ID/65invalid port0 deadline0/3001 cmd3 malformed/wrongtypehost/privatekey/oversize/invalidUTF8; fixederrornil. Successful frame only memory test report no keys. <=200code target. No fixtureNew/socket/native/process/network; no updatesGo mod/sum. Freshagentspawn limit means same short Luna encoder reuse authorizedrootexception, record."
+}

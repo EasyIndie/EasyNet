@@ -3798,7 +3798,7 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "候选 B SSH 传输与 fixture 桥接合同",
-      "status": "active",
+      "status": "verified",
       "mode": "documentation",
       "dependencies": [
         "G0-04.2u"
@@ -3880,6 +3880,102 @@
       ],
       "budget": {
         "context_target": "≤12k，超出先做事实摘要",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-04.2v.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "high",
+        "token_usage": "unavailable"
+      }
+    },
+    {
+      "id": "G0-04.2w",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "候选 B Go 侧有界凭据帧编码",
+      "status": "active",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2v"
+      ],
+      "model": {
+        "tier": "C",
+        "type": "低成本编码模型",
+        "example": "Luna medium",
+        "review": "Sol 定向抽查；安全相关必须 Sol 审查",
+        "reason": "已冻结字段/字节布局的纯编码与定向边界测试",
+        "context": "≤6k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/controller-language/rust-ssh-lab-contract.md",
+          "selector": "Credentials and localIPC binary frame"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2w.md",
+      "binding": "docs/planning/task-bindings/G0-04.2w.json",
+      "allowed_writes": [
+        "poc/controller-language/go/bridge_frame.go",
+        "poc/controller-language/go/bridge_frame_test.go",
+        "docs/planning/task-results/G0/G0-04.2w.md"
+      ],
+      "implementation_writes": [
+        "poc/controller-language/go/bridge_frame.go",
+        "poc/controller-language/go/bridge_frame_test.go"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "按冻结合同实现：候选 B Go 侧有界凭据帧编码",
+        "仅运行绑定检查并报告真实限制"
+      ],
+      "acceptance": [
+        "纯内存 ESLB1 帧精确布局，Ed25519 密钥校验，长度/字段边界与固定错误；无 socket/runtime",
+        "不超出冻结文件、命令与临时资源范围"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2w",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "纯内存 ESLB1 帧精确布局，Ed25519 密钥校验，长度/字段边界与固定错误；无 socket/runtime",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤6k",
         "output": "≤12 行交接 + 本卡 task-result",
         "retry_limit": 2
       },
@@ -4112,7 +4208,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-04.2v"
+        "G0-04.2w"
       ],
       "model": {
         "tier": "I",

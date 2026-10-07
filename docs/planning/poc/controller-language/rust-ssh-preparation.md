@@ -15,8 +15,9 @@ Source inspected from the checksum-verified russh 0.64.1 crate used by the
   ChannelMsg::Success. Observe that event before testing post-ack cancellation.
 - client/mod.rs Handle::Drop only logs; it is not a joined cleanup guarantee.
   Handle implements Future over its session JoinHandle. connect_stream spawns
-  the session and waits for KEX before returning Handle; dropping that pending
-  connect future can lose the join path. Timeout alone cannot certify cleanup.
+  the session and waits for KEX before returning Handle; on KEX signal failure it
+  explicitly awaits the join (client/mod.rs:1219–1226). Dropping the pending
+  connect future can still lose the join path. Timeout alone cannot certify cleanup.
 - The B adapter must retain the owned connect/session future, close its owned
   transport on cancellation/overflow, and join the future/handle. The exact
   transport interruption design remains to be frozen and proved by fault tests.
