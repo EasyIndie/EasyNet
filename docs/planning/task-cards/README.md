@@ -63,7 +63,7 @@
 | [G0-04.2z](G0/G0-04.2z.md) | GPT-6.1 Sol medium | verified | 小卡编号支持两字母后缀 |
 | [G0-04.2aa](G0/G0-04.2aa.md) | GPT-6.1 Sol medium | verified | 候选 B 继承 IPC descriptor 与 bridge 启动门槛 |
 | [G0-04.2ab](G0/G0-04.2ab.md) | GPT-6.1 Sol medium | verified | Go 父进程有界 bridge 输出解析 |
-| [G0-04.2ac](G0/G0-04.2ac.md) | GPT-6.1 Sol medium | active | Go 父进程所属 bridge 启动与回收 |
+| [G0-04.2ac](G0/G0-04.2ac.md) | GPT-6.1 Sol medium | verified | Go 父进程所属 bridge 启动与回收 |
 | [G0-04.2ad](G0/G0-04.2ad.md) | GPT-6.1 Sol medium | locked | Go–Rust 真实 IPC bootstrap 验收 |
 | [G0-04.2b](G0/G0-04.2b.md) | Luna low | verified | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | verified | 候选 A result/打包 PoC |
