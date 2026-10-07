@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2v",
+  "status": "frozen",
+  "contract_versions": [
+    "SSHlabv1 unchanged; proposed B transport/bridgev1 pending rootreview"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/rust-ssh-lab-contract.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "git diff --check",
+      "expected": "exit0 documentation only"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2v",
+      "expected": "exit0 planning only; no runtimecertification"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Read relevant local primary source /tmp/easynet-poc-cache/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/russh-0.64.1/src/client/mod.rs connect_stream/HandleFuture/Drop and encrypted.rs success, channels/mod.rs exec, keys decode_secret_key. Docs only no compile/runtime/network. Exact bounded Go-owned child stdin credentials and control pipe semantics, output caps and never secret logs. Go MarshalPrivateKey CryptoSigner in memory only; fixedusername/commands; expectedhostbytes externallysupplied independentactual. Determine retaining connect future closingownedstdTcpStreamclone Shutdown::Both then await still mayNOTjoin spawned russh session on KEX failure; prove fromsource or explicitly blocked. Do not assert join if APIcannotguarantee. Evaluate ownedstreamdrop observable vs actualtaskjoin; if library fork needed separate task/disposition not silentlyvendor. Define ack event vs execenqueue and cancelparentrendezvous+pendingstate matrix, credential limits/errorsfixed. Propose nextready <=200linecards exactfiles/interfaces. Owncontract <=160lines, report<=20lines. User wants full agreed scope no silentcandidate removal. Prioragentreuse only if freshspawnthreadlimit; record exception."
+}
