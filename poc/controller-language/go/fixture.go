@@ -158,7 +158,11 @@ func (f *Fixture) session(channel ssh.Channel, requests <-chan *ssh.Request) {
 		case "fixture.complete":
 			_, _ = channel.Write([]byte("fixture complete\n"))
 		case "fixture.large":
-			_, _ = channel.Write(bytes.Repeat([]byte("x"), 8192))
+			var streams sync.WaitGroup
+			streams.Add(1)
+			go func() { defer streams.Done(); _, _ = channel.Stderr().Write(bytes.Repeat([]byte("e"), 4096)) }()
+			_, _ = channel.Write(bytes.Repeat([]byte("o"), 4096))
+			streams.Wait()
 		case "fixture.block":
 			<-f.done
 			return

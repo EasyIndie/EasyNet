@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2i",
+  "status": "frozen",
+  "contract_versions": [
+    "SSH lab v1; ADR003 design; Go x/crypto v0.57.0"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/client.go",
+    "poc/controller-language/go/fixture.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/cancellation_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -race -count=1 ./...",
+      "expected": "contextcancel withoutdeadline during clientident-handshake/authprobe returns promptly<1s noexec; postack Run cancel and earlierdeadline returnunknownownertrue sameID exec1,noRetry, fixturependingstate persists untilClose; allownedcleanupjoined"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2i",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0 plus newfilewhitespace"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol medium <=200 addedlines target. Add Dial live-contextcancellation ownedconn hook using context.AfterFunc; stop/join callback BEFORE successfulreturn or failure cleanup, not a persistent borrowedclient watcher. Normalize ownedctxcancellation to ctx.Err when rawI/O closes. Context cancelbeforeauth haszeroexec, handshake/auth phase proven explicitreadclientbanner/AuthReached. New optionalFixture API BlockReached() <-chanstruct{} and PendingBlocks() int or stats BlockStarted/BlockFinished extends immutable test-observation only; blocktoken signalsactualhandlerentry and remains pending whenclientcanceled, releasedonlyFixtureClose. Record acceptedcommandbeforeexecack ascurrent. Run alreadyAfterFunc handlesexclusiveclientcancel; tests construct context.WithCancel no deadline for handshake/auth, triggercancel ONLY afterobservablephase; compare responseelapsed<1s, cleanupjoins. Postackrun goroutine start then waitBlockReached->cancel no sleeps, resultunknown OwnerRetainedtrue originalopID and exec1, pendingblockbeforeFixtureClose provesindependenttest uncertainty. EarlierRundeadline100msduringblock sameoutcome. PrecanceledRun path m tested; no productionownership/receipt/reconciliation claim, no autoRetry. Fixedtokens andtemporaryresourcesonly; rawhostkeys/credentialsvault untouched. Run changes requireseparaterootapproval if discoveredmustfix becausewrite notfrozen; request boundedrepair ifneeded."
+}
