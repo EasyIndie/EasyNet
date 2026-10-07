@@ -90,7 +90,7 @@ func TestNativeVaultIsolated(t *testing.T) {
 	for _, key := range []string{"create_guard", "final_metadata", "unlock_native", "unlock_state_native", "add", "read_initial_checked", "update", "read_updated_checked", "delete", "deleted_read_native", "readd", "read_readded_checked", "lock_native", "lock_state_native", "locked_read_native"} {
 		statusKeys[key] = true
 	}
-	checkKeys := map[string]bool{"create_handle_present": true, "locked_read_data_returned": true}
+	checkKeys := map[string]bool{"create_keychain_ref_present": true, "create_wrapper_present": true, "locked_read_data_returned": true}
 	for _, key := range fixedChecks {
 		checkKeys[key] = true
 	}
@@ -154,8 +154,9 @@ func TestNativeVaultIsolated(t *testing.T) {
 			}
 			r, code := observe(t, dir)
 			status, hasStatus := r.Statuses["create_guard"]
-			handle, hasHandle := r.Checks["create_handle_present"]
-			if code != 1 || r.Outcome != "blocked" || !hasStatus || status != -50 || !hasHandle || handle {
+			handle, hasHandle := r.Checks["create_wrapper_present"]
+			ref, hasRef := r.Checks["create_keychain_ref_present"]
+			if code != 1 || r.Outcome != "blocked" || !hasStatus || status != -50 || !hasHandle || handle || !hasRef || ref {
 				t.Fatal("unsafe path not rejected before native creation")
 			}
 			if _, err := os.Lstat(filepath.Join(dir, "fixture.keychain")); !os.IsNotExist(err) {
@@ -176,8 +177,9 @@ func TestNativeVaultIsolated(t *testing.T) {
 			}
 		}
 		returned, hasReturned := r.Checks["locked_read_data_returned"]
-		handle, hasHandle := r.Checks["create_handle_present"]
-		if !hasReturned || returned || !hasHandle || !handle {
+		handle, hasHandle := r.Checks["create_wrapper_present"]
+		ref, hasRef := r.Checks["create_keychain_ref_present"]
+		if !hasReturned || returned || !hasHandle || !handle || !hasRef || !ref {
 			t.Fatal("native handle or locked data observation failed")
 		}
 		for key := range statusKeys {

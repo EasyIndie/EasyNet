@@ -59,7 +59,8 @@ func run(directory string) (result report) {
 	var vault *C.Vault
 	var unchanged C.bool
 	status := C.vault_create(path, unsafe.Pointer(&password[0]), C.UInt32(len(password)), &vault, &unchanged)
-	result.Checks["create_handle_present"] = vault != nil
+	result.Checks["create_wrapper_present"] = vault != nil
+	result.Checks["create_keychain_ref_present"] = bool(C.vault_has_keychain(vault))
 	defer func() {
 		defer C.vault_release(vault)
 		var final C.bool
@@ -134,7 +135,33 @@ func run(directory string) (result report) {
 	result.Checks["locked_read_rejected"] = bool(queried) && status != 0 && !bool(returned)
 	return
 }
+
+type probeReport struct {
+	PathGuardOK bool `json:"path_guard_ok"`
+	Stage       int  `json:"stage"`
+	Status      int  `json:"status"`
+}
+
+func probe(directory string) probeReport {
+	if directory == "" || strings.ContainsRune(directory, 0) {
+		return probeReport{Status: -50}
+	}
+	path := C.CString(filepath.Join(directory, "fixture.keychain"))
+	defer C.free(unsafe.Pointer(path))
+	result := C.vault_probe(path)
+	return probeReport{bool(result.path_guard_ok), int(result.stage), int(result.status)}
+}
 func main() {
+	if len(os.Args) >= 2 && os.Args[1] == "--probe" {
+		result := probeReport{Status: -50}
+		if len(os.Args) == 3 {
+			result = probe(os.Args[2])
+		}
+		if json.NewEncoder(os.Stdout).Encode(result) != nil {
+			os.Exit(1)
+		}
+		return
+	}
 	result := newReport()
 	if len(os.Args) == 2 {
 		result = run(os.Args[1])

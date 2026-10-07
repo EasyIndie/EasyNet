@@ -52,7 +52,7 @@
 | [G0-04.2o](G0/G0-04.2o.md) | GPT-6.1 Sol medium | verified | Go native vault 显式作用域 CRUD（仅编译） |
 | [G0-04.2p](G0/G0-04.2p.md) | GPT-6.1 Sol medium | blocked | Go native vault 隔离进程与锁定实测 |
 | [G0-04.2q](G0/G0-04.2q.md) | GPT-6.1 Sol medium | verified | Go vault 限界结果助手（仅编译） |
-| [G0-04.2r](G0/G0-04.2r.md) | GPT-6.1 Sol medium | active | Go vault 无创建 preflight 故障定位 |
+| [G0-04.2r](G0/G0-04.2r.md) | GPT-6.1 Sol medium | verified | Go vault 无创建 preflight 故障定位 |
 | [G0-04.2b](G0/G0-04.2b.md) | GPT-6.1 Sol medium | locked | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | locked | 候选 A result/打包 PoC |
 | [G0-04.2d](G0/G0-04.2d.md) | GPT-6.1 Sol medium | locked | 候选 B SSH PoC |

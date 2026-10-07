@@ -3,6 +3,13 @@
 #include <Security/Security.h>
 #include <stdbool.h>
 typedef struct Vault Vault;
+typedef struct {
+    bool path_guard_ok;
+    int stage;
+    OSStatus status;
+} VaultProbe;
+VaultProbe vault_probe(const char *path);
+bool vault_has_keychain(Vault *vault);
 OSStatus vault_create(const char *path, const void *password, UInt32 length,
                       Vault **out, bool *metadataUnchanged);
 OSStatus vault_unchanged(Vault *vault, bool *equal);
