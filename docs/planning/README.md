@@ -12,6 +12,7 @@ root README. Technical choices require evidence and an ADR before implementation
 - [Product evolution roadmap](product-evolution-roadmap.md) — consolidated product direction and staged capabilities
 - [Frozen capability baseline](capability-matrix.md) — code eligibility, tested fixtures, and unknown live support
 - [Reviewed application-service contract examples](contracts/README.md) — six bounded examples and production extension gates
+- [Controller language candidate evidence](progress-2026-10-07.md) — three reviewed candidates and SSH PoC prerequisites
 - [G0 first-batch completion](progress-2026-10-06.md) — accepted design decisions, checks and next ready card
 - [Repository audit and gap analysis](repository-audit-2026-10-06.md)
 - [Phase 1 proposed issues](phase-1-issue-plan.md)

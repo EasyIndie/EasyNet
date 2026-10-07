@@ -111,4 +111,6 @@ ADR-001/002/003 接受的是演进设计，不是已实现或实机验收。
 后续准备者必须按 [ADR-002](adr/ADR-002-protocol-runtime.md) 冻结并审查 successor
 生产合同，分开方法实现、格式语义、目标资格和 live acceptance。SSH/授权/回执/锁的
 未实现边界按 [ADR-003](adr/ADR-003-ssh-first.md) 的 task gate 落实。
-下一张 ready 是 G0-04.1a Rust 证据表；证据收集不等于选定 Rust。
+G0-04.1a/b/c 三候选证据表已完成，见 [第二批记录](progress-2026-10-07.md)。
+下一张 G0-04.2a SSH PoC 仍 locked：先审查候选、可用工具链与隔离 fixture，
+冻结实现路径和可执行验收命令后才能解锁。证据收集不等于生产语言选型。
