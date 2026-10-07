@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ag",
+  "status": "frozen",
+  "contract_versions": [
+    "RustBridge-v1; TransportOwner-v1; reviewed KEX-only bridge stage-v1 (2026-10-08)"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust/src/bin/ssh_fixture.rs"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo test --manifest-path poc/controller-language/rust/Cargo.toml --locked --offline --bin ssh_fixture",
+      "expected": "exit0 owned Unix descriptor unit tests only; noTCP/russhsession started"
+    },
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo build --manifest-path poc/controller-language/rust/Cargo.toml --locked --offline --bin ssh_fixture",
+      "expected": "exit0 fresh owned child binary compiled only; do not launch"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol high accepted KEX-only bridge design. Only modify existing ssh_fixture.rs and agreport; no deps/lib/control/transport/Go change. credentials passed tobootstrap; absoluteInstant once enteringruntime, deadline <=3000. Preserve stdinframe/fd3/ready/args and fixedstderr. G-before: C/EOF=>dropcontrol not-dispatched joined exit0 noTCP; invalid/read/deadline=>fixedIO exit2 nojoined oldIPCsequence. G begins one ownedTransport::new(port,hostkey), signedprivate/command unused (noauth/channel/exec). borrowedcancelFuture wraps control.next and records expectedC/EOF vs IOerror invalidtoken/read; Transport::connect_until receives pinnedborrow andabsoluteInstant, keepowneroutsideborrow scope; dropcancelFuture beforeusing recordedstate/droppingcontrol. KEXsuccess immediatelyclose_join; cancel/deadline/SSHerror also close_join idempotent obtainingproof before terminalevents; everyowner-createdexit cleanup, no ?/earlyreturndroppingpendingowner. CleanupFailure fixedcleanupstderr then std::process::exit(2) WHILE owneralive nojoined; do not return. Othercleanupfailure samefixedcontainment behavior. dropControl aftercleanup; emitnot-dispatched joined onlyproofsuccess then fixedSSHerror exit2 for SSH/deadline, fixedIOexit2 for controlreaderror/invalid; success/C/EOF exit0. Outputeventfailure afterproof returnsfixedIO; beforeTransportcreation nojoinneeded. Phase-specificexit0 KEXsuccess/cancellation is labstageexception, NOT completeoperation acceptance. PreserveoldADhistoricalIPCfacts; newchildmayattemptTCP evenStats0 henceonly zeroauth/exec/commands claim. No ready beyondvalidatedinput, no newevents, noID/keys/rawerrs/commandoutput. Localfutureborrow/control errors cannot be silentlyaccepted. Inline tests maypuremapping fixederrors but noTCP session; onlyexistingfdunit andofflinebuild; no processlaunch/actualSSH before rootreview inah. <=200source diff target, >250lines changed escalate. WorkerSolmedium freshforknone, boundedcontext, mandatory one finalSolhighdiffreview (alreadydesignaccepted don'trepeatdesign). No model/token estimates."
+}

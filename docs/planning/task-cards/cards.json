@@ -4929,6 +4929,192 @@
       }
     },
     {
+      "id": "G0-04.2ag",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Rust transport bridge 集成（编译门槛）",
+      "status": "active",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2af"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "所属跨语言进程/IPC生命周期或真实故障验收，需中档编码和安全审查",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "poc/controller-language/rust/src/bin/ssh_fixture.rs",
+          "selector": "owned fd3, frame decoding and IPC bootstrap"
+        },
+        {
+          "path": "poc/controller-language/rust/src/transport.rs",
+          "selector": "verified retained Transport new/connect_until/close_join APIs"
+        },
+        {
+          "path": "poc/controller-language/rust/src/control.rs",
+          "selector": "Cancel/Go and fixed-error token API"
+        },
+        {
+          "path": "docs/planning/poc/controller-language/rust-ssh-lab-contract.md",
+          "selector": "G/ready/cancel and join invariants"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2ag.md",
+      "binding": "docs/planning/task-bindings/G0-04.2ag.json",
+      "allowed_writes": [
+        "poc/controller-language/rust/src/bin/ssh_fixture.rs",
+        "docs/planning/task-results/G0/G0-04.2ag.md"
+      ],
+      "implementation_writes": [
+        "poc/controller-language/rust/src/bin/ssh_fixture.rs"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "按冻结合同实现：Rust transport bridge 集成（编译门槛）",
+        "仅运行绑定检查并报告真实限制"
+      ],
+      "acceptance": [
+        "现有 owned bridge 接入 retained transport；无认证/命令，编译和已有纯 IPC descriptor unit通过；真实SSH另卡",
+        "不超出冻结文件、命令与临时资源范围"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2ag",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "现有 owned bridge 接入 retained transport；无认证/命令，编译和已有纯 IPC descriptor unit通过；真实SSH另卡",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤4k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
+      "id": "G0-04.2ah",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Rust SSH transport 真实 loopback 故障门槛",
+      "status": "locked",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2ag"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "所属跨语言进程/IPC生命周期或真实故障验收，需中档编码和安全审查",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/controller-language/rust-ssh-lab-contract.md",
+          "selector": "retained transport ownership and bridge behavior"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2ah.md",
+      "binding": "docs/planning/task-bindings/G0-04.2ah.json",
+      "allowed_writes": [
+        "docs/planning/task-results/G0/G0-04.2ah.md"
+      ],
+      "implementation_writes": [],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "按冻结合同实现：Rust SSH transport 真实 loopback 故障门槛",
+        "仅运行绑定检查并报告真实限制"
+      ],
+      "acceptance": [
+        "真实 Go owned loopback fixture 与 Rust transport 的KEX、host拒绝、ID/KEXdeadline和cancel；实际joined、zeroauth/exec、reaping证据",
+        "不超出冻结文件、命令与临时资源范围"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2ah",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "真实 Go owned loopback fixture 与 Rust transport 的KEX、host拒绝、ID/KEXdeadline和cancel；实际joined、zeroauth/exec、reaping证据",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [
+        "前置卡尚未 verified",
+        "实现与命令尚未冻结"
+      ],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤4k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-04.2b",
       "source_id": "G0-04.2",
       "parent": "G0-04",
@@ -5149,7 +5335,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-04.2af"
+        "G0-04.2ah"
       ],
       "model": {
         "tier": "I",
