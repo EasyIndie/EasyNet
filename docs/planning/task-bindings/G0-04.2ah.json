@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ah",
+  "status": "frozen",
+  "contract_versions": [
+    "RustBridge-v1; reviewed KEX-only stage-v1; actual loopback matrix-v1"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/rust-transport-results.md"
+  ],
+  "test_files": [
+    "poc/controller-language/go/bridge_transport_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -timeout 30s -run ^$ .",
+      "expected": "exit0 tagged compile only no testfunctions/children/listeners"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags bridgeipc -race -timeout 90s -count=1 -json -run ^TestBridgeTransport .",
+      "expected": "ONLY root after code review:7 subtests + parent/package pass, no skip/fail/race; ownloopback only, directchildreaped"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol high design accepted transport gate points; test code needs final security review before root actual command. Worker writes test+aggregate+mandatoryresult only; no production/source/bin/deps changes, only compile. Buildtag unix&&bridgeipc. Existingfreshbinary /tmp/easynet-poc-cache/rust-target/debug/ssh_fixture builtag; no arbitrarybinarypaths/args/fileskeys. Top TestBridgeTransport with7subtests kex-success,host-mismatch,id-deadline,id-cancel,kex-deadline,kex-cancel,pre-cancel. reusebridgehelpers; matchingframe then onlyport ownedstall override orsameEdwirehost mismatch (secondownedFixture expectedhost neverTOFU). Deadline500ms fordeadline,3000others. Childcleanup beforefixture/stall cleanup viaLIFOtCleanup. Ready thenG exceptpreCancel C; validKEXsuccess immediatecleanup noauth, allcases Stats zeroAuthCallbacks/ExecAttempts/Commands; assert Stats0 meansnoauth/exec NOTnoTCP. Stall owned listener127.0.0.1:0 oneworker with boundedSetDeadline3s; IDstall sendNOserverbanner, ReadStringclientSSHid validatefixedprefix only thenphaseReached. KEXstall sendliteralSSH-2.0-fixture-stall CRLF, readclientbanner then read4bytebeLength+wholefirstcleartextpacket <=32768 validatespaddingbounds andmessage20KEXINIT beforephaseReached; never logbytecontents. No library/runtime/dependency changes. Eachstall worker sends bounded independent phaseReached and peerEOF channels; afterphase readwaitingpeerEOF as actualclienttransportclose corroboration (bounded3s), expectEOFnototherbytes; nonewserverreply. Cancelcases waitphase<=2s thenchild.ControlC, deadlinecases waitphase<=2s thenWait, no sleeps. Ownerclosedlistener/activeconn mutexclosedflag andworkerWait joined cleanup, avoidlateaccept/leak; allfailurecleanup ownedresourcesbounded, no globallyclosing personalnetwork. Expectedready,not-dispatched,joined allseven; failuresdeadline/mismatch exactexit2 ErrBridgeChildIO fixedSSHdiag, successcancel/kex/preCancelexit0nilerror/nodiag; eventchannelsfinish plusparentconnWriteerrors.Isnet.ErrClosed. root time independentlyfromjson; optionaltotal3sboundstartafterGo (deadline500+cleanup1000+processallowance), no internaljoinclaimafterexternalkill. C-beforeG Stats0 andnoexec; per-casecounter only meansauthnotTCP. RepeatedClose/Wait coveragealreadyad don'trepeatlargegoroutinematrix. stdout/stderr each<=4096; no%x/%v rawkey/frame/errors/t.Fatal rawdata; fixedmessages only. Inlinecodehelpers+matrix target<=300 lines readable rootexception<=350, >350 split/escalate. Aggregate/report pendingruntime until root reviewedrun actualjson independentlycounted. TrueKEX/host/ID/KEXcleanup gate only; auth/wrongkey/postack/output/vault/JSON/ADR004 remainpending. Must preserve any failurefacts stopafter2targetedrepairs/securityfirstissueupgrade. Test-onlycard markedacceptance withaggregateas evidenceimplfile, token/configuredmodelknownusageunavailable."
+}
