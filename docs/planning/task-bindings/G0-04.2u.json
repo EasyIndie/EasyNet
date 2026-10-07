@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2u",
+  "status": "frozen",
+  "contract_versions": [
+    "SSHlabv1 toolchain/dependency scope only"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust/Cargo.toml",
+    "poc/controller-language/rust/Cargo.lock",
+    "poc/controller-language/rust/src/lib.rs"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target RUSTC=/tmp/easynet-poc-toolchains/rust/bin/rustc RUSTDOC=/tmp/easynet-poc-toolchains/rust/bin/rustdoc /tmp/easynet-poc-toolchains/rust/bin/cargo check --locked --offline --manifest-path poc/controller-language/rust/Cargo.toml",
+      "expected": "exit0 after isolated fetch; dependency compile only no SSH/native runtime"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Candidate PoC only. Package easynet-ssh-lab version0.0.0 edition2024 publish=false rust-version1.89, lib src/lib.rs with documentation only. russh =0.64.1 default-features=false features=[ring]; tokio =1.52.3 default-features=false features=[rt-multi-thread,macros,net,time,io-util,sync]. Pin exactversions. Generate real lockfile in isolated CARGO_HOME; no personal .cargo config/home/profile edits. Network fetch/lock needed ask root for exact scoped tool escalation; do not use personal caches or change versions. Build scripts are third-party dependency execution; root review generated graph before compile if unexpected target/dependency. No runtime/crosscompile/deployment/language decision. Authored lines <=100; generated lockfile exception explicitly recorded. Record compiler/dependencies feature graph counts/MSRV/errors no security-audit claim. Temporary build caches only."
+}
