@@ -16,6 +16,7 @@ root README. Technical choices require evidence and an ADR before implementation
 - [Go scoped vault evidence](poc/controller-language/go-vault-results.md) — owned temporary file-Keychain pass; production vault selection pending
 - [Go result CLI and host packaging](poc/controller-language/go-result-results.md) — strict redacted record and actual host artifact facts
 - [Go–Rust IPC gate](poc/controller-language/go-rust-ipc-results.md) — owned child lifecycle passed; Rust SSH sessions remain pending
+- [Rust KEX transport gate](poc/controller-language/rust-transport-results.md) — reviewed owned-loopback success/refusal/deadline/cancel pass; auth and dispatch pending
 - [Rust SSH bridge contract](poc/controller-language/rust-ssh-lab-contract.md) — reviewed design; dependency/frame/control gates passed, full SSH runtime pending
 - [Rust SSH source preparation](poc/controller-language/rust-ssh-preparation.md) — pending candidate, ack and task-join pitfalls
 - [Native vault experiment contract](poc/controller-language/vault-lab-contract.md) — scoped temporary helper and safety gates
