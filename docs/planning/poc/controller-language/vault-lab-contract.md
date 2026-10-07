@@ -60,3 +60,14 @@ Primary references reviewed on 2026-10-07:
 - [Add keychain selector](https://developer.apple.com/documentation/security/ksecusekeychain), [query search-list selector](https://developer.apple.com/documentation/security/ksecmatchsearchlist).
 - [Process interaction flag](https://github.com/apple-oss-distributions/Security/blob/main/OSX/libsecurity_keychain/lib/SecKeychain.cpp#L809), [removal preference writes](https://github.com/apple-oss-distributions/Security/blob/main/OSX/libsecurity_keychain/lib/StorageManager.cpp#L927).
 - [Go keyring v0.2.8 backend](https://github.com/zalando/go-keyring/blob/v0.2.8/keyring_darwin.go).
+
+## Failed sandbox preflight follow-up
+
+G0-04.2p ran once: four rejection cases passed, positive create_guard=-50.
+This composite status does not identify SecKeychainCreate refusal. A Vault wrapper
+pointer also differs from its owned SecKeychainRef; report them separately.
+G0-04.2r freezes a dedicated no-create preflight branch: owned path guards and
+read-only metadata getters/release, fixed numeric stages/statuses/booleans only.
+Technical review precedes its single sandbox execution. No mutation retry,
+escalation or preference restoration follows merely from the ambiguous -50.
+Native CRUD/lock acceptance remains blocked pending the diagnostic disposition.

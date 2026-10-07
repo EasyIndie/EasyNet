@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2r",
+  "status": "frozen",
+  "contract_versions": [
+    "Native vault lab v1; no-create preflight diagnosis; p remainsblocked"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/vault/native.h",
+    "poc/controller-language/go/vault/native.c",
+    "poc/controller-language/go/vault/main.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/vault/probe_test.go",
+    "poc/controller-language/go/vault/vault_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build CGO_ENABLED=1 /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags nativeprobe -c -o /tmp/easynet-vault-probe-tests ./vault",
+      "expected": "compileonly FIRST exit0 before technicalreview; no helperexecution"
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build CGO_ENABLED=1 /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -tags nativeprobe -timeout 45s -count=1 -json ./vault > /tmp/easynet-go-vault-probe.json",
+      "expected": "AFTER exactcode safetyreview single sandboxdiagnostic, fixedstage/status/booleans noCreate/itemmutation; report actualstage evenmetadatarefusal, not vaultacceptance"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2r",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Fresh Sol medium <=200addedlines 3impl+2tests+ownreport. Native.h probe struct/API with boolpath_guard_ok,intstage,OSStatusstatus; private_path/snapshot_read reuseUNCHANGEDguard/checklogic butoptionalnumericstageout, existingcallspassNULL. Fixedstages0 params/root;1prefix/basename/suffix;2parentlstat type/owner/mode;3realpath;4canonicaldirect;5fixtureabsent;10CopyDefault;11defaultGetPath;12CopySearchList;13arraytype/count/alloc;14entrytype/GetPath;15snapshotcomplete;16 optionalprocess-onlyUIfalse. Probe validatesownedfixturepath thenONLYbaselinegetter snapshot/release, optionalcheckedprocessUIfalse. NEVER calls SecKeychainCreate/Unlock/itemquery/CRUD/Lock/Delete orprefs writes; no fallback/escalation/retry inferred from-50. CLI dedicated --probe <owneddir> exactbranch emittedonlystage/status/boolJSON aftersnapshotrelease, cannotfallthroughordinaryrun. No paths/rawerrors/secrets logged. Addpureaccessor boolvault_has_keychain(Vault*) returnsvault&&owned!=NULL,noSecuritycall. Existing report renamecreate_handle_present tocreate_wrapper_present actualVaultpointer; addcreate_keychain_ref_present accessorbool outsidealltruechecks. Update existingnativevault testallowlist/negativebothfalse/positivebothtrue BUT DONOTRUNnativevault tests. Newnativeprobe taggedtest buildshelper15s+WaitDelay1s compiler65536capsfailoverflow, ownedtmp0700 child--probe10s+WaitDelay1s runtime4096capsfailoverflow no rawcapturedoutput, strictfixedfields/stageenum, knownbool/int logs only, waitthenRemoveAllrecordedown dirs+verifycleanup. Runtimefirstlockeduntilroot/Solhighreviews exactcode, thenONE sandboxprobe only. Diagnosticmeasurespreflight failurestage, doesnotrequiremetadataAPIs0 orclaimnativeCRUDpass. Stoponunexpectedsideeffect/data/unknownstage; no prefsrestore; p staysblocked untilrootdisposition. Twofixretrybudget/no mainbranch/commits/statechanges. Maynarrowreviewedlinebudgetexceptionforobservability, neverunsafecompactcode."
+}
