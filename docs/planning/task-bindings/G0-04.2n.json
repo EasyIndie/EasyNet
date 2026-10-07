@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2n",
+  "status": "frozen",
+  "contract_versions": [
+    "Native vault lab v1; build-only creation guard; Security.framework file-keychain deprecated"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/vault/native.h",
+    "poc/controller-language/go/vault/native.c",
+    "poc/controller-language/go/vault/main.go"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build CGO_ENABLED=1 /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go build -o /tmp/easynet-go-vault-helper ./vault",
+      "expected": "exit0 compiled CGo Security/CoreFoundation; DO NOT RUN helper or Keychain APIs"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2n",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol high approved split; n build only <=200 authored code lines, no native mutations/runtime tests yet. opaque Vault owning refs and baseline; native.h interfaces OSStatus vault_create(const char *path,const void *password,UInt32 length,Vault **out,bool *metadataUnchanged); OSStatus vault_unchanged(Vault*,bool *equal); void vault_release(Vault*). Snapshot default/search-list read-only metadata (ordered paths) BEFORE creation, require successful snapshot or fail beforecreate; disable process interaction beforecreate; private path SecKeychainCreate promptfalse; compare immediately aftercreate beforeCRUD and fail closed metadatachange (preserve out/ref to release, noautomaticprefsrestore). Every CF/Security status checked; baseline metadata kept onlymemory, no personalpaths/secretstdout. Release frees refs only; forbidden SecKeychainDelete/SetDefault/SetSearchList or default item selectors. main.go links Security/CoreFoundation, build-only inert main should not call native API; later card adds bounded runner. No executecompiledhelper, no HOME/systemoperations. Inputs SDK read-only keychain header allowed; no production languagechoice. Frozen3impl+report."
+}
