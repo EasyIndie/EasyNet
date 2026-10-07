@@ -1,6 +1,6 @@
 # 任务卡与模型分配索引
 
-已将 168 条原任务进一步拆为 **220 张独立卡**，覆盖 56 个工作包。
+已将 168 条原任务进一步拆为 **223 张独立卡**，覆盖 56 个工作包。
 每卡单独文件，可只把本卡和相关合同交给执行模型，无需读整个目录。
 已完成卡的状态见下表与对应 task-result；其余已具备目标/案例/依赖/模型评估，
 但标为 locked：尚未实施前置项；未来工程语言/路径/行为命令须冻结后才能执行。
@@ -15,7 +15,7 @@
 |---|---|---:|
 | D | Luna low | 4 |
 | C | Luna medium | 77 |
-| I | GPT-6.1 Sol medium | 105 |
+| I | GPT-6.1 Sol medium | 108 |
 | R | GPT-6.1 Sol high；冲突难解时 Astra high | 34 |
 
 ## G0
@@ -40,6 +40,9 @@
 | [G0-04.1a](G0/G0-04.1a.md) | Luna medium | verified | Rust 候选证据表 |
 | [G0-04.1b](G0/G0-04.1b.md) | Luna medium | verified | Go 候选证据表 |
 | [G0-04.1c](G0/G0-04.1c.md) | Luna medium | verified | 平台原生候选证据表 |
+| [G0-04.2g](G0/G0-04.2g.md) | GPT-6.1 Sol medium | active | Go SSH 隔离 fixture 与模块 |
+| [G0-04.2h](G0/G0-04.2h.md) | GPT-6.1 Sol medium | locked | Go SSH key auth 与 host trust |
+| [G0-04.2i](G0/G0-04.2i.md) | GPT-6.1 Sol medium | locked | Go SSH deadline output cancel 故障 |
 | [G0-04.2a](G0/G0-04.2a.md) | GPT-6.1 Sol medium | locked | 候选 A SSH PoC |
 | [G0-04.2b](G0/G0-04.2b.md) | GPT-6.1 Sol medium | locked | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | locked | 候选 A result/打包 PoC |
