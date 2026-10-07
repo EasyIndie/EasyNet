@@ -69,7 +69,7 @@
 | [G0-04.2af](G0/G0-04.2af.md) | GPT-6.1 Sol medium | verified | Rust SSH transport 所属与 retained join helper |
 | [G0-04.2ag](G0/G0-04.2ag.md) | GPT-6.1 Sol medium | verified | Rust transport bridge 集成（编译门槛） |
 | [G0-04.2ah](G0/G0-04.2ah.md) | GPT-6.1 Sol medium | verified | Rust SSH transport 真实 loopback 故障门槛 |
-| [G0-04.2ai](G0/G0-04.2ai.md) | GPT-6.1 Sol medium | active | Rust 签名认证 bridge 集成（编译门槛） |
+| [G0-04.2ai](G0/G0-04.2ai.md) | GPT-6.1 Sol medium | verified | Rust 签名认证 bridge 集成（编译门槛） |
 | [G0-04.2aj](G0/G0-04.2aj.md) | GPT-6.1 Sol medium | locked | Rust 签名认证真实故障门槛 |
 | [G0-04.2b](G0/G0-04.2b.md) | Luna low | verified | 候选 A vault PoC |
 | [G0-04.2c](G0/G0-04.2c.md) | GPT-6.1 Sol medium | verified | 候选 A result/打包 PoC |

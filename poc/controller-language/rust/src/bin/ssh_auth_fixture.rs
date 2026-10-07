@@ -1,9 +1,10 @@
-//! KEX-only bridge stage: no authentication, channel or command is started.
+//! Signed-auth-only bridge stage: no channel or command is started.
 use easynet_ssh_lab::{control::{Control, ControlToken}, decode_frame, Credentials,
     transport::{Transport, TransportError}};
 use std::io::{Read, Write};
 use std::os::unix::net::UnixStream;
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
+use russh::keys::PrivateKeyWithHashAlg;
 
 mod common;
 use common::{event, inherited_control, IO_FAILURE, INVALID_INPUT, SSH_FAILURE, CLEANUP_FAILURE};
@@ -24,19 +25,47 @@ async fn bootstrap(stream: UnixStream, credentials: Credentials) -> Result<(), &
     let mut owner = Transport::new(credentials.port, credentials.host_key)
         .map_err(|_| SSH_FAILURE)?;
     let mut cancellation = None;
+    let mut authenticated = false;
     let outcome = {
-        // The future borrows control and its recorded outcome. End both borrows
-        // before inspecting cancellation or dropping the owned IPC stream.
+        // Keep this same borrowed future across KEX and auth. A completed
+        // cancellation always ends KEX with an error, so it is never repolled.
         let mut cancel = Box::pin(async {
             cancellation = Some(match control.next().await {
                 Ok(ControlToken::Cancel) => Ok(()),
                 Ok(ControlToken::Go) | Err(_) => Err(IO_FAILURE),
             });
         });
-        let result = owner.connect_until(deadline, cancel.as_mut()).await;
+        let result = match owner.connect_until(deadline, cancel.as_mut()).await {
+            Err(error) => Err(error),
+            Ok(()) => match owner.handle_mut() {
+                None => Err(TransportError::InvalidState),
+                Some(handle) => {
+                    // The handle stays owned by Transport. Dropping this borrow
+                    // on interruption leaves that owner responsible for joining.
+                    let mut auth = Box::pin(handle.authenticate_publickey("fixture",
+                        PrivateKeyWithHashAlg::new(Arc::new(credentials.private_key), None)));
+                    tokio::select! {
+                        biased;
+                        _ = cancel.as_mut() => Err(TransportError::Cancelled),
+                        _ = tokio::time::sleep_until(deadline) => Err(TransportError::Deadline),
+                        result = auth.as_mut() => match result {
+                            Ok(result) if result.success() => {
+                                authenticated = true;
+                                Ok(())
+                            }
+                            _ => Err(TransportError::Ssh),
+                        }
+                    }
+                }
+            },
+        };
+        // Auth and handle borrows ended above; end cancellation's borrows
+        // before inspecting recorded state or closing the retained owner.
         drop(cancel);
         result
     };
+    // Event errors are recorded, never propagated while the owner needs joining.
+    let auth_event = if authenticated { event(b"authenticated\n") } else { Ok(()) };
     // Every path after owner creation must prove cleanup. A failed retained
     // owner stays alive until process containment; it must never unwind/drop.
     let proof = match owner.close_join().await {
@@ -47,16 +76,17 @@ async fn bootstrap(stream: UnixStream, credentials: Credentials) -> Result<(), &
         }
     };
     drop(control);
-    let result = match cancellation {
-        Some(Err(_)) => Err(IO_FAILURE),
+    let result = match (auth_event, cancellation) {
+        (Err(_), _) => Err(IO_FAILURE),
+        (_, Some(Err(_))) => Err(IO_FAILURE),
         _ => match outcome {
             Ok(()) => Ok(()),
             Err(TransportError::Cancelled) if cancellation == Some(Ok(())) => Ok(()),
             Err(_) => Err(SSH_FAILURE),
         },
     };
-    // This stage's success/cancel exit 0 is only a KEX experiment exception.
-    // Neither event asserts auth, exec or a completed fixture operation.
+    // This stage's auth-success/cancel exit 0 is an experiment exception.
+    // It does not assert exec or a completed fixture operation.
     let _joined = proof;
     event(b"not-dispatched\n")?;
     event(b"joined\n")?;
