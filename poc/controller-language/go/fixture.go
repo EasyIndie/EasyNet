@@ -13,22 +13,27 @@ import (
 
 type FixtureStats struct{ AuthCallbacks, ExecAttempts, Commands int }
 type Fixture struct {
-	authReached  chan struct{}
-	authOnce     sync.Once
-	listener     net.Listener
-	host, client ssh.Signer
-	config       *ssh.ServerConfig
-	mu           sync.Mutex
-	stats        FixtureStats
-	connections  map[net.Conn]bool
-	done         chan struct{}
-	once         sync.Once
-	workers      sync.WaitGroup
+	blockReached  chan struct{}
+	blockOnce     sync.Once
+	pendingBlocks int
+	authReached   chan struct{}
+	authOnce      sync.Once
+	listener      net.Listener
+	host, client  ssh.Signer
+	config        *ssh.ServerConfig
+	mu            sync.Mutex
+	stats         FixtureStats
+	connections   map[net.Conn]bool
+	done          chan struct{}
+	once          sync.Once
+	workers       sync.WaitGroup
 }
 
-func NewFixture() (*Fixture, error)             { return newFixture(false) }
-func NewAuthStallFixture() (*Fixture, error)    { return newFixture(true) }
-func (f *Fixture) AuthReached() <-chan struct{} { return f.authReached }
+func NewFixture() (*Fixture, error)              { return newFixture(false) }
+func NewAuthStallFixture() (*Fixture, error)     { return newFixture(true) }
+func (f *Fixture) BlockReached() <-chan struct{} { return f.blockReached }
+func (f *Fixture) PendingBlocks() int            { f.mu.Lock(); defer f.mu.Unlock(); return f.pendingBlocks }
+func (f *Fixture) AuthReached() <-chan struct{}  { return f.authReached }
 func newFixture(stallAuth bool) (*Fixture, error) {
 	key := func() (ssh.Signer, error) {
 		_, private, err := ed25519.GenerateKey(rand.Reader)
@@ -49,7 +54,7 @@ func newFixture(stallAuth bool) (*Fixture, error) {
 	if err != nil {
 		return nil, err
 	}
-	f := &Fixture{listener: listener, host: host, client: client, connections: make(map[net.Conn]bool), done: make(chan struct{})}
+	f := &Fixture{blockReached: make(chan struct{}), listener: listener, host: host, client: client, connections: make(map[net.Conn]bool), done: make(chan struct{})}
 	if stallAuth {
 		f.authReached = make(chan struct{})
 	}
@@ -164,7 +169,14 @@ func (f *Fixture) session(channel ssh.Channel, requests <-chan *ssh.Request) {
 			_, _ = channel.Write(bytes.Repeat([]byte("o"), 4096))
 			streams.Wait()
 		case "fixture.block":
+			f.mu.Lock()
+			f.pendingBlocks++
+			f.mu.Unlock()
+			f.blockOnce.Do(func() { close(f.blockReached) })
 			<-f.done
+			f.mu.Lock()
+			f.pendingBlocks--
+			f.mu.Unlock()
 			return
 		}
 		_, _ = channel.SendRequest("exit-status", false, ssh.Marshal(struct{ Status uint32 }{0}))

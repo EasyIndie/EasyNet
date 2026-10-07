@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2a",
+  "status": "frozen",
+  "contract_versions": [
+    "SSH lab v1; ADR003 design; Go x/crypto v0.57.0"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/controller-language/go-ssh-results.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -race -count=1 -json ./... > /tmp/easynet-go-ssh-gate.json",
+      "expected": "exit0 actualsame-metriccasepasses; parseJSONactions countpass/fail/skip andrecorddatedenvironment/tool/dep versions. No fullproductacceptance"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2a",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0 plus newfilewhitespace"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol medium candidateA SSH acceptanceonly. Write summary <=100lines andownreport; allimplementation g/j/h/k/l/m/i precedents mustverified. Root/Solreview freeze samecaseA/Bmatrix: signedauth, wrongkey, unknown/changedbeforeauth, validrequestrefusals, handshake/authstall, exactcombinedcap, immediateoverflowshutdown, cancelbefore/afterdispatch, unknown retainedowner/noRetry+fixturepending independent, ownedcleanup. Run frozenJSONgate, parseGo testJSON counttop/subcases separately (not inflatedtestcounts), includeRace environment macOSarm64 nonrootUID factual, Go1.27.1 xcrypto0.57.0. Latency samples testonly notbenchmark; no performancecostsizecomparison or productionlanguage decision. SourceonlylocaleventJSONneverprivatekeyslogs. Finalsummary allremainingrealtrustceremony/receipts/journal/vault/package/platformacceptanceunknown. No codechanges/mutationsoutsideownedfixture/temp artifacts; no fullBatsrerunnecessary becauseproductionunchanged."
+}

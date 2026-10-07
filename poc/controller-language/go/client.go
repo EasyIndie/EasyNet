@@ -14,7 +14,7 @@ import (
 var ErrUnknownHost = errors.New("unknown host key")
 var ErrChangedHost = errors.New("changed host key")
 
-func Dial(ctx context.Context, endpoint string, expected ssh.PublicKey, signer ssh.Signer) (*ssh.Client, error) {
+func Dial(ctx context.Context, endpoint string, expected ssh.PublicKey, signer ssh.Signer) (client *ssh.Client, err error) {
 	if ctx == nil {
 		return nil, errors.New("missing context")
 	}
@@ -51,6 +51,22 @@ func Dial(ctx context.Context, endpoint string, expected ssh.PublicKey, signer s
 	if err != nil {
 		return nil, err
 	}
+	cancelled := make(chan struct{})
+	stop := context.AfterFunc(ctx, func() { _ = conn.Close(); close(cancelled) })
+	defer func() {
+		if !stop() {
+			<-cancelled
+		}
+		if ctx.Err() != nil {
+			if client != nil {
+				_ = client.Close()
+				_ = client.Wait()
+			} else {
+				_ = conn.Close()
+			}
+			client, err = nil, ctx.Err()
+		}
+	}()
 	if err := conn.SetDeadline(deadline); err != nil {
 		_ = conn.Close()
 		return nil, err

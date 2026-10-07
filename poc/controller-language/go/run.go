@@ -26,6 +26,9 @@ func (output *closingOutput) Write(data []byte) (int, error) {
 	return n, err
 }
 func Run(ctx context.Context, client *ssh.Client, operationID, command string) (Result, error) {
+	return run(ctx, client, operationID, command, nil)
+}
+func run(ctx context.Context, client *ssh.Client, operationID, command string, started chan<- struct{}) (Result, error) {
 	result := Result{OperationID: operationID, Outcome: "not-dispatched"}
 	if client == nil {
 		return result, errors.New("missing owned client")
@@ -68,6 +71,9 @@ func Run(ctx context.Context, client *ssh.Client, operationID, command string) (
 	result.Outcome, result.OwnerRetained = "unknown", true
 	if err := session.Start(command); err != nil {
 		return result, err
+	}
+	if started != nil {
+		close(started)
 	}
 	err = session.Wait()
 	result.Output = output.Bytes()
