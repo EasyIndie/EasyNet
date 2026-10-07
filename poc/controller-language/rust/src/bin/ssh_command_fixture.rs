@@ -19,7 +19,8 @@ async fn bootstrap(stream: UnixStream, credentials: Credentials) -> Result<(), &
     if token == ControlToken::Cancel {
         drop(control);
         event(b"not-dispatched\n")?;
-        return event(b"joined\n");
+        event(b"joined\n")?;
+        return Err(SSH_FAILURE);
     }
 
     let mut owner = Transport::new(credentials.port, credentials.host_key)
@@ -82,13 +83,13 @@ async fn bootstrap(stream: UnixStream, credentials: Credentials) -> Result<(), &
     let result = match cancellation {
         Some(Err(_)) => Err(IO_FAILURE),
         _ => match outcome {
-            Ok(()) => Ok(()),
-            Err(TransportError::Cancelled) if cancellation == Some(Ok(())) => Ok(()),
+            Ok(()) if operation.outcome == Outcome::CompleteObserved => Ok(()),
+            Ok(()) => Err(SSH_FAILURE),
             Err(TransportError::Io) => Err(IO_FAILURE),
             Err(_) => Err(SSH_FAILURE),
         },
     };
-    // Cancellation exit 0 is lab containment, never remote completion.
+    // Only completed observation plus cleanup proof can report exit 0.
     let _joined = proof;
     event(match operation.outcome {
         Outcome::NotDispatched => b"not-dispatched\n",

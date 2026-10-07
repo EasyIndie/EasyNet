@@ -97,19 +97,12 @@ func TestBridgeCommandFault(t *testing.T) {
 				}
 			}
 			result := bridgeWait(t, child)
-			if tc.interrupt == 'C' || tc.interrupt == 'E' {
-				// Reviewed stage containment exception; does not claim operation success.
-				if result.err != nil || result.summary.ExitCode != 0 || result.summary.Diagnostic != "" {
-					t.Fatal("fault containment summary invalid")
-				}
-			} else {
-				diagnostic := "fixture SSH failure"
-				if tc.interrupt == 'X' {
-					diagnostic = "fixture I/O failure"
-				}
-				if !errors.Is(result.err, ErrBridgeChildIO) || result.summary.ExitCode != 2 || result.summary.Diagnostic != diagnostic {
-					t.Fatal("fixed command fault failure summary invalid")
-				}
+			diagnostic := "fixture SSH failure"
+			if tc.interrupt == 'X' {
+				diagnostic = "fixture I/O failure"
+			}
+			if !errors.Is(result.err, ErrBridgeChildIO) || result.summary.ExitCode != 2 || result.summary.Diagnostic != diagnostic {
+				t.Fatal("fixed command fault failure summary invalid")
 			}
 			terminal := "unknown"
 			if tc.mode == ChannelOpenStall {

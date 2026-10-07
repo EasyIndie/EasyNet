@@ -86,12 +86,12 @@ func TestBridgeCommand(t *testing.T) {
 				}
 			}
 			result := bridgeWait(t, child)
-			if mode == "output-overflow" || mode == "block-deadline" {
+			if mode != "complete" {
 				if !errors.Is(result.err, ErrBridgeChildIO) || result.summary.ExitCode != 2 || result.summary.Diagnostic != "fixture SSH failure" {
 					t.Fatal("fixed command failure summary invalid")
 				}
 			} else if result.err != nil || result.summary.ExitCode != 0 || result.summary.Diagnostic != "" {
-				t.Fatal("command stage containment summary invalid")
+				t.Fatal("completed command summary invalid")
 			}
 			terminal := "unknown"
 			if mode == "complete" {
