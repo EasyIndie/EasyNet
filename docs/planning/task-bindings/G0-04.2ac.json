@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2ac",
+  "status": "frozen",
+  "contract_versions": [
+    "B bridgev1; ownedparent-v1 frozenAPI compileonly before ad"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/bridge_child.go"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -run ^$ .",
+      "expected": "exit0 compilation only no testfunctions/children/sockets"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Exact API StartBridgeChild(ctx context.Context,binary string,frame []byte)(*BridgeChild,error), child.Events()<-chan string, child.Control(byte)error, child.CloseControl()error, child.Wait()(BridgeChildSummary,error), child.Close()error. Summaryfields ExitCode int, StdoutBytes/StderrBytes int, Diagnostic string (fixedallowlistonly). Fixed ErrBridgeChildIO; outputwriterErrLimit/Protocol priority inWait. No rawcmd/OSerror/output/path detail. Startctxnil/alreadycancelreject; binaryabsolute Lstatregularnonsymlink ownercurrenteuid no group/otherwrite (trustedcaller supplies previouslybuilt ownRustbin); framelen<=8192 includesemptyfornegativefixture copiedbytes forstdin. context.WithTimeout(ctx,5seconds) ceiling (SSHfuture3s+cleanup1s, parentcontainmentmargin), cmd.WaitDelay1s; actualcreds-ready phase parentlaterboundswithownreadydeadline. Socketpair syscall.AF_UNIX SOCK_STREAM; syscall.ForkLock.RLock aroundSocketpair+CloseOnExec both ends thenunlock, noexternalTCP. os.NewFile both; net.FileConn(parentFile) yieldsownednet.Conn; closeoriginalparentFile; childendExtraFiles[0] onlyfd3; exec.CommandContext absoluteownedbinary noargs envonly PATH=/usr/bin:/bin LANG=C LC_ALL=C, stdinbytes.NewReader(copiedframe), stdout/stderr bridgeOutput. AllStartfailurepathsclosefiles/conn/cancel/Finish; aftercmd.Start closeparentcopychildFile andstart ONE ownedWaitgoroutine. Waitgoroutinecmd.Wait thenConn.Close cancelctx Finishbothoutputs snapshots exitcodeProcessState thenfixederrpriority OutputLimit>Protocol>ChildIO fornonzero/waitfailure, close done AFTER immutablesummary/error set. No custom rawstreamcopygoroutines, exec.WaitDelay onlyowned directchild containment notarbitrarytreeproof. Waitmultiplecallers <-done copyimmutable summary. Controlmutexguards stateGonce thenConce orCfirst; invalid/duplicate/terminal=>fixedProtocol andcancelownedchild; SetWriteDeadline childctxdeadline thenWriteexact1byte normalize errors/shortwrite; no arbitrarybytes. CloseControl closessocketonly signalsEOF, doesnotcancelchildctx (usedadEOFcase); Closedstate preventscontrols. Close cancelctx+connclose thenWait; idempotent repeatedWait/Close safe concurrent, never fakeinternalSSHjoin afterkill. Events fromwritercloseafterWaitpumperdone; no unsafechannelclose race. <=200source target; no tests/runtimechild/socket/network execution inthiscard. MandatorySolhighreview beforeverified/realrun. ad locked untilthisreview; any APIunclear stop. Threadlimitreuse availableSolmedium boundedcurrentinputs."
+}

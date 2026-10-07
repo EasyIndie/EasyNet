@@ -4505,6 +4505,188 @@
       }
     },
     {
+      "id": "G0-04.2ac",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Go 父进程所属 bridge 启动与回收",
+      "status": "active",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2ab"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "所属跨语言进程/IPC生命周期或真实故障验收，需中档编码和安全审查",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/controller-language/rust-ssh-lab-contract.md",
+          "selector": "owned child/IPC caps and no arbitraryprocesscleanup claim"
+        },
+        {
+          "path": "poc/controller-language/go/bridge_output.go",
+          "selector": "writer/Events/Snapshot/Finish APIs"
+        },
+        {
+          "path": "poc/controller-language/rust/src/bin/ssh_fixture.rs",
+          "selector": "current IPC-only behavior"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2ac.md",
+      "binding": "docs/planning/task-bindings/G0-04.2ac.json",
+      "allowed_writes": [
+        "poc/controller-language/go/bridge_child.go",
+        "docs/planning/task-results/G0/G0-04.2ac.md"
+      ],
+      "implementation_writes": [
+        "poc/controller-language/go/bridge_child.go"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "按冻结合同实现：Go 父进程所属 bridge 启动与回收",
+        "仅运行绑定检查并报告真实限制"
+      ],
+      "acceptance": [
+        "所属 Unix IPC/有界 stdin 与输出、绝对存活上限、Wait 完成与固定摘要；编译和安全审查不冒充运行验收",
+        "不超出冻结文件、命令与临时资源范围"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2ac",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "所属 Unix IPC/有界 stdin 与输出、绝对存活上限、Wait 完成与固定摘要；编译和安全审查不冒充运行验收",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
+      "id": "G0-04.2ad",
+      "source_id": "G0-04.2",
+      "parent": "G0-04",
+      "phase": "G0",
+      "title": "Go–Rust 真实 IPC bootstrap 验收",
+      "status": "locked",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-04.2ac"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "所属跨语言进程/IPC生命周期或真实故障验收，需中档编码和安全审查",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/controller-language/vault-lab-contract.md",
+          "selector": "bounded native interoperability v1"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-04.2ad.md",
+      "binding": "docs/planning/task-bindings/G0-04.2ad.json",
+      "allowed_writes": [
+        "docs/planning/task-results/G0/G0-04.2ad.md"
+      ],
+      "implementation_writes": [],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "按冻结合同实现：Go–Rust 真实 IPC bootstrap 验收",
+        "仅运行绑定检查并报告真实限制"
+      ],
+      "acceptance": [
+        "真实 Go fixture 内存凭据到 Rust 二进制，G/C/EOF/错误/timeout/清理矩阵，不执行 SSH",
+        "不超出冻结文件、命令与临时资源范围"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2ad",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "真实 Go fixture 内存凭据到 Rust 二进制，G/C/EOF/错误/timeout/清理矩阵，不执行 SSH",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [
+        "前置卡尚未 verified",
+        "实现与命令尚未冻结"
+      ],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-04.2b",
       "source_id": "G0-04.2",
       "parent": "G0-04",
@@ -4725,7 +4907,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-04.2ab"
+        "G0-04.2ad"
       ],
       "model": {
         "tier": "I",
