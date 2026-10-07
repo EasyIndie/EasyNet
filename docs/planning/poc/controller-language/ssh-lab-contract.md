@@ -12,7 +12,7 @@ shell profiles and system services are untouched. Go exceeds x/crypto v0.57.0's
 Go 1.26 minimum; this lab's newer compiler is not a product minimum-OS decision.
 Official [Go manifest](https://go.dev/dl/?mode=json) lists archive SHA256
 `ee215d57e0ec269c60cc9ceca68e6bda321ba9ee5afe24f4b0988703c2d87d12`.
-Rust 2026-10-01 [manifest](https://static.rust-lang.org/dist/channel-rust-stable.toml)
+Rust 2026-10-01 [manifest](https://static.rust-lang.org/dist/2026-10-01/channel-rust-stable.toml)
 provided per-component hashes, checked before extraction and local installer execution.
 Rust components were reconciled sequentially after preparation; tool versions passed.
 
@@ -20,7 +20,11 @@ Use absolute tool paths and task-owned temporary caches. Go: `GOTOOLCHAIN=local`
 `GOENV=off`, `GOPATH=/tmp/easynet-poc-cache/go`, `GOCACHE=/tmp/easynet-poc-cache/go-build`.
 Rust: temporary CARGO_HOME/target only. Never read personal SSH or Keychain state.
 Dependencies: Go `golang.org/x/crypto v0.57.0`, checked go.sum; Rust candidate
-`russh =0.64.1` proposed, features/MSRV and lockfile must be verified before its card.
+`russh =0.64.1` proposed; verified published crate Cargo.toml requires Rust 1.89 and
+offers `ring` as an explicit feature. Rust 1.99 satisfies that declared minimum;
+transitive graph, exact features and lockfile/build must still pass before its card.
+The downloaded crate SHA256 matched registry metadata:
+`ba61e87b9ec9a39a59a6bbed4c0b8ff7fb07073405b24a767a1f2c8560ac8f58`.
 Package downloads and loopback socket tests are authorized preparation/test effects;
 restricted execution may require automatic approval, not a change in user scope.
 

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2h",
+  "status": "frozen",
+  "contract_versions": [
+    "SSH lab v1; ADR003 design; Go x/crypto v0.57.0"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/client.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/client_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -race -count=1 ./...",
+      "expected": "real SSH client accepts supplied matching key, wrong credentials noexec, unknown/mismatched host causezeroAuthCallbacks/ExecAttempts and leaveexpectedtrustbyteunchanged; invalid/nonloopback endpoint refused; no agent APIs"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2h",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0 plus newfilewhitespace"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol medium <=200 authored lines target. Frozen API Dial(ctx context.Context, endpoint string, expected ssh.PublicKey, signer ssh.Signer)(*ssh.Client,error); ErrUnknownHost, ErrChangedHost sentinels for niltrust and nonmatching observedkey. Only parse literalloopback endpoint/ephemeral validport, no DNS/arbitrary host imports; synthetic usernamefixture. Deadline min(ctxdeadline,now+3s) retained raw net.Conn before actual NewClientConn, failclosed missingkey/signature and close owned socket on failure. Supplied expectedtrust independent harness data; never autoenroll or mutatebytes; before auth Matchonly. No agent socket usage/forwarding. Tests realmatchinghost signedauth fixedtokenoutput; unknown/changed zero serverauth/exec, wrongsigner noexec and unchangedtrust. User cancellation alreadycancelled beforedial zeroexec; observationcancel afterdial/operation/outlimits nextcardi, do not claim done. Exactdeadline and errors visible no rawcredential data. Root reviewed boundedlab; security review required beforeverified."
+}

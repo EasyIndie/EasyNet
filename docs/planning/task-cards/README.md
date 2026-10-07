@@ -41,8 +41,8 @@
 | [G0-04.1b](G0/G0-04.1b.md) | Luna medium | verified | Go 候选证据表 |
 | [G0-04.1c](G0/G0-04.1c.md) | Luna medium | verified | 平台原生候选证据表 |
 | [G0-04.2g](G0/G0-04.2g.md) | GPT-6.1 Sol medium | verified | Go SSH 隔离 fixture 与模块 |
-| [G0-04.2j](G0/G0-04.2j.md) | GPT-6.1 Sol medium | active | Go SSH fixture 拒绝与清理验证 |
-| [G0-04.2h](G0/G0-04.2h.md) | GPT-6.1 Sol medium | locked | Go SSH key auth 与 host trust |
+| [G0-04.2j](G0/G0-04.2j.md) | GPT-6.1 Sol medium | verified | Go SSH fixture 拒绝与清理验证 |
+| [G0-04.2h](G0/G0-04.2h.md) | GPT-6.1 Sol medium | active | Go SSH key auth 与 host trust |
 | [G0-04.2i](G0/G0-04.2i.md) | GPT-6.1 Sol medium | locked | Go SSH deadline output cancel 故障 |
 | [G0-04.2a](G0/G0-04.2a.md) | GPT-6.1 Sol medium | locked | 候选 A SSH PoC |
 | [G0-04.2b](G0/G0-04.2b.md) | GPT-6.1 Sol medium | locked | 候选 A vault PoC |
