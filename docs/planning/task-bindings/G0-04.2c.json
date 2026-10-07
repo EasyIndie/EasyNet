@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2c",
+  "status": "frozen",
+  "contract_versions": [
+    "result-lab-v1; exact sixfields no raw data"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/cmd/labresult/main.go",
+    "docs/planning/poc/controller-language/go-result-results.md"
+  ],
+  "test_files": [
+    "poc/controller-language/go/cmd/labresult/main_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 90s -count=1 -json ./cmd/labresult",
+      "expected": "exit0; realbinary success/invalid/duplicate/null/oversize/args/nonzero cases with finite time/output bounds"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Wait for t verified before dispatch. CLI pure stdin normalizer only: no args permitted; errors stderr fixed invalid lab input / lab I/O failure or invalid lab arguments with exit2, success normalized EncodeLabRecord to stdout exit0. Never echo raw errors or inputs; output failures nonzero. main delegates run(args,reader,stdout,stderr) int for injected writer failures, real binaries built in owned temp test dir. Compile <=15s, child <=3s WaitDelay1s, bound stdout/stderr <=4096 via named writer no embedded bypass; no arbitrary process tree cleanup claim. Tests real subprocess canonicalroundtrip, malformed+duplicates+null+oversize, extraarg rejection; injected shortwrite/nonzero. Record build host/version binarySHA256 size file/otool/codesign read-only facts, no sign/notarize/release/network/native/SSH. <=200lines target scopeexception only reviewed. Artifact temp only. Report actual evidence not platform support."
+}
