@@ -9,6 +9,7 @@ rust-version = "1.89"
 path = "src/lib.rs"
 
 [dependencies]
+libc = "=0.2.190"
 russh = { version = "=0.64.1", default-features = false, features = ["ring"] }
 tokio = { version = "=1.52.3", default-features = false, features = ["rt-multi-thread", "macros", "net", "time", "io-util", "sync"] }
 

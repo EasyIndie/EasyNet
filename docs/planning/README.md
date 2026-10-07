@@ -12,7 +12,10 @@ root README. Technical choices require evidence and an ADR before implementation
 - [Product evolution roadmap](product-evolution-roadmap.md) — consolidated product direction and staged capabilities
 - [Frozen capability baseline](capability-matrix.md) — code eligibility, tested fixtures, and unknown live support
 - [Reviewed application-service contract examples](contracts/README.md) — six bounded examples and production extension gates
-- [Go SSH candidate gate](poc/controller-language/go-ssh-results.md) — reviewed loopback SSH fault matrix; vault/Rust/language selection pending
+- [Go SSH candidate gate](poc/controller-language/go-ssh-results.md) — reviewed loopback SSH fault matrix; production language selection pending
+- [Go scoped vault evidence](poc/controller-language/go-vault-results.md) — owned temporary file-Keychain pass; production vault selection pending
+- [Go result CLI and host packaging](poc/controller-language/go-result-results.md) — strict redacted record and actual host artifact facts
+- [Rust SSH bridge contract](poc/controller-language/rust-ssh-lab-contract.md) — reviewed design; dependency/frame/control gates passed, full SSH runtime pending
 - [Rust SSH source preparation](poc/controller-language/rust-ssh-preparation.md) — pending candidate, ack and task-join pitfalls
 - [Native vault experiment contract](poc/controller-language/vault-lab-contract.md) — scoped temporary helper and safety gates
 - [Controller language candidate evidence](progress-2026-10-07.md) — three reviewed candidates and SSH PoC prerequisites

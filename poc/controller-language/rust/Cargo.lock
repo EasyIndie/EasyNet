@@ -381,6 +381,7 @@ dependencies = [
 name = "easynet-ssh-lab"
 version = "0.0.0"
 dependencies = [
+ "libc",
  "rand",
  "russh",
  "tokio",
