@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2j",
+  "status": "frozen",
+  "contract_versions": [
+    "SSH lab v1; ADR003 design; Go x/crypto v0.57.0"
+  ],
+  "implementation_files": [
+    "poc/controller-language/go/fixture.go"
+  ],
+  "test_files": [
+    "poc/controller-language/go/fixture_rejection_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -race -count=1 ./...",
+      "expected": "race tests pass wrongkey, directtcpip, PTY, arbitraryexec rejection; no wrongkeyexec; rejected exec increments attempts but not Commands; Close joins handshake-stalled and block handlers with no new listener"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2j",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0 plus newfilewhitespace"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Sol medium, <=200 added lines. Preserve frozenFixture API; only fix demonstrated fixture defects if needed. New tests wrong Ed25519 key denial zero exec, directtcpip channel refusal, PTY/subsystem/global forward refusal and arbitrary command refusal ExecAttempts1Commands0. Lifecycle tests stop handshake after banner (observable synchronization not sleep), ensure Close joins workers within bounded deadline, and Close blocked command after actual exec acknowledgement. No trust/client/output/deadline implementation, no real resources. Original rejected test snippet /tmp/easynet-fixture-tests-original.go may reuse without reading more repo. Go cache/tool paths same frozenlab. No fullvalidationclaim until parentA gate."
+}

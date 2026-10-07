@@ -23,7 +23,7 @@
 ## 模型分工与升级条件
 
 默认执行任务使用用户选择的低成本模型；本规范不绑定某个厂商/型号或未核实的价格；[模型路由](model-routing.md) 提供
-当前角色示例，具体分配以 [223 张任务卡](task-cards/README.md) 为准。
+当前角色示例，具体分配以 [224 张任务卡](task-cards/README.md) 为准。
 用户已明确授权按任务卡分配使用子 Agent。主 Agent 只派发 ready 卡，指定可用的模型与
 推理档位；默认使用最小任务上下文，按依赖顺序执行并审核证据。研究/决策和跨模块审查
 采用卡片的较强模型档位。无需逐卡重复请求模型授权；不自动生成数百个新聊天。
@@ -76,7 +76,7 @@ ID / 上层工作包：
 升级条件：
 ```
 
-没有精确路径、验收命令、行为样例、冻结依赖的条目只可 planned；168 个原条目已拆成 223 张卡；各卡的 ready/locked 状态以 task-cards 台账为准。G0 的架构/PoC 工作分别用证据表与单候选验收代替实现函数接口。
+没有精确路径、验收命令、行为样例、冻结依赖的条目只可 planned；168 个原条目已拆成 224 张卡；各卡的 ready/locked 状态以 task-cards 台账为准。G0 的架构/PoC 工作分别用证据表与单候选验收代替实现函数接口。
 
 ## 第一张任务卡（执行记录）
 
@@ -112,7 +112,7 @@ ADR-001/002/003 接受的是演进设计，不是已实现或实机验收。
 生产合同，分开方法实现、格式语义、目标资格和 live acceptance。SSH/授权/回执/锁的
 未实现边界按 [ADR-003](adr/ADR-003-ssh-first.md) 的 task gate 落实。
 G0-04.1a/b/c 三候选证据表已完成，见 [第二批记录](progress-2026-10-07.md)。
-Go 为候选 A、Rust 为候选 B，仅用于 PoC 比较；新拆 G0-04.2g/h/i 分别处理
-fixture、auth/trust、deadline/output/cancel，原 G0-04.2a 验收完整候选 A。
+Go 为候选 A、Rust 为候选 B，仅用于 PoC 比较；新拆 G0-04.2g/j/h/i 分别处理
+fixture、拒绝验证、auth/trust、deadline/output/cancel，原 G0-04.2a 验收完整候选 A。
 [SSH lab v1](poc/controller-language/ssh-lab-contract.md) 已审查；只解锁具备工具链、
 精确路径与可执行命令的下一张小卡。证据收集不等于生产语言选型。

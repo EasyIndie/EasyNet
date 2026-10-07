@@ -15,8 +15,8 @@
   ],
   "commands": [
     {
-      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -race -count=1 ./...",
-      "expected": "actual loopback SSH signed-key auth and fixture complete output pass race detector; wrong key and arbitrary request execute zero commands; all listeners owned/closed"
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/controller-language/go test -timeout 30s -race -count=1 ./...",
+      "expected": "real signed-key SSH complete output, stats, idempotent joined Close pass under absolute conn deadline and race detector; explicit closedlistener/refusal cases deferred j"
     },
     {
       "command": "python3 docs/planning/validate_task_cards.py --card G0-04.2g",
@@ -31,5 +31,5 @@
   "side_effect_authorization": null,
   "prepared_by": "root agent",
   "reviewed_by": "root agent: bounded read-only research or fixture scope",
-  "note": "Sol medium, <=200 lines authored fixture+tests target; module checksums excluded mechanical dependency file. API export Fixture with Endpoint(), HostKey(), ClientSigner(), Stats(), Close(); use safe counters mutex/atomic and loopback generated Ed25519 keys. Closed tokens complete/block/large only. No shell/systemuser/sshd/forwarding/Keychain. Only current fixture card; client tests may use raw xcrypto explicit equal key hook to prove fixture, not production client. Generate go.sum via go mod tidy (temporary caches/network approval if required). Fixture returns fixed bytes or owns waitchannel. Normal completion and rejection tests only, deadline/cancel client nextcards. Root accepts reviewed preparation with Go1.27.1 >=1.26 requirement; network dependency fetch and owned loopback authorized."
+  "note": "Sol medium, <=200 lines authored fixture+tests target; module checksums excluded mechanical dependency file. API export Fixture with Endpoint(), HostKey(), ClientSigner(), Stats(), Close(); use safe counters mutex/atomic and loopback generated Ed25519 keys. Closed tokens complete/block/large only. No shell/systemuser/sshd/forwarding/Keychain. Only current fixture card; client tests may use raw xcrypto explicit equal key hook to prove fixture, not production client. Generate go.sum via go mod tidy (temporary caches/network approval if required). Fixture returns fixed bytes or owns waitchannel. Normal completion and rejection tests only, deadline/cancel client nextcards. Root accepts reviewed preparation with Go1.27.1 >=1.26 requirement; network dependency fetch and owned loopback authorized. Scope refinement: normal complete/auth/cleanup only within <=200 authoredlines; reject tests moved to G0-04.2j. Proposed public API NewFixture()(*Fixture,error), Endpoint()string, HostKey()ssh.PublicKey, ClientSigner()ssh.Signer, Stats()FixtureStats {AuthCallbacks,ExecAttempts,Commands int}, Close()error frozen by root. Sol high repair: retain raw connection absolute deadline covering handshake/session; testtimeout30s boundscleanup. Accepted Commands recorded before exec acknowledgement; final refused-listener probe moves j if line budget requires. Root accepted directed repaired target of205 authoredlines (5 beyond suggested200) solely to retain deadline/error checks after negative cases were split; no broader scope."
 }

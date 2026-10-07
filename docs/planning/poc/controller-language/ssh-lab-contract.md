@@ -52,7 +52,8 @@ hidden with sleeps. Vault and strict JSON are separate cards, not simulated succ
 
 ## Small-card sequence
 
-G0-04.2g creates the Go fixture/module and success/rejection tests. G0-04.2h adds
+G0-04.2g creates the Go fixture/module and success tests. G0-04.2j separately checks
+wrong key, forwarding/PTY/arbitrary requests and owned cleanup. G0-04.2h adds
 Go key auth and unknown/changed-key gates. G0-04.2i adds deadline/output/cancel
 fault assertions. Original G0-04.2a then verifies candidate A's complete SSH evidence.
 Each implementation is reviewed before the next card unlocks. No production adapter,
