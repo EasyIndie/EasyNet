@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2aa",
+  "status": "verified",
+  "strategy": "delegated",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "d4b0b17",
+  "started_at_utc": "2026-10-08T06:55:09.201051+00:00",
+  "finished_at_utc": "2026-10-08T07:11:45.359525+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none",
+  "configured_models_and_efforts": [
+    {
+      "role": "main",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "role": "implementation",
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    }
+  ],
+  "acceptance_contract": "bounded5row toolchain official facts; no install/runtime/selection",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": false,
+  "repair_rounds": 1,
+  "usage_report_path": "docs/planning/metrics/G0-06.2aa-usage.json",
+  "billing_cost": null,
+  "implementation_commit": "9d8457b",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9593230190925487,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 5485952,
+    "calls": 67,
+    "input_tokens": 5718566,
+    "noncached_input_tokens": 232614,
+    "output_tokens": 25751,
+    "reasoning_output_tokens": 11583,
+    "total_tokens": 5744317
+  },
+  "limitations": [
+    "Prior native-card metric publication and next-card preparation included; approximate attribution, no controlled comparison.",
+    "Root resolved worker browser-unknown checksum using exact official read-only manifest after sandbox DNS failure and alternate legacy URL404; factual augmentation, no runtime repair.",
+    "Main reviewed immutable3.47.0 source and currentstable3.47.6 metadata distinction; executable source/isolation review still pending.",
+    "Acceptance commit and collector invocation included; subsequent metric publishing outsidecutoff; output includes reasoning."
+  ]
+}

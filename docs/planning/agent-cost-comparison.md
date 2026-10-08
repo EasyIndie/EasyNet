@@ -133,3 +133,12 @@ document/fact package, Sol medium for implementation and Sol high for required
 architecture/security review. Avoid broad fan-out or a new agent for each tiny
 lookup; include root/review/repair overhead when assessing future matched samples.
 Complex SQLite evidence required review despite overhead; quality gates stay.
+
+## G0-06.2aa 工具链事实卡观察
+
+全链路非缓存输入232,614、输出25,751、缓存95.93%；主会话90,445/15,382，
+Luna92,989/9,545，自动审批49,180/824（前两数为非缓存输入/输出）。
+见 [窗口与限制](metrics/G0-06.2aa.json) 和 [用量](metrics/G0-06.2aa-usage.json)。
+包含前卡发布尾部、准备和官方 manifest 补核，归属近似；没有对照臂或费用结论。
+这个小事实卡的主会话协调输入已接近 worker 输入，进一步支持限制细碎派发，
+将同一候选的来源核对放入有界工作包；安全执行设计仍保持独立 R 审查。

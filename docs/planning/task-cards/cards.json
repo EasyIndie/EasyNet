@@ -7909,10 +7909,10 @@
       ],
       "completion": {
         "evidence_path": "docs/planning/task-results/G0/G0-06.2aa.md",
-        "reviewed_by": "root agent: scope and behavior evidence review",
+        "reviewed_by": "root Sol medium official source/manifest fact review; execution design remains R gate",
         "actual_model": "gpt-6-luna",
         "reasoning_effort": "medium",
-        "token_usage": "unavailable"
+        "token_usage": "Observed docs/planning/metrics/G0-06.2aa-usage.json, not billing"
       }
     },
     {
