@@ -9067,7 +9067,7 @@
         "evidence_path": "docs/planning/task-results/G0/G0-06.2al.md",
         "reviewed_by": "independent Sol high source PASS +actualevidence blocked confirmed",
         "actual_model": "rootSolmedium transport/mechanical + RSolhigh",
-        "token_usage": "pendingfullchain"
+        "token_usage": "docs/planning/metrics/G0-06.2al.json"
       }
     },
     {
