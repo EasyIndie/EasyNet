@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "status": "preparing",
+  "status": "verified",
   "task_id": "G0-05.2b",
   "matched_pair_id": null,
-  "strategy": "delegated",
+  "strategy": "hybrid_delegated_implementation_main_repair",
   "comparison_kind": "observational_unpaired",
   "input_commit": "d5c153d",
-  "acceptance_contract": "LocalStateLab-v1; SQLiteFixture proposal under Sol high review",
+  "acceptance_contract": "LocalStateLab-v1 + SQLiteFixture-v1 design accepted; source/runtime pending",
   "estimated_scope": "Owned Darwin SQLite snapshot/crash/CAS experiment only; no production backend decision.",
   "started_at_utc": "2026-10-08T01:55:40.560594+00:00",
   "finished_at_utc": null,
@@ -22,19 +22,24 @@
       "role": "review",
       "model": "gpt-6.1-sol",
       "effort": "high"
+    },
+    {
+      "role": "implementation",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
     }
   ],
-  "subagent_count": 1,
+  "subagent_count": 2,
   "history_inheritance": "none for fresh reviewer; same-card review retains history",
   "usage_report_path": null,
   "main_coordination_included": true,
   "implementation_review_repair_included": true,
   "automatic_review_included": true,
   "measurement_overhead_included": true,
-  "first_pass": null,
-  "repair_rounds": null,
-  "blocking_review_findings": null,
-  "final_acceptance": null,
+  "first_pass": false,
+  "repair_rounds": 3,
+  "blocking_review_findings": 4,
+  "final_acceptance": "Sol high accepted exact source/harness and actual owned Darwin SQLite evidence; 42top180sub entirepackage, SQLite16top85sub, zero fail/skip, no production winner",
   "elapsed_seconds": null,
   "billing_cost": null,
   "applicable_price_source": null,
@@ -42,6 +47,63 @@
     "Window begins at previous JSON collection cutoff to include SQLite read-only research before interruption. It also includes the previous metric-publication tail; this overhead cannot be attributed exactly to one card.",
     "Interruption/idle wall time included; elapsed time is not active labor time.",
     "No matched main-only arm; JSON versus SQLite is a different workload and cannot establish savings.",
-    "Local observations are not subscription invoice; completion timestamps/live-log flush cause boundary uncertainty."
-  ]
+    "Local observations are not subscription invoice; completion timestamps/live-log flush cause boundary uncertainty.",
+    "One failed full run and two source-reviewed NativeFacts diagnostics are included. Linked compile-time omission is accepted extension-disable equivalence; no guard skipped merely because db_config failed.",
+    "Post-flock lock-replacement refusal test uses40ms delay; post-acquisition ordering is source-reviewed, not deterministic/instrumented runtime placement."
+  ],
+  "design_clarifications": [
+    "Root corrected mandatory hot-journal observation to allow completed boundary commits with journal absent; deterministic before kills still require hot-journal evidence."
+  ],
+  "validation_history": {
+    "compile_repair_rounds": 1,
+    "source_repair_rounds": 1,
+    "full_behavior_runs": 2,
+    "full_behavior_failed_runs": 1,
+    "first_behavior_run_pass": false,
+    "initial_full_run": {
+      "elapsed_seconds": 3.483,
+      "pass_events": 122,
+      "fail_events": 99,
+      "skip_events": 0,
+      "sqlite_children_launched": 0,
+      "failure_summary": "SQLite fixture initialization returns state-io; linked version matches 3.54.0. JSON/shared model pass; SQLite outcomes unqualified."
+    },
+    "runtime_repair_rounds": 1,
+    "native_diagnostic_runs": 2,
+    "native_diagnostic_failed_runs": 1,
+    "final_pass_top": 42,
+    "final_pass_sub": 180,
+    "sqlite_pass_top": 16,
+    "sqlite_pass_sub": 85,
+    "final_fail": 0,
+    "final_skip": 0,
+    "package_elapsed_seconds": 4.474,
+    "sqlite_children_final": 19,
+    "whole_package_children_final": 38
+  },
+  "implementation_source_lines": 2158,
+  "dispatch_limit_events": [
+    {
+      "action": "restore same-card reviewer while implementation agent active",
+      "result": "agent thread limit reached",
+      "resolution": "succeeded after implementation agent completed; no additional review agent"
+    },
+    {
+      "action": "restore same-card implementation for source repair1",
+      "result": "agent thread limit reached twice",
+      "resolution": "main Sol medium applied exact frozen test-only fixes; same Sol high review mandatory, no new agent"
+    }
+  ],
+  "native_diagnostic": {
+    "initial_stage": 5,
+    "initial_sqlite_rc": 21,
+    "initial_actual": -1,
+    "fixed_native_facts": "pass",
+    "linked_version": "3.54.0",
+    "linked_omit_load_extension": true,
+    "fixed_config_stage": 9,
+    "fixed_config_rc": 0,
+    "fixed_seed_stage": 107,
+    "fixed_seed_failed": 0
+  }
 }

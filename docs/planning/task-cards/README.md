@@ -88,7 +88,7 @@
 | [G0-05.1](G0/G0-05.1.md) | GPT-6.1 Sol medium | verified | 编写本地数据、secret 引用和迁移合同 |
 | [G0-05.1a](G0/G0-05.1a.md) | GPT-6.1 Sol medium | verified | 共同存储纯模型、严格解码与迁移规则 |
 | [G0-05.2a](G0/G0-05.2a.md) | GPT-6.1 Sol medium | verified | JSON 崩溃与并发 PoC |
-| [G0-05.2b](G0/G0-05.2b.md) | GPT-6.1 Sol medium | ready | SQLite 崩溃与并发 PoC |
+| [G0-05.2b](G0/G0-05.2b.md) | GPT-6.1 Sol medium | verified | SQLite 崩溃与并发 PoC |
 | [G0-05.3](G0/G0-05.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | locked | 比较证据并接受 ADR-005 |
 | [G0-06.1a](G0/G0-06.1a.md) | Luna medium | locked | Flutter/sing-box 路线证据表 |
 | [G0-06.1b](G0/G0-06.1b.md) | Luna medium | locked | SwiftUI/原生路线证据表 |

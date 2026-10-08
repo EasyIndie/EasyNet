@@ -7350,7 +7350,7 @@
       "parent": "G0-05",
       "phase": "G0",
       "title": "SQLite 崩溃与并发 PoC",
-      "status": "ready",
+      "status": "verified",
       "mode": "implementation",
       "dependencies": [
         "G0-05.2a"
@@ -7463,7 +7463,15 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-05.2b.md",
+        "reviewed_by": "gpt-6.1-sol high sqlite_design_review: design/source/harness + actual scoped evidence accepted",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "medium",
+        "token_usage": "unavailable",
+        "note": "Hybrid delegated Sol medium implementation/main Sol medium repairs; exact5files2158lines approved; final42top180subpass SQLite16top85sub, actualCAS/hotjournal/crashpurity passed; usage manifest docs/planning/metrics/G0-05.2b.json, no backendwinner"
+      }
     },
     {
       "id": "G0-05.3",

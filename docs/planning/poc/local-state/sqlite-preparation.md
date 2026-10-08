@@ -137,6 +137,9 @@ No generic SQL/URI, ATTACH, immutable/nolock, extension or caller filename suppo
 Before any queries on every handle: defensive ON, trusted_schema OFF, DQS DDL/DML
 OFF, load extensions OFF; native limits SQL length4096, value length32768,
 attached databases0, plus 1000ms native busy timeout. Check every option result.
+Extension guard (runtime fix 2): linked `sqlite3_compileoption_used("OMIT_LOAD_EXTENSION")==1` proves the entire loading mechanism absent; otherwise require disable's SQLITE_OK/actual0.
+CLI facts or SQLITE_MISUSE alone cannot prove omission; every other check stays fail-closed.
+Primary: [complete omission](https://www.sqlite.org/compile.html#omit_load_extension), [linked-library check](https://www.sqlite.org/c3ref/compileoption_get.html).
 Own/close even the handle returned by failed open; finalize every statement on
 every path, free C strings/buffers, and use a C SQLITE_TRANSIENT binding shim.
 Check native type/byte count before bounded `GoBytes`; retain no Go pointer in C.

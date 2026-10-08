@@ -7,7 +7,8 @@ this same bounded model, API and cases; ADR-005 chooses the backend later.
 not a storage, encryption, vault, GUI or runtime choice.
 
 Subsequent evidence: [G0-05.2a](../../task-results/G0/G0-05.2a.md) qualified the
-owned Darwin JSON fixture matrix. SQLite qualification and ADR-005 remain pending;
+owned Darwin JSON fixture matrix. [G0-05.2b](../../task-results/G0/G0-05.2b.md)
+qualified the scoped Darwin SQLite matrix. ADR-005 remains pending;
 this does not qualify a production store.
 
 ## Scope and accepted boundaries
