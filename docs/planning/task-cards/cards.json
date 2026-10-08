@@ -8032,7 +8032,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "实现自有 fixture 隔离探针",
-      "status": "ready",
+      "status": "blocked",
       "mode": "implementation",
       "dependencies": [
         "G0-06.2ab"
