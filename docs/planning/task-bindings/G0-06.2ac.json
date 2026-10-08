@@ -24,11 +24,32 @@
     {
       "command": "python3 -I -c \"import ast,pathlib; [ast.parse(pathlib.Path(p).read_text(),filename=p) for p in ('poc/client-framework/lab/isolate.py','poc/client-framework/lab/test_isolate.py')]\"",
       "expected": "exit0 syntaxonly, doesnotexecuteauthoredcode"
+    },
+    {
+      "command": "python3 -I -B poc/client-framework/lab/test_isolate.py",
+      "expected": "Rootonly after exactsourcehash match; exit0 actualfixedsyntheticcases, exit1 fail/unknown preserved, noSDKqualification"
     }
   ],
   "environment": "local-fixture",
-  "side_effect_authorization": null,
+  "side_effect_authorization": "User continuous development authorization, R reviewed fixed synthetic owned0700 /private/tmp fixtures/files600, exact owned OSchildren, local127.0.0.1 control listener. Rootonly; no outsidewrites/personalstate/SDK/privilegedoperations.",
   "prepared_by": "root",
   "reviewed_by": "root accepted bounded implementation scope from Solhighdesign, source/runtime review remains mandatory",
-  "note": "I Solmedium fresh<=6k. Only3codepaths +report<=20lines. isolate.py<=230lines; profile<=25; tests<=280; total<=535 (bounded safetyharness exception to200diff). Stdlibonly, Darwinonly; no newdeps/SDK/binaries/networkdownloads/clientconfig/userstate/keychain/signing/root/deployment/profileimports. No runtime, unittest/importofnewmodule, Popen test, nativeSandbox call or fixtureallocation byworker; ASTparseonly thenhandoff for R review. Code module/test imports musthave no sideeffects. run_probe API fromcontract, fixedcase command whitelist (notarbitrarycaller shell/paths), fixedprofile source+hash andcanonicalownedroot inode/uid/mode checks rejectsymlinks; noHOME/CODEX_HOMEredefinition. Minimalenv; explicitOSargv curl -qfirst avoidsusercurlrc. Internalprofileparameter nointerpolatedSBPL/shell. Absolute monotonic2s command and20s suite limits include terminate/reap/drain; streams retain8KiB count/drain. FixedtrustedOSchildren exactowned identity/processgroups, no pkill. Positiveinsideprofile cat/touch provesbaseline loaderworks; decoyoutsideprofile reads/writes andshellinherited denials must be realnotcommonloader failure; preserveunchangedmanifest. curlcontrol outsideprofile owned127.0.0.1HTTPnonce listener +baselinecurl --version/protocol availability and before/after reachability controls preventgenerictool/serverfailure frommasqueradingnetworkdenial; listenerrecordsconnections. Denialambiguous->fail/unknown notpass; noexternalIP. Parentlistener FDthreads close/join, childWaitverifiedbeforecleanup, preservewholefailure fixture (closefds/processesstillrequired). Manifestownership validation before anyunlink; no recursivecleanup/unknownnames/symlinkfollowing, successfulonlyknownfiles+dirs. Exactfuture runtime command python3 -I poc/client-framework/lab/test_isolate.py proposed, NOT authorizeduntilR source-case review; rootruns. No dynamicallowloosening or profile fixes withoutR. Record configuredSolmedium, testsnotrun, no invented tokens/acceptance. Stop safetyambiguity, contractchanges, cap/2repairbudget exceeded. No gitcommit/statuschanges/newagent."
+  "note": "I Solmedium fresh<=6k. Only3codepaths +report<=20lines. isolate.py<=230lines; profile<=25; tests<=280; total<=535 (bounded safetyharness exception to200diff). Stdlibonly, Darwinonly; no newdeps/SDK/binaries/networkdownloads/clientconfig/userstate/keychain/signing/root/deployment/profileimports. No runtime, unittest/importofnewmodule, Popen test, nativeSandbox call or fixtureallocation byworker; ASTparseonly thenhandoff for R review. Code module/test imports musthave no sideeffects. run_probe API fromcontract, fixedcase command whitelist (notarbitrarycaller shell/paths), fixedprofile source+hash andcanonicalownedroot inode/uid/mode checks rejectsymlinks; noHOME/CODEX_HOMEredefinition. Minimalenv; explicitOSargv curl -qfirst avoidsusercurlrc. Internalprofileparameter nointerpolatedSBPL/shell. Absolute monotonic2s command and20s suite limits include terminate/reap/drain; streams retain8KiB count/drain. FixedtrustedOSchildren exactowned identity/processgroups, no pkill. Positiveinsideprofile cat/touch provesbaseline loaderworks; decoyoutsideprofile reads/writes andshellinherited denials must be realnotcommonloader failure; preserveunchangedmanifest. curlcontrol outsideprofile owned127.0.0.1HTTPnonce listener +baselinecurl --version/protocol availability and before/after reachability controls preventgenerictool/serverfailure frommasqueradingnetworkdenial; listenerrecordsconnections. Denialambiguous->fail/unknown notpass; noexternalIP. Parentlistener FDthreads close/join, childWaitverifiedbeforecleanup, preservewholefailure fixture (closefds/processesstillrequired). Manifestownership validation before anyunlink; no recursivecleanup/unknownnames/symlinkfollowing, successfulonlyknownfiles+dirs. Exactfuture runtime command python3 -I poc/client-framework/lab/test_isolate.py proposed, NOT authorizeduntilR source-case review; rootruns. No dynamicallowloosening or profile fixes withoutR. Record configuredSolmedium, testsnotrun, no invented tokens/acceptance. Stop safetyambiguity, contractchanges, cap/2repairbudget exceeded. No gitcommit/statuschanges/newagent. R source review2026-10-08 found4specific blockers; sameI repairround1, no runtimeapproval. Preservewholeprecleanupfailurefixture; partialcleanupfailure preservesremaining ratherthan atomicwhole-preservationclaim.",
+  "review_required_repairs": [
+    "Fixed inside-profile curl -q --version HTTP control + numeric-loopback --verbose connect EPERM diagnostic; no profile widening",
+    "Guard selector/spawn/all child-FD cleanup under finally",
+    "Postcleanup + perstep deadline checks; report remaining fixture accurately on cleanup failure",
+    "Future runtime python3 -I -B poc/client-framework/lab/test_isolate.py"
+  ],
+  "source_review": {
+    "reviewed_by": "independent Sol high client_isolation_review, samecard repair1 PASS",
+    "files_sha256": {
+      "poc/client-framework/lab/isolate.py": "5881487cda9f0c132d6d264583f7373a57b5d2415a0d5a5976c331b9fc9f2431",
+      "poc/client-framework/lab/fixture.sb": "b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82",
+      "poc/client-framework/lab/test_isolate.py": "d067dc7d503eeff19895dd18c97e7a4a510a7c36d8bb500f000a576b1c6385a6"
+    },
+    "scope": "Only fixed unprivileged Darwin synthetic file/inherited/network probes; no SDK/GUI/engine/private state",
+    "runtime_command": "python3 -I -B poc/client-framework/lab/test_isolate.py",
+    "on_failure": "Stop FAIL/unknown, preserveprecleanupwholefixture orcleanupremaining; no automatic profile widening"
+  }
 }
