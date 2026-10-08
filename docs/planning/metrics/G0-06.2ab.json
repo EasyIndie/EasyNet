@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ab",
+  "status": "verified",
+  "strategy": "delegated_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "5085595",
+  "started_at_utc": "2026-10-08T07:11:45.359525+00:00",
+  "finished_at_utc": "2026-10-08T07:26:44.807337+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none; samecard clarification reused reviewer",
+  "configured_models_and_efforts": [
+    {
+      "role": "main",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "role": "review",
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    }
+  ],
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": false,
+  "repair_rounds": 1,
+  "usage_report_path": "docs/planning/metrics/G0-06.2ab-usage.json",
+  "billing_cost": null,
+  "implementation_commit": "3fafbbd",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.979156337692644,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 5314560,
+    "calls": 61,
+    "input_tokens": 5427693,
+    "noncached_input_tokens": 113133,
+    "output_tokens": 25793,
+    "reasoning_output_tokens": 7934,
+    "total_tokens": 5453486
+  },
+  "limitations": [
+    "Previouscardpublicationtail included; approximate attribution, no matchedcomparison.",
+    "Worker initialoverbroadinputbatch exceeded8kcorecontext; explicitreportexception, not reducedcontext proof.",
+    "One clarification added immediateprobecontract and fixed180linebudget; no runtime and no model escalation.",
+    "Acceptance/collection included; latermetricpublishing excluded; output already includesreasoning."
+  ]
+}
