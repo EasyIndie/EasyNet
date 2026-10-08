@@ -53,5 +53,38 @@
     ],
     "expected": "two fake suites then fixed A-D slice; failure stops; no rerun",
     "python_provenance": "trusted runner image observed3.14.x and hash held constant per command, not externally pinned"
-  }
+  },
+  "remote_execution": {
+    "repository": "EasyIndie/EasyNet",
+    "feature_sha": "e349bcfb2cd7c22faa59a3bd36d9f280d1055d3e",
+    "run_id": 37851139408,
+    "run_url": "https://github.com/EasyIndie/EasyNet/actions/runs/37851139408",
+    "status": "completed",
+    "transport_note": "initialHTTP400 remote404; one command-local postBuffer retry succeeded; only one Actions run observed",
+    "conclusion": "failure",
+    "image": "macos-15-arm64/20260907.0337.1",
+    "os_version": "15.7.9",
+    "os_build": "24G830",
+    "kernel": "24.6.0",
+    "python_version": "3.14.7",
+    "python_sha256": "d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3",
+    "fake_suites_exit_codes": [
+      0,
+      0
+    ],
+    "native_exit_code": 1,
+    "case_A": {
+      "returncode": 0,
+      "elapsed_s": 0.04441695799999934
+    },
+    "case_B": {
+      "returncode": -6,
+      "elapsed_s": 0.036428624999999215
+    },
+    "lifecycle": "bothsoleZ/Waithelper+leader/reaped/EOF/FDtrue; errors/signalsempty; streams0",
+    "cases_C_D": "notrun stopfirstfailure",
+    "hash_checks": "six reviewed sources +observedPython immediatelybeforeafter everycommandunchanged",
+    "attempts": 1
+  },
+  "runtime_result_review": "same independent R confirmed transport/fakes passed but startup blocked; no new sourcehold/causeattribution"
 }

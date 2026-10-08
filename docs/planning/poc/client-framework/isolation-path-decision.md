@@ -1,6 +1,8 @@
 # G0-06.2ak — 隔离路径决策（root 接受：后续验证建议）
 
 R / GPT-6.1 Sol high；2026-10-09；仅源码决策，无运行或资源授权。
+
+后续用户决定：先用 GitHub 托管 macOS runner 验证（G0-06.2al）；本卡 VM-only 推荐不再限制当前合成诊断。专用本地 VM 留作交互验收候选，runner 的 SDK/GUI/完整权限资格仍须分别证明。
 输入：已接受的 [ai](sandbox-startup-decision.md)、[aj 实际报告](../../task-results/G0/G0-06.2aj.md)、
 [lifecycle preparation v1](lifecycle-preparation.md)；binding 证据版本 `1c91024`，aj 源码 `1aba68e`。
 本卡不新增官方来源；复用输入证据，不重复研究或推断已安装二进制的实现。

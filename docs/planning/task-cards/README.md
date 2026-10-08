@@ -324,4 +324,4 @@
 | [G6-04.2](G6/G6-04.2.md) | GPT-6.1 Sol medium | locked | 接入辅助解释并限制工具执行边界 |
 | [G6-04.3](G6/G6-04.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | locked | 验证任意 root/destroy 不被自动授权及手工离线路径 |
 
-| [G0-06.2al](G0/G0-06.2al.md) | GPT-6.1 Sol medium | review | GitHub macOS runner 限定预检与本机 VM 资源评估 |
+| [G0-06.2al](G0/G0-06.2al.md) | GPT-6.1 Sol medium | blocked | GitHub macOS runner 限定预检与本机 VM 资源评估 |

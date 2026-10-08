@@ -8976,7 +8976,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "GitHub macOS runner 限定预检与本机 VM 资源评估",
-      "status": "review",
+      "status": "blocked",
       "mode": "implementation",
       "dependencies": [
         "G0-06.2ak"
@@ -9062,7 +9062,13 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2al.md",
+        "reviewed_by": "independent Sol high source PASS +actualevidence blocked confirmed",
+        "actual_model": "rootSolmedium transport/mechanical + RSolhigh",
+        "token_usage": "pendingfullchain"
+      }
     },
     {
       "id": "G0-06.2a",
