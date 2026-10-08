@@ -7,7 +7,7 @@
   "matched_pair_id": null,
   "input_commit": "ad48ab8",
   "started_at_utc": "2026-10-08T06:32:48.740505+00:00",
-  "finished_at_utc": null,
+  "finished_at_utc": "2026-10-08T06:39:34.901886+00:00",
   "acceptance_contract": "Accepted LocalStateLab-v1 + scoped JSONFixture-v1/SQLiteFixture-v1 evidence; ADR-004 Go service; ADR-005 bounded device inventory backend decision",
   "subagent_count": 1,
   "configured_models_and_efforts": [
@@ -27,13 +27,27 @@
   "implementation_review_repair_included": true,
   "automatic_review_included": true,
   "measurement_overhead_included": true,
-  "usage_report_path": null,
+  "usage_report_path": "docs/planning/metrics/G0-05.3-usage.json",
   "first_pass": true,
   "repair_rounds": 0,
   "billing_cost": null,
   "limitations": [
     "Window includes previous SQLite metric-publication tail and ADR preparation; attribution not exact.",
-    "No matched main-only arm; no causal savings or invoice-cost claim."
+    "No matched main-only arm; no causal savings or invoice-cost claim.",
+    "Includes ADR acceptance commit and collection invocation; subsequent metric publication/reporting outsidecutoff. Local counters/completiontimestamps notinvoice."
   ],
-  "final_acceptance": "Root accepted Sol high ADR-005: SQLite inventory direction, production driver/platform/recovery gates pending; no new runtime"
+  "final_acceptance": "Root accepted Sol high ADR-005: SQLite inventory direction, production driver/platform/recovery gates pending; no new runtime",
+  "elapsed_seconds": 406.161381,
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.963690017801351,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 2301312,
+    "calls": 26,
+    "input_tokens": 2388021,
+    "noncached_input_tokens": 86709,
+    "output_tokens": 11933,
+    "reasoning_output_tokens": 2884,
+    "total_tokens": 2399954
+  },
+  "implementation_commit": "8d3361b"
 }

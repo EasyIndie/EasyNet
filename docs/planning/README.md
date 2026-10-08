@@ -17,7 +17,7 @@ root README. Technical choices require evidence and an ADR before implementation
 - [SQLite owned storage gate](task-results/G0/G0-05.2b.md) — reviewed crash/CAS/migration and hot-journal recovery passed; ADR-005 accepted direction; production gates pending
 - [JSON owned storage gate](task-results/G0/G0-05.2a.md) — reviewed crash/CAS/migration matrix passed; includes end-to-end observed usage, no backend winner
 - [Accepted controller language decision](adr/ADR-004-controller-language.md) — Go service foundation, candidate evidence and production gates; current Bash preserved
-- [Proposed local inventory storage decision](adr/ADR-005-local-state-storage.md) — SQLite direction pending root acceptance; common evidence, candidate disposition and production gates
+- [Accepted local inventory storage decision](adr/ADR-005-local-state-storage.md) — SQLite inventory direction accepted; common evidence, candidate disposition and production gates
 - [Go SSH candidate gate](poc/controller-language/go-ssh-results.md) — reviewed loopback SSH fault matrix; production language selection pending
 - [Go scoped vault evidence](poc/controller-language/go-vault-results.md) — owned temporary file-Keychain pass; production vault selection pending
 - [Go result CLI and host packaging](poc/controller-language/go-result-results.md) — strict redacted record and actual host artifact facts
