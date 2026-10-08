@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-05.1a",
+  "status": "frozen",
+  "contract_versions": [
+    "Reviewed LocalStateLab-v1 at102bc6e +index e84cbd5; ADR-004 Go forservice; pure-model API-v1 nobackend"
+  ],
+  "implementation_files": [
+    "poc/local-state/go/go.mod",
+    "poc/local-state/go/model.go"
+  ],
+  "test_files": [
+    "poc/local-state/go/model_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/local-state/go test -timeout 60s -count=1 -json . > /tmp/easynet-state-model-tests.json",
+      "expected": "puremodel tests pass; nofs/native/network/secret/store runtime; stdlibonly module"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "C Luna medium frozenpuremodelonly +finalSolhigh review; no Filesystem/process/native/productionsecret/backend/interface architecture decisions. 3filesnew go.mod/module easynet.local/state-lab go1.26.0 (labdirectiveexistingGoPoC precedent NOTtestedminimum policy), model.go package statelab, model_test.go +mandatoryreport. Noexternaldeps/go.sum/otherfiles/network download. Source target<=350 tests<=240 stop>450/320 orscopeambiguous (do notexpand/splitself). Model Snapshot{SchemaVersion uint32, Generation uint32, Targets []Target,Profiles []Profile,Operations []Operation}; Generationrepresentsv0sequenceorv1generation logically, exactJSONkeys differ byversion. Struct Target{id,revision,credentialRef}; Profile8exactfields; Operation4immutablefields percontract. Expose fixed typed ErrorCode enum implementsError() onlyfixedcodes allcontracterrors no userdata/rawparserexception; MaxGeneration=2147483647. Resolver interface ResolveCredential(Target) Resolution / ResolveConfig(Profile) Resolution, enumAvailable/Missing/Locked/Mismatch; fake only,unknownresolver result failsclosed mismatch; nilresolver mayvalidateemptyseed butnonemptyrefs unresolved. API DecodeFixture([]byte)(Snapshot,error): strictsyntax/shape/relation rules <=16KiB/UTF8, duplicatekeys atALLnestedlevels inclescapedequivalents, exactlyknownfields/nonnull/arrays0..4/IDuniquelexicalintegers0or[1-9][0-9]*Max, revisionpositive, schema0(sequence)/1(generation) only, futureversionunsupported, malformedencodingcorrupt versus validJSONbadvaluesinvalid; returnzeroSnapshotonerr. DoesNOTresolveprotectedrefs; ValidateV1(Snapshot,Resolver)error rejects0migrationrequired/futureunsupported, deepvalidatesvalues/relations+exactfakebindings. EncodeFixture(Snapshot,Resolver)([]byte,error) samevalidate butexplicitv0fixtureseeding allowed, outputsclosedcanonicalversionappropriateJSON stableIDcollectionorder (copyarrays before sort), emptyarrays[]notnull; no I/O andreturnedbytes<=16KiB. StageMigration(v0,Resolver)(Snapshot,error) purestrictv0refs/header valid, maxgen->exhaustedbeforeconstructsuccessor, deepclone slices/headerV1g+1 preservesrecordbindings; V1wrongAPIinputinvalid/futureunsupported. ValidateCommit(current,next,expected uint32,resolver)error currentV1validation+refs, validexpectedmaxcurrentmatch->exhaustedBEFOREsuccessorvalidation; candidateV1/refvalidation, requiregenerationexpected+1, comparecurrentgenforconflict, thenimmutableoldoperationscannotremove/change; unchangedT/Psamefields inclrev, changedT/PsameIDrevisionexactold+1, removeunreferencedokayrelations; no mutation/replay/merge. ValidateMigration(current,staged,expected,resolver)error v1alreadymigratedorcurrentgenmismatch->conflict, elsevalidv0currentrefs/maxguard thenstagedlogicalequalStageMigration(current) (arrayorderingimmaterial, allrecords preserved). Invalidexpected/out-of-rangeinvalid, max validexactmatch exhausted. Allfunctions pure returnzerooutiferror neverretainsPartialSnapshot. Candidatecomparisons requirefullstructvalues ownIDs, unknownmirrors fourfields immutable; baselineprofiletwotuples labonly notproduction capabilityregistry. Tests exactcontractpositiveempty/T/P/Op cases, parse16KiBboundary/UTF8/duplicateescaped/unknownmissing/null/wrongtypes/floats/exponents/-0/overflow/future/v0shape, missing/locked/mismatchrefs, IDscontrol/duplicate/tuplebad, generationstale/exhausted/successorerror, immutablemirror mutations/removal, revisionrules, migrationexactclone/max/racev1conflict, encodeinvalidnooutput. No actualprotectedstore, fileio, importtrust, secrets, deployment, backenddecision. Contractone-fault fixtures allowclearfixederrorprecedence; uncertaintycontradictionSTOPreportedtoR notguessnewsecurity. Jsonbackend/SQLitestaylocked pendingthiscommonmodel+review; no fakepersistenceclaim. Report configuredmodelactualtelemetryunknown, exactGo counts/durations/failures/repairs<=2."
+}

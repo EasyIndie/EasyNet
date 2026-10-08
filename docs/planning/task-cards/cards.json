@@ -7121,6 +7121,101 @@
       }
     },
     {
+      "id": "G0-05.1a",
+      "source_id": "G0-05.1",
+      "parent": "G0-05",
+      "phase": "G0",
+      "title": "共同存储纯模型、严格解码与迁移规则",
+      "status": "ready",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-05.1"
+      ],
+      "model": {
+        "tier": "C",
+        "type": "低成本编码模型",
+        "example": "Luna medium",
+        "review": "Sol high 核对严格解析、版本/CAS/迁移规则，无生产安全政策选型",
+        "reason": "已审查合同的纯模型与解析函数；无文件、secret、网络或平台操作",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/local-state/state-lab-contract.md",
+          "selector": "closedrecordschema exacterrors refs CAS/migration pure rules only; no storagecode"
+        },
+        {
+          "path": "docs/planning/adr/ADR-004-controller-language.md",
+          "selector": "selectedGo candidate scope preserveslegacy/coreminimumundecided"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-05.1a.md",
+      "binding": "docs/planning/task-bindings/G0-05.1a.json",
+      "allowed_writes": [
+        "poc/local-state/go/go.mod",
+        "poc/local-state/go/model.go",
+        "poc/local-state/go/model_test.go",
+        "docs/planning/task-results/G0/G0-05.1a.md"
+      ],
+      "implementation_writes": [
+        "poc/local-state/go/go.mod",
+        "poc/local-state/go/model.go",
+        "poc/local-state/go/model_test.go"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "实现冻结纯模型/解析规则与行为单元测试",
+        "不实现存储后端或平台操作"
+      ],
+      "acceptance": [
+        "闭合 schema/lexical integer/duplicate/ref/CAS/migration 边界一致",
+        "无 filesystem/secret resolver production/native/network/部署行为"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit0"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-05.1a",
+            "expectation": "exit0 planonly"
+          }
+        ],
+        "behavior_check": "纯模型合同正负例，不模拟存储持久化通过",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-05.2a",
       "source_id": "G0-05.2",
       "parent": "G0-05",
@@ -7129,7 +7224,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-05.1"
+        "G0-05.1a"
       ],
       "model": {
         "tier": "I",
@@ -7222,7 +7317,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-05.2a"
+        "G0-05.1a"
       ],
       "model": {
         "tier": "I",
