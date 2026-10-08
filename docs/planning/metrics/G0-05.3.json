@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-05.3",
+  "status": "active",
+  "strategy": "delegated_review",
+  "comparison_kind": "observational_unpaired",
+  "matched_pair_id": null,
+  "input_commit": "ad48ab8",
+  "started_at_utc": "2026-10-08T06:32:48.740505+00:00",
+  "finished_at_utc": null,
+  "acceptance_contract": "Accepted LocalStateLab-v1 + scoped JSONFixture-v1/SQLiteFixture-v1 evidence; ADR-004 Go service; ADR-005 bounded device inventory backend decision",
+  "subagent_count": 1,
+  "configured_models_and_efforts": [
+    {
+      "role": "main",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "role": "review",
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    }
+  ],
+  "history_inheritance": "none for fresh reviewer",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "usage_report_path": null,
+  "first_pass": null,
+  "repair_rounds": null,
+  "billing_cost": null,
+  "limitations": [
+    "Window includes previous SQLite metric-publication tail and ADR preparation; attribution not exact.",
+    "No matched main-only arm; no causal savings or invoice-cost claim."
+  ]
+}

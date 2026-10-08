@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-05.3",
+  "status": "frozen",
+  "contract_versions": [
+    "Accepted LocalStateLab-v1 + scoped JSONFixture-v1/SQLiteFixture-v1 evidence; ADR-004 Go service; ADR-005 bounded device inventory backend decision"
+  ],
+  "implementation_files": [
+    "docs/planning/adr/ADR-005-local-state-storage.md",
+    "docs/planning/README.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-05.3",
+      "expected": "exit0 plan/doccheck only, no new runtime qualification"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "R Sol high one bounded architecture decision, no new PoCs/runtime/code/dependencies/personal/external state. Create proposed ADR <=160lines +READMEoneindexlink +mandatoryreport<=20lines. Select ONE ordinary device-local inventory backend JSON orSQLite for subsequent ready service cards, explicit evidence/table/tradeoff/candidate disposition, not production store/driver choice merely labcode reuse. Compare same scope CRUD/refs/CAS/migration/unknownimmutability/corruptfuturepreservation/readpurity/crash; counts/runtimes/sourceLOC not fairness/performance ranking. Discuss JSON fsync/rename/flock portability vsSQLite transactional/rollback/RO diagnostic andjournal-recovery boundary/nativecgo/options/platformpackaging overhead. SQLitePoC oneBLOB not normalizedqueries/scalability benchmark; verifiedcompiledout extensionequivalence no unsupportedguard bypass. Both processkill not powerloss/Linux/Windows/crossUID/hardware/diskfull; no implicitprodrecovery fromknownvalidharness. Freeze future production gate requirements: ownedlocation/platformlocking/atomicity/purity/migration/driver-dependency-andlicense/minversion/support targets/persistentoperationauthority separateG1. Rawcredentials/config/trust remainprotectedseparatestores, not inventory. Keepmetadata1/currentCLI/Bash/nativefour, AWGnotWG. No fullG0-G6scope drops, managementagent/sync/productionvault/UI/runtime independentgates. No pricingresearch or rerununchangedfixtures. Root accepts technical decision afterreview; unresolvedmaterialscopeconflict -> concreteblocker, no selfauthorization. Use linked actualreports not sourcewholematrix/history. Report configured Solhigh, actualusage collection root, no invented fees. Recommendnextready engineering paths only, no new G1schemas/dirs/driver implementation. Exact allowed files plusreport; stop overscope."
+}
