@@ -7597,7 +7597,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "Flutter/sing-box 路线证据表",
-      "status": "active",
+      "status": "verified",
       "mode": "research",
       "dependencies": [
         "G0-03.3c"
@@ -7694,7 +7694,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.1a.md",
+        "reviewed_by": "root Sol medium official fact/source review, no framework/security deployment decision",
+        "actual_model": "gpt-6-luna",
+        "reasoning_effort": "medium",
+        "token_usage": "Local observed collection pending docs/planning/metrics/G0-06.1a.json"
+      }
     },
     {
       "id": "G0-06.1b",
