@@ -7822,7 +7822,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "候选 A 工具链校验与隔离事实",
-      "status": "ready",
+      "status": "verified",
       "mode": "research",
       "dependencies": [
         "G0-06.1b"
@@ -7906,7 +7906,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2aa.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6-luna",
+        "reasoning_effort": "medium",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-06.2a",
