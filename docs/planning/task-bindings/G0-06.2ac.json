@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ac",
+  "status": "frozen",
+  "contract_versions": [
+    "Accepted lifecycle-preparation-v1 immediateprobe section @3fafbbd; runtime efficacy unverified"
+  ],
+  "implementation_files": [
+    "poc/client-framework/lab/isolate.py",
+    "poc/client-framework/lab/fixture.sb"
+  ],
+  "test_files": [
+    "poc/client-framework/lab/test_isolate.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ac",
+      "expected": "exit0 plan only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    },
+    {
+      "command": "python3 -I -c \"import ast,pathlib; [ast.parse(pathlib.Path(p).read_text(),filename=p) for p in ('poc/client-framework/lab/isolate.py','poc/client-framework/lab/test_isolate.py')]\"",
+      "expected": "exit0 syntaxonly, doesnotexecuteauthoredcode"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root",
+  "reviewed_by": "root accepted bounded implementation scope from Solhighdesign, source/runtime review remains mandatory",
+  "note": "I Solmedium fresh<=6k. Only3codepaths +report<=20lines. isolate.py<=230lines; profile<=25; tests<=280; total<=535 (bounded safetyharness exception to200diff). Stdlibonly, Darwinonly; no newdeps/SDK/binaries/networkdownloads/clientconfig/userstate/keychain/signing/root/deployment/profileimports. No runtime, unittest/importofnewmodule, Popen test, nativeSandbox call or fixtureallocation byworker; ASTparseonly thenhandoff for R review. Code module/test imports musthave no sideeffects. run_probe API fromcontract, fixedcase command whitelist (notarbitrarycaller shell/paths), fixedprofile source+hash andcanonicalownedroot inode/uid/mode checks rejectsymlinks; noHOME/CODEX_HOMEredefinition. Minimalenv; explicitOSargv curl -qfirst avoidsusercurlrc. Internalprofileparameter nointerpolatedSBPL/shell. Absolute monotonic2s command and20s suite limits include terminate/reap/drain; streams retain8KiB count/drain. FixedtrustedOSchildren exactowned identity/processgroups, no pkill. Positiveinsideprofile cat/touch provesbaseline loaderworks; decoyoutsideprofile reads/writes andshellinherited denials must be realnotcommonloader failure; preserveunchangedmanifest. curlcontrol outsideprofile owned127.0.0.1HTTPnonce listener +baselinecurl --version/protocol availability and before/after reachability controls preventgenerictool/serverfailure frommasqueradingnetworkdenial; listenerrecordsconnections. Denialambiguous->fail/unknown notpass; noexternalIP. Parentlistener FDthreads close/join, childWaitverifiedbeforecleanup, preservewholefailure fixture (closefds/processesstillrequired). Manifestownership validation before anyunlink; no recursivecleanup/unknownnames/symlinkfollowing, successfulonlyknownfiles+dirs. Exactfuture runtime command python3 -I poc/client-framework/lab/test_isolate.py proposed, NOT authorizeduntilR source-case review; rootruns. No dynamicallowloosening or profile fixes withoutR. Record configuredSolmedium, testsnotrun, no invented tokens/acceptance. Stop safetyambiguity, contractchanges, cap/2repairbudget exceeded. No gitcommit/statuschanges/newagent."
+}
