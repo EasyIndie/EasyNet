@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2af",
+  "status": "frozen",
+  "contract_versions": [
+    "Accepted bounded isolation/reaping designs; SIGABRT actual evidence @49e58de, code @bb56f88"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/startup-decision.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2af",
+      "expected": "exit0 plan only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root",
+  "reviewed_by": "root source-only R diagnostic decision scope",
+  "note": "R Sol high fresh <=6k core, only one decisiondoc<=100lines+report<=20. Read4exactinputselectors, canonical AGENTS and requiredREADME/CONTRIB relevantonly. Up to4primary Apple localmanual/OpenSource sources (browse uncertain technicalfacts); no broad newresearch. Actual owned wrapper pid94681 returned -6 SIGABRT with no output; exact soleZ/Wait/EOF/FDclose succeeded with no signals/errors. No inference which launcher/loader/target aborted. Originalac+ae remainblocked and budgets exhausted. Source-only decision: trace fixed sandbox-exec startup and minimal environment to available trusted OS/source facts, identify unknown stages, freeze one smallest useful controlled diagnostic card with exactargv/sourcefiles/expectedresults/limits, separate baseline/control from operation denials. No actualruntime/native processes/fixture/toolbinary invocation/downloads/SDK/privatefiles/logs/unifiedlogs/Keychain/crashreports/broadprocessinventory/config/commits/agents. Local Apple man reference read permitted, not native commands; official source URLs only. No profile edits or guessed capability fix/imports; proposed diagnostic instruments must remain bounded ownedsynthetic/no personalstate, reviewed beforelater execution. If trusted source cannot identify rootcause, sayunknown; exact safe controls stilluseful, not waivedgate. Cannot ignorefailures or change deadline/identity/signal semantics. No need generic fullguardian/GUI redesign. Output next implementation contract plus residual blockers, no claimed runtime qualification."
+}
