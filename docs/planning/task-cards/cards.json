@@ -7597,7 +7597,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "Flutter/sing-box 路线证据表",
-      "status": "locked",
+      "status": "active",
       "mode": "research",
       "dependencies": [
         "G0-03.3c"
@@ -7613,19 +7613,34 @@
       "inputs": [
         {
           "path": "docs/unified-client-analysis.md",
-          "selector": "macOS PoC 相关函数/配置；用 rg 定位后只读局部"
+          "selector": "sections2-4/6/8 are historical proposals, not accepted facts"
         },
         {
           "path": "scripts/clients/install_singbox_client.sh",
-          "selector": "macOS PoC 相关函数/配置；用 rg 定位后只读局部"
+          "selector": "pin definitions lines18-35, Linux asset detection135-164 and systemd launcher only; read, neverexecute"
+        },
+        {
+          "path": "docs/planning/capability-matrix.md",
+          "selector": "current native protocol and unknown live support constraints"
+        },
+        {
+          "path": "docs/planning/adr/ADR-004-controller-language.md",
+          "selector": "accepted Go service independent GUI/runtime decisions"
+        },
+        {
+          "path": "docs/planning/adr/ADR-005-local-state-storage.md",
+          "selector": "accepted inventory direction independent protectedstores/GUI/engine"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-06.1a.md",
       "binding": "docs/planning/task-bindings/G0-06.1a.json",
       "allowed_writes": [
+        "docs/planning/poc/client-framework/flutter-evidence.md",
         "docs/planning/task-results/G0/G0-06.1a.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/flutter-evidence.md"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -7661,10 +7676,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "前置卡尚未 verified/accepted-not-applicable",
-        "需要按本卡范围冻结 PoC/证据命令与单目标环境；不能运行所有候选"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
         "涉及新 trust/secret/权限/销毁边界立即审查",

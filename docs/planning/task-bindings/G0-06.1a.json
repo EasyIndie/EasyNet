@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.1a",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-06.1a singlecandidate official facts, no Flutter/sing-box adoption or platformqualification"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/flutter-evidence.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.1a",
+      "expected": "exit0 plansonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "C Luna medium freshcontext<=6K, fixedsinglecandidateofficialresearchonly, noframeworkdecision/newPoC/code/deps/install/download/runtime/sudo/signing/store/subscription/private/networkconfiguration/externalswrites. AllowedoneevidenceMarkdown<=130lines +mandatoryreport<=20lines; noREADME/source/cardstatusedits byworker. Rootreviewsfacts/citations; architecture/platformpermissions conclusions deferredR, onlysummarize documentedprerequisitesnotlegaladvice. Browseprimaryofficialsources dated2026-10-08 (Flutter docs/repo, sing-box officialdocs/repo, AppleDeveloper, AndroidDeveloper). <=8sourcepages target; avoidnews/starcounts/thirdpartyappclaims. Each claim concreteofficiallink with factual, inference, orunknown qualification; preservewordlimits no largequotes. Fixed7rows: platformcoverage (macOS/iOS/Android/Linux/Windows/architectures andminimumOS whereofficialdocumented; AndroidTV notassumedvalidated), Go-service/FlutterIPC/nativebridge andsing-boxlibbox packaging API constraints, macOS/iOS NetworkExtension separateprocess/entitlement/appsign-distribution, AndroidVpnService consent/lifecycle, desktopTUN privilege/integration independentUI, license/dependency/update/supportgate facts notlegalrecommendation, protocol/format boundaries native4 includingAWG vsWG andXraynotautomaticlibsupport. Historical unified-client-analysis recommendations notacceptedchoices. CurrentLinuxsystemdinstaller notmacOSGUI/frameworkproof. No currentclientconfigurationblindcopy/nativeTUNreachabilityclaim. Enginecandidate separateADR002/#5 fromGUI/service choice; noimplicitadoptingsing-boxserveror droppingAWG/native4. Checkofficiallateststable API ratherthan guessversions; no versionpinsselected. MarkminOS/arch/entitlement/build/release/liveengine notobserved asunknown, do notclaimNEapproval mandatory withoutofficialsupport. CaptureplatformUIvsVPNenginepermissionsdistinct, no unsignedrealVPN/runtime. Definebounded futurehostPoC prerequisite/checkplanonly, noexecute. ChecknewlocalrelativeMarkdownlinksread-only; officialsourceattributionbyroot review. Return<=12lines factscheck/paths/unverified/no actualtokensinvented; no gitcommits."
+}
