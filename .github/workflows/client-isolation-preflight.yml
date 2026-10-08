@@ -1,0 +1,29 @@
+name: Client isolation preflight
+
+on:
+  push:
+    branches: [codex/feature/self-hosted-byos-byoc]
+    paths:
+      - .github/workflows/client-isolation-preflight.yml
+      - poc/client-framework/lab/runner_preflight.py
+      - poc/client-framework/lab/isolate.py
+      - poc/client-framework/lab/mapping-fixture.sb
+      - poc/client-framework/lab/fixture.sb
+      - poc/client-framework/lab/mapping_diag.py
+      - poc/client-framework/lab/mapping_diag_test.py
+      - poc/client-framework/lab/mapping_main_test.py
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    if: github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc'
+    runs-on: macos-15
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Fixed reviewed diagnostic, once
+        run: python3 -I -B poc/client-framework/lab/runner_preflight.py

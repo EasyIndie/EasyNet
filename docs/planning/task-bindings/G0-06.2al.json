@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2al",
+  "status": "frozen",
+  "contract_versions": [
+    "aj six reviewed bytes unchanged @1aba68e; user2026-10-09 authorizes GitHub runner first and local resource assessment; supersedes ak VM-only recommendation for current diagnostic"
+  ],
+  "implementation_files": [
+    ".github/workflows/client-isolation-preflight.yml",
+    "poc/client-framework/lab/runner_preflight.py"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2al",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    },
+    {
+      "command": "python3 -I -c \"import ast,pathlib; ast.parse(pathlib.Path(\"poc/client-framework/lab/runner_preflight.py\").read_text())\"",
+      "expected": "AST only; wrapper never run locally"
+    }
+  ],
+  "environment": "github-hosted macos-15 arm64 temporary VM",
+  "side_effect_authorization": "User explicitly GitHub runner validation. Root push existingfeature only after independent R and exact review hashes; creates no PR/release/main merge. One path-filtered push triggers onejob; no automatic rerun. local assessment readonly exact CPU/memory/OS/df/vmstat/swap only; no processes/personalfiles/VMinstallation.",
+  "prepared_by": "root short mechanical reviewed-code transport, no I worker",
+  "reviewed_by": "independent R required before push/native",
+  "note": "2newimpl caps workflow<=50lines wrapper<=100lines report<=30. Reuse six aj reviewed source bytes untouched. Newtarget allows one exact twofake+mappingdriver once, not localretry. Wrapper noargs strictDarwinarm64 uidnonroot/runner GitHubrepo/ref/3.14.x/waitid; pin sixliteralhashes, resolve trusted image Python then observehash/version and verify unchangedbeforeafter EACH command. Dynamicrunnerimage/Python notexternallypinned qualification. Only sanitized fixed outputs/caseJSON no rawfake streams/env/crash. workflowpush exactbranch+paths, jobif repo/ref, contentread/persistcredentialsfalse/checkout3d3c42e5aac5ba805825da76410c181273ba90b1, timeout5min emergencyVMtermination; noSDK/download/cache/artifact/secrets/sudo/GUI/TUN/proxy/routing. Allsource/native/profile guards and ownfixture700/600 preserved. Stop firstfailedfake/hash/platform/native, no extra diagnostic/rerun/grantwiden. Reviewworkflowwrapper and sourcehash reuse; sourceAST/localplan/diff only beforepush. No need repeat nativeguardreviews; fullgateblocked evenA-Dpass. Guest teardown means failurefixture notpersisted pastjob; fixedlog is bounded evidence notretentionpromise. Public-source push authorized forrunner execution; mustinspect trackedstagedpaths andno obviouslysensitive material; do notread.env/private credentials. Twofocusedsource repairsmax; Iworker unnecessarymechanicaladapter butindependentRmandatory.",
+  "source_review": {
+    "reviewed_by": "independent GPT-6.1 Sol high PASS",
+    "files_sha256": {
+      ".github/workflows/client-isolation-preflight.yml": "144a86bc3eaa4c31d243e6a2cac6f4723da6f5d6935803f014e472ba44c25590",
+      "poc/client-framework/lab/runner_preflight.py": "01151ebb17fd1daa77a7d9f787a7659f2bb522414724e2711c10de4cbd4db71c"
+    },
+    "reused_files_sha256": {
+      "poc/client-framework/lab/isolate.py": "3bc47c022eb6bf10004372cc4021e0d692720e81b318d5dd0cffb54b18d2522c",
+      "poc/client-framework/lab/mapping-fixture.sb": "1dfc6055110b29f06ccd2026eb230433cd5ca6da9be2354b2c43fb88efba0595",
+      "poc/client-framework/lab/mapping_diag.py": "3918c9408f323cc4390465717e151d841b54a524bb83246185be1d6e48cba59b",
+      "poc/client-framework/lab/mapping_diag_test.py": "552bb9eb486967cc1377db6f458ff35f371a836c13f5172177342cc1c1309f1f",
+      "poc/client-framework/lab/mapping_main_test.py": "09f9b773dc949656ce3769e3449e05123717e5c8eb1247c429bb841091127c72",
+      "poc/client-framework/lab/fixture.sb": "b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82"
+    }
+  },
+  "runtime_authorization": {
+    "attempts": 1,
+    "target": "GitHub-hosted macos-15 arm64",
+    "trigger": "push exact feature ref after reviewed source commit",
+    "commands": [
+      "python3 -I -B poc/client-framework/lab/runner_preflight.py"
+    ],
+    "expected": "two fake suites then fixed A-D slice; failure stops; no rerun",
+    "python_provenance": "trusted runner image observed3.14.x and hash held constant per command, not externally pinned"
+  }
+}
