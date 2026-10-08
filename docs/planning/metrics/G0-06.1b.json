@@ -8,7 +8,7 @@
   "matched_pair_id": null,
   "input_commit": "d1ba690",
   "started_at_utc": "2026-10-08T06:50:32.064626+00:00",
-  "finished_at_utc": null,
+  "finished_at_utc": "2026-10-08T06:55:09.201051+00:00",
   "acceptance_contract": "G0-06.1b singlecandidate official facts againstrelated7rowframeworkbaseline; no UI/engine adoption or platformqualification",
   "subagent_count": 0,
   "configured_models_and_efforts": [
@@ -23,13 +23,27 @@
   "implementation_review_repair_included": true,
   "automatic_review_included": true,
   "measurement_overhead_included": true,
-  "usage_report_path": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.1b-usage.json",
   "first_pass": true,
   "repair_rounds": 0,
   "billing_cost": null,
   "limitations": [
     "PriorFluttermetricpublicationtailincluded; exactcausalattributionnotclaimed.",
-    "Relatedfacttable withdifferentplatform/source scope, source reuse andactualmodel fromFlutterLuna arm: notstrictmatchedpair, no monetarycausalconclusion."
+    "Relatedfacttable withdifferentplatform/source scope, source reuse andactualmodel fromFlutterLuna arm: notstrictmatchedpair, no monetarycausalconclusion.",
+    "Acceptance commit and collection invocation included; later publication/reporting outsidecutoff. Differentmodel/task/source reuse preventscausalcostclaim."
   ],
-  "final_acceptance": "Official native-route facts/link/plan checks accepted; no framework/engine/platform qualification"
+  "final_acceptance": "Official native-route facts/link/plan checks accepted; no framework/engine/platform qualification",
+  "elapsed_seconds": 277.136425,
+  "implementation_commit": "682ddd9",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9787549125704847,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 1443456,
+    "calls": 10,
+    "input_tokens": 1474788,
+    "noncached_input_tokens": 31332,
+    "output_tokens": 8773,
+    "reasoning_output_tokens": 3720,
+    "total_tokens": 1483561
+  }
 }

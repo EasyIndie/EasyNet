@@ -7812,7 +7812,7 @@
         "reviewed_by": "root official source/fact consistency review; UI/platform/security decisions deferred R",
         "actual_model": "gpt-6.1-sol",
         "reasoning_effort": "medium",
-        "token_usage": "Local observed collection pending docs/planning/metrics/G0-06.1b.json",
+        "token_usage": "Observed local report docs/planning/metrics/G0-06.1b-usage.json; not billing",
         "note": "Authorized main-only lowrisk calibration arm actualSolmedium, no subagent; same7headings butrelatedunpairedcandidatecomparison"
       }
     },

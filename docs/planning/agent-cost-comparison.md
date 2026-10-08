@@ -105,3 +105,31 @@ CODEX_HOME 未设置时传实际 Codex 数据目录，工具不猜会话 ID。�
 
 本次采集器 9 项合成测试通过，涵盖延续日志去重、历史 carry-in、模型切换、时间窗口、
 缺失/非法字段、重置/缺口、自动审批分类与私有正文不导出。执行本项目日志采集成功。
+
+## Actual related fact-card observations (2026-10-08)
+
+| Observation | Configured execution | Uncached input | Output (reasoning included) | Input cache read | Usage events |
+|---|---|---:|---:|---:|---:|
+| [G0-06.1a](metrics/G0-06.1a-usage.json) Flutter facts | Luna medium + main Sol medium fact review | 156938 | 23442 | 96.64% | 46 |
+| [G0-06.1b](metrics/G0-06.1b-usage.json) native facts | Main Sol medium, no subagent | 31332 | 8773 | 97.88% | 10 |
+
+Totals include automatic approval separately in the underlying reports. Manual
+parts: delegated arm133589 uncached/22947 output; main arm19593/8452. The
+delegated worker alone was93575/12748 and its main coordination40014/10199.
+Cache was high in both, not a generally low-hit subagent context. These are local
+usage events and counters, not HTTP request counts, invoice or subscription units.
+
+This is **related unpaired evidence**, not a controlled matched pair: Flutter
+needed more new sources/platform facts and a fact-report repair; native facts
+reused same-day NE/libbox/protocol sources and used a different actual model.
+Windows/minimum-OS/bridge scopes also differ. Both windows contain prior metric
+publication tails and exclude publication after their own collection cutoffs.
+Do not turn the difference into a causal savings percentage or dollar conclusion.
+The planned three matched pairs have not been satisfied by this observation.
+
+Operational recommendation remains selective: keep short mechanical checks and
+small frozen fact edits in main; use bounded Luna for an independently substantial
+document/fact package, Sol medium for implementation and Sol high for required
+architecture/security review. Avoid broad fan-out or a new agent for each tiny
+lookup; include root/review/repair overhead when assessing future matched samples.
+Complex SQLite evidence required review despite overhead; quality gates stay.
