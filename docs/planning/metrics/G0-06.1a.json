@@ -7,7 +7,7 @@
   "matched_pair_id": null,
   "input_commit": "cc2d0cb",
   "started_at_utc": "2026-10-08T06:39:34.901886+00:00",
-  "finished_at_utc": null,
+  "finished_at_utc": "2026-10-08T06:50:32.064626+00:00",
   "acceptance_contract": "G0-06.1a singlecandidate official facts, no Flutter/sing-box adoption or platformqualification",
   "subagent_count": 1,
   "configured_models_and_efforts": [
@@ -27,18 +27,32 @@
   "implementation_review_repair_included": true,
   "automatic_review_included": true,
   "measurement_overhead_included": true,
-  "usage_report_path": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.1a-usage.json",
   "first_pass": false,
   "repair_rounds": 2,
   "billing_cost": null,
   "limitations": [
     "Includes prior ADR metric-publication tail; not exact causalattribution.",
-    "Unpaired official research scope, not proof of comparative task cost."
+    "Unpaired official research scope, not proof of comparative task cost.",
+    "Acceptance commit and collection invocation included; metric publication/reporting outsidecutoff. Next SwiftUI fact table differs in sources/platform scope, not strictmatchedpair."
   ],
   "validation_history": {
     "local_check_syntax_repairs": 1,
     "fact_report_repair_rounds": 1,
     "runtime_runs": 0
   },
-  "final_acceptance": "Bounded singlecandidate primarysource facts accepted; Flutter version/Libbox declarations/Apple distribution distinctions recorded; no target/framework/runtimequalification"
+  "final_acceptance": "Bounded singlecandidate primarysource facts accepted; Flutter version/Libbox declarations/Apple distribution distinctions recorded; no target/framework/runtimequalification",
+  "elapsed_seconds": 657.16274,
+  "implementation_commit": "9172d62",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9663803367664644,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 4511104,
+    "calls": 46,
+    "input_tokens": 4668042,
+    "noncached_input_tokens": 156938,
+    "output_tokens": 23442,
+    "reasoning_output_tokens": 10241,
+    "total_tokens": 4691484
+  }
 }

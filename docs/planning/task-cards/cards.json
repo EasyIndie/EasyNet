@@ -7700,7 +7700,7 @@
         "reviewed_by": "root Sol medium official fact/source review, no framework/security deployment decision",
         "actual_model": "gpt-6-luna",
         "reasoning_effort": "medium",
-        "token_usage": "Local observed collection pending docs/planning/metrics/G0-06.1a.json"
+        "token_usage": "Observed local report docs/planning/metrics/G0-06.1a-usage.json; not billing"
       }
     },
     {
