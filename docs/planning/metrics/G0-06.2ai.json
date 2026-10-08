@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ai",
+  "status": "verified_source_decision",
+  "strategy": "delegated_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "45986ff",
+  "started_at_utc": "2026-10-08T09:03:05.320914+00:00",
+  "finished_at_utc": "2026-10-08T09:18:19.170122+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": false,
+  "repair_rounds": 1,
+  "billing_cost": null,
+  "implementation_commit": "c559dd7",
+  "usage_report_path": "docs/planning/metrics/G0-06.2ai-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9776721226576581,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 4829056,
+    "calls": 49,
+    "input_tokens": 4939341,
+    "noncached_input_tokens": 110285,
+    "output_tokens": 21390,
+    "reasoning_output_tokens": 7201,
+    "total_tokens": 4960731
+  },
+  "limitations": [
+    "Source-only namedmappinghypothesis, no actualpermission/abort/platform qualification.",
+    "RootcaughtprematureVM requirement andbadrelativelinks, supplied1shippedprofilesource; sameR repair1 added3dyld/XNUprimarysources.",
+    "InitialAppleDeveloper sourcecategory searchdeviation excluded; explicitrepairscopeexpandedofficialAppleprimaries, no retroactiveerase.",
+    "Priorah metricpublicationtail/preparation included, approximateattribution; acceptance/collectorincluded currentpublication excluded.",
+    "No matched main-only sample/costwinner; outputincludesreasoning."
+  ]
+}

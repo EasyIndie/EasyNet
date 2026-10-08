@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2aj",
+  "status": "frozen",
+  "contract_versions": [
+    "Accepted restrictedmapping experiment preparation @c559dd7; originalprofile b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82 unchanged"
+  ],
+  "implementation_files": [
+    "poc/client-framework/lab/isolate.py",
+    "poc/client-framework/lab/mapping-fixture.sb",
+    "poc/client-framework/lab/mapping_diag.py"
+  ],
+  "test_files": [
+    "poc/client-framework/lab/mapping_diag_test.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2aj",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    },
+    {
+      "command": "python3 -I -c \"import ast,pathlib; [ast.parse(pathlib.Path(p).read_text(),filename=p) for p in ('poc/client-framework/lab/isolate.py','poc/client-framework/lab/mapping_diag.py','poc/client-framework/lab/mapping_diag_test.py')]\"",
+      "expected": "exit0 ASTonly noauthoredimports"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root",
+  "reviewed_by": "root frozen sourceonly I scope fromaccepted R contract; independent sourceapproval mandatory",
+  "note": "I Solmedium fresh<=6kcore, only3implementation+1test+report<=20. Caps isolate420 (currently376, smallinternalvariantguards+fixedentry exception), newprofile<=18, driver<=220, tests<=240 (meaningfulpermissionboundary/fault safety exception200diff). Originalfixture.sb BYTES/HASH MUSTUNCHANGED. Newmapping-fixture.sb cloneexactoriginalbytes plusONE allow file-map-executable clause with exactly original6trustedread selectors literals/bin/sh,/bin/cat,/usr/bin/touch,/usr/bin/curl andsubpaths/usr/lib,/System/Library/dyld. ALLOWED_ROOT/decoy/home/broaderSystem/Library never mappingtargets; noimports/Mach/JIT/process/network/file read/write grantchanges. Add separate MAPPING_PROFILE_SHA256 and private _probe_guards variant selector defaultoriginal (strictinternalfixedboolean); preservealloldguardorder/canonicalPath/lstatuidnlink/hash/live/manifest; existing run_probe/run_startup_control/_case/_execute/env unchangedsemantics. New run_mapping_probe(profile_path,allowed_root,case,deadline_s=2) strict str enum direct-eof/sandbox-eof/allowed-read/denied-read ONLY, no callerargv; each validatesfixedmappingprofile even directcase, fixedcat argv andsandbox wrapper literal. Ownedseedpaths derivedvalidatedroot only; no helper/runtime mmapnegative grant. Driver fixedA directcatEOF,B mappingsandboxcatEOF,C ownedallowedseedcat,D decoyseedcat, exactlyonceeach stopfirstfailure. Allcase lifecycle prereq reservedsoleZ/Wait/helperWait/EOF/FDclosed/reaped/noerrors/nosignals/elapsed<1s/percase2s inclusive cap8KiB. A/B rc0 stdoutstderr0; C rc0 exactsyntheticnonce/stdoutcount,stderr0; D rc1 stdout0 andexactstderr line bcat-colon-space +fixeddecoyseedpath + bcolon-space-Operation-not-permitted-newline (Rconfirmmatcher); no decoynonce anywherecaptured. Abort/empty/genericerror neverdenial. Driverabsolute12s includingcombinedsetup+finish<=4s and4case<=2s each; reuseexistingmanifest0700/600 creation/knowncleanup/reporting snippets bounded, nopersonalreads/oldroots/recurse. On precleanupfailure retainwhole newroot; cleanupstartedreportremainingunknown; no falseatomicretention. Outputfixedlabels/lifecycle/expectedmatchboolean, no nonces/env/privatepath/crashpayload. Source/fake tests onlyreadreviewedlocalfixedprofile/source bytes, allprocess/fixtureIO/signals/env replaced; no realos.environ mutation. Proveoriginalprofileunchanged andexactsingleopdelta/selectorlist; static modeledmembership positive6selectors andnegativeownedsyntheticallowed/decoy,outside,siblingprefix/paths (explicitlynotactualSBPL/mmapdenial qualification), guardrejectwrongvariant/hash/mode/arbitrarycase, exactargv andfixedsequence stop/wrongcode/bytes/genericdenial fails. Testsnotmirroredutilities; focusboundaryfaults. WorkerNO authoredimports/tests/nativeprocess/sandbox/fixture/SDK/download/privatefiles/logs/config/git/newagents; AST/plan/diff andstdlibhash offixednewpublicprofile only. Rreview exactvariantprofile+guard changes+newdriver/tests andfreezeallhashes; separatelybound rootexecutioncard later no permissionfromthisbinding. Causeunknownactualmapdenialunqualified evenpossiblepass; nativeSDK/GUI/fullG0gatesremainblocked andG0–G6unchanged. Twofocusedrepairs thenstopambiguity/caps. Handoff<=12lines model/caps/staticchecks/unknowns notinventedtoken."
+}
