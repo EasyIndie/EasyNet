@@ -99,7 +99,7 @@
 | [G0-06.2ad](G0/G0-06.2ad.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查退出 leader 的进程组信号与回收语义 |
 | [G0-06.2ae](G0/G0-06.2ae.md) | GPT-6.1 Sol medium | blocked | 实现已审回收合同和精确进程组对照 |
 | [G0-06.2af](G0/G0-06.2af.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查隔离启动链的无输出 SIGABRT |
-| [G0-06.2ag](G0/G0-06.2ag.md) | GPT-6.1 Sol medium | ready | 实现固定的启动基线和沙箱 EOF 对照 |
+| [G0-06.2ag](G0/G0-06.2ag.md) | GPT-6.1 Sol medium | verified | 实现固定的启动基线和沙箱 EOF 对照 |
 | [G0-06.2a](G0/G0-06.2a.md) | GPT-6.1 Sol medium | locked | 候选 A engine 生命周期 PoC |
 | [G0-06.2b](G0/G0-06.2b.md) | GPT-6.1 Sol medium | locked | 候选 A 系统权限 PoC |
 | [G0-06.2c](G0/G0-06.2c.md) | GPT-6.1 Sol medium | locked | 候选 A 签名打包 PoC |

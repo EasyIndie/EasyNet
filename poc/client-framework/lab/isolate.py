@@ -337,7 +337,7 @@ def _case(root, argv):
     raise ValueError("command not frozen")
 
 
-def run_probe(profile_path, allowed_root, argv, deadline_s=2):
+def _probe_guards(profile_path, allowed_root):
     if sys.platform != "darwin" or os.getuid() == 0:
         raise ValueError("unprivileged Darwin only")
     root = _root(allowed_root)
@@ -354,6 +354,23 @@ def run_probe(profile_path, allowed_root, argv, deadline_s=2):
         raise ValueError("unsafe profile ownership")
     if hashlib.sha256(profile.read_bytes()).hexdigest() != PROFILE_SHA256:
         raise ValueError("profile hash mismatch")
+    return root, profile
+
+
+def run_probe(profile_path, allowed_root, argv, deadline_s=2):
+    root, profile = _probe_guards(profile_path, allowed_root)
     case = _case(root, argv)
     return _execute(["/usr/bin/sandbox-exec", "-f", str(profile), "-D",
                      "ALLOWED_ROOT=" + str(root / "allowed"), *argv], case, deadline_s)
+
+
+def run_startup_control(profile_path, allowed_root, sandboxed, deadline_s=2):
+    """Fixed EOF controls; both modes enforce the complete probe guards."""
+    if type(sandboxed) is not bool:
+        raise ValueError("startup mode must be bool")
+    root, profile = _probe_guards(profile_path, allowed_root)
+    argv = ["/bin/cat"]
+    if sandboxed:
+        argv = ["/usr/bin/sandbox-exec", "-f", str(profile), "-D",
+                "ALLOWED_ROOT=" + str(root / "allowed"), *argv]
+    return _execute(argv, "sandbox-eof" if sandboxed else "direct-eof", deadline_s)
