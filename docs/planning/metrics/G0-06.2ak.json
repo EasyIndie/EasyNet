@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ak",
+  "status": "verified_source_decision",
+  "strategy": "delegated_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "f2e403a",
+  "implementation_commit": "2f21141",
+  "started_at_utc": "2026-10-08T21:40:27.935515+00:00",
+  "finished_at_utc": "2026-10-08T21:44:47.415861+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": true,
+  "repair_rounds": 0,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2ak-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9426161693718789,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 1900416,
+    "calls": 39,
+    "input_tokens": 2016108,
+    "noncached_input_tokens": 115692,
+    "output_tokens": 9411,
+    "reasoning_output_tokens": 1073,
+    "total_tokens": 2025519
+  },
+  "limitations": [
+    "Source-only environment prerequisite decision; no VM/native qualification.",
+    "Includes previous metric publication/preparation tail; approximate attribution, current publication excluded.",
+    "No matched main-only comparator or cost winner; output includes reasoning."
+  ]
+}
