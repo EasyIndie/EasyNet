@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2an",
+  "status": "frozen",
+  "contract_versions": [
+    "am accepted @86300ad; al observed runner Python3.14.7 exacthash baseline"
+  ],
+  "implementation_files": [
+    "poc/client-framework/lab/attribution_diag.py",
+    "poc/client-framework/lab/attribution_record.py",
+    ".github/workflows/client-startup-attribution.yml"
+  ],
+  "test_files": [
+    "poc/client-framework/lab/attribution_record_test.py",
+    "poc/client-framework/lab/attribution_diag_test.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2an",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    },
+    {
+      "command": "python3 -I -c \"import ast,pathlib; [ast.parse(pathlib.Path(p).read_text()) for p in (\"poc/client-framework/lab/attribution_diag.py\",\"poc/client-framework/lab/attribution_record.py\",\"poc/client-framework/lab/attribution_record_test.py\",\"poc/client-framework/lab/attribution_diag_test.py\")]\"",
+      "expected": "ASTonly"
+    }
+  ],
+  "environment": "source-only future GitHub macos15-arm64",
+  "side_effect_authorization": "No worker runtime. User continue reviewed attribution plan; rootonly later exactbinding afterindependentR permitscontrolledfakes thenonefreshguest syntheticownedrecord observation. No personalhostnative/logs.",
+  "prepared_by": "root",
+  "reviewed_by": "root frozen acceptedRcontract; independentimplementationR mandatory",
+  "note": "Fresh I Solmedium <=6kcore;3impl+2tests+report. Caps driver220, reader320, workflow45, recordtests260, drivertests220, report20 lines (bounded correlation/parser/filesystem exception200diff). Worker NO authoredimports/tests/runtime/fixture/native/downloads/privatefiles/logs/config/git/newagents; only AST/plan/diff. Contract am@86300ad exact, root accepts arm64|arm64e; all old6files unchanged hashes. New driver frozen noargv Githubrepo/ref/macOS15.7.9arm64 uidnonroot HOME literal /Users/runner (no override), Python3.14.7 SHA d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3 fromal observedtarget baseline (not externalreleasepin), waitid. Root later fills source_review.files_sha256: exact old6+new3+tests2, rejectmissing/extra/hashes before/after EVERY launch/helper/fakes; self reads fixedbinding only, no callerconfigs. Source binding frozen by Gitcommit +root sourcehash review, never worker runtime. Import-safe code only standardlibs plus fixed reviewed source modules via guarded loader. Once run_mapping_probe sandboxEOF2; target healthy rc-6 only ->3sdelivery ->one fixed -I -B reader sixinternaldecimalargs ->unchanged_execute2s; query independently healthy withstrict6keys<=512stdout/emptyerr, no causeclaim. Driver/helper monotonic+wall agreement 10ms with query_start explicit. Record reader only guest HOME DiagnosticReports flat <=256entries/.5s; one regularownednonlinkedunchanged<=262144candidate. No raw messages/name/path/crash/stack/env export; record types+duplicate/depth/UTCparser/strictimg+parent+pid+time+UUID andtermination namespace/categoryexact enum withboundedstrictintcode. Scope now permits tentatively matched synthetic crash bytes ONLYfresh guest inthislaterapprovedbinding, neverlocal/personallogs. Helper fixedtoken args/PPID==driverid/HOME/uid/Darwin, no generalAPI; unknown schema/time/errors cleanallunknown. Original _execute faults reused; newtests fakedFS/process/clocks/allenv via patch.object not realos.environ, no actualfixture/nativecalls. Driver14s setup4/target2/delivery3/helper2/finish3; unknownretain no recursivecleanup. Workflow1minute emergencyguestteardown, exactfeaturepush paths only3newimpl+2tests, contentread/checkoutSHA3d3c42e5aac5ba805825da76410c181273ba90b1 persistcredentialsfalse, python3-I-Bfixeddriver. Do NOT edit oldworkflow/runner so norepeatoldrun. No SDKsudoGUITUN/cache/artifact/secrets/grants. SourceR separately review allnewparser/FS/integration/fakes +workflow andfreezehashes; rootlocalcontrolledfakes onlyafterPASS then one remote attemptdifferentnewdiagnostic source; not localnative. Twofocusedrepairsmax; caps/ambiguity stopR. Root does all commits/push/runtime/reportmetrics. Handoff<=10lines."
+}

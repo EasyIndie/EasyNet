@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2am",
+  "status": "verified_source_contract",
+  "strategy": "delegated_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "a27b36a",
+  "implementation_commit": "86300ad",
+  "started_at_utc": "2026-10-08T22:07:17.139032+00:00",
+  "finished_at_utc": "2026-10-09T06:36:02+08:00",
+  "subagent_count": 1,
+  "history_inheritance": "none; samecard repair1 plus mechanicalclarifications",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": false,
+  "first_pass": false,
+  "repair_rounds": 1,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2am-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.965076048358469,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 8128768,
+    "calls": 67,
+    "input_tokens": 8422930,
+    "noncached_input_tokens": 294162,
+    "output_tokens": 25446,
+    "reasoning_output_tokens": 9493,
+    "total_tokens": 8448376
+  },
+  "limitations": [
+    "Cutoff acceptedsourcecommit timestamp+1s before an worker dispatch; collector/publication overhead falls nextwindow, approximate boundary.",
+    "Includes preceding modelstack Q&A/rootreads and previous al publicationtail, not pure contract writing.",
+    "R2 primarysources plusroot1 narrow Applearchitecture source; explicit sourcebudgetrefinement.",
+    "Source-only accepted, no crashrecord/native acceptance or costwinner.",
+    "Output includesreasoning; no pairedmainonlysame-taskcomparison."
+  ]
+}
