@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "active",
+  "status": "verified",
   "task_id": "G0-05.2a",
   "matched_pair_id": null,
   "strategy": "delegated",
@@ -9,24 +9,34 @@
   "acceptance_contract": "Reviewed LocalStateLab-v1 + JSONFixture-v1 source/harness accepted",
   "estimated_scope": "One owned JSON backend and local crash/CAS harness; no production store.",
   "started_at_utc": "2026-10-08T01:27:24.810Z",
-  "finished_at_utc": null,
-  "attribution": "completion_timestamp",
+  "finished_at_utc": "2026-10-08T01:55:40.560594+00:00",
+  "attribution": "completion_timestamp_snapshot",
   "excluded_windows": [],
   "configured_models_and_efforts": [
     {
-      "role": "implementation",
+      "role": "automatic_review",
+      "model": "codex-auto-review",
+      "effort": "low"
+    },
+    {
+      "role": "main",
       "model": "gpt-6.1-sol",
       "effort": "medium"
     },
     {
-      "role": "review",
+      "role": "subagent",
       "model": "gpt-6.1-sol",
       "effort": "high"
+    },
+    {
+      "role": "subagent",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
     }
   ],
   "subagent_count": 2,
   "history_inheritance": "none for fresh workers; same-card repair/review retains history",
-  "usage_report_path": null,
+  "usage_report_path": "docs/planning/metrics/G0-05.2a-usage.json",
   "main_coordination_included": true,
   "implementation_review_repair_included": true,
   "automatic_review_included": true,
@@ -35,7 +45,7 @@
   "repair_rounds": 3,
   "blocking_review_findings": 7,
   "final_acceptance": "Owned Darwin JSON only: 26 top-level and95subtests pass, nofail/skip; fullbehavior first run 3.397s. Source review accepted after2repair rounds; 1compiler namecollision fix.",
-  "elapsed_seconds": null,
+  "elapsed_seconds": 1695.751,
   "billing_cost": null,
   "applicable_price_source": null,
   "limitations": [
@@ -44,7 +54,9 @@
     "Token counters are local observations, not subscription invoice.",
     "Post-flock helper test is deterministic real flock/guard evidence; method-order placement is source review, not instrumented waiter runtime.",
     "Process kills do not prove power loss, hardware/disk-full or production filesystem durability.",
-    "Linux and live cross-UID guards unqualified; wrong UID pure stat fixture only."
+    "Linux and live cross-UID guards unqualified; wrong UID pure stat fixture only.",
+    "Measurement window includes preparation, dispatch, implementation, design/source reviews, repairs, runtime and acceptance commit plus this collection invocation. Subsequent metric publication and user-facing reporting are outside cutoff; not a final invoice.",
+    "Completion timestamps and live local-log flush may cause boundary uncertainty; do not claim exact causal cost attribution."
   ],
   "validation_history": {
     "compile_repair_rounds": 1,
@@ -58,5 +70,6 @@
     "package_elapsed_seconds": 3.397,
     "first_behavior_run_pass": true
   },
-  "first_pass_definition": "Initial source/compile/behavior acceptance as a whole; compiler failure and source review blockers required repairs."
+  "first_pass_definition": "Initial source/compile/behavior acceptance as a whole; compiler failure and source review blockers required repairs.",
+  "implementation_commit": "84196f4"
 }

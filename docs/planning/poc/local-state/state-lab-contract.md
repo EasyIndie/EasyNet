@@ -1,10 +1,14 @@
 # LocalStateLab-v1 — reviewed common storage experiment contract
 
 G0-05.1 research contract; Sol high and root accepted for owned experiments only.
-No implementation or behavior pass is claimed. JSON and SQLite must qualify against
+Contract acceptance itself claimed no implementation or behavior pass. JSON and SQLite must qualify against
 this same bounded model, API and cases; ADR-005 chooses the backend later.
 [ADR-004](../../adr/ADR-004-controller-language.md) selects Go for application services,
 not a storage, encryption, vault, GUI or runtime choice.
+
+Subsequent evidence: [G0-05.2a](../../task-results/G0/G0-05.2a.md) qualified the
+owned Darwin JSON fixture matrix. SQLite qualification and ADR-005 remain pending;
+this does not qualify a production store.
 
 ## Scope and accepted boundaries
 
@@ -117,7 +121,7 @@ from a known-valid seed/successor; declared recovery stays in owned 0700/0600 pa
 Record file/journal/auxiliary changes; recover complete g or g+1, never mixed/g+2.
 Freeze the recovered baseline, then prove exact load/snapshot purity for both candidates.
 Ordinary corrupt/future opens never recover; no production authority or power-loss claim.
-Neither mechanism is already qualified. Crashes before publication recover complete
+Contract acceptance did not qualify either mechanism; subsequent JSON fixture evidence is linked above. Crashes before publication recover complete
 old g; after publication recover complete new g+1, exactly one increment. A crash
 at the boundary may recover either, never a mixture or g+2. Process-kill evidence
 does not prove power-loss, faulty filesystem, disk-full or hardware durability.
