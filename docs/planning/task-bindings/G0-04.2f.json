@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.2f",
+  "status": "frozen",
+  "contract_versions": [
+    "ResultLab-v1; reviewed F singlebin result/API/CLI-v1; Sol high design approved"
+  ],
+  "implementation_files": [
+    "poc/controller-language/rust/Cargo.toml",
+    "poc/controller-language/rust/Cargo.lock",
+    "poc/controller-language/rust/src/bin/labresult.rs"
+  ],
+  "test_files": [
+    "poc/controller-language/rust/tests/labresult_cli.rs",
+    "docs/planning/poc/controller-language/rust-result-results.md"
+  ],
+  "commands": [
+    {
+      "command": "env PATH=/tmp/easynet-poc-toolchains/rust/bin:/usr/bin:/bin CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target /tmp/easynet-poc-toolchains/rust/bin/cargo update --manifest-path poc/controller-language/rust/Cargo.toml -p easynet-ssh-lab",
+      "expected": "prepare exact serde1.0.229 serde_json1.0.151 std/raw_value lock; preserve all existing locked versions; network scopedregistry only if cache lacks"
+    },
+    {
+      "command": "env PATH=/tmp/easynet-poc-toolchains/rust/bin:/usr/bin:/bin CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target /tmp/easynet-poc-toolchains/rust/bin/cargo test --manifest-path poc/controller-language/rust/Cargo.toml --locked --offline --bin labresult --test labresult_cli",
+      "expected": "pureinline units +actual ownedfinite CLI cases pass; no SSH/vault/network at runtime"
+    },
+    {
+      "command": "env PATH=/tmp/easynet-poc-toolchains/rust/bin:/usr/bin:/bin CARGO_HOME=/tmp/easynet-poc-cache/cargo CARGO_TARGET_DIR=/tmp/easynet-poc-cache/rust-target /tmp/easynet-poc-toolchains/rust/bin/cargo build --manifest-path poc/controller-language/rust/Cargo.toml --release --locked --offline --bin labresult",
+      "expected": "releasehost artifact only no runtime/native/sign/publish"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "Single F card I Solmedium; final Solhighsource review mandatory. Candidateonly no productionlanguage decision. 3impl TOML/lock/bin and2testdoc +mandatoryreport; no lib.rs/C/FFI/SSH/vault changes. Exactserde1.0.229 existinglock,serde_json1.0.151 defaultfalse std/raw_value, official https://raw.githubusercontent.com/serde-rs/json/v1.0.151/Cargo.toml MSRV1.71 confirmeddesign; officialserde.rs/deserialize-map.html +docs.rs/serde_json/1.0.151/value/struct.RawValue.html +Deserializerend. Binprivate LabRecord,fixed InvalidLabRecord/LabRecordIO errorno raw, summarize borrowedtypedResultRecord mapsOutcome copiesid+owner lengthonly independentvalidation. CustomMapVisitor readsStringkey checks exact6seenmask unknown/duplicateescaped/casealias/missing, nextvalue borrowedRawValue rejectsnulltype, schema rawexact1,output raw0 or[1-9][0-9]* checkedusize<=4096 forbidfloat/exponent/-0/compound. Reader take4097read_to_end IOmapfixed thenbytes<=4096 validUTF8, visitor andDeserializerend no trailing/secondJSON. Encodevalidatebeforewrite, fixed6keyorderSerializeStruct to_vec, oneWrite requirefulln errorshort fixedIO; maypartial noatomicclaim. CLI noargs_os, success0normalized6JSONnonewline, error2 fixed invalid lab arguments/input or lab I/O failure\n matchingGo; injected I/O units meaningfulreader/writer/short, noecho. Inline tests contractnumericUnicode/ownership/boundaries invalidid/output; actualCLI integration allGo cases plus numericUTF8, finite3s each subprocessowned realbin, stdinboundedfixtures, separate readerthreads4096cap drainrest, timeoutkill/reap exactonce thenjointhreads, noarbitraryprocesstreeproof. Retainprocessowner onpollerror/waitfailure no fakecleanup, use scopedstd Child/readerthreads, directownedbinaryonly CARGO_BIN_EXE_labresult. Newdeps resolveonce targetedrootpackageupdate, if existingversionschange STOP diffreview; onlyscopedregistry networkautoapproval no globalinstall. Runtime tests/build offline --locked, no repeatedSSH/vaultfullregressions unless changed. Mainbin target<=300lines tests<=220 >400/300stop, <=2localrepairs. Doc<=75lines facts measured notpredicted; record releasehostartifact facts rootread-only file/otool/codesign display+verify no sign/publish. Rootgate/testcounts/configuredmodeltokensunknown. Never manipulate personalstore/deploy/issues/main."
+}
