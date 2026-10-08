@@ -8230,6 +8230,110 @@
       }
     },
     {
+      "id": "G0-06.2ae",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "实现已审回收合同和精确进程组对照",
+      "status": "ready",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-06.2ad"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "涉及平台 adapter、多个失败路径或跨边界集成，低档返工风险较高",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/client-framework/process-reaping-decision.md",
+          "selector": "accepted98line correctivecontract @a87048d"
+        },
+        {
+          "path": "poc/client-framework/lab/isolate.py",
+          "selector": "_execute/_error_fields/_case/run_probe only; fixtureidentity helpers unchanged"
+        },
+        {
+          "path": "poc/client-framework/lab/test_isolate.py",
+          "selector": "healthy/frozenargv/cleanup/listener controls only"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-06.2ac.md",
+          "selector": "actualfailure evidence andbudget scope, no wholehistory"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2ae.md",
+      "binding": "docs/planning/task-bindings/G0-06.2ae.json",
+      "allowed_writes": [
+        "poc/client-framework/lab/isolate.py",
+        "poc/client-framework/lab/test_isolate.py",
+        "poc/client-framework/lab/test_reaping.py",
+        "docs/planning/task-results/G0/G0-06.2ae.md"
+      ],
+      "implementation_writes": [
+        "poc/client-framework/lab/isolate.py",
+        "poc/client-framework/lab/test_isolate.py",
+        "poc/client-framework/lab/test_reaping.py"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "检查分支和前置证据，只加载本卡输入；目标：Flutter/sing-box 路线证据表",
+        "按冻结合同处理当前单目标；案例：仅验证「Flutter/sing-box 路线证据表」这一范围；候选注明 NE/签名/架构/分发依赖及证据",
+        "运行绑定的定向行为检查；失败最多两次局部修复后升级；记录 diff/命令/结果"
+      ],
+      "acceptance": [
+        "按已接受最小回收合同实现唯一函数与内部metadata helper、确定性故障对照与真实fork继承案例；源码先审，禁止worker运行",
+        "独立R审查后root执行精确fault suite及fixture；Group inspection失败/超时/错误Wait仍保持unknown，profile不变"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ae",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "按已接受最小回收合同实现唯一函数与内部metadata helper、确定性故障对照与真实fork继承案例；源码先审，禁止worker运行",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-06.2a",
       "source_id": "G0-06.2",
       "parent": "G0-06",
@@ -8239,7 +8343,8 @@
       "mode": "implementation",
       "dependencies": [
         "G0-06.2ac",
-        "G0-06.2ad"
+        "G0-06.2ad",
+        "G0-06.2ae"
       ],
       "model": {
         "tier": "I",

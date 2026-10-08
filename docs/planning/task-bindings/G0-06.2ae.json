@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ae",
+  "status": "frozen",
+  "contract_versions": [
+    "Accepted process-reaping-correction-v1 @a87048d; unchanged profile sha b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82"
+  ],
+  "implementation_files": [
+    "poc/client-framework/lab/isolate.py"
+  ],
+  "test_files": [
+    "poc/client-framework/lab/test_isolate.py",
+    "poc/client-framework/lab/test_reaping.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ae",
+      "expected": "exit0 plansonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    },
+    {
+      "command": "python3 -I -c \"import ast,pathlib; [ast.parse(pathlib.Path(p).read_text(),filename=p) for p in ('poc/client-framework/lab/isolate.py','poc/client-framework/lab/test_isolate.py','poc/client-framework/lab/test_reaping.py')]\"",
+      "expected": "exit0 ASTonly noimports/execution"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root",
+  "reviewed_by": "root fixedcorrectiveimplementation fromaccepted Solhighcontract; independent source/runtime review pending",
+  "note": "I Solmedium fresh<=8k core; source-only no authoredimports/tests/fixture/SDK/bootstrap/privatefiles/processinventory/runtime/gitmutations/newagents. Exactoneimpl+2tests+report20lines, capsisolate400/test_isolate300/test_reaping260 (boundedcleanup/faultmatrixexception to200diff; preserveclearlogic). Do notchangeidentity/hash/rootmetadata helpers unnecessarily, profilebytes/hash, filesystem/networkrules, 2scommand/20ssuite/8192retention/drain semantics unchanged. Implementaccepted98lineRcontract: WNOWAITreserveleader untilallgroupoperationsdone; naturalexit doesnottriggerTERM/KILL; preWait soleZgroup snapshot; alwaysseparateWait even signalexceptions; closebothFDs/selector independently; noPID/PGIDoperations afterWait; retainedunresolved tombstones onlyrefusereuse notsignalpermission; noerrorsmasked/EPERMignored. Metadatahelper INTERNAL to_execute, stdlibonly, fixed /bin/ps -g <ownedreservedpid> -o pid=,ppid=,pgid=,state=, no usercommands/arguments/environment/inventory. Validateknownunreapedcurrentchild reservation viaWNOWAIT/state and strictnumeric pid/ppid/pgid/state rows; soleleader requiresppid=currentparent, pgid=pid, Z, outputnottruncated. Otherrows/parse/permissionfail=>unknown/notsoleproof. Helper bound: own absolute min(now+0.15, parentdeadline-0.05), never spawnwithoutpositivebudget; 8192bytes capped/count+<=64rows, stderr nonempty/overflow unknown; fixedhelperdirectPID TERM/KILL before itsWait, ownhelperWait+FDclose independentonallerrors, no groupkill forhelper/no postWaitsignal; helpererrors/reapfailure poisonresult, no outer-success. Allhelpers share2s parentdeadline (Popen completionbudget monitored, no unlimited communicate or unboundedthreads). Reusedminimalallowlistenvironment HOME/CODEX_HOME unchanged, no .psrc/rootcapability checks. Native process metadata helper onlyoutsidechildsandbox, permitted onlyfuture reviewedownedsynthetic runtime. Freezeactual joined fork-only shellscript andjoined fork+exec script exactlyacceptedRdoc, markerpositiveleader/childdistinct, knownchildwait status, no arbitraryshelltext. Actualnormalcat/touch early<1sec, no signals + Wait+EOF+FDclosed; actualtimeout fixedshellbuiltinloopcase source-reviewed, failure/tombstone notabsencefromsignalsuccess. test_reaping fakes allnativecalls/commands so no unownedPIDsignal: TERM/KILLerrors individually/both andcleanupWait independent, group soleZ/live/zombiedesc/denied/malformed/truncated, recycledPGIDno postWaitops, Waittimeout/EINTR, drain/overflow/helpertimeout-reapfailure; testfaults meaningful boundedassertions, no mirroredutilitytests. No faulttest executed untilRreviews. Proposedrootcommands python3 -I -B poc/client-framework/lab/test_reaping.py and test_isolate.py aftersourceapprove/hashbinding; currentcommands ASTonly. Unitruntime andactualOSproof differentiated; inabilityofmetadataactualhost keepsac blocked. Workerreport actualSolmedium/sourceonly/caps/staticchecks noinventedtokens. Stopinterface/budget/safetydesignambiguity or2focusedrepairs, no thirdunreviewedretry."
+}
