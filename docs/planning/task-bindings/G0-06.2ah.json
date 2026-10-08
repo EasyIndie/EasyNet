@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ah",
+  "status": "frozen",
+  "contract_versions": [
+    "Independent R Solhigh sourceapproval repair1 @20222e8; accepted diagnosticdecision @7e13143"
+  ],
+  "implementation_files": [
+    "docs/planning/task-results/G0/G0-06.2ah.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/bin/python3.14 -I -B /Users/joker/Documents/EasyNet/poc/client-framework/lab/startup_diag_test.py",
+      "expected": "exit0 fakecontracttests; failure stops before native"
+    },
+    {
+      "command": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/bin/python3.14 -I -B /Users/joker/Documents/EasyNet/poc/client-framework/lab/startup_diag.py",
+      "expected": "exactone run afterfakepass/hashmatch; exit0 onlydiagnosticslice, exit1 stop FAIL/unknown retains precleanup fixture; no original isolationqualification"
+    },
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ah",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": "Usercontinuousdevelopment andindependentRsourceapproval; rootonly exactunprivilegedowned0700/600 /private/tmp syntheticfixtures, trustedOSchild/groups/precisemetadata, no network/personalfiles/SDK/deployment/profilewidening. One driver attempt, no retries.",
+  "prepared_by": "root",
+  "reviewed_by": "root operational acceptance of exact independent Solhigh approvedcommands, actualobservations pending",
+  "note": "Execution-only root actualSolmedium (ordinaryrootcommand role, no newworker). Before eachcommand exactsource/profile andresolvedPythonbinarySHAverify. No code/profile/env/identity/deadline edits andno runtime/loader capabilityinference. Controlledfakes onlyreadreviewedlocalsource, no nativeOSenviron mutation/process/fixture. Futuredriver once A directcat EOF, B sandboxcat EOF, C allowedseed; stopfirstfailure, inclusive10s/2scases. Root logsowned/private mode600, capturefixedredactedrecords only no privatecrashpayload. Preservewhole precleanupfailure fixture; cleanupfailure reportsremainingunknown notatomicretention. Sourcecard completionnotactualoriginalisolationqualification. Finalreport<=20 exactexit/duration/cases/lifecycle/unknowns/model+cost; iffailed keepac/ae andparentblocked, nextreviewdecision beforeany source/retry/capabilitychange; no automaticresetrepairbudget. No broadprocessinventory/postWaitsignals/oldfixturecleanup/SDK/gitexternalwrites.",
+  "source_review": {
+    "reviewed_by": "independent Sol high repair1 source-only PASS",
+    "files_sha256": {
+      "poc/client-framework/lab/isolate.py": "0dd75a24a1786f51f208e5ce674684e0f123c967092c0e2a42a1341dcb8de119",
+      "poc/client-framework/lab/startup_diag.py": "b5c6b967cb1e34ee9f265682bb4ce8c2e084ff3b4f3d0db2887a3fb263f969b4",
+      "poc/client-framework/lab/startup_diag_test.py": "29c780e2f46cc4aa500fe8cac28f828a777fb85b9497875897716c585eca26cd",
+      "poc/client-framework/lab/fixture.sb": "b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82"
+    },
+    "scope": "fixed A/B/C and fully controlled fakes; source preparation only",
+    "runtime_status": "not executed; separate root card must resolve Python/hash and commands"
+  },
+  "runtime_executable": {
+    "path": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+    "sha256": "b502cb4c5b46b8d4192ec6bcb600ce8922f1afc396fcf646e8765c6eba74a0bf",
+    "version": "existing Python3.14.6 reviewed trusted runtime; no download/configuration"
+  }
+}

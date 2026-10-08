@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ag",
+  "status": "verified_source_only",
+  "strategy": "delegated_implementation_and_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "2266fa8",
+  "started_at_utc": "2026-10-08T08:42:45.804164+00:00",
+  "finished_at_utc": "2026-10-08T08:57:01.259988+00:00",
+  "subagent_count": 2,
+  "history_inheritance": "none",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": false,
+  "repair_rounds": 1,
+  "billing_cost": null,
+  "implementation_commit": "20222e8",
+  "usage_report_path": "docs/planning/metrics/G0-06.2ag-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9735466687736595,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 5372160,
+    "calls": 61,
+    "input_tokens": 5518133,
+    "noncached_input_tokens": 145973,
+    "output_tokens": 23107,
+    "reasoning_output_tokens": 6373,
+    "total_tokens": 5541240
+  },
+  "limitations": [
+    "Source-only completion, unit/actual diagnostics belongfollowonrootcard, no full runtime successsample.",
+    "Mainpriorafpublicationtail+preparation included, approximateattribution; collector/acceptance included, currentpublication excluded.",
+    "One revieweractive restoration failedagentthreadlimit then sameIrestored, no duplicate/escalation.",
+    "No matched main-only sample/costwinner; outputincludesreasoning."
+  ]
+}
