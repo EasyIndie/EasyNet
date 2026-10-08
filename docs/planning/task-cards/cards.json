@@ -8226,7 +8226,7 @@
         "reviewed_by": "root agent: scope and behavior evidence review",
         "actual_model": "gpt-6.1-sol",
         "reasoning_effort": "high",
-        "token_usage": "unavailable"
+        "token_usage": "Observed docs/planning/metrics/G0-06.2ad-usage.json, not billing"
       }
     },
     {
