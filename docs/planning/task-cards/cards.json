@@ -8760,7 +8760,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "实现独立哈希的限定可执行映射诊断",
-      "status": "review",
+      "status": "blocked",
       "mode": "implementation",
       "dependencies": [
         "G0-06.2ai"
@@ -8821,7 +8821,7 @@
       ],
       "acceptance": [
         "独立diagnostic profile只有同现有六个readselector的file-map-executable grant，原profile/hash/API/command admission保留",
-        "fixedA/B/C/D四case与严格negative matcher、受控fake/sourceboundaries；worker不执行authoredcode/native测试，独立R后单独root执行卡"
+        "fixedA/B/C/D四case与严格negative matcher、受控fake/sourceboundaries；worker不执行authoredcode/native测试，独立R后同卡另冻root运行binding"
       ],
       "verification": {
         "planning_checks": [
@@ -8860,7 +8860,13 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2aj.md",
+        "reviewed_by": "independent Sol high source PASS; root observed native startup failure",
+        "actual_model": "I/R GPT-6.1 Sol medium/high; root GPT-6.1 Sol medium",
+        "token_usage": "pending full-chain collector; no billing inference"
+      }
     },
     {
       "id": "G0-06.2a",

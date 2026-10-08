@@ -74,5 +74,29 @@
       }
     ]
   },
-  "repair_rounds": 1
+  "repair_rounds": 1,
+  "runtime_result": {
+    "status": "blocked",
+    "fake_tests": {
+      "mapping_diag_test.py": 7,
+      "mapping_main_test.py": 6,
+      "exit_code": 0
+    },
+    "native_attempts": 1,
+    "native_exit_code": 1,
+    "case_A": {
+      "returncode": 0,
+      "elapsed_s": 0.04063191699970048,
+      "lifecycle": "sole-Z, leader/helper Wait, EOF/FD closure/reaped; no errors/signals"
+    },
+    "case_B": {
+      "returncode": -6,
+      "elapsed_s": 0.038736665999749675,
+      "lifecycle": "sole-Z, leader/helper Wait, EOF/FD closure/reaped; no errors/signals"
+    },
+    "cases_C_D": "not run; stop first failure",
+    "hash_checks": "all six reviewed files and pinned executable immediately before and after every command",
+    "fixture": "pre-cleanup retained by driver; no later inspection/removal",
+    "conclusion": "mapping hypothesis did not qualify sandbox startup; abort cause unknown; no retry/grant widening"
+  }
 }
