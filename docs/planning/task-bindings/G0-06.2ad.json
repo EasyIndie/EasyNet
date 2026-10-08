@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ad",
+  "status": "frozen",
+  "contract_versions": [
+    "Accepted immediateisolation v1; G0-06.2ac failed runtime evidence @01114bc, diagnostics source @a6187ab"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/process-reaping-decision.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ad",
+      "expected": "exit0 plansonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root",
+  "reviewed_by": "root bounded R corrective design scope, no runtime",
+  "note": "R Solhigh fresh<=6k; allowed one decisiondoc<=110lines+report<=20. Exact4boundedinputselectors only; no wholeREADME/planning/evidence orwholeSSH/state sources. ReadAGENTS and requiredREADME/CONTRIBUTING relevantonly. <=4 primary official processAPI sources Applelocal man/XNU source/POSIX; technical uncertainfactsbrowseofficialprimaryonly, recordref/date vsactualOS unqualified. No code/runtime/fixture/privatefiles/SDK/download/broadprocessinventory/gitmutations/newagents. Diagnose onlyobserved phase signal-term EPERM,waitidexittrue, noleaderwait. Do notclaim rootpermissionmissing orDarwinuniversalbehavior from1event; hosttoolrestrictionspossible. Require alwaysattemptownedleaderWait even signalerror, boundedcleanup anddrain/count; currentmaskingcleanup failure cannotqualify. Freezeone minimalfunction+case correction for I nextcard, exactsourcepaths/APIcases/static andfuturebehaviorchecks; preservePIDreservation untilsignallingdone andavoidpostreap group-IDreuse/inventory/namekills. Decide safe treatment ofzombie/emptygroup vsrealowneddescendants using documentedsemantics/source and fixednon-detachingOScommands, not simplyignoreEPERM or weakenreapedassertions. Anyunsupportedlivegroupinspection markunknown ratherthan assumption. Definepositive deterministic normalexit actualretval/Wait/FDclosure andcontrolledfaultbranch tests forsignalfailure/timeout withoutunownedprocesskills, boundedknownfork-child inheritance testifneeded; fullgenericguardian/SDK unknown. Profilehash/network/filesystemboundary unchanged; anytimeout/ambiguousgroupfailpreservesremaining/stopsreuse. OriginalG0-06.2ac remainsblocked untilactualqualification; reviewcard dependsaccepteddesign2ab andreadsblockedfailureevidence, notunmetimplementationprerequisite. No hiddencompletion/scope drop, noautomaticmorethan2fixes. Return<=12lines exactnextcontract/limitations."
+}

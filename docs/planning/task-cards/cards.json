@@ -8123,6 +8123,106 @@
       ]
     },
     {
+      "id": "G0-06.2ad",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "审查退出 leader 的进程组信号与回收语义",
+      "status": "ready",
+      "mode": "review",
+      "dependencies": [
+        "G0-06.2ab"
+      ],
+      "model": {
+        "tier": "R",
+        "type": "强推理设计/审查模型",
+        "example": "GPT-6.1 Sol high；冲突难解时 Astra high",
+        "review": "维护者接受决策/验收结论；模型不能自授资源操作权限",
+        "reason": "决定架构或审查信任、恢复、资源销毁与阶段证据，不能仅凭测试通过",
+        "context": "≤12k，超出先做事实摘要"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/task-results/G0/G0-06.2ac.md",
+          "selector": "twoactualfailures/diagnostics and exhaustedrepairbudget"
+        },
+        {
+          "path": "poc/client-framework/lab/isolate.py",
+          "selector": "_execute and _error_fields only, fixed OSchildren lifetime"
+        },
+        {
+          "path": "poc/client-framework/lab/test_isolate.py",
+          "selector": "healthy, exact caseargv andlistener lifecycle only"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/lifecycle-preparation.md",
+          "selector": "immediateisolation contract only, no wholeSDK/UI proposal"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2ad.md",
+      "binding": "docs/planning/task-bindings/G0-06.2ad.json",
+      "allowed_writes": [
+        "docs/planning/poc/client-framework/process-reaping-decision.md",
+        "docs/planning/task-results/G0/G0-06.2ad.md"
+      ],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/process-reaping-decision.md"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "检查分支和前置证据，只加载本卡输入；目标：Flutter/sing-box 路线证据表",
+        "按冻结合同处理当前单目标；案例：仅验证「Flutter/sing-box 路线证据表」这一范围；候选注明 NE/签名/架构/分发依赖及证据",
+        "运行绑定的定向行为检查；失败最多两次局部修复后升级；记录 diff/命令/结果"
+      ],
+      "acceptance": [
+        "基于实际signal-term EPERM/waitid-exit=true 证据与官方process API语义，冻结唯一最小回收修复合同；不把source推断当作平台验证",
+        "保留leader PID归属和失败未知语义；信号失败不能跳过Wait；不放宽profile或循环无界重试"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ad",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "基于实际signal-term EPERM/waitid-exit=true 证据与官方process API语义，冻结唯一最小回收修复合同；不把source推断当作平台验证",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤6k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-06.2a",
       "source_id": "G0-06.2",
       "parent": "G0-06",
@@ -8131,7 +8231,8 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-06.2ac"
+        "G0-06.2ac",
+        "G0-06.2ad"
       ],
       "model": {
         "tier": "I",
