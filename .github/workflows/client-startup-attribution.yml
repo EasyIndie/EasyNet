@@ -1,0 +1,26 @@
+name: Client startup attribution
+
+on:
+  push:
+    branches: [codex/feature/self-hosted-byos-byoc]
+    paths:
+      - .github/workflows/client-startup-attribution.yml
+      - poc/client-framework/lab/attribution_diag.py
+      - poc/client-framework/lab/attribution_record.py
+      - poc/client-framework/lab/attribution_record_test.py
+      - poc/client-framework/lab/attribution_diag_test.py
+
+permissions:
+  contents: read
+
+jobs:
+  attribution:
+    if: github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc'
+    runs-on: macos-15
+    timeout-minutes: 1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Fixed reviewed attribution, once
+        run: python3 -I -B poc/client-framework/lab/attribution_diag.py

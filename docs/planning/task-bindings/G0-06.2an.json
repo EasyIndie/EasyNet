@@ -32,5 +32,72 @@
   "side_effect_authorization": "No worker runtime. User continue reviewed attribution plan; rootonly later exactbinding afterindependentR permitscontrolledfakes thenonefreshguest syntheticownedrecord observation. No personalhostnative/logs.",
   "prepared_by": "root",
   "reviewed_by": "root frozen acceptedRcontract; independentimplementationR mandatory",
-  "note": "Fresh I Solmedium <=6kcore;3impl+2tests+report. Caps driver220, reader320, workflow45, recordtests260, drivertests220, report20 lines (bounded correlation/parser/filesystem exception200diff). Worker NO authoredimports/tests/runtime/fixture/native/downloads/privatefiles/logs/config/git/newagents; only AST/plan/diff. Contract am@86300ad exact, root accepts arm64|arm64e; all old6files unchanged hashes. New driver frozen noargv Githubrepo/ref/macOS15.7.9arm64 uidnonroot HOME literal /Users/runner (no override), Python3.14.7 SHA d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3 fromal observedtarget baseline (not externalreleasepin), waitid. Root later fills source_review.files_sha256: exact old6+new3+tests2, rejectmissing/extra/hashes before/after EVERY launch/helper/fakes; self reads fixedbinding only, no callerconfigs. Source binding frozen by Gitcommit +root sourcehash review, never worker runtime. Import-safe code only standardlibs plus fixed reviewed source modules via guarded loader. Once run_mapping_probe sandboxEOF2; target healthy rc-6 only ->3sdelivery ->one fixed -I -B reader sixinternaldecimalargs ->unchanged_execute2s; query independently healthy withstrict6keys<=512stdout/emptyerr, no causeclaim. Driver/helper monotonic+wall agreement 10ms with query_start explicit. Record reader only guest HOME DiagnosticReports flat <=256entries/.5s; one regularownednonlinkedunchanged<=262144candidate. No raw messages/name/path/crash/stack/env export; record types+duplicate/depth/UTCparser/strictimg+parent+pid+time+UUID andtermination namespace/categoryexact enum withboundedstrictintcode. Scope now permits tentatively matched synthetic crash bytes ONLYfresh guest inthislaterapprovedbinding, neverlocal/personallogs. Helper fixedtoken args/PPID==driverid/HOME/uid/Darwin, no generalAPI; unknown schema/time/errors cleanallunknown. Original _execute faults reused; newtests fakedFS/process/clocks/allenv via patch.object not realos.environ, no actualfixture/nativecalls. Driver14s setup4/target2/delivery3/helper2/finish3; unknownretain no recursivecleanup. Workflow1minute emergencyguestteardown, exactfeaturepush paths only3newimpl+2tests, contentread/checkoutSHA3d3c42e5aac5ba805825da76410c181273ba90b1 persistcredentialsfalse, python3-I-Bfixeddriver. Do NOT edit oldworkflow/runner so norepeatoldrun. No SDKsudoGUITUN/cache/artifact/secrets/grants. SourceR separately review allnewparser/FS/integration/fakes +workflow andfreezehashes; rootlocalcontrolledfakes onlyafterPASS then one remote attemptdifferentnewdiagnostic source; not localnative. Twofocusedrepairsmax; caps/ambiguity stopR. Root does all commits/push/runtime/reportmetrics. Handoff<=10lines."
+  "note": "Fresh I Solmedium <=6kcore;3impl+2tests+report. Caps driver220, reader320, workflow45, recordtests260, drivertests220, report20 lines (bounded correlation/parser/filesystem exception200diff). Worker NO authoredimports/tests/runtime/fixture/native/downloads/privatefiles/logs/config/git/newagents; only AST/plan/diff. Contract am@86300ad exact, root accepts arm64|arm64e; all old6files unchanged hashes. New driver frozen noargv Githubrepo/ref/macOS15.7.9arm64 uidnonroot HOME literal /Users/runner (no override), Python3.14.7 SHA d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3 fromal observedtarget baseline (not externalreleasepin), waitid. Root later fills source_review.files_sha256: exact old6+new3+tests2, rejectmissing/extra/hashes before/after EVERY launch/helper/fakes; self reads fixedbinding only, no callerconfigs. Source binding frozen by Gitcommit +root sourcehash review, never worker runtime. Import-safe code only standardlibs plus fixed reviewed source modules via guarded loader. Once run_mapping_probe sandboxEOF2; target healthy rc-6 only ->3sdelivery ->one fixed -I -B reader sixinternaldecimalargs ->unchanged_execute2s; query independently healthy withstrict6keys<=512stdout/emptyerr, no causeclaim. Driver/helper monotonic+wall agreement 10ms with query_start explicit. Record reader only guest HOME DiagnosticReports flat <=256entries/.5s; one regularownednonlinkedunchanged<=262144candidate. No raw messages/name/path/crash/stack/env export; record types+duplicate/depth/UTCparser/strictimg+parent+pid+time+UUID andtermination namespace/categoryexact enum withboundedstrictintcode. Scope now permits tentatively matched synthetic crash bytes ONLYfresh guest inthislaterapprovedbinding, neverlocal/personallogs. Helper fixedtoken args/PPID==driverid/HOME/uid/Darwin, no generalAPI; unknown schema/time/errors cleanallunknown. Original _execute faults reused; newtests fakedFS/process/clocks/allenv via patch.object not realos.environ, no actualfixture/nativecalls. Driver14s setup4/target2/delivery3/helper2/finish3; unknownretain no recursivecleanup. Workflow1minute emergencyguestteardown, exactfeaturepush paths only3newimpl+2tests, contentread/checkoutSHA3d3c42e5aac5ba805825da76410c181273ba90b1 persistcredentialsfalse, python3-I-Bfixeddriver. Do NOT edit oldworkflow/runner so norepeatoldrun. No SDKsudoGUITUN/cache/artifact/secrets/grants. SourceR separately review allnewparser/FS/integration/fakes +workflow andfreezehashes; rootlocalcontrolledfakes onlyafterPASS then one remote attemptdifferentnewdiagnostic source; not localnative. Twofocusedrepairsmax; caps/ambiguity stopR. Root does all commits/push/runtime/reportmetrics. Handoff<=10lines.",
+  "repair_rounds": 2,
+  "review_required_repairs": [
+    "RsourceHOLD: fakefailedopen/unopenediterator closure expectations incorrect",
+    "RsourceHOLD: scan .5s/clock checks must include independent iterator/FD teardown",
+    "RsourceHOLD: controlled scan/readcap/PPID/HOME/hash/missing-extra-mismatch sourcehash/maincleanup-retention faults; all clocks faked",
+    "Rootactualcontrolledfakes: bothsuites15tests exit0 butPython3.14 SyntaxWarning return-in-finally wouldviolatehelperempty-stderr; repair2 structuralcontrolflow, nowarningsuppression, nativeattempts0"
+  ],
+  "source_review": {
+    "reviewed_by": "independent Sol high source repair2 PASS; no warning suppression",
+    "files_sha256": {
+      "poc/client-framework/lab/isolate.py": "3bc47c022eb6bf10004372cc4021e0d692720e81b318d5dd0cffb54b18d2522c",
+      "poc/client-framework/lab/mapping-fixture.sb": "1dfc6055110b29f06ccd2026eb230433cd5ca6da9be2354b2c43fb88efba0595",
+      "poc/client-framework/lab/mapping_diag.py": "3918c9408f323cc4390465717e151d841b54a524bb83246185be1d6e48cba59b",
+      "poc/client-framework/lab/mapping_diag_test.py": "552bb9eb486967cc1377db6f458ff35f371a836c13f5172177342cc1c1309f1f",
+      "poc/client-framework/lab/mapping_main_test.py": "09f9b773dc949656ce3769e3449e05123717e5c8eb1247c429bb841091127c72",
+      "poc/client-framework/lab/fixture.sb": "b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82",
+      "poc/client-framework/lab/attribution_diag.py": "3be4a23f4b2c6dbf0b178d2c4d525df380c3d5497df1c52335d56e940b345c7d",
+      "poc/client-framework/lab/attribution_record.py": "67dc66130d395ef82b53ab88a38ee0ffc3da92348caa38d73dd05e7570089362",
+      "poc/client-framework/lab/attribution_record_test.py": "ae9ec12b4dea777b3ad3cc0f94b9e100113d3d3d8d61a6d0caebfadae7f0d746",
+      "poc/client-framework/lab/attribution_diag_test.py": "a0120329d0a40d835bb6bc023eb4fd3bce82734edb89e71102471d888ce084fd",
+      ".github/workflows/client-startup-attribution.yml": "f9ac2b790827c4f865e7fba406bcda847d5b029421962df13c9bf4774fbbce1d"
+    },
+    "scope": "controlledlocalfakes thenonefreshguest ownedsyntheticrecord observation; native/fullisolationunqualified",
+    "status": "repair2 PASS exacthashes frozen"
+  },
+  "runtime_authorization": {
+    "executor": "root GPT-6.1 Sol medium",
+    "local_fake_executable": {
+      "path": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+      "sha256": "b502cb4c5b46b8d4192ec6bcb600ce8922f1afc396fcf646e8765c6eba74a0bf"
+    },
+    "remote_executable_baseline": {
+      "version": "3.14.7",
+      "sha256": "d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3",
+      "provenance": "al observed GitHubimage baseline, not externallyverifiedreleasepin"
+    },
+    "preconditions": "all11 reviewed sourcefiles and exactexecutables hashed beforeandaftereach localfake/remote target/helper unit; bothlocalfakes pass beforeone remote workflow attempt",
+    "local_fake_commands": [
+      "attribution_record_test.py",
+      "attribution_diag_test.py"
+    ],
+    "remote_command": "python3 -I -B poc/client-framework/lab/attribution_diag.py",
+    "remote_attempts": 1,
+    "stop": "first failure/unknown/hash mismatch, noautomatic retry/grantwiden; oneB+onequery max"
+  },
+  "controlled_fake_results": {
+    "first_run": {
+      "record_tests": 8,
+      "driver_tests": 7,
+      "exit_codes": [
+        0,
+        0
+      ],
+      "hash_checks": "all11+exactlocalPython beforeandafter each unchanged",
+      "blocker": "Python3.14 compilewarning in finally controlflow; remote not launched"
+    },
+    "repair2_run": {
+      "record_tests": 8,
+      "driver_tests": 7,
+      "exit_codes": [
+        0,
+        0
+      ],
+      "warnings": 0,
+      "hash_checks": "all11source+exactlocalPython immediatelybeforeaftereachcommand unchanged"
+    }
+  }
 }
