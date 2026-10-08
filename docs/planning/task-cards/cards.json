@@ -7230,7 +7230,7 @@
       "parent": "G0-05",
       "phase": "G0",
       "title": "JSON 崩溃与并发 PoC",
-      "status": "ready",
+      "status": "verified",
       "mode": "implementation",
       "dependencies": [
         "G0-05.1a"
@@ -7335,7 +7335,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-05.2a.md",
+        "reviewed_by": "Sol high json_store_review approved exact owned runtime after 2 source repairs; root verified 26 top-level/95 subtests pass",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "medium",
+        "token_usage": "Local observed full-card counters: docs/planning/metrics/G0-05.2a.json; no billing/cost winner"
+      }
     },
     {
       "id": "G0-05.2b",

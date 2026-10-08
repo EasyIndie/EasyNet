@@ -6,7 +6,7 @@
   "strategy": "delegated",
   "comparison_kind": "observational_unpaired",
   "input_commit": "c8e9360",
-  "acceptance_contract": "LocalStateLab-v1 + proposed JSONFixture-v1",
+  "acceptance_contract": "Reviewed LocalStateLab-v1 + JSONFixture-v1 source/harness accepted",
   "estimated_scope": "One owned JSON backend and local crash/CAS harness; no production store.",
   "started_at_utc": "2026-10-08T01:27:24.810Z",
   "finished_at_utc": null,
@@ -24,23 +24,39 @@
       "effort": "high"
     }
   ],
-  "subagent_count": 1,
+  "subagent_count": 2,
   "history_inheritance": "none for fresh workers; same-card repair/review retains history",
   "usage_report_path": null,
   "main_coordination_included": true,
   "implementation_review_repair_included": true,
   "automatic_review_included": true,
   "measurement_overhead_included": true,
-  "first_pass": null,
-  "repair_rounds": null,
-  "blocking_review_findings": 3,
-  "final_acceptance": null,
+  "first_pass": false,
+  "repair_rounds": 3,
+  "blocking_review_findings": 7,
+  "final_acceptance": "Owned Darwin JSON only: 26 top-level and95subtests pass, nofail/skip; fullbehavior first run 3.397s. Source review accepted after2repair rounds; 1compiler namecollision fix.",
   "elapsed_seconds": null,
   "billing_cost": null,
   "applicable_price_source": null,
   "limitations": [
     "No matched main-only arm yet; not a savings comparison.",
     "Main actual model/effort taken from rollout, not overridden.",
-    "Token counters are local observations, not subscription invoice."
-  ]
+    "Token counters are local observations, not subscription invoice.",
+    "Post-flock helper test is deterministic real flock/guard evidence; method-order placement is source review, not instrumented waiter runtime.",
+    "Process kills do not prove power loss, hardware/disk-full or production filesystem durability.",
+    "Linux and live cross-UID guards unqualified; wrong UID pure stat fixture only."
+  ],
+  "validation_history": {
+    "compile_repair_rounds": 1,
+    "source_repair_rounds": 2,
+    "full_behavior_runs": 1,
+    "full_behavior_failed_runs": 0,
+    "pass_top": 26,
+    "pass_sub": 95,
+    "fail": 0,
+    "skip": 0,
+    "package_elapsed_seconds": 3.397,
+    "first_behavior_run_pass": true
+  },
+  "first_pass_definition": "Initial source/compile/behavior acceptance as a whole; compiler failure and source review blockers required repairs."
 }
