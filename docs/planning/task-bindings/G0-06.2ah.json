@@ -47,5 +47,21 @@
     "path": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
     "sha256": "b502cb4c5b46b8d4192ec6bcb600ce8922f1afc396fcf646e8765c6eba74a0bf",
     "version": "existing Python3.14.6 reviewed trusted runtime; no download/configuration"
+  },
+  "runtime_result": {
+    "status": "blocked",
+    "fake_tests": 11,
+    "fake_passed": true,
+    "driver_attempts": 1,
+    "exit_code": 1,
+    "cases_observed": [
+      "A pass",
+      "B SIGABRT unknown"
+    ],
+    "unexecuted": [
+      "C"
+    ],
+    "next_gate": "followonRdecision before any source/capability/retry",
+    "binding_deviation": "Hashes checked before fake suite and unchanged postrun; separate immediate driver precheck omitted. This does not count as exact-per-command verification; no extra retry."
   }
 }

@@ -8557,7 +8557,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "执行已审固定启动诊断并记录真实边界",
-      "status": "ready",
+      "status": "blocked",
       "mode": "acceptance",
       "dependencies": [
         "G0-06.2ag"
