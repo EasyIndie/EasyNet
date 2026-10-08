@@ -8760,7 +8760,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "实现独立哈希的限定可执行映射诊断",
-      "status": "ready",
+      "status": "review",
       "mode": "implementation",
       "dependencies": [
         "G0-06.2ai"
@@ -8798,13 +8798,15 @@
         "poc/client-framework/lab/mapping-fixture.sb",
         "poc/client-framework/lab/mapping_diag.py",
         "poc/client-framework/lab/mapping_diag_test.py",
+        "poc/client-framework/lab/mapping_main_test.py",
         "docs/planning/task-results/G0/G0-06.2aj.md"
       ],
       "implementation_writes": [
         "poc/client-framework/lab/isolate.py",
         "poc/client-framework/lab/mapping-fixture.sb",
         "poc/client-framework/lab/mapping_diag.py",
-        "poc/client-framework/lab/mapping_diag_test.py"
+        "poc/client-framework/lab/mapping_diag_test.py",
+        "poc/client-framework/lab/mapping_main_test.py"
       ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",

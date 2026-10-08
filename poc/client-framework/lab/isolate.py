@@ -11,6 +11,7 @@ import sys
 import time
 
 PROFILE_SHA256 = "b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82"
+MAPPING_PROFILE_SHA256 = "1dfc6055110b29f06ccd2026eb230433cd5ca6da9be2354b2c43fb88efba0595"
 CAP = 8192
 _fixtures = {}
 _live = set()
@@ -337,7 +338,9 @@ def _case(root, argv):
     raise ValueError("command not frozen")
 
 
-def _probe_guards(profile_path, allowed_root):
+def _probe_guards(profile_path, allowed_root, _mapping=False):
+    if type(_mapping) is not bool:
+        raise ValueError("profile variant must be bool")
     if sys.platform != "darwin" or os.getuid() == 0:
         raise ValueError("unprivileged Darwin only")
     root = _root(allowed_root)
@@ -345,14 +348,15 @@ def _probe_guards(profile_path, allowed_root):
         raise ValueError("previous child not verified reaped")
     check_fixture(allowed_root)
     profile = Path(profile_path)
-    fixed = Path(__file__).absolute().parent / "fixture.sb"
+    fixed = Path(__file__).absolute().parent / ("mapping-fixture.sb" if _mapping else "fixture.sb")
     if profile != fixed or profile.resolve(strict=True) != profile:
         raise ValueError("profile not fixed canonical path")
     s = profile.lstat()
     if (not stat.S_ISREG(s.st_mode) or s.st_uid != os.getuid() or s.st_nlink != 1
             or stat.S_IMODE(s.st_mode) & 0o022):
         raise ValueError("unsafe profile ownership")
-    if hashlib.sha256(profile.read_bytes()).hexdigest() != PROFILE_SHA256:
+    digest = MAPPING_PROFILE_SHA256 if _mapping else PROFILE_SHA256
+    if hashlib.sha256(profile.read_bytes()).hexdigest() != digest:
         raise ValueError("profile hash mismatch")
     return root, profile
 
@@ -374,3 +378,18 @@ def run_startup_control(profile_path, allowed_root, sandboxed, deadline_s=2):
         argv = ["/usr/bin/sandbox-exec", "-f", str(profile), "-D",
                 "ALLOWED_ROOT=" + str(root / "allowed"), *argv]
     return _execute(argv, "sandbox-eof" if sandboxed else "direct-eof", deadline_s)
+
+
+def run_mapping_probe(profile_path, allowed_root, case, deadline_s=2):
+    """Four fixed cat cases; even direct EOF pins the diagnostic profile."""
+    if type(case) is not str or case not in (
+            "direct-eof", "sandbox-eof", "allowed-read", "denied-read"):
+        raise ValueError("mapping case not frozen")
+    root, profile = _probe_guards(profile_path, allowed_root, _mapping=True)
+    argv = ["/bin/cat"]
+    if case in ("allowed-read", "denied-read"):
+        argv.append(str(root / ("allowed" if case == "allowed-read" else "decoy") / "seed"))
+    if case != "direct-eof":
+        argv = ["/usr/bin/sandbox-exec", "-f", str(profile), "-D",
+                "ALLOWED_ROOT=" + str(root / "allowed"), *argv]
+    return _execute(argv, case, deadline_s)
