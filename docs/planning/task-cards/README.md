@@ -94,7 +94,7 @@
 | [G0-06.1a](G0/G0-06.1a.md) | Luna medium | verified | Flutter/sing-box 路线证据表 |
 | [G0-06.1b](G0/G0-06.1b.md) | Luna medium | verified | SwiftUI/原生路线证据表 |
 | [G0-06.2aa](G0/G0-06.2aa.md) | Luna medium | verified | 候选 A 工具链校验与隔离事实 |
-| [G0-06.2ab](G0/G0-06.2ab.md) | GPT-6.1 Sol high；冲突难解时 Astra high | ready | 候选 A 生命周期实验执行边界设计 |
+| [G0-06.2ab](G0/G0-06.2ab.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 候选 A 生命周期实验执行边界设计 |
 | [G0-06.2a](G0/G0-06.2a.md) | GPT-6.1 Sol medium | locked | 候选 A engine 生命周期 PoC |
 | [G0-06.2b](G0/G0-06.2b.md) | GPT-6.1 Sol medium | locked | 候选 A 系统权限 PoC |
 | [G0-06.2c](G0/G0-06.2c.md) | GPT-6.1 Sol medium | locked | 候选 A 签名打包 PoC |
