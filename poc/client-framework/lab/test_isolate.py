@@ -2,6 +2,7 @@
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 import socket
 import sys
@@ -71,11 +72,14 @@ def healthy(result):
         fields = ("case", "returncode", "timed_out", "reaped", "elapsed_s",
                   "stdout_count", "stderr_count", "phase", "primary_class", "primary_errno",
                   "cleanup_class", "cleanup_errno", "waitid_exit_observed", "group_check",
-                  "owned_pid", "leader_wait_completed")
+                  "owned_pid", "leader_wait_completed", "signals", "errors",
+                  "stdout_eof", "stderr_eof", "stdout_closed", "stderr_closed")
         diagnostic = {name: result[name] for name in fields}
         diagnostic["stderr_escaped"] = ascii(result["stderr"][:8192])[:8192]
         print(json.dumps(diagnostic, sort_keys=True))
     require(result["reaped"] and not result["timed_out"], "child outcome unqualified")
+    require(result["leader_wait_completed"] and result["stdout_eof"] and result["stderr_eof"]
+            and result["stdout_closed"] and result["stderr_closed"], "incomplete lifecycle")
     require(result["elapsed_s"] <= 2, "command deadline exceeded")
     require(result["stdout_count"] <= 8192 and result["stderr_count"] <= 8192,
             "unexpected output overflow")
@@ -102,6 +106,10 @@ def clean_fixture(module, allowed, end):
 
 
 def main():
+    if tuple(sys.argv[1:]) not in (("ordinary",), ("timeout",)):
+        print("FAIL/unknown: exact mode ordinary or timeout required")
+        return 1
+    mode = sys.argv[1]
     end = time.monotonic() + 20
     root = listener = module = None
     passed = False
@@ -140,58 +148,101 @@ def main():
             healthy(result)
             return result
 
-        read = run(["/bin/cat", str(allowed / "seed")])
-        require(read["returncode"] == 0 and read["stdout"] == allowed_nonce
-                and not read["stderr"], "allowed read/loader failed")
-        write = run(["/usr/bin/touch", str(allowed / "new")])
-        require(write["returncode"] == 0 and not write["stdout"] and not write["stderr"],
-                "allowed write/loader failed")
-        module.note_new(allowed)
-        cases = [
-            ["/bin/cat", str(root / "decoy/seed")],
-            ["/usr/bin/touch", str(root / "decoy/new")],
-            ["/bin/sh", "-c", '/bin/cat "$1"', "probe", str(root / "decoy/seed")],
-        ]
-        for argv in cases:
-            denied = run(argv)
-            require(denied["returncode"] == 1 and not denied["stdout"]
-                    and b"Operation not permitted" in denied["stderr"]
-                    and str(argv[-1]).encode() in denied["stderr"]
-                    and decoy_nonce not in denied["stderr"], "ambiguous file denial")
-            module.check_fixture(allowed)
+        if mode == "timeout":
+            budget = min(2, end - time.monotonic() - 0.3)
+            require(budget > 0.35, "timeout control lacks budget")
+            result = module.run_probe(path.parent / "fixture.sb", allowed,
+                                      ["/bin/sh", "-c", 'while :; do :; done'], budget)
+            require(result["timed_out"] and not result["reaped"]
+                    and module._live == {result["owned_pid"]}
+                    and result["returncode"] in (-15, -9) and result["leader_wait_completed"]
+                    and result["elapsed_s"] <= 2 and result["stdout_eof"] and result["stderr_eof"]
+                    and result["stdout_closed"] and result["stderr_closed"]
+                    and "signal-term" in result["signals"] and not result["errors"]
+                    and result["primary_class"] == "none" and result["cleanup_class"] == "none",
+                    "timeout has independent lifecycle failure")
+        else:
+            read = run(["/bin/cat", str(allowed / "seed")])
+            require(read["returncode"] == 0 and read["stdout"] == allowed_nonce
+                    and not read["stderr"], "allowed read/loader failed")
+            write = run(["/usr/bin/touch", str(allowed / "new")])
+            require(write["returncode"] == 0 and not write["stdout"] and not write["stderr"],
+                    "allowed write/loader failed")
+            for result in (read, write):
+                require(result["elapsed_s"] < 1 and not result["signals"],
+                        "natural completion failed early/no-signal control")
+            module.note_new(allowed)
+            cases = [
+                ["/bin/cat", str(root / "decoy/seed")],
+                ["/usr/bin/touch", str(root / "decoy/new")],
+            ]
+            for argv in cases:
+                denied = run(argv)
+                require(denied["returncode"] == 1 and not denied["stdout"]
+                        and b"Operation not permitted" in denied["stderr"]
+                        and str(argv[-1]).encode() in denied["stderr"]
+                        and decoy_nonce not in denied["stderr"], "ambiguous file denial")
+                module.check_fixture(allowed)
 
-        for sandbox in (False, True):
-            version = run(["/usr/bin/curl", "-q", "--version"], sandbox=sandbox)
-            protocols = [line.split(b":", 1)[1].split() for line in version["stdout"].splitlines()
-                         if line.startswith(b"Protocols:")]
-            require(version["returncode"] == 0 and protocols and b"http" in protocols[0],
-                    "curl HTTP availability/loader unproven")
-        http_nonce = uuid.uuid4().hex.encode()
-        listener = Listener(http_nonce)
-        curl = ["/usr/bin/curl", "-q", "--verbose", "--noproxy", "*", "--max-time", "1",
-                f"http://127.0.0.1:{listener.port}/"]
+            scripts = (
+                ('( : < "$1" ) & child=$!; printf "owned-child %s %s\\n" "$$" "$child" >&2; wait "$child"', False),
+                ('/bin/cat "$1" & child=$!; printf "owned-child %s %s\\n" "$$" "$child" >&2; wait "$child"', True),
+            )
+            for script, executes in scripts:
+                for name in ("allowed", "decoy"):
+                    seed = root / name / "seed"
+                    result = run(["/bin/sh", "-c", script, "probe", str(seed)])
+                    markers = [re.fullmatch(rb"owned-child ([1-9][0-9]*) ([1-9][0-9]*)", line)
+                               for line in result["stderr"].splitlines() if line.startswith(b"owned-child ")]
+                    require(len(markers) == 1 and markers[0] is not None,
+                            "missing/distorted joined-child marker")
+                    leader, child_pid = (int(value) for value in markers[0].groups())
+                    require(leader == result["owned_pid"] and leader != child_pid,
+                            "distinct owned child unproved")
+                    if name == "allowed":
+                        require(result["returncode"] == 0
+                                and result["stdout"] == (allowed_nonce if executes else b""),
+                                "joined allowed child failed")
+                    else:
+                        require(result["returncode"] != 0 and not result["stdout"]
+                                and (not executes or result["returncode"] == 1)
+                                and b"Operation not permitted" in result["stderr"]
+                                and str(seed).encode() in result["stderr"]
+                                and decoy_nonce not in result["stderr"], "joined child denial ambiguous")
+                    module.check_fixture(allowed)
 
-        def reachable():
+            for sandbox in (False, True):
+                version = run(["/usr/bin/curl", "-q", "--version"], sandbox=sandbox)
+                protocols = [line.split(b":", 1)[1].split() for line in version["stdout"].splitlines()
+                             if line.startswith(b"Protocols:")]
+                require(version["returncode"] == 0 and protocols and b"http" in protocols[0],
+                        "curl HTTP availability/loader unproven")
+            http_nonce = uuid.uuid4().hex.encode()
+            listener = Listener(http_nonce)
+            curl = ["/usr/bin/curl", "-q", "--verbose", "--noproxy", "*", "--max-time", "1",
+                    f"http://127.0.0.1:{listener.port}/"]
+
+            def reachable():
+                count = listener.count
+                result = run(curl, sandbox=False)
+                require(result["returncode"] == 0 and result["stdout"] == http_nonce
+                        and listener.count == count + 1 and not listener.errors
+                        and listener.thread.is_alive(), "live listener control failed")
+
+            reachable()
             count = listener.count
-            result = run(curl, sandbox=False)
-            require(result["returncode"] == 0 and result["stdout"] == http_nonce
-                    and listener.count == count + 1 and not listener.errors
-                    and listener.thread.is_alive(), "live listener control failed")
-
-        reachable()
-        count = listener.count
-        denied = run(curl)
-        eperm = {
-            b"* Immediate connect fail for 127.0.0.1: Operation not permitted",
-            f"* connect to 127.0.0.1 port {listener.port} failed: Operation not permitted".encode(),
-        }
-        require(denied["returncode"] == 7 and not denied["stdout"]
-                and b"Failed to connect" in denied["stderr"]
-                and bool(eperm.intersection(denied["stderr"].splitlines()))
-                and listener.count == count, "ambiguous network denial")
-        reachable()
-        require(listener.count == count + 1, "sandbox connection observed")
-        module.check_fixture(allowed)
+            denied = run(curl)
+            eperm = {
+                b"* Immediate connect fail for 127.0.0.1: Operation not permitted",
+                f"* connect to 127.0.0.1 port {listener.port} failed: Operation not permitted".encode(),
+            }
+            require(denied["returncode"] == 7 and not denied["stdout"]
+                    and b"Failed to connect" in denied["stderr"]
+                    and bool(eperm.intersection(denied["stderr"].splitlines()))
+                    and listener.count == count, "ambiguous network denial")
+            reachable()
+            require(listener.count == count + 1, "sandbox connection observed")
+            module.check_fixture(allowed)
         passed = True
     except Exception as failure:
         error = f"{type(failure).__name__}: {failure}"
@@ -205,7 +256,7 @@ def main():
         if time.monotonic() > end:
             passed = False
             error = "suite deadline exceeded"
-        if passed:
+        if passed and mode == "ordinary":
             try:
                 require(end - time.monotonic() > 0.1, "no cleanup deadline budget")
                 clean_fixture(module, root / "allowed", end)
@@ -216,7 +267,10 @@ def main():
             passed = False
             error = "suite deadline exceeded after cleanup"
     if passed:
-        print("PASS: synthetic file/inherited/network cases only; no SDK qualification")
+        if mode == "ordinary":
+            print("PASS: ordinary synthetic file/joined/network cases; cleanup complete; no SDK qualification")
+        else:
+            print(f"PASS: expected timeout lifecycle only; unresolved tombstone and fixture retained: {root}")
         return 0
     remaining = root if root is not None and root.exists() else None
     print(f"FAIL/unknown: {error}; remaining fixture root: {remaining}")

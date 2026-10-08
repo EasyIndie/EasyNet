@@ -8235,7 +8235,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "实现已审回收合同和精确进程组对照",
-      "status": "ready",
+      "status": "review",
       "mode": "implementation",
       "dependencies": [
         "G0-06.2ad"

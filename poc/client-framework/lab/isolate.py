@@ -103,25 +103,152 @@ def _error_fields(error):
 
 
 def _execute(argv, case, deadline_s=2):
-    """Internal fixed commands only; retain capped output while draining pipes."""
+    """Fixed commands; reserve the leader until all group operations finish."""
     start = time.monotonic()
     if not 0 < deadline_s <= 2:
         raise ValueError("invalid deadline")
     end = start + deadline_s
     output = {"stdout": bytearray(), "stderr": bytearray()}
     counts = {"stdout": 0, "stderr": 0}
-    timed_out = False
-    reaped = False
-    selector = child = None
+    eof = {"stdout": False, "stderr": False}
+    closed = {"stdout": False, "stderr": False}
+    child = selector = None
+    timed_out = sent_term = sent_kill = False
     diagnostic = {"phase": "setup", "primary_class": "none", "primary_errno": None,
-                  "cleanup_class": "none", "cleanup_errno": None,
-                  "waitid_exit_observed": False, "group_check": "error",
-                  "owned_pid": None, "leader_wait_completed": False}
-    def send(sig):
+                  "cleanup_class": "none", "cleanup_errno": None, "errors": [],
+                  "waitid_exit_observed": False, "group_check": "unknown",
+                  "owned_pid": None, "leader_wait_completed": False,
+                  "signals": [], "helper_wait_completed": False}
+
+    def failure(phase, error, cleanup=False):
+        kind, errno = _error_fields(error)
+        diagnostic["errors"].append({"phase": phase, "class": kind, "errno": errno})
+        prefix = "cleanup" if cleanup else "primary"
+        if diagnostic[prefix + "_class"] == "none":
+            diagnostic[prefix + "_class"], diagnostic[prefix + "_errno"] = kind, errno
+
+    def close_resources(sel, process, phase, flags=None):
+        # Each operation is independent: one close error cannot skip another FD.
+        for name, resource in (("selector", sel), ("stdout", process.stdout if process else None),
+                               ("stderr", process.stderr if process else None)):
+            if resource is not None:
+                try:
+                    resource.close()
+                    if flags is not None and name in flags:
+                        flags[name] = True
+                except Exception as error:
+                    failure(phase + "-" + name, error, True)
+
+    def drain(sel, buffers, totals, ended, limit):
+        for key, _ in sel.select(max(0, min(0.01, limit - time.monotonic()))):
+            data = os.read(key.fileobj.fileno(), 4096)
+            name = key.data
+            if not data:
+                ended[name] = True
+                sel.unregister(key.fileobj)
+            else:
+                totals[name] += len(data)
+                buffers[name].extend(data[:max(0, CAP - len(buffers[name]))])
+
+    def observe_group():
+        # Internal, exact metadata only. The leader is still reserved by WNOWAIT.
+        limit = min(time.monotonic() + 0.15, end - 0.05)
+        if limit <= time.monotonic():
+            failure("metadata-budget", subprocess.TimeoutExpired("metadata", 0))
+            return "unknown"
+        helper = sel = None
+        data = {"stdout": bytearray(), "stderr": bytearray()}
+        total = {"stdout": 0, "stderr": 0}
+        ended = {"stdout": False, "stderr": False}
+        helper_closed = {"stdout": False, "stderr": False}
+        waited = False
+        term = kill = expired = False
+        before = len(diagnostic["errors"])
+        try:
+            sel = selectors.DefaultSelector()
+            helper = subprocess.Popen(["/bin/ps", "-g", str(child.pid), "-o",
+                                       "pid=,ppid=,pgid=,state="],
+                                      stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE, env=_environment(), close_fds=True,
+                                      start_new_session=True, umask=0o077)
+            for name, stream in (("stdout", helper.stdout), ("stderr", helper.stderr)):
+                os.set_blocking(stream.fileno(), False)
+                sel.register(stream, selectors.EVENT_READ, name)
+            while time.monotonic() < limit:
+                exited = os.waitid(os.P_PID, helper.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                now = time.monotonic()
+                if not exited and now >= limit - 0.05 and not term:
+                    expired = term = True
+                    try:
+                        os.kill(helper.pid, signal.SIGTERM)
+                    except Exception as error:
+                        failure("metadata-term", error)
+                if not exited and now >= limit - 0.03 and not kill:
+                    expired = kill = True
+                    try:
+                        os.kill(helper.pid, signal.SIGKILL)
+                    except Exception as error:
+                        failure("metadata-kill", error)
+                drain(sel, data, total, ended, limit)
+                if exited and all(ended.values()):
+                    break
+            if expired or not all(ended.values()):
+                failure("metadata-timeout", subprocess.TimeoutExpired("metadata", 0.15))
+        except Exception as error:
+            failure("metadata", error)
+        finally:
+            if helper is not None:
+                # An exceptional read/setup path still owns the helper PID, pre-Wait.
+                if not all(ended.values()) and not kill:
+                    try:
+                        os.kill(helper.pid, signal.SIGKILL)
+                    except Exception as error:
+                        failure("metadata-cleanup-kill", error, True)
+                try:
+                    helper.wait(timeout=max(0, limit - time.monotonic()))
+                    waited = True
+                except Exception as error:
+                    failure("metadata-wait", error, True)
+            close_resources(sel, helper, "metadata-close", helper_closed)
+        diagnostic["helper_wait_completed"] = waited
+        if (len(diagnostic["errors"]) != before or not waited or helper.returncode != 0
+                or not all(helper_closed.values()) or total["stderr"]
+                or total["stdout"] > CAP or not all(ended.values())):
+            if len(diagnostic["errors"]) == before:
+                failure("metadata-invalid", ValueError("incomplete metadata"))
+            return "unknown"
+        rows = bytes(data["stdout"]).splitlines()
+        parsed = []
+        if not 1 <= len(rows) <= 64:
+            failure("metadata-rows", ValueError("invalid row count"))
+            return "unknown"
+        for row in rows:
+            match = re.fullmatch(rb"\s*([1-9][0-9]*)\s+([1-9][0-9]*)\s+([1-9][0-9]*)\s+([IRSTUZ][+<>AELNSsVWX]*)\s*", row)
+            if not match:
+                failure("metadata-parse", ValueError("invalid metadata"))
+                return "unknown"
+            pid, ppid, pgid = (int(value) for value in match.groups()[:3])
+            state = match.group(4)
+            if pgid != child.pid or any(item[0] == pid for item in parsed):
+                failure("metadata-identity", ValueError("invalid group identity"))
+                return "unknown"
+            parsed.append((pid, ppid, pgid, state))
+        leaders = [row for row in parsed if row[0] == child.pid]
+        if (len(leaders) != 1 or leaders[0][1] != os.getpid()
+                or not leaders[0][3].startswith(b"Z")):
+            failure("metadata-leader", ValueError("leader reservation unproved"))
+            return "unknown"
+        if len(parsed) == 1:
+            return "sole-zombie"
+        return "live-members" if any(not row[3].startswith(b"Z") for row in parsed) else "zombie-members"
+
+    def send(sig, phase):
+        diagnostic["signals"].append(phase)
         try:
             os.killpg(child.pid, sig)
-        except ProcessLookupError:
-            pass
+        except Exception as error:
+            failure(phase, error, phase == "cleanup-kill")
+
     try:
         selector = selectors.DefaultSelector()
         diagnostic["phase"] = "spawn"
@@ -130,78 +257,58 @@ def _execute(argv, case, deadline_s=2):
                                  close_fds=True, start_new_session=True, umask=0o077)
         diagnostic["owned_pid"] = child.pid
         _live.add(child.pid)
-        diagnostic["phase"] = "streams"
         for name, stream in (("stdout", child.stdout), ("stderr", child.stderr)):
             os.set_blocking(stream.fileno(), False)
             selector.register(stream, selectors.EVENT_READ, name)
-        sent_term = sent_kill = False
-        while True:
-            now = time.monotonic()
-            # WNOWAIT keeps the owned leader PID reserved until group cleanup.
+        while time.monotonic() < end:
             diagnostic["phase"] = "waitid"
             exited = os.waitid(os.P_PID, child.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
             diagnostic["waitid_exit_observed"] |= bool(exited)
-            if not sent_term and (now >= end - 0.35 or exited):
-                timed_out = not bool(exited)
-                diagnostic["phase"] = "signal-term"
-                send(signal.SIGTERM)
+            if exited and diagnostic["group_check"] != "sole-zombie":
+                diagnostic["phase"] = "metadata"
+                diagnostic["group_check"] = observe_group()
+            now = time.monotonic()
+            unresolved = diagnostic["group_check"] != "sole-zombie"
+            if unresolved and not sent_term and (now >= end - 0.35 or diagnostic["group_check"] == "live-members"):
+                timed_out |= not bool(exited)
                 sent_term = True
-            if not sent_kill and (now >= end - 0.2 or exited):
-                diagnostic["phase"] = "signal-kill"
-                send(signal.SIGKILL)
+                send(signal.SIGTERM, "signal-term")
+            if unresolved and not sent_kill and now >= end - 0.20:
                 sent_kill = True
+                send(signal.SIGKILL, "signal-kill")
             diagnostic["phase"] = "drain"
-            for key, _ in selector.select(max(0, min(0.02, end - now))):
-                data = os.read(key.fileobj.fileno(), 4096)
-                if not data:
-                    selector.unregister(key.fileobj)
-                else:
-                    name = key.data
-                    counts[name] += len(data)
-                    output[name].extend(data[:max(0, CAP - len(output[name]))])
-            if exited and not selector.get_map():
+            drain(selector, output, counts, eof, end)
+            if any(count > CAP for count in counts.values()) and not any(
+                    item["phase"] == "output-overflow" for item in diagnostic["errors"]):
+                failure("output-overflow", ValueError("output cap exceeded"))
+            if exited and all(eof.values()) and not unresolved:
                 break
-            if time.monotonic() >= end:
-                timed_out = True
-                break
-        diagnostic["phase"] = "leader-wait"
-        child.wait(timeout=max(0, end - time.monotonic()))
-        diagnostic["leader_wait_completed"] = True
-        # Any surviving owned descendant is a failure, never a qualified denial.
-        diagnostic["phase"] = "group-check"
-        try:
-            os.killpg(child.pid, 0)
-            diagnostic["group_check"] = "observed"
-        except ProcessLookupError:
-            diagnostic["group_check"] = "absent"
-            reaped = True
-            _live.discard(child.pid)
-    except (OSError, subprocess.TimeoutExpired) as error:
-        diagnostic["primary_class"], diagnostic["primary_errno"] = _error_fields(error)
-        timed_out = True
+        else:
+            timed_out = True
+    except Exception as error:
+        failure(diagnostic["phase"], error)
     finally:
-        # Signal only while the unreaped leader still reserves its group identity.
-        try:
-            if child is not None and child.returncode is None:
-                try:
-                    send(signal.SIGKILL)
-                    child.wait(timeout=max(0, end - time.monotonic()))
-                    diagnostic["leader_wait_completed"] = True
-                except (OSError, subprocess.TimeoutExpired) as error:
-                    diagnostic["cleanup_class"], diagnostic["cleanup_errno"] = _error_fields(error)
-        finally:
+        if child is not None:
+            # All group operations finish here; the independent Wait cannot be skipped.
+            if diagnostic["group_check"] != "sole-zombie" and not sent_kill:
+                send(signal.SIGKILL, "cleanup-kill")
+            diagnostic["phase"] = "leader-wait"
             try:
-                if selector is not None:
-                    selector.close()
-            finally:
-                if child is not None:
-                    try:
-                        child.stdout.close()
-                    finally:
-                        child.stderr.close()
+                child.wait(timeout=max(0, end - time.monotonic()))
+                diagnostic["leader_wait_completed"] = True
+            except Exception as error:
+                failure("leader-wait", error, True)
+        close_resources(selector, child, "close", closed)
+    reaped = (child is not None and diagnostic["leader_wait_completed"]
+              and diagnostic["waitid_exit_observed"] and diagnostic["group_check"] == "sole-zombie"
+              and all(eof.values()) and all(closed.values()) and not diagnostic["errors"] and not timed_out)
+    if reaped:
+        _live.discard(child.pid)
     return {"case": case, "returncode": child.returncode if child else None, "timed_out": timed_out,
             "stdout": bytes(output["stdout"]), "stderr": bytes(output["stderr"]),
             "stdout_count": counts["stdout"], "stderr_count": counts["stderr"],
+            "stdout_eof": eof["stdout"], "stderr_eof": eof["stderr"],
+            "stdout_closed": closed["stdout"], "stderr_closed": closed["stderr"],
             "reaped": reaped, "elapsed_s": time.monotonic() - start, **diagnostic}
 
 
@@ -212,8 +319,13 @@ def _case(root, argv):
         ("/usr/bin/touch", str(root / "allowed/new")): "allowed-write",
         ("/bin/cat", str(root / "decoy/seed")): "denied-read",
         ("/usr/bin/touch", str(root / "decoy/new")): "denied-write",
-        ("/bin/sh", "-c", '/bin/cat "$1"', "probe", str(root / "decoy/seed")): "inherited-read",
+        ("/bin/sh", "-c", 'while :; do :; done'): "timeout-control",
     }
+    for name in ("allowed", "decoy"):
+        seed = str(root / name / "seed")
+        for script, label in (( '( : < "$1" ) & child=$!; printf "owned-child %s %s\\n" "$$" "$child" >&2; wait "$child"', "fork-only"),
+                              ( '/bin/cat "$1" & child=$!; printf "owned-child %s %s\\n" "$$" "$child" >&2; wait "$child"', "fork-exec")):
+            fixed[("/bin/sh", "-c", script, "probe", seed)] = label + "-" + name
     key = tuple(argv)
     if key in fixed:
         return fixed[key]
