@@ -101,7 +101,7 @@
 | [G0-06.2af](G0/G0-06.2af.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查隔离启动链的无输出 SIGABRT |
 | [G0-06.2ag](G0/G0-06.2ag.md) | GPT-6.1 Sol medium | verified | 实现固定的启动基线和沙箱 EOF 对照 |
 | [G0-06.2ah](G0/G0-06.2ah.md) | GPT-6.1 Sol medium | blocked | 执行已审固定启动诊断并记录真实边界 |
-| [G0-06.2ai](G0/G0-06.2ai.md) | GPT-6.1 Sol high；冲突难解时 Astra high | ready | 审查沙箱启动中止的最小能力与隔离替代 |
+| [G0-06.2ai](G0/G0-06.2ai.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查沙箱启动中止的最小能力与隔离替代 |
 | [G0-06.2a](G0/G0-06.2a.md) | GPT-6.1 Sol medium | locked | 候选 A engine 生命周期 PoC |
 | [G0-06.2b](G0/G0-06.2b.md) | GPT-6.1 Sol medium | locked | 候选 A 系统权限 PoC |
 | [G0-06.2c](G0/G0-06.2c.md) | GPT-6.1 Sol medium | locked | 候选 A 签名打包 PoC |
