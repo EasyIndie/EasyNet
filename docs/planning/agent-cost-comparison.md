@@ -151,3 +151,21 @@ Luna92,989/9,545，自动审批49,180/824（前两数为非缓存输入/输出�
 见 [窗口与失败限制](metrics/G0-06.2ac.json) 和 [原始脱敏计数](metrics/G0-06.2ac-usage.json)。
 包含前卡发布尾部/准备/独立审查/两轮修复/两次运行/证据提交；无配对臂、账单费率或省钱结论。
 自动审批输入开销也较大，不能只统计实现worker；两次失败后转新的有界诊断卡，不无限返工。
+
+## Corrective isolation implementation observation — G0-06.2ae
+
+Whole chain99 events:257442 uncached input/37072 output/cache96.81%;
+[raw aggregate](metrics/G0-06.2ae-usage.json), [scope manifest](metrics/G0-06.2ae.json).
+Main91463/20008, I Sol medium44568/12305, R Sol high37509/3828,
+automatic approval83902/931. Output includes reasoning; no billing fee is inferred.
+The same I/R agents were reused only for this card's two focused repairs; no Astra.
+Independent review caught3 source blockers.6 fake tests passed; actual ordinary
+qualification failed twice, now at zero-output SIGABRT after bounded reaping.
+This is a blocked sample, not an efficient successful delivery. Main coordination
+exceeded I+R combined in uncached input and output, so isolated worker totals
+would materially understate total task consumption. Root compaction/re-reading,
+source/hash binding, native safety approval and evidence publication are included.
+Prior metric publication tail is included; this publication lies after cutoff.
+No matched main-only same task exists; no causal savings percentage or cost winner.
+Keep short mechanical work in main, bound source-review packets and avoid fresh
+workers for individual log reads; required independent safety review remains.

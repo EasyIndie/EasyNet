@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ae",
+  "status": "blocked",
+  "strategy": "delegated_implementation_and_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "743045f",
+  "started_at_utc": "2026-10-08T08:09:11.647174+00:00",
+  "finished_at_utc": "2026-10-08T08:33:41.910368+00:00",
+  "subagent_count": 2,
+  "history_inheritance": "none",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": false,
+  "repair_rounds": 2,
+  "usage_report_path": "docs/planning/metrics/G0-06.2ae-usage.json",
+  "billing_cost": null,
+  "implementation_commit": "bb56f88",
+  "evidence_commit": "49e58de",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9681334522625642,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 7821312,
+    "calls": 99,
+    "input_tokens": 8078754,
+    "noncached_input_tokens": 257442,
+    "output_tokens": 37072,
+    "reasoning_output_tokens": 12839,
+    "total_tokens": 8115826
+  },
+  "limitations": [
+    "Priorad metricpublication tail andpreparation included; approximate attribution.",
+    "Two actual ordinary failures;6 fake passes only, noqualified isolation success ormatched comparison.",
+    "Source review found3 blockers; repair1 source fix, repair2 diagnostics. Main compaction/re-reading andcoordination included.",
+    "Model/role costs unknown; outputincludesreasoning; acceptance andcollector included, metricpublication excluded."
+  ]
+}
