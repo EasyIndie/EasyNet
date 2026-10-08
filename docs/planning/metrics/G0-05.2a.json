@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "status": "active",
+  "task_id": "G0-05.2a",
+  "matched_pair_id": null,
+  "strategy": "delegated",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "c8e9360",
+  "acceptance_contract": "LocalStateLab-v1 + proposed JSONFixture-v1",
+  "estimated_scope": "One owned JSON backend and local crash/CAS harness; no production store.",
+  "started_at_utc": "2026-10-08T01:27:24.810Z",
+  "finished_at_utc": null,
+  "attribution": "completion_timestamp",
+  "excluded_windows": [],
+  "configured_models_and_efforts": [
+    {
+      "role": "implementation",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "role": "review",
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    }
+  ],
+  "subagent_count": 1,
+  "history_inheritance": "none for fresh workers; same-card repair/review retains history",
+  "usage_report_path": null,
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": null,
+  "repair_rounds": null,
+  "blocking_review_findings": 3,
+  "final_acceptance": null,
+  "elapsed_seconds": null,
+  "billing_cost": null,
+  "applicable_price_source": null,
+  "limitations": [
+    "No matched main-only arm yet; not a savings comparison.",
+    "Main actual model/effort taken from rollout, not overridden.",
+    "Token counters are local observations, not subscription invoice."
+  ]
+}
