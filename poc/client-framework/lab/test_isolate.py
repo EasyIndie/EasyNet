@@ -67,16 +67,15 @@ def require(condition, message):
 
 
 def healthy(result):
-    if (not result["reaped"] or result["timed_out"] or result["elapsed_s"] > 2
-            or result["stdout_count"] > 8192 or result["stderr_count"] > 8192):
-        fields = ("case", "returncode", "timed_out", "reaped", "elapsed_s",
-                  "stdout_count", "stderr_count", "phase", "primary_class", "primary_errno",
-                  "cleanup_class", "cleanup_errno", "waitid_exit_observed", "group_check",
-                  "owned_pid", "leader_wait_completed", "signals", "errors",
-                  "stdout_eof", "stderr_eof", "stdout_closed", "stderr_closed")
-        diagnostic = {name: result[name] for name in fields}
-        diagnostic["stderr_escaped"] = ascii(result["stderr"][:8192])[:8192]
-        print(json.dumps(diagnostic, sort_keys=True))
+    fields = ("case", "returncode", "timed_out", "reaped", "elapsed_s",
+              "stdout_count", "stderr_count", "phase", "primary_class", "primary_errno",
+              "cleanup_class", "cleanup_errno", "waitid_exit_observed", "group_check",
+              "owned_pid", "leader_wait_completed", "signals", "errors",
+              "stdout_eof", "stderr_eof", "stdout_closed", "stderr_closed", "helper_wait_completed")
+    diagnostic = {name: result[name] for name in fields}
+    diagnostic["stdout_escaped"] = ascii(result["stdout"][:8192])[:8192]
+    diagnostic["stderr_escaped"] = ascii(result["stderr"][:8192])[:8192]
+    print(json.dumps(diagnostic, sort_keys=True))
     require(result["reaped"] and not result["timed_out"], "child outcome unqualified")
     require(result["leader_wait_completed"] and result["stdout_eof"] and result["stderr_eof"]
             and result["stdout_closed"] and result["stderr_closed"], "incomplete lifecycle")
