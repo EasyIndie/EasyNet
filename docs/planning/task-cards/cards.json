@@ -7709,7 +7709,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "SwiftUI/原生路线证据表",
-      "status": "locked",
+      "status": "verified",
       "mode": "research",
       "dependencies": [
         "G0-06.1a"
@@ -7724,20 +7724,35 @@
       },
       "inputs": [
         {
-          "path": "docs/unified-client-analysis.md",
-          "selector": "macOS PoC 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/poc/client-framework/flutter-evidence.md",
+          "selector": "accepted related candidate facts and common7row baseline; reuse unchangedNE/libbox/protocolsources"
         },
         {
-          "path": "scripts/clients/install_singbox_client.sh",
-          "selector": "macOS PoC 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/agent-cost-comparison.md",
+          "selector": "authorized main-only lowrisk frozen card observations; actualmodel/counterlimitations"
+        },
+        {
+          "path": "docs/planning/adr/ADR-004-controller-language.md",
+          "selector": "Go service choice independentUI/engine"
+        },
+        {
+          "path": "docs/planning/adr/ADR-005-local-state-storage.md",
+          "selector": "inventory backend independentprotectedstores/UI"
+        },
+        {
+          "path": "docs/planning/capability-matrix.md",
+          "selector": "native4/AWG vsWG no live support claim"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-06.1b.md",
       "binding": "docs/planning/task-bindings/G0-06.1b.json",
       "allowed_writes": [
+        "docs/planning/poc/client-framework/native-evidence.md",
         "docs/planning/task-results/G0/G0-06.1b.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/native-evidence.md"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -7773,10 +7788,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "前置卡尚未 verified/accepted-not-applicable",
-        "需要按本卡范围冻结 PoC/证据命令与单目标环境；不能运行所有候选"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
         "涉及新 trust/secret/权限/销毁边界立即审查",
@@ -7794,7 +7806,15 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.1b.md",
+        "reviewed_by": "root official source/fact consistency review; UI/platform/security decisions deferred R",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "medium",
+        "token_usage": "Local observed collection pending docs/planning/metrics/G0-06.1b.json",
+        "note": "Authorized main-only lowrisk calibration arm actualSolmedium, no subagent; same7headings butrelatedunpairedcandidatecomparison"
+      }
     },
     {
       "id": "G0-06.2a",

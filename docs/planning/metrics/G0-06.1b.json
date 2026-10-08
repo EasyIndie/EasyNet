@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.1b",
+  "status": "verified",
+  "strategy": "main_only",
+  "comparison_kind": "observational_related_unpaired",
+  "related_task_id": "G0-06.1a",
+  "matched_pair_id": null,
+  "input_commit": "d1ba690",
+  "started_at_utc": "2026-10-08T06:50:32.064626+00:00",
+  "finished_at_utc": null,
+  "acceptance_contract": "G0-06.1b singlecandidate official facts againstrelated7rowframeworkbaseline; no UI/engine adoption or platformqualification",
+  "subagent_count": 0,
+  "configured_models_and_efforts": [
+    {
+      "role": "main",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  ],
+  "history_inheritance": "no subagent",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "usage_report_path": null,
+  "first_pass": true,
+  "repair_rounds": 0,
+  "billing_cost": null,
+  "limitations": [
+    "PriorFluttermetricpublicationtailincluded; exactcausalattributionnotclaimed.",
+    "Relatedfacttable withdifferentplatform/source scope, source reuse andactualmodel fromFlutterLuna arm: notstrictmatchedpair, no monetarycausalconclusion."
+  ],
+  "final_acceptance": "Official native-route facts/link/plan checks accepted; no framework/engine/platform qualification"
+}

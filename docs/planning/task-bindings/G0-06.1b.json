@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.1b",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-06.1b singlecandidate official facts againstrelated7rowframeworkbaseline; no UI/engine adoption or platformqualification"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/native-evidence.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.1b",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "User-authorized cost calibration arm: main actualSolmedium executes frozenlowriskofficialfacttable, no subagent/startup, no self-modelswitch; defaultC Luna assignment remainsroutingnotactual. SingleSwiftUI/nativeUIroute <=130line evidence +mandatoryreport20; no source/deps/SDK/toolchain/install/PoC/build/signing/VPN/personal/networkconfig/external/git mutationsduringfacts. Same7rows asFlutter: officialplatform/architecture/minOSAPI-bound, Go service/nativebridge andlibboxIPC/artifacts, AppleNEprocess/packaging/entitlement/DeveloperID, Androidcoverage VpnService distinctUI/notimplemented, desktopTUNprivilege vsUI, factuallicenses/deps/releasegatesnotlegaladvice, preservednativefour/protocolformatbounds. AppleSwiftUI notclaimAndroid/Windows/Linux coverage; futureseparateUI/bridge requireslaterADR notsilentlydropuserplatforms. OfficialFlutterrow/libboxtesting declarations/AppleTN3134/Android/protocolfacts alreadycheckedtoday canreuse dated source boundaries; browseprimarySwiftUI/Swift nativeinterop sourcesonlynecessarynewfacts. DynamicApple HTML searchcontent usable recordretrievallimits. No AppleUI/NEruntime/minOSsupport/signing identitiesinvented. Architecture/securityselectiondeferredR; rowfactsinferencelimitsexplicit. CurrentLinuxinstaller notnativeMacGUI. Primarylinks no wholepagequotes, evolvingAPIfactsverified asof2026-10-08. MainrootmodelactualSolmedium recorded and source/model/cache differences vsA meanRELATEDUNPAIRED notcausallymatchedcostcomparison. No pricing/invoice assumption. Final root source/crossdocfactcheck +localrelativeMarkdownlinks, no behavior reruns. SubsequentreviewADRselectframeworkonlyaftercandidateinputsqualifiedfacts; no prematureG1 directories/APIs."
+}
