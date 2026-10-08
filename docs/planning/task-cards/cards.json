@@ -26689,6 +26689,108 @@
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
       ]
+    },
+    {
+      "id": "G0-06.2am",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "审查 runner 合成进程启动归因的最小观测合同",
+      "status": "verified",
+      "mode": "review",
+      "dependencies": [
+        "G0-06.2ak"
+      ],
+      "model": {
+        "tier": "R",
+        "type": "强推理设计/审查模型",
+        "example": "GPT-6.1 Sol high；冲突难解时 Astra high",
+        "review": "维护者接受决策/验收结论；模型不能自授资源操作权限",
+        "reason": "决定架构或审查信任、恢复、资源销毁与阶段证据，不能仅凭测试通过",
+        "context": "≤12k，超出先做事实摘要"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/task-results/G0/G0-06.2al.md",
+          "selector": "runner A/B actual evidence"
+        },
+        {
+          "path": "poc/client-framework/lab/isolate.py",
+          "selector": "_execute owned_pid/reservation and cleanup unchanged"
+        },
+        {
+          "path": "poc/client-framework/lab/mapping_diag.py",
+          "selector": "fixed cases and sanitized fields"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2am.md",
+      "binding": "docs/planning/task-bindings/G0-06.2am.json",
+      "allowed_writes": [
+        "docs/planning/poc/client-framework/runner-attribution-contract.md",
+        "docs/planning/task-results/G0/G0-06.2am.md"
+      ],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/runner-attribution-contract.md"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "检查feature分支和已接受输入，仅读取卡片selector",
+        "按冻结binding实现本卡单一目标，源码/决策不冒充native qualification",
+        "执行绑定静态检查，独立复核，保留未知及blocked前置，不执行未授权runtime"
+      ],
+      "acceptance": [
+        "Freeze one safe owned synthetic launch observation, or explicit inability to attribute",
+        "Exact tools, PID/time/image correlation, limits, sanitized fields and stop conditions; no new grants or personal logs"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2am",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "Freeze one safe owned synthetic launch observation, or explicit inability to attribute",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤6k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2am.md",
+        "reviewed_by": "root accepted independentRsourcecontract repair1 plusnarrowarchitectureclarification",
+        "actual_model": "R GPT-6.1 Sol high; root Solmedium",
+        "token_usage": "pending fullchain"
+      }
     }
   ],
   "parent_gates": {

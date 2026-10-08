@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2am",
+  "status": "frozen",
+  "contract_versions": [
+    "al exact remote A pass/B SIGABRT @2452f14; user continue minimal attribution plan2026-10-09"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/runner-attribution-contract.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2am",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "source-only futurefresh GitHub macos15arm64",
+  "side_effect_authorization": null,
+  "prepared_by": "root",
+  "reviewed_by": "root bounded source-only R contract",
+  "note": "Fresh R Solhigh <=5k core. Contract<=80lines/report<=15, atmost2 NEW official Apple primary/manual sources; browse technical uncertainties. Read 3 exact inputs and canonical start docs relevant only. NO authoredimports/runtime/code/profile/fixtures/downloads/privatefiles/logs/processinventory/settings/Gitmutation/newagents. ONE smallest staged observation on fresh owned synthetic cat/sandboxexec chain; same profile/argv no guessed permissions. Evaluate bounded exactPID+launchtime publictool diagnostics or owned synthetic crash artifact observation ONLY inside disposable no-personal GitHub guest, never personal host. Exact PID/time/image identity must avoid PID reuse; no postWait signals/metadata authority. Output allowlisted stage/operation/termination enum only, no raw crash/paths/stack/env. No broad predicates/systemlogdump/recursiveinventory/nonsyntheticrecords export or sudo. At most one launch and one bounded query; no retry/grantwidening. Freeze argv/predicate/source/provenance, limits/helperreap/FDclose and controlled fault test requirements. Reuse unchanged _execute. Give exact executable contract sufficient next I, or concrete blocker rather than endless decision research. User narrow attribution may supersede prior blanket no-logs ONLY for owned synthetic record in temporary guest after independent implementation R and binding, never personal/systemrawlogs. No Astra.",
+  "review_required_repairs": [
+    "repair1 add strict namespace/category+code with Appleprimary evidence; operation unknown",
+    "captureTime may defer past target Wait, match procLaunch inlaunchwindow andcapture<=checkedqueryend",
+    "6 internalnumbers include query wall+mono; unchangedexecute fault evidence reused",
+    "root adds one officialApple arm64e definition; arch enum arm64|arm64e avoids rejecting validARM64record by construction; installedschemaunknown"
+  ],
+  "source_review": {
+    "reviewed_by": "root accepted boundedRcontract repair1 +rootarchitectureclarification",
+    "source_count": "R2primary +root1 narrowly scoped Applearchitecture definition; explicit refinement beyond initial2-source bound"
+  }
+}
