@@ -7817,6 +7817,98 @@
       }
     },
     {
+      "id": "G0-06.2aa",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "候选 A 工具链校验与隔离事实",
+      "status": "ready",
+      "mode": "research",
+      "dependencies": [
+        "G0-06.1b"
+      ],
+      "model": {
+        "tier": "C",
+        "type": "低成本编码模型",
+        "example": "Luna medium",
+        "review": "主 Agent 核对官方出处与事实；平台权限或安全结论交 Sol 审查",
+        "reason": "固定五行官方工具链事实表；执行隔离设计和代码由后续 Sol 审查",
+        "context": "≤6k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/client-framework/flutter-evidence.md",
+          "selector": "accepted candidate facts and official references; reuse unchanged facts"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/native-evidence.md",
+          "selector": "platform distribution limits; no actual framework qualification"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2aa.md",
+      "binding": "docs/planning/task-bindings/G0-06.2aa.json",
+      "allowed_writes": [
+        "docs/planning/poc/client-framework/toolchain-evidence.md",
+        "docs/planning/task-results/G0/G0-06.2aa.md"
+      ],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/toolchain-evidence.md"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "检查分支和前置证据，只加载本卡输入；目标：Flutter/sing-box 路线证据表",
+        "按冻结合同处理当前单目标；案例：仅验证「Flutter/sing-box 路线证据表」这一范围；候选注明 NE/签名/架构/分发依赖及证据",
+        "运行绑定的定向行为检查；失败最多两次局部修复后升级；记录 diff/命令/结果"
+      ],
+      "acceptance": [
+        "官方来源逐项记录 Flutter/Dart 与 Darwin arm64 sing-box 版本、下载校验、默认写入和可用隔离环境变量；未知标记 unknown",
+        "只收集事实，不下载执行 SDK/engine，不批准隔离方案或选择生产依赖"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2aa",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "官方来源逐项记录 Flutter/Dart 与 Darwin arm64 sing-box 版本、下载校验、默认写入和可用隔离环境变量；未知标记 unknown",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-06.2a",
       "source_id": "G0-06.2",
       "parent": "G0-06",
@@ -7825,7 +7917,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-06.1b"
+        "G0-06.2aa"
       ],
       "model": {
         "tier": "I",

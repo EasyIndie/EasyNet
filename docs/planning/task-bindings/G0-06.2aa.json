@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2aa",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-06.2aa bounded official toolchain facts v1; no runtime/download/bootstrap authorization"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/toolchain-evidence.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2aa",
+      "expected": "exit0 plans only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "C Luna medium fresh <=6k; allowed evidence <=100lines plus report <=20lines. Fixed5rows: Flutter stable Darwin arm64 archive exactversion URL SHA manifest and SDK Dart version; SDK/bootstrap macOS prerequisites and first-run writes; supported analytics/settings/cache isolation vars verified in official current source (HOME/CODEX_HOME must not be repurposed); official stable sing-box Darwin arm64 asset checksum/version sources (current repo Linux pin1.14.2 does not qualify Darwin); minimal future unprivileged Flutter-host child-engine lifecycle prerequisites vs embedded libbox/NE/TUN unresolved gates. <=10 official primary URLs; browse only official Flutter/Dart/sing-box source/docs/release manifests, read only. Never download binaries/install/execute Flutter/Dart/engine/toolchain/build/pub/doctor/git clone or inspect private user settings. Do not create scripts/runtime fixtures or modify status. Distinguish exact source-supported flags from guesses, version/ref/date evidence mandatory; moving source refs note unknown SHA. Optional suggestions explicitly proposals requiring R review. Return <=12lines; no gitcommit. No adopted frameworks/drivers/protocol support, production/permission/signing conclusions. Parent G0-06.2a retains actual engine/host runtime gate; this prerequisite does not replace it."
+}
