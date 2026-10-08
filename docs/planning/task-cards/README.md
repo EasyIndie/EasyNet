@@ -14,8 +14,8 @@
 | 档位 | 默认模型类型/示例 | 卡数 |
 |---|---|---:|
 | D | Luna low | 5 |
-| C | Luna medium | 84 |
-| I | GPT-6.1 Sol medium | 135 |
+| C | Luna medium | 83 |
+| I | GPT-6.1 Sol medium | 136 |
 | R | GPT-6.1 Sol high；冲突难解时 Astra high | 35 |
 
 ## G0
@@ -86,7 +86,7 @@
 | [G0-04.2f](G0/G0-04.2f.md) | GPT-6.1 Sol medium | verified | 候选 B result/打包 PoC |
 | [G0-04.3](G0/G0-04.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 比较相同验收结果并接受 ADR-004 |
 | [G0-05.1](G0/G0-05.1.md) | GPT-6.1 Sol medium | verified | 编写本地数据、secret 引用和迁移合同 |
-| [G0-05.1a](G0/G0-05.1a.md) | Luna medium | ready | 共同存储纯模型、严格解码与迁移规则 |
+| [G0-05.1a](G0/G0-05.1a.md) | GPT-6.1 Sol medium | verified | 共同存储纯模型、严格解码与迁移规则 |
 | [G0-05.2a](G0/G0-05.2a.md) | GPT-6.1 Sol medium | locked | JSON 崩溃与并发 PoC |
 | [G0-05.2b](G0/G0-05.2b.md) | GPT-6.1 Sol medium | locked | SQLite 崩溃与并发 PoC |
 | [G0-05.3](G0/G0-05.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | locked | 比较证据并接受 ADR-005 |

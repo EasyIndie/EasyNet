@@ -7126,17 +7126,17 @@
       "parent": "G0-05",
       "phase": "G0",
       "title": "共同存储纯模型、严格解码与迁移规则",
-      "status": "ready",
+      "status": "verified",
       "mode": "implementation",
       "dependencies": [
         "G0-05.1"
       ],
       "model": {
-        "tier": "C",
-        "type": "低成本编码模型",
-        "example": "Luna medium",
-        "review": "Sol high 核对严格解析、版本/CAS/迁移规则，无生产安全政策选型",
-        "reason": "已审查合同的纯模型与解析函数；无文件、secret、网络或平台操作",
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "严格多层 JSON 解析与 CAS/迁移组合超过单函数机械任务；Luna 两轮后终审发现实际类型与编码分类缺陷，按规则由 Sol medium 定向修复",
         "context": "≤8k"
       },
       "inputs": [
@@ -7154,12 +7154,14 @@
       "allowed_writes": [
         "poc/local-state/go/go.mod",
         "poc/local-state/go/model.go",
+        "poc/local-state/go/codec.go",
         "poc/local-state/go/model_test.go",
         "docs/planning/task-results/G0/G0-05.1a.md"
       ],
       "implementation_writes": [
         "poc/local-state/go/go.mod",
         "poc/local-state/go/model.go",
+        "poc/local-state/go/codec.go",
         "poc/local-state/go/model_test.go"
       ],
       "forbidden": [
@@ -7213,7 +7215,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-05.1a.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "medium",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-05.2a",
@@ -7317,7 +7326,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-05.1a"
+        "G0-05.2a"
       ],
       "model": {
         "tier": "I",
