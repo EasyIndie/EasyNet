@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2aj",
+  "status": "blocked_native_startup",
+  "strategy": "delegated_implementation_review_root_runtime",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "30d4c48",
+  "implementation_commit": "1aba68e",
+  "evidence_commit": "1c91024",
+  "started_at_utc": "2026-10-08T09:18:19.170122+00:00",
+  "finished_at_utc": "2026-10-08T21:40:27.935515+00:00",
+  "subagent_count": 2,
+  "history_inheritance": "none; same-card repair/review resumed",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": false,
+  "repair_rounds": 1,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2aj-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9039119248657449,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 7329152,
+    "calls": 80,
+    "input_tokens": 8108259,
+    "noncached_input_tokens": 779107,
+    "output_tokens": 40120,
+    "reasoning_output_tokens": 15506,
+    "total_tokens": 8148379
+  },
+  "limitations": [
+    "Blocked native launch, not a successful completion comparison.",
+    "Window includes interruptions/idle/user status question and previous metric publication tail; elapsed time is not active labor.",
+    "Same-card root execution reduces administrative cards; no controlled main-only counterpart or cost winner.",
+    "Output includes reasoning; cache writes unavailable locally, not server proof.",
+    "Source/review/fake/runtime/acceptance/collection included; publication excluded."
+  ]
+}

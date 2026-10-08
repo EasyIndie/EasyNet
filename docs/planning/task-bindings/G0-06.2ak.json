@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ak",
+  "status": "frozen",
+  "contract_versions": [
+    "ai accepted mapping hypothesis; aj exact-hash native B abort evidence @1c91024"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/isolation-path-decision.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ak",
+      "expected": "exit0 plan only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root",
+  "reviewed_by": "root bounded source-only R decision",
+  "note": "Fresh R Sol high <=6k input, one decision <=80lines/report<=15. Read only three exact inputs plus canonical start docs relevant sections. No code/profile/import/runtime/fixtures/SDK/config/personal logs/process inventories/git mutations/new agents. aj A rc0 B rc-6 both healthy cleanup, exact per-command hashes; C/D notrun. Dispose of sufficiency hypothesis; do not assert cause. At most TWO NEW official primary sources if needed, reuse accepted facts, no extensive research. Determine whether one narrowly authorized public synthetic attribution can resolve current host sandbox startup (must specify observation/no raw personal crash/systemlogs and stop condition), or isolate dedicated account/VM prerequisites and exact user/external decision. Never broaden guessed profile grants or repurpose HOME/CODEX_HOME. Recommend ONE next path with risks, qualification scope, required inputs, and no more permission trial chain absent evidence. Identify original independent ready work if environment blocked; no silently dropping G0-G6 candidates/gates. No Astra; uncertainty explicitly retained. Source-only decisions can verified while dependent native gates remain blocked."
+}
