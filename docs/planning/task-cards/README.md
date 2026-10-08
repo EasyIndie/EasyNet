@@ -82,7 +82,7 @@
 | [G0-04.2ap](G0/G0-04.2ap.md) | Luna medium | verified | Rust vault 原生 C ABI 与构建事实 |
 | [G0-04.2aq](G0/G0-04.2aq.md) | Luna medium | verified | Rust vault 数据 ABI 与原生符号链接探针 |
 | [G0-04.2ar](G0/G0-04.2ar.md) | GPT-6.1 Sol medium | verified | Rust scoped vault helper 编译与所有权适配 |
-| [G0-04.2e](G0/G0-04.2e.md) | GPT-6.1 Sol medium | ready | 候选 B vault PoC |
+| [G0-04.2e](G0/G0-04.2e.md) | GPT-6.1 Sol medium | verified | 候选 B vault PoC |
 | [G0-04.2f](G0/G0-04.2f.md) | GPT-6.1 Sol medium | locked | 候选 B result/打包 PoC |
 | [G0-04.3](G0/G0-04.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | locked | 比较相同验收结果并接受 ADR-004 |
 | [G0-05.1](G0/G0-05.1.md) | GPT-6.1 Sol medium | locked | 编写本地数据、secret 引用和迁移合同 |
