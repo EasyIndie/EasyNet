@@ -7916,6 +7916,110 @@
       }
     },
     {
+      "id": "G0-06.2ab",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "候选 A 生命周期实验执行边界设计",
+      "status": "ready",
+      "mode": "review",
+      "dependencies": [
+        "G0-06.2aa"
+      ],
+      "model": {
+        "tier": "R",
+        "type": "强推理设计/审查模型",
+        "example": "GPT-6.1 Sol high；冲突难解时 Astra high",
+        "review": "维护者接受决策/验收结论；模型不能自授资源操作权限",
+        "reason": "决定架构或审查信任、恢复、资源销毁与阶段证据，不能仅凭测试通过",
+        "context": "≤12k，超出先做事实摘要"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/client-framework/toolchain-evidence.md",
+          "selector": "actual pinned sources/manifests and isolation caveats; archive integrity and runtime unknown"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/flutter-evidence.md",
+          "selector": "framework/engine/NE independent prerequisites"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/native-evidence.md",
+          "selector": "candidateB and distribution context"
+        },
+        {
+          "path": "docs/planning/agent-execution-policy.md",
+          "selector": "ready card and local safety constraints; bounded multiagent routing"
+        },
+        {
+          "path": "docs/planning/execution-backlog.md",
+          "selector": "G0-06 macOS engine/proxy/permission/package gates only"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2ab.md",
+      "binding": "docs/planning/task-bindings/G0-06.2ab.json",
+      "allowed_writes": [
+        "docs/planning/poc/client-framework/lifecycle-preparation.md",
+        "docs/planning/task-results/G0/G0-06.2ab.md"
+      ],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/lifecycle-preparation.md"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "检查分支和前置证据，只加载本卡输入；目标：Flutter/sing-box 路线证据表",
+        "按冻结合同处理当前单目标；案例：仅验证「Flutter/sing-box 路线证据表」这一范围；候选注明 NE/签名/架构/分发依赖及证据",
+        "运行绑定的定向行为检查；失败最多两次局部修复后升级；记录 diff/命令/结果"
+      ],
+      "acceptance": [
+        "给出可执行、分卡和明确未决项的 SDK 隔离与 actual Flutter macOS UI-host / engine 生命周期实验设计；不以 CLI-only/headless 冒充平台资格",
+        "无安装/运行/权限/签名/个人状态操作；任何下一步必须有精确可审查实现和命令"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ab",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "给出可执行、分卡和明确未决项的 SDK 隔离与 actual Flutter macOS UI-host / engine 生命周期实验设计；不以 CLI-only/headless 冒充平台资格",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
+    },
+    {
       "id": "G0-06.2a",
       "source_id": "G0-06.2",
       "parent": "G0-06",
@@ -7924,7 +8028,7 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-06.2aa"
+        "G0-06.2ab"
       ],
       "model": {
         "tier": "I",

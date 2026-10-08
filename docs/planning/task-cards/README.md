@@ -1,6 +1,6 @@
 # 任务卡与模型分配索引
 
-已将 168 条原任务进一步拆为 **260 张独立卡**，覆盖 56 个工作包。
+已将 168 条原任务进一步拆为 **261 张独立卡**，覆盖 56 个工作包。
 新增 G0-06.2aa 只拆出官方工具链事实准备，原生命周期与平台验收范围保留。
 每卡单独文件，可只把本卡和相关合同交给执行模型，无需读整个目录。
 已完成卡的状态见下表与对应 task-result；其余已具备目标/案例/依赖/模型评估，
@@ -17,7 +17,7 @@
 | D | Luna low | 5 |
 | C | Luna medium | 84 |
 | I | GPT-6.1 Sol medium | 136 |
-| R | GPT-6.1 Sol high；冲突难解时 Astra high | 35 |
+| R | GPT-6.1 Sol high；冲突难解时 Astra high | 36 |
 
 ## G0
 
@@ -94,6 +94,7 @@
 | [G0-06.1a](G0/G0-06.1a.md) | Luna medium | verified | Flutter/sing-box 路线证据表 |
 | [G0-06.1b](G0/G0-06.1b.md) | Luna medium | verified | SwiftUI/原生路线证据表 |
 | [G0-06.2aa](G0/G0-06.2aa.md) | Luna medium | verified | 候选 A 工具链校验与隔离事实 |
+| [G0-06.2ab](G0/G0-06.2ab.md) | GPT-6.1 Sol high；冲突难解时 Astra high | ready | 候选 A 生命周期实验执行边界设计 |
 | [G0-06.2a](G0/G0-06.2a.md) | GPT-6.1 Sol medium | locked | 候选 A engine 生命周期 PoC |
 | [G0-06.2b](G0/G0-06.2b.md) | GPT-6.1 Sol medium | locked | 候选 A 系统权限 PoC |
 | [G0-06.2c](G0/G0-06.2c.md) | GPT-6.1 Sol medium | locked | 候选 A 签名打包 PoC |

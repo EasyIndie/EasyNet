@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ab",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-06.2ab bounded execution-design proposal v1, parent full lifecycle/permission/package gates retained"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/lifecycle-preparation.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ab",
+      "expected": "exit0 planning only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "R Solhigh fresh<=8k. Write proposedpreparation<=180lines +report<=20lines ONLY, no runtime/scripts/deps/install/SDK/bootstrap/build/privatefiles/signing/VPN/externalmutations/gitcommit. Select and justify one exact experimental Flutter version (3.47.0 inspected source vs3.47.6currentstable), SDK Darwinarm64/SHA; officialsource browsing <=6newURLs for unresolved isolation details. HOME/CODEX_HOME must not be repurposed. XDG_CONFIG_HOME legacy-home settings precedence not fullyisolated; identify analytics and subprocess writes, propose source-supported bounded environment +actual enforceable filesystem sandbox approach ifavailable, never guessvariables. No accesspersonalsettings to testabsence. Frozen owned0700temporaryartifact roots, archivechecksum/pathtraversal/symlinks/types extraction rules/executabletoolchain exception vsfixturefiles600; no recursiveunknowncleanup. Need concrete nextsmallcard paths/interfaces and commands with prerequisites, but markfuturetoolsnotpresent asproposedcommands, notreadyruntime. Framework host actual macOS app+singboxCLI child proxy-mode experiment maycompare lifecycle boundary but embeddedlibbox gapmustexplicitlyremain and get ADR disposition; no automaticequivalence/productionadoption. Minimal loopback-only client/fixture/config, no DNS/upstream/TUN/systemproxy/routes/userprefs/credentials; actual UIhost ownschild bounded deadlines/output,startreadyrealprotocolprobe,repeatedconnect,stopchildWait,crashrestart,cancel/failurefixturecleanup, leakedchild prevention. Frozen cases vs unknowns, processlaunch alone notreadiness. Explain generatedFluttertemplate file scope/readreview vs hand authored<=3impl2test constraints; split lowrisk code/review/buildhost/harness cards ifneeded. Keepengine/UI andGo service separation, native4/AWG/fullG0-G6 targets unchanged; no signerprofiles/userconsentaccess and later realpermissionscannot be fakedcomplete. Any unavoidable concretepermission needs explain and preserve independentwork; do notaskspeculativeuserquestion. Root accepts design afterreview before any codeexecution; report blockers/noinventedqualification/cost. Primary official sources only, read-only metadata, no binarydownload. Return<=12linehandoff."
+}
