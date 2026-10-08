@@ -52,7 +52,7 @@
       "poc/client-framework/lab/fixture.sb": "b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82"
     },
     "scope": "controlled native API fakes plus exact unprivileged Darwin owned synthetic ordinary/timeout fixtures; no SDK or GUI",
-    "runtime_status": "one exact ordinary diagnostic retry approved; stop on failure, no timeout after failure",
+    "runtime_status": "blocked actual ordinary twice, repairbudget2 exhausted; timeout not executed; no further rerun on this binding",
     "on_failure": "FAIL/unknown stop, preserve remaining fixture; no profile widening or postWait signals"
   },
   "review_required_repairs": [
