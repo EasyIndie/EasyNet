@@ -8874,7 +8874,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "隔离启动失败后的归因停止条件与替代路径决策",
-      "status": "ready",
+      "status": "verified",
       "mode": "review",
       "dependencies": [
         "G0-06.2ai"
@@ -8962,7 +8962,13 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2ak.md",
+        "reviewed_by": "root accepted bounded source-only decision; no native or VM acceptance",
+        "actual_model": "GPT-6.1 Sol high; root Sol medium",
+        "token_usage": "pending full-chain collection"
+      }
     },
     {
       "id": "G0-06.2a",
