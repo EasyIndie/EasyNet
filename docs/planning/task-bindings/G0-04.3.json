@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-04.3",
+  "status": "frozen",
+  "contract_versions": [
+    "ADR-001/002/003 accepted architecture; accepted candidateA/B SSH/vault/result lab evidence; ADR-004 limited application-service language disposition"
+  ],
+  "implementation_files": [
+    "docs/planning/adr/ADR-004-controller-language.md",
+    "docs/planning/README.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-04.3",
+      "expected": "exit0 planonly no codeimplementationclaim"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "R Solhigh singleADR boundeddesigncomparison facts accepted Go/Rust/native candidate existingevidence only no new PoCs/corecode/deps/runtime/native/external changes. Create ADR proposed pendingrootreview, recommend/select onecommonapplication-service/controllerlanguage with explicit technical andmaintenance/costtradeoff (do notinventactualtoken/cost/savings%; modelconfiguredonly, samebackendnativeboth). KeepexistingBash/nativefour runtimes/metadata1 CLI compatibility, no rewrite GUIframework/Protocolruntime/agent merely proposal. Oneapplication-service foundation nextG1; GUIframework nextG0work independent unselected platformUI transport. Compare sameSSHtrust/auth/cancel/commandunknown, scopedvault, JSONABI/packaging evidence andplatformmissing; Go/Rust nonidenticaltestcounts/flags cannot usecounts/sizesasfairbenchmark. Ruststripwarning exact retained; bothdeclaredMSRV/platform/signing/productionvault notqualified; no claimloops satisfyrealVPS. ExplicitRust/nativecandidate disposition accepted-not-selected forservice (notallnative/GUI impossible), no committedG0-G6user scope drops. No new securitydesign invented returnexistingcontracts guarantees/pendingproductionlockreceipts. RecordADR language newcodecreation allowed ONLYafterrootreview acceptance, existingBash unaffected. AllowedADR<=160lines,READMElink1+mandatoryreport<=15lines, contexts<=12k boundedselectorsnotwholehistory. Final tradeoffrootverify no userreask routineauthorizedtechnicaldecision unless actualscopeconflict/undecidable materialchoice then concreteoptions/pending. Neednextreadytechnicalpaths recommendationunderADR butdonotfreezeG1 APIs beforecardreview. No tokenpricingbrowse needed. No rerun tests unchangedcandidatefacts. Linkalllocalprimaryevidence inADR."
+}
