@@ -9,7 +9,7 @@
   "acceptance_contract": "LocalStateLab-v1 + SQLiteFixture-v1 design accepted; source/runtime pending",
   "estimated_scope": "Owned Darwin SQLite snapshot/crash/CAS experiment only; no production backend decision.",
   "started_at_utc": "2026-10-08T01:55:40.560594+00:00",
-  "finished_at_utc": null,
+  "finished_at_utc": "2026-10-08T06:32:48.740505+00:00",
   "attribution": "completion_timestamp_snapshot",
   "excluded_windows": [],
   "configured_models_and_efforts": [
@@ -31,7 +31,7 @@
   ],
   "subagent_count": 2,
   "history_inheritance": "none for fresh reviewer; same-card review retains history",
-  "usage_report_path": null,
+  "usage_report_path": "docs/planning/metrics/G0-05.2b-usage.json",
   "main_coordination_included": true,
   "implementation_review_repair_included": true,
   "automatic_review_included": true,
@@ -40,7 +40,7 @@
   "repair_rounds": 3,
   "blocking_review_findings": 4,
   "final_acceptance": "Sol high accepted exact source/harness and actual owned Darwin SQLite evidence; 42top180sub entirepackage, SQLite16top85sub, zero fail/skip, no production winner",
-  "elapsed_seconds": null,
+  "elapsed_seconds": 16628.179911,
   "billing_cost": null,
   "applicable_price_source": null,
   "limitations": [
@@ -49,7 +49,8 @@
     "No matched main-only arm; JSON versus SQLite is a different workload and cannot establish savings.",
     "Local observations are not subscription invoice; completion timestamps/live-log flush cause boundary uncertainty.",
     "One failed full run and two source-reviewed NativeFacts diagnostics are included. Linked compile-time omission is accepted extension-disable equivalence; no guard skipped merely because db_config failed.",
-    "Post-flock lock-replacement refusal test uses40ms delay; post-acquisition ordering is source-reviewed, not deterministic/instrumented runtime placement."
+    "Post-flock lock-replacement refusal test uses40ms delay; post-acquisition ordering is source-reviewed, not deterministic/instrumented runtime placement.",
+    "Window includes acceptance commit and collection invocation. Later metric publication/reporting and next-card preparation are outside cutoff; not a final invoice."
   ],
   "design_clarifications": [
     "Root corrected mandatory hot-journal observation to allow completed boundary commits with journal absent; deterministic before kills still require hot-journal evidence."
@@ -105,5 +106,17 @@
     "fixed_config_rc": 0,
     "fixed_seed_stage": 107,
     "fixed_seed_failed": 0
+  },
+  "implementation_commit": "a024654",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9570097311739048,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 14259200,
+    "calls": 164,
+    "input_tokens": 14899744,
+    "noncached_input_tokens": 640544,
+    "output_tokens": 97264,
+    "reasoning_output_tokens": 41755,
+    "total_tokens": 14997008
   }
 }

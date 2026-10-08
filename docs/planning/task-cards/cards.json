@@ -7469,7 +7469,7 @@
         "reviewed_by": "gpt-6.1-sol high sqlite_design_review: design/source/harness + actual scoped evidence accepted",
         "actual_model": "gpt-6.1-sol",
         "reasoning_effort": "medium",
-        "token_usage": "unavailable",
+        "token_usage": "Observed local report: docs/planning/metrics/G0-05.2b-usage.json; not billing cost",
         "note": "Hybrid delegated Sol medium implementation/main Sol medium repairs; exact5files2158lines approved; final42top180subpass SQLite16top85sub, actualCAS/hotjournal/crashpurity passed; usage manifest docs/planning/metrics/G0-05.2b.json, no backendwinner"
       }
     },
