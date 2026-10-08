@@ -7479,7 +7479,7 @@
       "parent": "G0-05",
       "phase": "G0",
       "title": "比较证据并接受 ADR-005",
-      "status": "active",
+      "status": "verified",
       "mode": "review",
       "dependencies": [
         "G0-05.2b"
@@ -7582,7 +7582,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-05.3.md",
+        "reviewed_by": "gpt-6.1-sol high storage_adr_review + root acceptance of bounded inventory direction",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "high",
+        "token_usage": "Observed local collection pending: docs/planning/metrics/G0-05.3.json"
+      }
     },
     {
       "id": "G0-06.1a",

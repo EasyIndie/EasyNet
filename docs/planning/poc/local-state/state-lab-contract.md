@@ -8,7 +8,8 @@ not a storage, encryption, vault, GUI or runtime choice.
 
 Subsequent evidence: [G0-05.2a](../../task-results/G0/G0-05.2a.md) qualified the
 owned Darwin JSON fixture matrix. [G0-05.2b](../../task-results/G0/G0-05.2b.md)
-qualified the scoped Darwin SQLite matrix. ADR-005 remains pending;
+qualified the scoped Darwin SQLite matrix. [ADR-005](../../adr/ADR-005-local-state-storage.md)
+accepts SQLite as the inventory direction, with production gates pending;
 this does not qualify a production store.
 
 ## Scope and accepted boundaries

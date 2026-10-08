@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "G0-05.3",
-  "status": "active",
+  "status": "verified",
   "strategy": "delegated_review",
   "comparison_kind": "observational_unpaired",
   "matched_pair_id": null,
@@ -28,11 +28,12 @@
   "automatic_review_included": true,
   "measurement_overhead_included": true,
   "usage_report_path": null,
-  "first_pass": null,
-  "repair_rounds": null,
+  "first_pass": true,
+  "repair_rounds": 0,
   "billing_cost": null,
   "limitations": [
     "Window includes previous SQLite metric-publication tail and ADR preparation; attribution not exact.",
     "No matched main-only arm; no causal savings or invoice-cost claim."
-  ]
+  ],
+  "final_acceptance": "Root accepted Sol high ADR-005: SQLite inventory direction, production driver/platform/recovery gates pending; no new runtime"
 }
