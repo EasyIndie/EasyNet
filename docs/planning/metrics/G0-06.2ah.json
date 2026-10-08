@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ah",
+  "status": "blocked",
+  "strategy": "main_execution_of_independently_reviewed_code",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "bf393c8",
+  "started_at_utc": "2026-10-08T08:57:01.259988+00:00",
+  "finished_at_utc": "2026-10-08T09:03:05.320914+00:00",
+  "subagent_count": 0,
+  "history_inheritance": null,
+  "main_coordination_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": false,
+  "repair_rounds": 0,
+  "billing_cost": null,
+  "evidence_commit": "3e74cbb",
+  "usage_report_path": "docs/planning/metrics/G0-06.2ah-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9894485141318139,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 2161664,
+    "calls": 18,
+    "input_tokens": 2184716,
+    "noncached_input_tokens": 23052,
+    "output_tokens": 7171,
+    "reasoning_output_tokens": 2492,
+    "total_tokens": 2191887
+  },
+  "limitations": [
+    "Independent source review cost belongsag; endtoend nativeoutcome needscombine ag+ah (and af design), notcompare ah executiononly withfullimplementation.",
+    "Priorag metricpublication/preparation included, approximateattribution; collector/evidence included currentpublication excluded.",
+    "11fake passes/one actual A pass B SIGABRT Cnotrun, nativeisolationblocked.",
+    "Immediate separate driverprehashcheck omitted; preunit/postrunhashsame; no exactpercommandcheck qualification/no extra retry.",
+    "No matched main-only same implementation/costwinner; outputincludesreasoning."
+  ]
+}

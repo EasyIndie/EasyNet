@@ -1,0 +1,99 @@
+{
+  "billing_cost": null,
+  "diagnostics": {},
+  "groups": [
+    {
+      "cache_read_fraction": 0.9714936956516501,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 403200,
+      "calls": 5,
+      "effort": "low",
+      "input_tokens": 415031,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 11831,
+      "output_tokens": 355,
+      "reasoning_output_tokens": 51,
+      "role": "automatic_review",
+      "total_tokens": 415386
+    },
+    {
+      "cache_read_fraction": 0.9936593235519315,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 1758464,
+      "calls": 13,
+      "effort": "medium",
+      "input_tokens": 1769685,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 11221,
+      "output_tokens": 6816,
+      "reasoning_output_tokens": 2441,
+      "role": "main",
+      "total_tokens": 1776501
+    }
+  ],
+  "schema_version": 1,
+  "sessions": [
+    {
+      "cache_read_fraction": 0.9936593235519315,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 1758464,
+      "calls": 13,
+      "first_observed_cached_tokens": 130304,
+      "first_observed_input_tokens": 130713,
+      "first_usage_at": "2026-10-08T08:57:02.024Z",
+      "input_tokens": 1769685,
+      "last_usage_at": "2026-10-08T09:02:13.731Z",
+      "models": [
+        [
+          "gpt-6.1-sol",
+          "medium"
+        ]
+      ],
+      "noncached_input_tokens": 11221,
+      "output_tokens": 6816,
+      "reasoning_output_tokens": 2441,
+      "role": "main",
+      "session_label": "d20e420c906a49e0",
+      "total_tokens": 1776501
+    },
+    {
+      "cache_read_fraction": 0.9714936956516501,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 403200,
+      "calls": 5,
+      "first_observed_cached_tokens": 76544,
+      "first_observed_input_tokens": 80564,
+      "first_usage_at": "2026-10-08T08:58:44.448Z",
+      "input_tokens": 415031,
+      "last_usage_at": "2026-10-08T09:02:13.601Z",
+      "models": [
+        [
+          "codex-auto-review",
+          "low"
+        ]
+      ],
+      "noncached_input_tokens": 11831,
+      "output_tokens": 355,
+      "reasoning_output_tokens": 51,
+      "role": "child",
+      "session_label": "36ba091ed580909f",
+      "total_tokens": 415386
+    }
+  ],
+  "since": "2026-10-08T08:57:01.259988+00:00",
+  "source_files": 83,
+  "source_threads": 82,
+  "totals": {
+    "cache_read_fraction": 0.9894485141318139,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 2161664,
+    "calls": 18,
+    "input_tokens": 2184716,
+    "noncached_input_tokens": 23052,
+    "output_tokens": 7171,
+    "reasoning_output_tokens": 2492,
+    "total_tokens": 2191887
+  },
+  "until_exclusive": "2026-10-08T09:03:05.320914+00:00",
+  "warning": "Observed rollout counters, not an invoice or controlled A/B result."
+}

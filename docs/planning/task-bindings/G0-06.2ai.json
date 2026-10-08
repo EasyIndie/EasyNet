@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ai",
+  "status": "frozen",
+  "contract_versions": [
+    "accepted startupdecision @7e13143, reviewedcontrolsource @20222e8; actualApass/Babort @3e74cbb"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/sandbox-startup-decision.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ai",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root",
+  "reviewed_by": "root bounded R source-only decision, no runtime orpermissionchange",
+  "note": "R Solhigh fresh<=6k core, one decisiondoc<=100lines+report<=20. Only4exactinputs pluscanonicalAGENTS/requiredREADME/CONTRIB relevantonly. Atmost4NEWprimary AppleOpenSource/shippedlocalprofile/man sources; reuseprior3 sourcefactswithoutfullreretrieval. Technicaluncertainty browseprimaryonly; no genericextensiveresearch. ActualA directcatEOF rc0 vs B sandboxcatEOF -6/nooutput, bothhealthyownedcleanup; Cnotrun. Root checkedhashbeforeunit/postrununchanged butomittedimmediatepre-drivercheck; evidenceobservational notexactpercommandqualification. Need unique smallest next decision: source-backed constraineddiagnostic/capabilityexperiment ifspecifictrustedstartuprequirement canbeidentified, or clearenforceableisolation alternative prerequisites ifcannot. Any proposedprofilegrant mustbeexplicitnarrowname/operation/target+primarysourcejustification/risk andsyntheticpositive/negative validation; no guessedarbitraryallallow, broadhome/Library/preferences/Keychain/Machservice import/unifiedlogs/crashreports/sourcepermissionwaiver. Current profile/initoperation atfault unknown; do notassertrootcause withoutactualmatchedsourceevidence. Do notmodifyprofile/code/execute/importauthored/native/allocatefixtures/downloadSDK/binaries/privatefiles/logs/processinventory/config/gitmutations/newagents. Readtrustedlocalmanual/profiletext permitted (notnativebinaryexecution/disassembly or unknownsharedlog). Future experiment mustnewboundedcodecard+independentR+exacthashcommands/onceattempt/stopambiguity; no automaticretryofoldcards. Ifsafehoststartup notprovable, documentisolatedaccount/VM tradeoff (HOME/CODEXnotrepurposed), exactuser/externalrequirements andindependentplanning/facts whichcanproceed; do notintroducenewframework orsilentlydispositionfullscope. Keepac/ae/ahblocked andbudgetsexhausted oldcards. SourceupstreamnotinstalledOSmatch; sayunknownpromptlyinsteadofexceedsourcebudget. No Astra unless unresolvedarchitecturecomplexityuserpolicy requiresreview, do notautoescalate."
+}
