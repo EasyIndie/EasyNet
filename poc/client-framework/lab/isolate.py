@@ -94,6 +94,14 @@ def _environment():
     return env
 
 
+def _error_fields(error):
+    name = type(error).__name__
+    known = {"OSError", "PermissionError", "ProcessLookupError", "FileNotFoundError",
+             "InterruptedError", "BlockingIOError", "TimeoutExpired"}
+    errno = getattr(error, "errno", None)
+    return name if name in known else "other", errno if isinstance(errno, int) else None
+
+
 def _execute(argv, case, deadline_s=2):
     """Internal fixed commands only; retain capped output while draining pipes."""
     start = time.monotonic()
@@ -105,6 +113,10 @@ def _execute(argv, case, deadline_s=2):
     timed_out = False
     reaped = False
     selector = child = None
+    diagnostic = {"phase": "setup", "primary_class": "none", "primary_errno": None,
+                  "cleanup_class": "none", "cleanup_errno": None,
+                  "waitid_exit_observed": False, "group_check": "error",
+                  "owned_pid": None, "leader_wait_completed": False}
     def send(sig):
         try:
             os.killpg(child.pid, sig)
@@ -112,10 +124,13 @@ def _execute(argv, case, deadline_s=2):
             pass
     try:
         selector = selectors.DefaultSelector()
+        diagnostic["phase"] = "spawn"
         child = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, env=_environment(),
                                  close_fds=True, start_new_session=True, umask=0o077)
+        diagnostic["owned_pid"] = child.pid
         _live.add(child.pid)
+        diagnostic["phase"] = "streams"
         for name, stream in (("stdout", child.stdout), ("stderr", child.stderr)):
             os.set_blocking(stream.fileno(), False)
             selector.register(stream, selectors.EVENT_READ, name)
@@ -123,14 +138,19 @@ def _execute(argv, case, deadline_s=2):
         while True:
             now = time.monotonic()
             # WNOWAIT keeps the owned leader PID reserved until group cleanup.
+            diagnostic["phase"] = "waitid"
             exited = os.waitid(os.P_PID, child.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+            diagnostic["waitid_exit_observed"] |= bool(exited)
             if not sent_term and (now >= end - 0.35 or exited):
                 timed_out = not bool(exited)
+                diagnostic["phase"] = "signal-term"
                 send(signal.SIGTERM)
                 sent_term = True
             if not sent_kill and (now >= end - 0.2 or exited):
+                diagnostic["phase"] = "signal-kill"
                 send(signal.SIGKILL)
                 sent_kill = True
+            diagnostic["phase"] = "drain"
             for key, _ in selector.select(max(0, min(0.02, end - now))):
                 data = os.read(key.fileobj.fileno(), 4096)
                 if not data:
@@ -144,14 +164,20 @@ def _execute(argv, case, deadline_s=2):
             if time.monotonic() >= end:
                 timed_out = True
                 break
+        diagnostic["phase"] = "leader-wait"
         child.wait(timeout=max(0, end - time.monotonic()))
+        diagnostic["leader_wait_completed"] = True
         # Any surviving owned descendant is a failure, never a qualified denial.
+        diagnostic["phase"] = "group-check"
         try:
             os.killpg(child.pid, 0)
+            diagnostic["group_check"] = "observed"
         except ProcessLookupError:
+            diagnostic["group_check"] = "absent"
             reaped = True
             _live.discard(child.pid)
-    except (OSError, subprocess.TimeoutExpired):
+    except (OSError, subprocess.TimeoutExpired) as error:
+        diagnostic["primary_class"], diagnostic["primary_errno"] = _error_fields(error)
         timed_out = True
     finally:
         # Signal only while the unreaped leader still reserves its group identity.
@@ -160,8 +186,9 @@ def _execute(argv, case, deadline_s=2):
                 try:
                     send(signal.SIGKILL)
                     child.wait(timeout=max(0, end - time.monotonic()))
-                except (OSError, subprocess.TimeoutExpired):
-                    pass
+                    diagnostic["leader_wait_completed"] = True
+                except (OSError, subprocess.TimeoutExpired) as error:
+                    diagnostic["cleanup_class"], diagnostic["cleanup_errno"] = _error_fields(error)
         finally:
             try:
                 if selector is not None:
@@ -175,7 +202,7 @@ def _execute(argv, case, deadline_s=2):
     return {"case": case, "returncode": child.returncode if child else None, "timed_out": timed_out,
             "stdout": bytes(output["stdout"]), "stderr": bytes(output["stderr"]),
             "stdout_count": counts["stdout"], "stderr_count": counts["stderr"],
-            "reaped": reaped, "elapsed_s": time.monotonic() - start}
+            "reaped": reaped, "elapsed_s": time.monotonic() - start, **diagnostic}
 
 
 def _case(root, argv):
