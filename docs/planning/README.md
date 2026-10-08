@@ -12,6 +12,7 @@ root README. Technical choices require evidence and an ADR before implementation
 - [Product evolution roadmap](product-evolution-roadmap.md) — consolidated product direction and staged capabilities
 - [Frozen capability baseline](capability-matrix.md) — code eligibility, tested fixtures, and unknown live support
 - [Reviewed application-service contract examples](contracts/README.md) — six bounded examples and production extension gates
+- [Proposed controller language decision](adr/ADR-004-controller-language.md) — Go recommendation, same-contract evidence, candidate dispositions and production gates; pending root acceptance
 - [Go SSH candidate gate](poc/controller-language/go-ssh-results.md) — reviewed loopback SSH fault matrix; production language selection pending
 - [Go scoped vault evidence](poc/controller-language/go-vault-results.md) — owned temporary file-Keychain pass; production vault selection pending
 - [Go result CLI and host packaging](poc/controller-language/go-result-results.md) — strict redacted record and actual host artifact facts

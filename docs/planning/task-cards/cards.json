@@ -6870,7 +6870,7 @@
       "parent": "G0-04",
       "phase": "G0",
       "title": "比较相同验收结果并接受 ADR-004",
-      "status": "ready",
+      "status": "verified",
       "mode": "review",
       "dependencies": [
         "G0-04.2f"
@@ -6985,7 +6985,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-04.3.md",
+        "reviewed_by": "root agent: scope and behavior evidence review",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "high",
+        "token_usage": "unavailable"
+      }
     },
     {
       "id": "G0-05.1",
