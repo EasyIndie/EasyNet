@@ -7350,7 +7350,7 @@
       "parent": "G0-05",
       "phase": "G0",
       "title": "SQLite 崩溃与并发 PoC",
-      "status": "locked",
+      "status": "ready",
       "mode": "implementation",
       "dependencies": [
         "G0-05.2a"
@@ -7365,20 +7365,51 @@
       },
       "inputs": [
         {
-          "path": "scripts/core/metadata.sh",
-          "selector": "本地状态 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/poc/local-state/state-lab-contract.md",
+          "selector": "common logical API, errors, purity and crash/CAS matrix"
         },
         {
-          "path": "scripts/core/env.sh",
-          "selector": "本地状态 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/poc/local-state/sqlite-preparation.md",
+          "selector": "SQLiteFixture-v1 reviewed bounded native ABI, schema, recovery and harness"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-05.2a.md",
+          "selector": "accepted JSON evidence and cleanup lessons"
+        },
+        {
+          "path": "poc/local-state/go/model.go",
+          "selector": "shared Snapshot, validation, CAS and migration"
+        },
+        {
+          "path": "poc/local-state/go/codec.go",
+          "selector": "strict bounded fixture codec"
+        },
+        {
+          "path": "poc/local-state/go/json_store.go",
+          "selector": "reuse private owned-root guard and locking helpers; no modifications"
+        },
+        {
+          "path": "poc/local-state/go/json_process_test.go",
+          "selector": "bounded owned child lifecycle and guarded cleanup patterns; no modifications"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-05.2b.md",
       "binding": "docs/planning/task-bindings/G0-05.2b.json",
       "allowed_writes": [
+        "poc/local-state/go/sqlite_native.go",
+        "poc/local-state/go/sqlite_schema.go",
+        "poc/local-state/go/sqlite_store.go",
+        "poc/local-state/go/sqlite_store_test.go",
+        "poc/local-state/go/sqlite_process_test.go",
         "docs/planning/task-results/G0/G0-05.2b.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "poc/local-state/go/sqlite_native.go",
+        "poc/local-state/go/sqlite_schema.go",
+        "poc/local-state/go/sqlite_store.go",
+        "poc/local-state/go/sqlite_store_test.go",
+        "poc/local-state/go/sqlite_process_test.go"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -7414,10 +7445,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "前置卡尚未 verified/accepted-not-applicable",
-        "task binding 尚未冻结具体实现文件/接口/定向测试命令"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
         "涉及新 trust/secret/权限/销毁边界立即审查",

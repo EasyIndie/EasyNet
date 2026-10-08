@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-05.2b",
+  "status": "frozen",
+  "contract_versions": [
+    "LocalStateLab-v1",
+    "SQLiteFixture-v1 Sol high reviewed owned Darwin design; source/runtime gate pending"
+  ],
+  "implementation_files": [
+    "poc/local-state/go/sqlite_native.go",
+    "poc/local-state/go/sqlite_schema.go",
+    "poc/local-state/go/sqlite_store.go"
+  ],
+  "test_files": [
+    "poc/local-state/go/sqlite_store_test.go",
+    "poc/local-state/go/sqlite_process_test.go"
+  ],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off CGO_ENABLED=1 CC=/Applications/Xcode-27.0.0.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang SDKROOT=/Applications/Xcode-27.0.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/local-state/go test -run ^$ -timeout 30s .",
+      "expected": "Compile only; no init/TestMain effects, no fixture/child/native runtime. Fixed offline Go+cgo/system SQLite only."
+    },
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off CGO_ENABLED=1 CC=/Applications/Xcode-27.0.0.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang SDKROOT=/Applications/Xcode-27.0.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk GOPATH=/tmp/easynet-poc-cache/go GOCACHE=/tmp/easynet-poc-cache/go-build /tmp/easynet-poc-toolchains/go/bin/go -C poc/local-state/go test -timeout 120s -count=1 -json . > /tmp/easynet-sqlite-store-tests.json",
+      "expected": "ONLY AFTER exact source/harness Sol high approval: all shared/JSON/SQLite tests pass; actual SQLite linked version/options, owned child CAS/migration/crash generations and read purity recorded."
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit 0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": "Owned local fixture/child experiments only AFTER exact source/harness review; no privileges/network/personal state or deployment",
+  "prepared_by": "root agent",
+  "reviewed_by": "gpt-6.1-sol high sqlite_design_review: accepted after root boundary-race clarification",
+  "note": "Frozen contract is sqlite-preparation.md once accepted. No production driver/storage decision, Bash/current CLI changes, dependencies/downloads, privileges/network/personal state. Implement only 3 listed Darwin+cgo sources and 2 tests plus mandatory report. Shared model/codec/JSON sources unchanged. Explicit per-file/total bounds and test runtime authorization follow the reviewed preparation; stop before exceeding. Each operation fixed ErrorCode, zero snapshot on errors; no raw native messages. Source and harness review must precede behavioral runtime. Owned fixture/process authorization applies only reviewed bounded harness."
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "status": "preparing",
+  "task_id": "G0-05.2b",
+  "matched_pair_id": null,
+  "strategy": "delegated",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "d5c153d",
+  "acceptance_contract": "LocalStateLab-v1; SQLiteFixture proposal under Sol high review",
+  "estimated_scope": "Owned Darwin SQLite snapshot/crash/CAS experiment only; no production backend decision.",
+  "started_at_utc": "2026-10-08T01:55:40.560594+00:00",
+  "finished_at_utc": null,
+  "attribution": "completion_timestamp_snapshot",
+  "excluded_windows": [],
+  "configured_models_and_efforts": [
+    {
+      "role": "main",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "role": "review",
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    }
+  ],
+  "subagent_count": 1,
+  "history_inheritance": "none for fresh reviewer; same-card review retains history",
+  "usage_report_path": null,
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": null,
+  "repair_rounds": null,
+  "blocking_review_findings": null,
+  "final_acceptance": null,
+  "elapsed_seconds": null,
+  "billing_cost": null,
+  "applicable_price_source": null,
+  "limitations": [
+    "Window begins at previous JSON collection cutoff to include SQLite read-only research before interruption. It also includes the previous metric-publication tail; this overhead cannot be attributed exactly to one card.",
+    "Interruption/idle wall time included; elapsed time is not active labor time.",
+    "No matched main-only arm; JSON versus SQLite is a different workload and cannot establish savings.",
+    "Local observations are not subscription invoice; completion timestamps/live-log flush cause boundary uncertainty."
+  ]
+}
