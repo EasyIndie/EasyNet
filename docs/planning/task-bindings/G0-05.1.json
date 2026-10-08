@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-05.1",
+  "status": "frozen",
+  "contract_versions": [
+    "ADR-001/002/003/004 accepted evolution design; draft-v1 target/profile/operation examples; local-state lab-v1 proposal pending security review"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/local-state/state-lab-contract.md",
+    "docs/planning/README.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 docs/planning/validate_task_cards.py --card G0-05.1",
+      "expected": "exit0 planonly no storage/runtimeclaim"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "local-fixture",
+  "side_effect_authorization": null,
+  "prepared_by": "root agent",
+  "reviewed_by": "root agent: bounded read-only research or fixture scope",
+  "note": "I Solmedium researchdoc only, finalSolhigh review beforecontractaccepted/useinJSON/SQL PoC. OneLocalStateLab-v1 proposedcontract <=180lines+READMElink+mandatoryreport<=15lines; no code/schema/runtime/newdeps/private state reads orpersonalHOME. Freeze same minimal model andAPI/expectedcases for JSON andSQLite candidates, Go fromADR004 butbackendundecided untilADR005. Preservemetadata1 writer/CLI/protocol consumers andlegacysecretmode600; controllerdevice-store distinctnotreplacementofVPSmetadata. Ordinaryinventory containsonly nonsecretrefs; credentials andnativeconfigseparateprotectedstores refs neverpaths/material/importautotrust. Strictclosedversionedfixture schema lexical ints duplicatesnullable rules/errorcodes exact refs unresolved safe reject; writequalifiedenvelope describe minimum fields only needed atomicCAS/CRUD/migration notfullproductionimporter. No inventedtrust/vaultpolicy choice: deviceboundsecurity independent trust importedtargetfacts refs notauthority; approvalinvalidatesresolvedtarget/trust/config revision change; secretslocked no prompt/fallback/no contentlogs. Same snapshot/load/compare-and-swapcommit and purestagedmigration expectedgeneration concurrency no lostupdate/tornstate; keepoldversiononfailure,unknownfutureversion refuseswrites/read-only diagnosis,rollback no silent secret downgrade/rebind. Protectownedlabdir0700 files600 and no symlink unsafepath, completeownedfixturesonly future faulttests kill/reapnotpowerlossproof, JSON fsync+replace vsSQLitetransactions qualifiedonlyfuturetests no winner. Clarify localowner mirrors unknown cannotrelease/replayremoteownsneedADR003G1 receipts/locks recovery separate; durablesnapshotcannotproveauthremoteoutcome. Define bounded samecandidate process-crash+two-writer exactgeneration outcomes, read-only no-write/load invalidcorrupt refuse original preserve, migration atomicity andsecretref unresolved/locked distincttests with limits. Plain inventory/archive exports nevercredentials/trust grant; references syntacticonly no proof absence secretinsideopaqueIDs; no automaticmigration/import/cloudoperation. Produce concrete testablecases/map oflocaldata/ref/migration and evidencecriteria plus productiongates separately; do NOT claimimplementation orchoose JSON/SQLite/encryption/vaultbackend/GUI/runtime. Stop ifneedsunapproved newtrust/security design beyond existingacceptedcontracts. RootfinalreviewafterSolhigh ensureslabminimal notproduction successor. Onecardonly no split/createothers beyonddoc."
+}
