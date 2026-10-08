@@ -8386,9 +8386,9 @@
         "未绑定路径和非本任务功能"
       ],
       "steps": [
-        "检查分支和前置证据，只加载本卡输入；目标：Flutter/sing-box 路线证据表",
-        "按冻结合同处理当前单目标；案例：仅验证「Flutter/sing-box 路线证据表」这一范围；候选注明 NE/签名/架构/分发依赖及证据",
-        "运行绑定的定向行为检查；失败最多两次局部修复后升级；记录 diff/命令/结果"
+        "检查feature分支和已接受输入，仅读取卡片selector",
+        "按冻结binding实现本卡单一目标，源码/决策不冒充native qualification",
+        "执行绑定静态检查，独立复核，保留未知及blocked前置，不执行未授权runtime"
       ],
       "acceptance": [
         "依据唯一实际SIGABRT/no-output事件与最多4个官方原始来源，区分launcher/loader/target未知阶段并冻结最小下一步诊断合同",
@@ -8437,8 +8437,112 @@
         "reviewed_by": "root agent: scope and behavior evidence review",
         "actual_model": "gpt-6.1-sol",
         "reasoning_effort": "high",
-        "token_usage": "unavailable"
+        "token_usage": "observed; docs/planning/metrics/G0-06.2af-usage.json, whole-chain approximate"
       }
+    },
+    {
+      "id": "G0-06.2ag",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "实现固定的启动基线和沙箱 EOF 对照",
+      "status": "ready",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-06.2af"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "涉及平台 adapter、多个失败路径或跨边界集成，低档返工风险较高",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/client-framework/startup-decision.md",
+          "selector": "accepted fixed A/B/C diagnostic contract"
+        },
+        {
+          "path": "poc/client-framework/lab/isolate.py",
+          "selector": "guards/environment/run_probe plus reuse _execute unchanged"
+        },
+        {
+          "path": "poc/client-framework/lab/test_isolate.py",
+          "selector": "fixture creation115–145, clean_fixture89–107 only"
+        },
+        {
+          "path": "poc/client-framework/lab/fixture.sb",
+          "selector": "unchanged9line profile/hash only"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2ag.md",
+      "binding": "docs/planning/task-bindings/G0-06.2ag.json",
+      "allowed_writes": [
+        "poc/client-framework/lab/isolate.py",
+        "poc/client-framework/lab/startup_diag.py",
+        "poc/client-framework/lab/startup_diag_test.py",
+        "docs/planning/task-results/G0/G0-06.2ag.md"
+      ],
+      "implementation_writes": [
+        "poc/client-framework/lab/isolate.py",
+        "poc/client-framework/lab/startup_diag.py",
+        "poc/client-framework/lab/startup_diag_test.py"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "检查feature分支和已接受输入，仅读取卡片selector",
+        "按冻结binding实现本卡单一目标，源码/决策不冒充native qualification",
+        "执行绑定静态检查，独立复核，保留未知及blocked前置，不执行未授权runtime"
+      ],
+      "acceptance": [
+        "只实现已接受固定A/B/C启动诊断和无副作用fake测试；保留现有profile/_execute/身份时限语义，source先审",
+        "Worker仅AST/计划检查；actual运行由单独root执行卡在独立R/hash binding后负责，不把source/fakes当作native验收"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ag",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "只实现已接受固定A/B/C启动诊断和无副作用fake测试；保留现有profile/_execute/身份时限语义，source先审",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤6k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
     },
     {
       "id": "G0-06.2a",
@@ -8452,7 +8556,8 @@
         "G0-06.2ac",
         "G0-06.2ad",
         "G0-06.2ae",
-        "G0-06.2af"
+        "G0-06.2af",
+        "G0-06.2ag"
       ],
       "model": {
         "tier": "I",

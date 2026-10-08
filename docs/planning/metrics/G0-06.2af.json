@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2af",
+  "status": "verified",
+  "strategy": "delegated_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "8d0b000",
+  "started_at_utc": "2026-10-08T08:33:41.910368+00:00",
+  "finished_at_utc": "2026-10-08T08:42:45.804164+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": true,
+  "repair_rounds": 0,
+  "billing_cost": null,
+  "implementation_commit": "7e13143",
+  "usage_report_path": "docs/planning/metrics/G0-06.2af-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9772046148710909,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 3814656,
+    "calls": 47,
+    "input_tokens": 3903641,
+    "noncached_input_tokens": 88985,
+    "output_tokens": 11405,
+    "reasoning_output_tokens": 2472,
+    "total_tokens": 3915046
+  },
+  "limitations": [
+    "Preparation/source decision only, actual abort cause unknown; no runtime qualification.",
+    "Priorcard metricpublication tail/preparation included, attribution approximate; collector/acceptance included, current metricpublication excluded.",
+    "No matched main-only sample or costwinner; outputincludesreasoning."
+  ]
+}

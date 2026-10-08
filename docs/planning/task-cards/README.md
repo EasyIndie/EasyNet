@@ -1,6 +1,6 @@
 # 任务卡与模型分配索引
 
-已将 168 条原任务进一步拆为 **265 张独立卡**，覆盖 56 个工作包。
+已将 168 条原任务进一步拆为 **266 张独立卡**，覆盖 56 个工作包。
 新增 G0-06.2aa 只拆出官方工具链事实准备，原生命周期与平台验收范围保留。
 每卡单独文件，可只把本卡和相关合同交给执行模型，无需读整个目录。
 已完成卡的状态见下表与对应 task-result；其余已具备目标/案例/依赖/模型评估，
@@ -16,7 +16,7 @@
 |---|---|---:|
 | D | Luna low | 5 |
 | C | Luna medium | 84 |
-| I | GPT-6.1 Sol medium | 138 |
+| I | GPT-6.1 Sol medium | 139 |
 | R | GPT-6.1 Sol high；冲突难解时 Astra high | 38 |
 
 ## G0
@@ -99,6 +99,7 @@
 | [G0-06.2ad](G0/G0-06.2ad.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查退出 leader 的进程组信号与回收语义 |
 | [G0-06.2ae](G0/G0-06.2ae.md) | GPT-6.1 Sol medium | blocked | 实现已审回收合同和精确进程组对照 |
 | [G0-06.2af](G0/G0-06.2af.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查隔离启动链的无输出 SIGABRT |
+| [G0-06.2ag](G0/G0-06.2ag.md) | GPT-6.1 Sol medium | ready | 实现固定的启动基线和沙箱 EOF 对照 |
 | [G0-06.2a](G0/G0-06.2a.md) | GPT-6.1 Sol medium | locked | 候选 A engine 生命周期 PoC |
 | [G0-06.2b](G0/G0-06.2b.md) | GPT-6.1 Sol medium | locked | 候选 A 系统权限 PoC |
 | [G0-06.2c](G0/G0-06.2c.md) | GPT-6.1 Sol medium | locked | 候选 A 签名打包 PoC |
