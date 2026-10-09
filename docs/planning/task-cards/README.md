@@ -113,7 +113,7 @@
 | [G0-06.3](G0/G0-06.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | locked | 接受客户端框架、engine 与分发 ADR |
 | [G0-07.1](G0/G0-07.1.md) | Luna medium | verified | 按选定语言建立最小可构建工程 |
 | [G0-07.2](G0/G0-07.2.md) | Luna medium | verified | 添加格式化、单测和合同 fixture 入口 |
-| [G0-07.3](G0/G0-07.3.md) | GPT-6.1 Sol medium | active | 添加 controller CI 并验证旧 Bash CI 保持有效 |
+| [G0-07.3](G0/G0-07.3.md) | GPT-6.1 Sol medium | verified | 添加 controller CI 并验证旧 Bash CI 保持有效 |
 
 ## G1
 

@@ -1,0 +1,175 @@
+{
+  "billing_cost": null,
+  "diagnostics": {
+    "duplicate_snapshots": 2
+  },
+  "groups": [
+    {
+      "cache_read_fraction": 0.9370351836833296,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 1737728,
+      "calls": 28,
+      "effort": "low",
+      "input_tokens": 1854496,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 116768,
+      "output_tokens": 2468,
+      "reasoning_output_tokens": 686,
+      "role": "automatic_review",
+      "total_tokens": 1856964
+    },
+    {
+      "cache_read_fraction": 0.9879698315682232,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 5034880,
+      "calls": 57,
+      "effort": "medium",
+      "input_tokens": 5096188,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 61308,
+      "output_tokens": 15290,
+      "reasoning_output_tokens": 3910,
+      "role": "main",
+      "total_tokens": 5111478
+    },
+    {
+      "cache_read_fraction": 0.9446494464944649,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 452608,
+      "calls": 10,
+      "effort": "high",
+      "input_tokens": 479128,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 26520,
+      "output_tokens": 1743,
+      "reasoning_output_tokens": 527,
+      "role": "subagent",
+      "total_tokens": 480871
+    },
+    {
+      "cache_read_fraction": 0.8367205389124838,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 264192,
+      "calls": 7,
+      "effort": "medium",
+      "input_tokens": 315747,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 51555,
+      "output_tokens": 1885,
+      "reasoning_output_tokens": 243,
+      "role": "subagent",
+      "total_tokens": 317632
+    }
+  ],
+  "schema_version": 1,
+  "sessions": [
+    {
+      "cache_read_fraction": 0.9879698315682232,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 5034880,
+      "calls": 57,
+      "first_observed_cached_tokens": 61568,
+      "first_observed_input_tokens": 62916,
+      "first_usage_at": "2026-10-09T14:40:08.843Z",
+      "input_tokens": 5096188,
+      "last_usage_at": "2026-10-09T14:57:13.138Z",
+      "models": [
+        [
+          "gpt-6.1-sol",
+          "medium"
+        ]
+      ],
+      "noncached_input_tokens": 61308,
+      "output_tokens": 15290,
+      "reasoning_output_tokens": 3910,
+      "role": "main",
+      "session_label": "d20e420c906a49e0",
+      "total_tokens": 5111478
+    },
+    {
+      "cache_read_fraction": 0.9370351836833296,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 1737728,
+      "calls": 28,
+      "first_observed_cached_tokens": 34560,
+      "first_observed_input_tokens": 45275,
+      "first_usage_at": "2026-10-09T14:42:25.522Z",
+      "input_tokens": 1854496,
+      "last_usage_at": "2026-10-09T14:58:01.057Z",
+      "models": [
+        [
+          "codex-auto-review",
+          "low"
+        ]
+      ],
+      "noncached_input_tokens": 116768,
+      "output_tokens": 2468,
+      "reasoning_output_tokens": 686,
+      "role": "child",
+      "session_label": "22a3128b01243e7e",
+      "total_tokens": 1856964
+    },
+    {
+      "cache_read_fraction": 0.8367205389124838,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 264192,
+      "calls": 7,
+      "first_observed_cached_tokens": 0,
+      "first_observed_input_tokens": 30736,
+      "first_usage_at": "2026-10-09T14:40:28.120Z",
+      "input_tokens": 315747,
+      "last_usage_at": "2026-10-09T14:41:40.106Z",
+      "models": [
+        [
+          "gpt-6.1-sol",
+          "medium"
+        ]
+      ],
+      "noncached_input_tokens": 51555,
+      "output_tokens": 1885,
+      "reasoning_output_tokens": 243,
+      "role": "child",
+      "session_label": "37804da57b3bb21d",
+      "total_tokens": 317632
+    },
+    {
+      "cache_read_fraction": 0.9446494464944649,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 452608,
+      "calls": 10,
+      "first_observed_cached_tokens": 28416,
+      "first_observed_input_tokens": 30759,
+      "first_usage_at": "2026-10-09T14:42:04.014Z",
+      "input_tokens": 479128,
+      "last_usage_at": "2026-10-09T14:54:15.270Z",
+      "models": [
+        [
+          "gpt-6.1-sol",
+          "high"
+        ]
+      ],
+      "noncached_input_tokens": 26520,
+      "output_tokens": 1743,
+      "reasoning_output_tokens": 527,
+      "role": "child",
+      "session_label": "9ab4b0ca1ce81ebd",
+      "total_tokens": 480871
+    }
+  ],
+  "since": "2026-10-09T14:39:30+00:00",
+  "source_files": 120,
+  "source_threads": 119,
+  "totals": {
+    "cache_read_fraction": 0.9669293074909119,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 7489408,
+    "calls": 102,
+    "input_tokens": 7745559,
+    "noncached_input_tokens": 256151,
+    "output_tokens": 21386,
+    "reasoning_output_tokens": 5366,
+    "total_tokens": 7766945
+  },
+  "until_exclusive": "2026-10-09T14:58:04.283061+00:00",
+  "warning": "Observed rollout counters, not an invoice or controlled A/B result."
+}
