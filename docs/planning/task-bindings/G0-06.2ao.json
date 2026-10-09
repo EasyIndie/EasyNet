@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ao",
+  "status": "frozen",
+  "contract_versions": [
+    "am@86300ad unchanged reader contract",
+    "ao driver-only extension accepted independent R Sol high"
+  ],
+  "implementation_files": [
+    "poc/client-framework/lab/attribution_diag.py"
+  ],
+  "test_files": [
+    "poc/client-framework/lab/attribution_diag_test.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2ao",
+      "expected": "exit0 planning only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    },
+    {
+      "command": "root exact-pinned Python -I -B attribution_diag_test.py after reviewed all11 hashes checked before/after",
+      "expected": "7 controlled fake tests pass, no warnings"
+    }
+  ],
+  "environment": "GitHub macos15-arm64, one newly reviewed bounded driver-step diagnostic",
+  "side_effect_authorization": "User authorized GitHub runner validation and continue; new reviewed observability diagnostic only, not an unchanged rerun. Root-only after independent runtime binding PASS and frozen exact11 + passing fake; source push triggers one guest workflow. No production/local native/private files.",
+  "prepared_by": "root Sol medium",
+  "reviewed_by": "independent Sol high contract and diff PASS",
+  "source_review": {
+    "status": "independent Sol high contract and exact-hash diff PASS",
+    "files_sha256": {
+      "poc/client-framework/lab/isolate.py": "3bc47c022eb6bf10004372cc4021e0d692720e81b318d5dd0cffb54b18d2522c",
+      "poc/client-framework/lab/mapping-fixture.sb": "1dfc6055110b29f06ccd2026eb230433cd5ca6da9be2354b2c43fb88efba0595",
+      "poc/client-framework/lab/mapping_diag.py": "3918c9408f323cc4390465717e151d841b54a524bb83246185be1d6e48cba59b",
+      "poc/client-framework/lab/mapping_diag_test.py": "552bb9eb486967cc1377db6f458ff35f371a836c13f5172177342cc1c1309f1f",
+      "poc/client-framework/lab/mapping_main_test.py": "09f9b773dc949656ce3769e3449e05123717e5c8eb1247c429bb841091127c72",
+      "poc/client-framework/lab/fixture.sb": "b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82",
+      "poc/client-framework/lab/attribution_diag.py": "6c4789eedf94ba0169a589a6fb538e3def2d74628376150fe49b098cd1064d78",
+      "poc/client-framework/lab/attribution_record.py": "67dc66130d395ef82b53ab88a38ee0ffc3da92348caa38d73dd05e7570089362",
+      "poc/client-framework/lab/attribution_record_test.py": "ae9ec12b4dea777b3ad3cc0f94b9e100113d3d3d8d61a6d0caebfadae7f0d746",
+      "poc/client-framework/lab/attribution_diag_test.py": "5dde750fcd119eca0aa732e9b6350522fafac1b391b5ace10ec7d4def94938a4",
+      ".github/workflows/client-startup-attribution.yml": "f9ac2b790827c4f865e7fba406bcda847d5b029421962df13c9bf4774fbbce1d"
+    }
+  },
+  "runtime_authorization": {
+    "executor": "root Sol medium",
+    "local_fake_executable": {
+      "path": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+      "sha256": "b502cb4c5b46b8d4192ec6bcb600ce8922f1afc396fcf646e8765c6eba74a0bf"
+    },
+    "remote_attempts": 1,
+    "stop": "Single new driver-step diagnostic, same original B/profile/query/reader/limits as an; no local native, no raw crash export, no additional grants/paths/SDK/GUI; stop first failure/unknown/hash mismatch, retain unknown roots until guest teardown; no automatic retries",
+    "remote_review_status": "independent Sol high concrete runtime binding PASS; one fresh observation only",
+    "remote_command": "python3 -I -B poc/client-framework/lab/attribution_diag.py",
+    "remote_executable_baseline": {
+      "version": "3.14.7",
+      "sha256": "d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3",
+      "provenance": "al observed image baseline, not external release pin"
+    },
+    "preconditions": "root source commit after exact-hash R and all11+Python controlled fake acceptance; feature path-filtered push once; do not rerun workflows",
+    "evidence": "one seven-field stdout only; literal step is block entry, not precise guard or crash cause; unknown remains blocked; complete is not full isolation acceptance"
+  },
+  "controlled_fake_results": {
+    "driver_tests": 7,
+    "exit_code": 0,
+    "warnings": 0,
+    "hash_checks": "all11sources+exactlocalPython before/after unchanged",
+    "reader_results": "an record8 fake tests reused; reader and related sources unchanged"
+  }
+}

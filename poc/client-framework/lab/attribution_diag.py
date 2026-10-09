@@ -13,7 +13,7 @@ import uuid
 
 LAB = Path(__file__).absolute().parent
 ROOT = LAB.parents[2]
-BINDING = ROOT / 'docs/planning/task-bindings/G0-06.2an.json'
+BINDING = ROOT / 'docs/planning/task-bindings/G0-06.2ao.json'
 OLD = ('isolate.py', 'mapping-fixture.sb', 'mapping_diag.py', 'mapping_diag_test.py',
        'mapping_main_test.py', 'fixture.sb')
 NEW = ('attribution_diag.py', 'attribution_record.py', 'attribution_record_test.py',
@@ -37,7 +37,7 @@ def verify():
             value[key] = item
         return value
     binding = json.loads(BINDING.read_text(), object_pairs_hook=unique)
-    require(binding['task_id'] == 'G0-06.2an' and binding['status'] == 'frozen')
+    require(binding['task_id'] == 'G0-06.2ao' and binding['status'] == 'frozen')
     hashes = binding['source_review']['files_sha256']
     require(type(hashes) is dict and set(hashes) == set(SOURCES))
     for name, digest in hashes.items():
@@ -85,27 +85,34 @@ def fixture(module, end):
     return root / 'allowed'
 
 
-def sequence(module, mapping, record, allowed, end):
+def sequence(module, mapping, record, allowed, end, progress):
     """One B target and one internal reader; uncertainty stops further launches."""
+    progress["step"] = "source"
     executable = verify()
     parent = os.getpid()
     t0, m0 = time.time_ns(), time.monotonic_ns()
+    progress["step"] = "target"
     target = module.run_mapping_probe(LAB / 'mapping-fixture.sb', allowed, 'sandbox-eof', 2)
+    progress["step"] = "target-validation"
     t1, m1 = time.time_ns(), time.monotonic_ns()
     verify()
     require(mapping.healthy(target, b'', returncode=-6)
             and record.clocks(t1, m1, t0, m0, 999_999_999) and time.monotonic() < end)
+    progress["step"] = "delivery"
     time.sleep(3)
     verify()
     wall, mono = time.time_ns(), time.monotonic_ns()
     require(record.clocks(wall, mono, t0, m0) and time.monotonic() + 2 < end)
+    progress["step"] = "reader-arguments"
     args = tuple(str(item) for item in (target['owned_pid'], parent, t0, t1, wall, mono))
     require(record.internal_args(['--owned-ips-v1', *args]) == (
         target['owned_pid'], parent, t0, t1, wall, mono))
     require(not module._live and allowed == module._root(allowed) / 'allowed')
     module.check_fixture(allowed)
+    progress["step"] = "reader"
     helper = module._execute([str(executable), '-I', '-B', str(LAB / 'attribution_record.py'),
                               '--owned-ips-v1', *args], 'owned-ips-v1', 2)
+    progress["step"] = "reader-validation"
     after_wall, after_mono = time.time_ns(), time.monotonic_ns()
     verify()
     value = record.sanitized(helper['stdout'])
@@ -119,6 +126,7 @@ def main():
     end = start + 14
     value = dict(outcome='unknown', stage='unknown', operation='unknown',
                  termination='unknown', category='unknown', code=None)
+    progress = {"step": "preflight"}
     try:
         require(not sys.argv[1:] and sys.platform == 'darwin' and platform.machine() == 'arm64'
                 and platform.mac_ver()[0] == '15.7.9' and os.getuid() != 0
@@ -128,18 +136,26 @@ def main():
                 and os.environ.get('GITHUB_REF') == 'refs/heads/codex/feature/self-hosted-byos-byoc'
                 and sys.flags.isolated and sys.dont_write_bytecode
                 and hasattr(os, 'waitid') and hasattr(os, 'WNOWAIT'))
+        progress["step"] = "source"
         verify()
         module, mapping, record = load('isolate'), load('mapping_diag'), load('attribution_record')
+        progress["step"] = "fixture"
         allowed = fixture(module, start + 4)
-        value = sequence(module, mapping, record, allowed, end)
+        progress["step"] = "target"
+        value = sequence(module, mapping, record, allowed, end, progress)
+        progress["step"] = "report"
         require(value['outcome'] == 'observed' and not module._live)
         verify()
+        progress["step"] = "cleanup"
         mapping.clean_fixture(module, allowed, min(end, time.monotonic() + 3))
+        progress["step"] = "final-check"
         verify()
         require(time.monotonic() < end)
+        progress["step"] = "complete"
     except Exception:
         value = dict(outcome='unknown', stage='unknown', operation='unknown',
                      termination='unknown', category='unknown', code=None)
+    value = dict(value, driver_step=progress["step"])
     print(json.dumps(value, sort_keys=True, separators=(',', ':')))
     return 0 if value['outcome'] == 'observed' else 1
 

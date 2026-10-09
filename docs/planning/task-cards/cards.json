@@ -26904,6 +26904,109 @@
         "reviewed_by": "independent GPT-6.1 Sol high source repair2 PASS and remote blocked classification",
         "token_usage": "docs/planning/metrics/G0-06.2an.json"
       }
+    },
+    {
+      "id": "G0-06.2ao",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "增加诊断器有界失败步骤标记",
+      "status": "review",
+      "mode": "implementation",
+      "dependencies": [
+        "G0-06.2am"
+      ],
+      "model": {
+        "tier": "I",
+        "type": "中档推理编码模型",
+        "example": "GPT-6.1 Sol medium",
+        "review": "Sol high 针对合同/错误路径；关键安全边界升级 Astra",
+        "reason": "涉及平台 adapter、多个失败路径或跨边界集成，低档返工风险较高",
+        "context": "≤8k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/client-framework/runner-driver-observability.md",
+          "selector": "proposed bounded driver-step extension; R approval mandatory"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-06.2an.md",
+          "selector": "single all-unknown blocked observation; not satisfied native gate"
+        },
+        {
+          "path": "poc/client-framework/lab/attribution_diag.py",
+          "selector": "main/sequence/verify only"
+        },
+        {
+          "path": "poc/client-framework/lab/attribution_diag_test.py",
+          "selector": "existing guard/cleanup/source fake tests"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2ao.md",
+      "binding": "docs/planning/task-bindings/G0-06.2ao.json",
+      "allowed_writes": [
+        "poc/client-framework/lab/attribution_diag.py",
+        "poc/client-framework/lab/attribution_diag_test.py",
+        "docs/planning/poc/client-framework/runner-driver-observability.md",
+        "docs/planning/task-results/G0/G0-06.2ao.md"
+      ],
+      "implementation_writes": [
+        "poc/client-framework/lab/attribution_diag.py",
+        "poc/client-framework/lab/attribution_diag_test.py"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "检查feature分支和已接受输入，仅读取卡片selector",
+        "按冻结binding实现本卡单一目标，源码/决策不冒充native qualification",
+        "执行绑定静态检查，独立复核，保留未知及blocked前置，不执行未授权runtime"
+      ],
+      "acceptance": [
+        "Driver-only literal fail-step retains all existing guards, six crash fields, reader schema, once-only calls and cleanup qualification",
+        "Independent R accepts extension/diff; pinned controlled fake tests verify step retention and fail closed"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          },
+          {
+            "command": "python3 docs/planning/validate_task_cards.py --card G0-06.2ao",
+            "expectation": "exit 0；卡结构校验不代表功能测试通过"
+          }
+        ],
+        "behavior_check": "Driver-only literal fail-step retains all existing guards, six crash fields, reader schema, once-only calls and cleanup qualification",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤6k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ]
     }
   ],
   "parent_gates": {

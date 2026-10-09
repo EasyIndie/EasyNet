@@ -39,6 +39,7 @@ class Driver(unittest.TestCase):
         module = types.SimpleNamespace(run_mapping_probe=Mock(return_value=target or result(code=-6)),
                                        _execute=Mock(return_value=helper or result(raw)), _live=live,
                                        _root=Mock(return_value=allowed.parent), check_fixture=Mock())
+        progress = {"step": "preflight"}
         with patch.object(d.os, 'environ', {'HOME': '/Users/runner'}), \
                 patch.object(d.os, 'getpid', return_value=23), \
                 patch.object(d, 'verify', return_value=Path('/fixed/python')) as verify, \
@@ -46,14 +47,16 @@ class Driver(unittest.TestCase):
                 patch.object(d.time, 'monotonic_ns', side_effect=[10**9, 1_100_000_000, 4_100_000_000, 4_200_000_000]), \
                 patch.object(d.time, 'monotonic', return_value=4.3), patch.object(d.time, 'sleep') as sleep:
             try:
-                got = d.sequence(module, mapping, r, allowed, 14)
+                got = d.sequence(module, mapping, r, allowed, 14, progress)
             except (ValueError, KeyError):
                 got = r.unknown()
+        self.step = progress["step"]
         return got, module, sleep, verify
 
     def test_fixed_once_and_guard_pairing(self):
         got, module, sleep, verify = self.sequence()
         self.assertEqual(got['outcome'], 'observed')
+        self.assertEqual(self.step, 'reader-validation')
         module.run_mapping_probe.assert_called_once_with(d.LAB / 'mapping-fixture.sb',
             Path('/private/tmp/easynet-g0-06-isolate-fake/allowed'), 'sandbox-eof', 2)
         sleep.assert_called_once_with(3)
@@ -72,6 +75,7 @@ class Driver(unittest.TestCase):
             self.assertEqual(got, r.unknown())
             module._execute.assert_not_called()
             sleep.assert_not_called()
+            self.assertEqual(self.step, "target-validation")
 
     def test_observer_independent_failures(self):
         for changes in ({'stdout': b'{"secret":"CANARY"}'}, {'stderr': b'SECRET'},
@@ -82,6 +86,7 @@ class Driver(unittest.TestCase):
             self.assertEqual(got, r.unknown())
             self.assertEqual(module.run_mapping_probe.call_count, 1)
             self.assertEqual(module._execute.call_count, 1)
+            self.assertEqual(self.step, 'reader-validation')
 
     def test_clocks_and_live_state(self):
         for wall in ([10**9, 1_120_000_000], [10**9, 1_100_000_000, 4_200_000_000]):
@@ -100,7 +105,7 @@ class Driver(unittest.TestCase):
             self.assertEqual(d.main(), 1)
         fixture.assert_not_called()
         verify.assert_not_called()
-        self.assertEqual(json.loads(emit.call_args.args[0]), r.unknown())
+        self.assertEqual(json.loads(emit.call_args.args[0]), dict(r.unknown(), driver_step="preflight"))
 
     def test_main_cleanup_and_retention(self):
         fake_environment = {'HOME': '/Users/runner', 'GITHUB_ACTIONS': 'true',
@@ -108,7 +113,7 @@ class Driver(unittest.TestCase):
                             'GITHUB_REF': 'refs/heads/codex/feature/self-hosted-byos-byoc'}
         observed = dict(outcome='observed', stage='cat-image', operation='unknown',
                         termination='sigabrt', category='unknown', code=None)
-        for fault in ('none', 'unknown', 'live', 'sequence', 'preclean-hash', 'postclean-hash', 'cleanup'):
+        for fault in ('none', 'source', 'fixture', 'unknown', 'live', 'sequence', 'preclean-hash', 'postclean-hash', 'cleanup'):
             module = types.SimpleNamespace(_live=fault == 'live')
             fake_mapping = types.SimpleNamespace(clean_fixture=Mock(side_effect=ValueError() if fault == 'cleanup' else None))
             with ExitStack() as stack:
@@ -123,16 +128,21 @@ class Driver(unittest.TestCase):
                 stack.enter_context(patch.object(d.platform, 'mac_ver', return_value=('15.7.9', (), '')))
                 for key in ('monotonic', 'monotonic_ns', 'time_ns'):
                     stack.enter_context(patch.object(d.time, key, return_value=0))
-                effects = [None, ValueError()] if fault == 'preclean-hash' else [None, None, ValueError()] if fault == 'postclean-hash' else None
+                effects = [ValueError()] if fault == 'source' else [None, ValueError()] if fault == 'preclean-hash' else [None, None, ValueError()] if fault == 'postclean-hash' else None
                 stack.enter_context(patch.object(d, 'verify', side_effect=effects))
                 stack.enter_context(patch.object(d, 'load', side_effect=[module, fake_mapping, r]))
-                stack.enter_context(patch.object(d, 'fixture', return_value=Path('/fake/allowed')))
+                stack.enter_context(patch.object(d, 'fixture', return_value=Path('/fake/allowed'),
+                                                side_effect=ValueError('SECRET') if fault == 'fixture' else None))
                 stack.enter_context(patch.object(d, 'sequence', return_value=r.unknown() if fault == 'unknown' else observed,
                                                 side_effect=ValueError() if fault == 'sequence' else None))
                 emit = stack.enter_context(patch('builtins.print'))
                 self.assertEqual(d.main(), 0 if fault == 'none' else 1)
             self.assertEqual(fake_mapping.clean_fixture.call_count, 1 if fault in ('none', 'postclean-hash', 'cleanup') else 0)
-            self.assertEqual(json.loads(emit.call_args.args[0]), observed if fault == 'none' else r.unknown())
+            steps = dict(none='complete', source='source', fixture='fixture', unknown='report',
+                         live='report', sequence='target', **{'preclean-hash': 'report',
+                         'postclean-hash': 'final-check', 'cleanup': 'cleanup'})
+            self.assertEqual(json.loads(emit.call_args.args[0]),
+                             dict(observed if fault == 'none' else r.unknown(), driver_step=steps[fault]))
 
     def test_source_hash_exact_set_and_interpreter(self):
         source = b'fake-reviewed-source'
@@ -146,7 +156,7 @@ class Driver(unittest.TestCase):
                 hashes['unreviewed.py'] = digest
             if fault == 'source':
                 hashes[d.SOURCES[0]] = '0'*64
-            binding = json.dumps({'task_id': 'G0-06.2an', 'status': 'frozen',
+            binding = json.dumps({'task_id': 'G0-06.2ao', 'status': 'frozen',
                                   'source_review': {'files_sha256': hashes}})
             with ExitStack() as stack:
                 stack.enter_context(patch.object(d.os, 'environ', {}))
