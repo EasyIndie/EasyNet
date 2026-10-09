@@ -9976,6 +9976,7 @@
       "allowed_writes": [
         ".github/workflows/controller.yml",
         ".github/workflows/tests.yml",
+        "docs/planning/contracts/validate-errors.jq",
         "docs/planning/contracts/validate-operation.jq",
         "docs/planning/contracts/validate-events.jq",
         "docs/planning/task-results/G0/G0-07.3.md"
@@ -9983,6 +9984,7 @@
       "implementation_writes": [
         ".github/workflows/controller.yml",
         ".github/workflows/tests.yml",
+        "docs/planning/contracts/validate-errors.jq",
         "docs/planning/contracts/validate-operation.jq",
         "docs/planning/contracts/validate-events.jq"
       ],

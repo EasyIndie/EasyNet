@@ -5,11 +5,13 @@
   "contract_versions": [
     "G0-07.2 accepted offline make check @f53127e",
     "ADR004 nonrelease GUI-independent CI only",
-    "Same-card CI repair: explicit array binding before boolean chain; preserve contract semantics across jq1.6/1.8"
+    "Same-card CI repair: explicit array binding before boolean chain; preserve contract semantics across jq1.6/1.8",
+    "repair2: error result/history binding before booleans; verified official local jq1.8.1 reproduces all11 valid error envelope rejection"
   ],
   "implementation_files": [
     ".github/workflows/controller.yml",
-    ".github/workflows/tests.yml"
+    ".github/workflows/tests.yml",
+    "docs/planning/contracts/validate-errors.jq"
   ],
   "test_files": [
     "docs/planning/contracts/validate-operation.jq",
@@ -36,12 +38,19 @@
   "environment": "GitHub hosted ubuntu-24.04 controller job; existing Bash matrix unchanged",
   "side_effect_authorization": "User authorized feature runner validation; only reviewed feature push, no main/tag/release/deploy/secrets/environment writes. Worker source only; root independent R before push.",
   "prepared_by": "root",
-  "reviewed_by": "gpt-6.1-sol high controller_ci_review source PASS + repair1 PASS; root exact hash freeze",
-  "note": "New Controller workflow <=75lines: push ONLY codex/feature/self-hosted-byos-byoc paths controller/** and .github/workflows/controller.yml; pull_request branches main and feature same paths; no dispatch/tags/schedules/pull_request_target. permissions contents read. ubuntu24.04 one job timeout10min. checkout SHA3d3c42e5aac5ba805825da76410c181273ba90b1 verified officialv7, persist-credentials false. Fetch official https://go.dev/dl/go1.27.2.linux-amd64.tar.gz curl fail showerror location into RUNNER_TEMP task-specific dir; verify SHA256 ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5 then extract trusted archive only. No user/script remote execution before hash. Run same make -C controller check GO=<temp>/go/bin/go GOFMT=<temp>/go/bin/gofmt GOCACHE=<temp>/cache GOPATH=<temp>/gopath then build development binary under temp with GOENVoff GOTOOLCHAINlocal GOWORKoff GOPROXYoff GOSUMDBoff CGO0; never publish artifact/release. Existing tests.yml modify ONLY add feature branch under push.branches and pull_request.branches; no other job/action/command changes. This allows once ordinary Bash regression, no native crash trigger paths changed. Runtime exactsourceSHA evidence root handles. Result<=12lines sourcependingR/runtime. Worker no authored runtime/no push/network/commits/newagents. Exact-SHA Ubuntu26.04 contract positive failures exposed jq binding/and precedence incompatibility. Root mechanical same-card repair allowed ONLY two offline reference checker files: bind .history/.events array before boolean tests, preserve predicates/transitions and rejection tests. Independent R source review before jq/Bats runtime and runner. No production contract field/state changes. Existing error/event/operation Bats suites are read-only test inputs.",
+  "reviewed_by": "gpt-6.1-sol high controller_ci_review PASS initial+repair1+repair2; root freeze",
+  "note": "New Controller workflow <=75lines: push ONLY codex/feature/self-hosted-byos-byoc paths controller/** and .github/workflows/controller.yml; pull_request branches main and feature same paths; no dispatch/tags/schedules/pull_request_target. permissions contents read. ubuntu24.04 one job timeout10min. checkout SHA3d3c42e5aac5ba805825da76410c181273ba90b1 verified officialv7, persist-credentials false. Fetch official https://go.dev/dl/go1.27.2.linux-amd64.tar.gz curl fail showerror location into RUNNER_TEMP task-specific dir; verify SHA256 ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5 then extract trusted archive only. No user/script remote execution before hash. Run same make -C controller check GO=<temp>/go/bin/go GOFMT=<temp>/go/bin/gofmt GOCACHE=<temp>/cache GOPATH=<temp>/gopath then build development binary under temp with GOENVoff GOTOOLCHAINlocal GOWORKoff GOPROXYoff GOSUMDBoff CGO0; never publish artifact/release. Existing tests.yml modify ONLY add feature branch under push.branches and pull_request.branches; no other job/action/command changes. This allows once ordinary Bash regression, no native crash trigger paths changed. Runtime exactsourceSHA evidence root handles. Result<=12lines sourcependingR/runtime. Worker no authored runtime/no push/network/commits/newagents. Exact-SHA Ubuntu26.04 contract positive failures exposed jq binding/and precedence incompatibility. Root mechanical same-card repair allowed ONLY two offline reference checker files: bind .history/.events array before boolean tests, preserve predicates/transitions and rejection tests. Independent R source review before jq/Bats runtime and runner. No production contract field/state changes. Existing error/event/operation Bats suites are read-only test inputs. Repair2 before final runner: all Operation/Event valid fixtures now pass official verified local jq1.8.1, but all11 Error valid examples reject due independent result/history as-after-and precedence. Bound third implementation file validate-errors.jq as error contract checker repair; aggregate <=3 implementation +2 offline test checker files, one objective, narrow <=10 changed checker lines. Move result/rule binding before envelope boolean chain and history binding before remote operation shape boolean, preserve every guard. Root local suites BOTH jq1.6 and verified1.8.1 after independent R.",
   "source_sha256": {
     ".github/workflows/controller.yml": "7d9b95a010e6350cdd7caf1b0f0bf6b348c4c416b8427f41c18eb9e1b80ef6b6",
     ".github/workflows/tests.yml": "61101b312b02d19b3f0050c777ff47f4862cd1236f2abe5f5b4156a0ce423b76",
+    "docs/planning/contracts/validate-errors.jq": "f96be342697c140b1b0f160e36714cfa651f02e37a24c22a8183290ece48f14d",
     "docs/planning/contracts/validate-operation.jq": "f267b4669624af77cf138d794afdd3ca46a812a2c80cee2d3c04280dd8852087",
     "docs/planning/contracts/validate-events.jq": "2ab2b041a2596ab14a2c174009c3553541fa3f2cfe16641974a3b7c3a893bad1"
+  },
+  "jq181_toolchain": {
+    "path": "/private/tmp/easynet-jq181-75y2l8ge/jq",
+    "sha256": "a9fe3ea2f86dfc72f6728417521ec9067b343277152b114f4e98d8cb0e263603",
+    "version": "jq-1.8.1",
+    "source": "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-macos-arm64"
   }
 }
