@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2at",
+  "status": "verified_source_preparation_only",
+  "strategy": "bounded_Luna_C_primary_facts_root_acceptance",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "b85dfc0",
+  "started_at_utc": "2026-10-09T15:50:49.307088+00:00",
+  "finished_at_utc": "2026-10-09T16:03:49+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none bounded inputs",
+  "main_coordination_included": true,
+  "automatic_review_included": true,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2at-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9676998793126765,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 4135808,
+    "calls": 52,
+    "input_tokens": 4273854,
+    "noncached_input_tokens": 138046,
+    "output_tokens": 15612,
+    "reasoning_output_tokens": 4832,
+    "total_tokens": 4289466
+  },
+  "repair_count": 1,
+  "limitations": [
+    "Includes previous as publication and user target clarification, root source validation/research and one same-card missing-path/API repair.",
+    "No matched main-only counterpart or runtime qualification; not proof delegation cheaper.",
+    "Own final publication after cutoff excluded."
+  ]
+}

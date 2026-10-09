@@ -98,3 +98,5 @@ aq 独立审查已接受（695ffd5）：B 去除等待A签名的串行边但自�
 当前 fresh hardware：8GiB RAM、8逻辑CPU、swap约2.3GiB已用、35GiB可用盘；无VM安装/启动或个人凭据读取。as 正在审查独立环境资格，Apple账号和实际测试目标可用性待用户说明；G0尚未完成。
 
 as 独立环境资格计划已审并接受；278卡中83 verified、9 blocked、186 locked。没有已资格化UI/NE/签名目标，当前硬件快照不能保证VM余量，签名/独立目标可用性待用户回复。接下来可准备B独立source-only合同；不以文档通过冒充GUI/NE/签名或完整G0。
+
+at source preparation accepted: 279 cards, 84 verified /9 blocked /186 locked. User confirms Apple account availability but only current development Mac and GitHub runner; independent VM/Mac not confirmed. Exact native source paths/API/build shape proposed, real UI/NE/signing unqualified. Next freeze one bounded runner GUI admission contract; no further crash attribution.

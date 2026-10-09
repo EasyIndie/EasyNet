@@ -61,7 +61,8 @@ GitHub 所述 same-host development provisioning 不是用户账号/profile 已�
 | A/B 系统 VPN/NE | 各候选选定 provider 路线的有效 entitlement/签名/provisioning、目标与真实系统同意 | 可先审接口和路由/DNS/回退；需要 NE 的 engine 模式在生命周期前就须具备该资格 |
 | A/B 签名与分发 | 选定渠道的团队/签名/分发授权及可用凭据，干净安装/更新/回退/卸载目标 | 先准备 package manifest/验证步骤；仅确认可用性，不索取密钥/证书内容或个人日志 |
 
-Apple Developer 账号/团队和独立测试目标问题已待答，不重复请求、不猜已有资格。
+用户确认 Apple Developer 账号可用；目标仅当前开发机和 GitHub runner，无独立 Mac/VM 已确认。
+优先冻结 runner GUI 资格合同；本机实验账户、具体签名渠道及凭据使用尚未资格化，不读取个人 Keychain。
 缺条件就记录具体 blocked 与尚缺证据，继续独立准备；不自行把候选/平台 accepted-not-applicable。
 出现隔离失效、个人数据接触、外部网络/系统状态越界、进程/端口泄漏立即停止并首次升级安全评审；
 出现资源超限、目标身份不明或权限/签名条件不符也停；同一失败两次后交审，不开启新的归因预算。

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2at",
+  "status": "frozen",
+  "contract_versions": [
+    "aq/as rootaccepted G0 independentB preparation; ar diagnostic budget0",
+    "original native/Flutter comparison evidence; Go service and all native protocols unchanged"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/native-lifecycle-preparation.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2at",
+      "expected": "exit0 planningonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "read-only repo/officialprimary browsing plus document writes only",
+  "side_effect_authorization": "No SDK/engine/VM downloads, compiler/bootstrap/import/test/native/GUI/signing/runtime/cloudspend/personal data reads. Futurecommands are proposals only, do not unlockB. Officialprimary evidence collection authorized.",
+  "prepared_by": "root",
+  "reviewed_by": "root frozen fact/preparation scope; independent R will review future security/runtimecontract",
+  "official_image_provenance": {
+    "run_id": 37953433995,
+    "head_sha": "028b7373758f6cacd9e9f4e91530ce1d8caf1200",
+    "image": "macos-15-arm64",
+    "included_software": "https://github.com/actions/runner-images/blob/macos-15-arm64/20260907.0337/images/macos/macos-15-arm64-Readme.md",
+    "image_release": "https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260907.0337",
+    "scope": "Existing job setup metadata read only; no extra guest or crash query"
+  },
+  "note": "<=110line native-lifecycle-preparation.md. Read ONLY exact pinned officialrunner Readme, official sing-box1.14.2 release/pinnedsource needed to establish launch/directproxy/schema/enginehash facts, Apple SwiftUI/AppKit window and process official docs if needed <=6primaryURLs. Reuse prior facts do not reread fullhandoffs/catalog/history. Record active/defaultXcode, SDK/Swift and compilerpaths ONLY when source proves; unknown exacttoolhash remainsnotfrozen. Engine existingexperimentalpin1.14.2 darwinarm64 SHA925c5382eca8492b0150f868a6db20b18290a38700e621724b3703fd453e032d verifyofficialentry ormarkunverified, noartifactdownload. Scope proposed actual SwiftUI/native host owns CLIproxy child in disposableguest, notselectedproductframework/Goapplicationservice/embeddedlibbox/NE. Actualvisiblewindow and realcontrols/UI state must be observed, headless/mocknotqualification. Common nonce/ConnectCancelStopRestart+fault/guardian limits fromacceptedAcontract; preserve processgroup/identity/reap/FD/output/deadlines and no personaldata/nonloopbackconfig/TUN/systemproxy/routes/DNS writes. Specify future ownedtemp3implementation+2test paths and contract/API/commands asPROPOSALS; noauthoredcodeorcommandsrun. Sourcepreparation canpropose compiler/modulecache/builddirflags exact ifofficialknown, otherwise explicitgap; no blanketHOMEredefine. Wholeguest targetpersonalhostdata isolated doesnot automaticallyqualifyoutside-ownedread/write/network denial, need futureQ-Bsecurityreviewexplicit. Exact minimumfuture qualification checklist: toolchain/sourceidentity, isolation/freshguest/envallowlist/noattachedcredentials, resourcebounds, visiblewindow/interactionevidence, cleanupownership, loopbackonlyfixture; candidatefullNE/signature channelsfutureaccountrequired separategates. No entitlement/grant guesses, no extraattributionqueries, no currentSwiftUI/enginequalificationclaims. WorkerCfactcollection notADRdecision. Stopunknownrecord factualgaps ratherthanchooseresources orgrant permissions; result<=12lines."
+}

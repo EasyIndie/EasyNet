@@ -27489,6 +27489,109 @@
         "reasoning_effort": "high",
         "token_usage": "Full-chain mixed scope docs/planning/metrics/G0-06.2as-usage.json, no cost inference"
       }
+    },
+    {
+      "id": "G0-06.2at",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "准备候选 B 独立源码合同与工具链事实",
+      "status": "verified",
+      "mode": "research",
+      "dependencies": [
+        "G0-06.2as",
+        "G0-06.1b"
+      ],
+      "model": {
+        "tier": "C",
+        "type": "低成本编码模型",
+        "example": "Luna medium",
+        "review": "主 Agent 核对官方出处与事实；平台权限或安全结论交 Sol 审查",
+        "reason": "固定五行官方工具链事实表；执行隔离设计和代码由后续 Sol 审查",
+        "context": "≤6k"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/client-framework/environment-qualification-plan.md",
+          "selector": "accepted target/source-only preparation conditions"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/native-evidence.md",
+          "selector": "native SwiftUI/bridge/NE distinctions"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/lifecycle-preparation.md",
+          "selector": "accepted common visibleUI/nonce/owner/cleanup cases only"
+        },
+        {
+          "path": "docs/planning/task-bindings/G0-06.2at.json",
+          "selector": "all exact source-only scope/provenance/commands"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2at.md",
+      "binding": "docs/planning/task-bindings/G0-06.2at.json",
+      "allowed_writes": [
+        "docs/planning/poc/client-framework/native-lifecycle-preparation.md",
+        "docs/planning/task-results/G0/G0-06.2at.md"
+      ],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/native-lifecycle-preparation.md"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "Read accepted qualification constraints and frozen official source URLs only",
+        "Write bounded native source preparation: facts vs proposals vs unknown runtime",
+        "Record exact future file/command proposal, visibleUI criteria/common fault matrix and security review/stop conditions"
+      ],
+      "acceptance": [
+        "官方固定镜像工具链/候选engine来源事实与实际GUI生命周期合同草案有界；unknown/实际资格区分；不隐式选择框架或执行SDK/GUI/签名"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2at",
+            "expectation": "exit0 planningonly"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit0"
+          }
+        ],
+        "behavior_check": "官方固定镜像 Xcode/SDK/Swift 与 Darwin arm64 sing-box 来源事实；真实 SwiftUI UI/engine 合同草案及资格缺口；未知标记 unknown",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤6k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2at.md",
+        "reviewed_by": "root primary pinned runner/asset facts checked; proposals only, future R security required",
+        "actual_model": "gpt-6-luna",
+        "reasoning_effort": "medium",
+        "token_usage": "docs/planning/metrics/G0-06.2at-usage.json full mixed window, no causal cost estimate"
+      }
     }
   ],
   "parent_gates": {
