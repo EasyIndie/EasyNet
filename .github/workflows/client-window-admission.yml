@@ -14,7 +14,7 @@ permissions:
   contents: read
 jobs:
   admission:
-    if: ${{ false }} # Runtime unqualified; re-review source/binding before enabling.
+    if: github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc' # One reviewed identity observation only.
     runs-on: macos-15
     timeout-minutes: 5
     steps:

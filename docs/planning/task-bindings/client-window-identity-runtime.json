@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "phase": "identity",
+  "accepted": true,
+  "one_guest": true,
+  "profile": {
+    "image_os": "macos15",
+    "image_version": "20260907.0337.1",
+    "os_build": "24G830",
+    "architecture": "arm64",
+    "python_version": "3.14.7",
+    "python_sha256": "d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3",
+    "provenance": "conditional-official-macos-15-arm64-image",
+    "runner_selector": "macos-15"
+  },
+  "source_hashes": {
+    "poc/client-framework/window-admission/Host.swift": "bf5f9f627922e176a977546451e4b1745304551fcc66549d4f7a3c5882652084",
+    "poc/client-framework/window-admission/driver.py": "1aa1936a22aa36e5f9c0c7cd94b0c16d8f8f44e5105e79a61ca027c0b1f696fc",
+    ".github/workflows/client-window-admission.yml": "a51281dbbfc23e38117501f34bf37b88447e4abb2f7103b0c7ef2d586f2b5d15",
+    "tests/client_framework/WindowAdmissionTests.swift": "1decb62bbd8c9ab4bf892992a216fd469883bba9891af087d79a48a1d23697c1",
+    "tests/client_framework/test_window_admission_driver.py": "22cb979302bb45ff517b6d6e925ec18cec148f8d6927a8851b0b519cffc21f60"
+  }
+}
