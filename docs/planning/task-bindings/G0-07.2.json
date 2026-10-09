@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-07.2",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-07.1 scaffold @a1a3648; development version output only, no product schema"
+  ],
+  "implementation_files": [
+    "controller/Makefile",
+    "controller/README.md"
+  ],
+  "test_files": [
+    "controller/cmd/easynet-controller/main_test.go",
+    "controller/cmd/easynet-controller/testdata/version.txt"
+  ],
+  "commands": [
+    {
+      "command": "make -C controller check GO=/private/tmp/easynet-controller-go-1.27.2-8j_rrxci/go/bin/go GOFMT=/private/tmp/easynet-controller-go-1.27.2-8j_rrxci/go/bin/gofmt GOCACHE=/private/tmp/easynet-controller-build-cache GOPATH=/private/tmp/easynet-controller-gopath",
+      "expected": "exit0 format check and offline go test ./...; root after source review"
+    },
+    {
+      "command": "make -C controller fmt-check GOFMT=false",
+      "expected": "nonzero; formatter tool failures must not be masked"
+    },
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-07.2",
+      "expected": "exit0 planning only"
+    }
+  ],
+  "environment": "owned offline local unit fixtures only",
+  "side_effect_authorization": "No application native/network/deploy actions; root executes reviewed Makefile/tests using hash-verified Go toolchain; worker source/gofmt only.",
+  "prepared_by": "root",
+  "reviewed_by": "root frozen low-risk test contract; source review before executing",
+  "toolchain": {
+    "executable": "/private/tmp/easynet-controller-go-1.27.2-8j_rrxci/go/bin/go",
+    "sha256": "516c1fbb53b5f8f4852f0c3c379d45bcff53a1032e5cd1a9ca1738f03ba07cb1",
+    "version": "go version go1.27.2 darwin/arm64",
+    "archive_sha256": "76812b213b1b2302c978d28fa52fa92d541704b9e7d9d5db8002c50e4018c4c5",
+    "source": "https://go.dev/dl/",
+    "gofmt": "/private/tmp/easynet-controller-go-1.27.2-8j_rrxci/go/bin/gofmt",
+    "gofmt_sha256": "5894006a03afafb375c8dcde9eeae1e6e5bd292d5e6d8a5eaac9ff0974694482"
+  },
+  "note": "Makefile <=40 lines: GO ?= go; GOFMT ?= gofmt; export GOENV=off GOTOOLCHAIN=local GOWORK=off GOPROXY=off GOSUMDB=off CGO_ENABLED=0. .PHONY check fmt-check test; check depends fmt-check test; fmt-check rejects any gofmt -l cmd/easynet-controller/*.go output without rewriting; test executes $(GO) test ./... . No recursive download/install/build/native/launch commands or fixtures scripts. README <=40lines describes make -C controller check overrides and development-only fixture contract. main_test.go <=130lines tests run via buffer: version fixture, noarg/unknown/extraarg stderr fixed usage exit2 no stdout/no argument echo; failing output writer returns1 no raw error. Fixture exact easynet-controller development newline. No main.go/go.mod change. No test subprocess/network/env config/real personal file reads, only testdata/version.txt. Source-only worker never make/go test/build/run or binaries before root review. Report <=12lines. No commits/newagents/network/CI edits. Source review repair: usage contains allowed --version token; reject echoed unknown/extra tokens only. fmt-check must propagate gofmt failure before checking stdout emptiness.",
+  "source_sha256": {
+    "controller/Makefile": "0b40aa20175d32b2b7d78eca1729fa2286a700426a1a1844e744934622593665",
+    "controller/README.md": "c2b8ae884366475a924d9fa40a0a8539fdbb54d09c25be262dd37f7b4631a541",
+    "controller/cmd/easynet-controller/main_test.go": "e2e9c13febaa1dce75a8247b9f7ea1d1d424c7d30dc79621ca76cfd7442564ea",
+    "controller/cmd/easynet-controller/testdata/version.txt": "595497138c8f4a728154cd58ec846eff42dd385c596dcb79e68cd6f19f0fee67"
+  }
+}

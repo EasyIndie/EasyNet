@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-07.1",
+  "status": "verified_scaffold_only",
+  "strategy": "bounded_C_worker_root_acceptance_with_required_resequencing_R",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "19d4018",
+  "implementation_commit": "a1a3648",
+  "started_at_utc": "2026-10-09T12:28:26.721578+00:00",
+  "finished_at_utc": "2026-10-09T14:36:08+00:00",
+  "subagent_count": 2,
+  "history_inheritance": "none; bounded scaffold C and formal checkpoint R",
+  "main_coordination_included": true,
+  "automatic_review_included": true,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-07.1-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9462386246308258,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 6305280,
+    "calls": 57,
+    "input_tokens": 6663520,
+    "noncached_input_tokens": 358240,
+    "output_tokens": 32440,
+    "reasoning_output_tokens": 11836,
+    "total_tokens": 6695960
+  },
+  "limitations": [
+    "Mixed window includes prior publication tail, user progress checkpoint, formal resequencing independent review, toolchain recovery, scaffold preparation/implementation/root acceptance and interruption/context compaction; not pure scaffold labor.",
+    "Exclusive cutoff one second after implementation commit; subsequent G0-07.2 preparation and metric publication excluded.",
+    "No matched successful main-only implementation, no billable alias pricing, no causal cost winner."
+  ]
+}
