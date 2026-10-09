@@ -28,11 +28,56 @@ LIMIT = 16384
 
 
 class Refusal(Exception):
-    pass
+    def __init__(self, reason, evidence=None):
+        self.evidence = validate_evidence(evidence) if evidence is not None else None
+        super().__init__(json.dumps(self.evidence, separators=(",", ":")) if self.evidence else reason)
 
 
 class CleanupUnproven(Refusal):
     pass
+
+
+PROOF_FLAGS = {"child_started", "sentinel_started", "child_reaped", "sentinel_reaped",
+               "group_absent", "fds_closed", "drain_complete", "exec_ready", "deadline"}
+PROOF_ENUMS = {
+    "reason": {"complete", "parent-eof", "exec-refused", "overflow", "cancel", "startup-timeout",
+               "timeout", "guardian-refused", "cleanup-unproven", "drain-unproven",
+               "fd-close-unproven", "guardian-interrupted", "guardian-reap-unproven",
+               "guardian-record-unproven", "guardian-output", "guardian-deadline"},
+    "cleanup_stage": {"env", "start", "sentinel", "child", "term", "drain", "kill",
+                      "reap-child", "reap-sentinel", "group-check", "fd-close", "done", "group-kill", "direct-kill"},
+    "error": {"none", "permission", "not-found", "interrupted", "os", "other"},
+    "exit": {"zero", "nonzero", "signal", "unknown", "not-started"}}
+
+
+def validate_evidence(value):
+    if not isinstance(value, dict) or set(value) != PROOF_FLAGS | set(PROOF_ENUMS) | {"schema"}:
+        raise ValueError("evidence-schema")
+    if type(value["schema"]) is not int or value["schema"] != 1 or any(
+            type(value[key]) is not bool for key in PROOF_FLAGS):
+        raise ValueError("evidence-type")
+    if any(type(value[key]) is not str or value[key] not in allowed for key, allowed in PROOF_ENUMS.items()):
+        raise ValueError("evidence-enum")
+    if len(json.dumps(value, separators=(",", ":")).encode()) > 1024:
+        raise ValueError("evidence-size")
+    return value
+
+
+def unknown_evidence(reason, expired=False):
+    return dict(schema=1, reason=reason, cleanup_stage="start", error="none", exit="unknown",
+                **{key: expired if key == "deadline" else False for key in PROOF_FLAGS})
+
+
+def cleanup_proven(proof):
+    return proof["reason"] not in {"cleanup-unproven", "drain-unproven", "fd-close-unproven"} and all(not proof[started] or proof[reaped] for started, reaped in (
+        ("child_started", "child_reaped"), ("sentinel_started", "sentinel_reaped"))) and all(
+        proof[key] for key in ("group_absent", "fds_closed", "drain_complete"))
+
+
+def error_category(error):
+    return ("permission" if isinstance(error, PermissionError) else "not-found" if isinstance(
+        error, FileNotFoundError) else "interrupted" if isinstance(error, InterruptedError) else
+        "os" if isinstance(error, OSError) else "other")
 
 
 def checked_path(value, kind):
@@ -122,6 +167,24 @@ def signal_owned(function, pid, sig):
     try: function(pid, sig)
     except ProcessLookupError: pass  # Already empty/exited; mandatory reaps follow.
 
+
+class CleanupAttempts:
+    """Run every owned cleanup action; retain the first failure independently."""
+    def __init__(self):
+        self.stage, self.error, self.expired = None, "none", False
+
+    def fail(self, stage, error=None):
+        if self.stage is None:
+            self.stage, self.error = stage, error_category(error) if error is not None else "none"
+        self.expired |= isinstance(error, CleanupUnproven)
+
+    def attempt(self, stage, action):
+        try:
+            action()
+        except BaseException as error:
+            self.fail(stage, error)
+
+
 def guardian(argv, env, cwd, budget, control, result):
     """Explicit fork/exec startup: known unreaped PID before any child setup."""
     deadline = time.monotonic() + budget - 0.1
@@ -134,6 +197,10 @@ def guardian(argv, env, cwd, budget, control, result):
     owned_fds = {control, result}
     reason, reclaimed, direct_reaped, exec_ready = "complete", False, False, False
     cancelled = [False]
+    stage, failed_stage, failure = "env", None, "none"
+    sentinel_reaped = drain_complete = expired = False
+    cleanup_attempts = CleanupAttempts()
+    selector_closed = True
 
     def pipe():
         pair = os.pipe()
@@ -167,15 +234,17 @@ def guardian(argv, env, cwd, budget, control, result):
         clean_environment(env)  # Before sentinel/compiler forks; no inherited credentials.
         close_except(owned_fds)  # Discard driver's retained directory descriptors in guardian.
         reader = selectors.DefaultSelector()
+        selector_closed = False
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         signal.signal(signal.SIGTERM, lambda *_: cancelled.__setitem__(0, True))
+        stage = "sentinel"
         ready_r, ready_w = pipe()
         leader = os.fork()
         if leader == 0:
             try:
                 close_except({ready_w})
                 os.setpgid(0, 0)
-                signal.signal(signal.SIGTERM, signal.SIG_DFL)
+                signal.signal(signal.SIGTERM, signal.SIG_IGN)
                 os.write(ready_w, b"R"); os.close(ready_w)
                 while True: signal.pause()
             finally:
@@ -189,11 +258,13 @@ def guardian(argv, env, cwd, budget, control, result):
                 group_ready = os.read(ready_r, 1) == b"R"; break
             drain(0)
             if reason != "complete": break
+        expired |= not group_ready and time.monotonic() >= startup
         close(ready_r)
         if not group_ready or reason != "complete" or cancelled[0]:
             raise Refusal("guardian-start")
         stdout_r, stdout_w = pipe(); stderr_r, stderr_w = pipe()
         exec_r, exec_w = pipe()  # Python pipe descriptors are non-inheritable across exec.
+        stage = "child"
         child = os.fork()
         if child == 0:
             try:
@@ -216,53 +287,92 @@ def guardian(argv, env, cwd, budget, control, result):
         while time.monotonic() < deadline - 1:
             if cancelled[0]: reason = "cancel"; break
             if not exec_ready and time.monotonic() >= startup:
-                reason = "startup-timeout"; break
+                expired = True; reason = "startup-timeout"; break
             drain(0.01)
             if reason != "complete": break
             waited, status = os.waitpid(child, os.WNOHANG)
             if waited == child:
                 child_code = os.waitstatus_to_exitcode(status); child_reaped = True; break
         else:
-            reason = "timeout"
-    except BaseException:
+            expired = True; reason = "timeout"
+    except BaseException as error:
+        failed_stage, failure = stage, error_category(error)
         if reason == "complete": reason = "guardian-refused"
     finally:
-        try:
-            if group_ready:
-                signal_owned(os.killpg, leader, signal.SIGTERM)
-            if child is not None and not child_reaped:
-                signal_owned(os.kill, child, signal.SIGTERM)  # Pre-setpgid setup too.
+        operation_reason = reason
+        def grace_drain():
             end = min(deadline - 0.5, time.monotonic() + 0.1)
-            while time.monotonic() < end: drain(0.005)
-            if group_ready: signal_owned(os.killpg, leader, signal.SIGKILL)
-            if child is not None and not child_reaped:
-                signal_owned(os.kill, child, signal.SIGKILL)
-                child_code = reap_before(child, deadline - 0.15); child_reaped = True
-            if leader is not None:
-                if not group_ready: signal_owned(os.kill, leader, signal.SIGKILL)
-                reap_before(leader, deadline - 0.1)
-            direct_reaped = leader is not None and (child is None or child_reaped)
+            while reader is not None and time.monotonic() < end: drain(0.005)
+
+        def reap_child():
+            nonlocal child_code, child_reaped
+            child_code = reap_before(child, deadline - 0.15); child_reaped = True
+
+        def reap_sentinel():
+            nonlocal sentinel_reaped
+            reap_before(leader, deadline - 0.1); sentinel_reaped = True
+
+        def group_check():
+            nonlocal reclaimed
             if group_ready:
                 try: os.killpg(leader, 0)  # Read-only after reap; never signal again.
                 except ProcessLookupError: reclaimed = True
             else:
-                reclaimed = child is None
+                reclaimed = child is None and (leader is None or sentinel_reaped)
+            if not reclaimed: cleanup_attempts.fail("group-check")
+
+        def final_drain():
+            nonlocal expired, drain_complete
             while reader is not None and reader.get_map() and time.monotonic() < deadline - 0.05:
                 drain(0.005)
                 if not any(key.data != "control" for key in reader.get_map().values()): break
             if reader is not None and any(key.data != "control" for key in reader.get_map().values()):
-                reason = "drain-unproven"
-        except BaseException:
-            reason = "cleanup-unproven"
-        if reader is not None: reader.close()
+                expired |= time.monotonic() >= deadline - 0.05
+                cleanup_attempts.fail("drain")
+            else: drain_complete = True
+
+        def close_selector():
+            nonlocal selector_closed
+            reader.close(); selector_closed = True
+
+        # Signals and closes are attempted even after deadlines; only waits are bounded.
+        if group_ready:
+            cleanup_attempts.attempt("term", lambda: signal_owned(os.killpg, leader, signal.SIGTERM))
+        if child is not None and not child_reaped:
+            cleanup_attempts.attempt("term", lambda: signal_owned(os.kill, child, signal.SIGTERM))
+        cleanup_attempts.attempt("drain", grace_drain)
+        if group_ready:  # Sentinel is still held, unreaped, through this group operation.
+            cleanup_attempts.attempt("group-kill", lambda: signal_owned(os.killpg, leader, signal.SIGKILL))
+        if child is not None and not child_reaped:
+            cleanup_attempts.attempt("direct-kill", lambda: signal_owned(os.kill, child, signal.SIGKILL))
+            cleanup_attempts.attempt("reap-child", reap_child)
+        if leader is not None and not sentinel_reaped:
+            cleanup_attempts.attempt("kill", lambda: signal_owned(os.kill, leader, signal.SIGKILL))
+            cleanup_attempts.attempt("reap-sentinel", reap_sentinel)
+        direct_reaped = sentinel_reaped and (child is None or child_reaped)
+        cleanup_attempts.attempt("group-check", group_check)
+        cleanup_attempts.attempt("drain", final_drain)
+        if reader is not None: cleanup_attempts.attempt("fd-close", close_selector)
         for fd in list(owned_fds - {result}):
-            try: close(fd)
-            except OSError: reason = "fd-close-unproven"
+            cleanup_attempts.attempt("fd-close", lambda fd=fd: close(fd))
+        expired |= cleanup_attempts.expired
+        if cleanup_attempts.stage is not None:
+            failed_stage, failure = cleanup_attempts.stage, cleanup_attempts.error
+            reason = "cleanup-unproven"  # Later fallback success cannot clear a failed attempt.
+        elif operation_reason != "complete":
+            reason = operation_reason
+        fds_closed = selector_closed and owned_fds == {result}
         record = {"reason": reason, "code": child_code, "exec_ready": exec_ready,
                   "direct_reaped": direct_reaped, "group_absent": reclaimed,
-                  "fds_closed": owned_fds == {result},
+                  "fds_closed": fds_closed,
                   "stdout": streams["stdout"].decode("utf-8", errors="replace"),
                   "stderr": streams["stderr"].decode("utf-8", errors="replace")}
+        record["evidence"] = validate_evidence(dict(schema=1, reason=reason,
+            cleanup_stage=failed_stage or "done", error=failure, child_started=child is not None,
+            sentinel_started=leader is not None, child_reaped=child_reaped, sentinel_reaped=sentinel_reaped,
+            group_absent=reclaimed, fds_closed=fds_closed, drain_complete=drain_complete,
+            exec_ready=exec_ready, deadline=expired, exit="not-started" if child is None else
+            "unknown" if child_code is None else "zero" if child_code == 0 else "signal" if child_code < 0 else "nonzero"))
         payload = json.dumps(record).encode()
         os.set_blocking(result, False)
         try:
@@ -304,8 +414,10 @@ def bounded(argv, env, cwd, budget):
                     raise Refusal("guardian-output")
         else:
             raise Refusal("guardian-deadline")
-    except BaseException:
-        raise CleanupUnproven("guardian-interrupted") from None
+    except BaseException as error:
+        reason = str(error) if isinstance(error, Refusal) and str(error) in {
+            "guardian-output", "guardian-deadline"} else "guardian-interrupted"
+        raise CleanupUnproven(reason, unknown_evidence(reason, reason == "guardian-deadline")) from None
     finally:
         os.close(control_w)  # EOF requests cleanup even on cancel / reader failure.
         os.close(result_r)
@@ -318,17 +430,18 @@ def bounded(argv, env, cwd, budget):
             if waited == pid:
                 break
             if time.monotonic() > deadline:
-                raise CleanupUnproven("guardian-reap-unproven")
+                raise CleanupUnproven("guardian-reap-unproven", unknown_evidence("guardian-reap-unproven", True))
             time.sleep(0.01)
     try:
         record = json.loads(payload)
-        if not (record["direct_reaped"] and record["group_absent"] and record["fds_closed"]):
-            raise CleanupUnproven("group-cleanup-unproven")
+        proof = validate_evidence(record["evidence"])
+        if not cleanup_proven(proof):
+            raise CleanupUnproven("group-cleanup-unproven", proof)
     except (ValueError, KeyError, TypeError):
-        raise CleanupUnproven("guardian-record-unproven") from None
-    if record["reason"] != "complete" or record["code"] != 0 or not (
-            record["direct_reaped"] and record["group_absent"]):
-        raise Refusal("child-refused")
+        raise CleanupUnproven("guardian-record-unproven", unknown_evidence("guardian-record-unproven")) from None
+    if proof["reason"] != "complete" or proof["exit"] != "zero" or proof["deadline"] or not all(
+            proof[key] for key in ("child_started", "sentinel_started", "exec_ready")):
+        raise Refusal("child-refused", proof)
     return record["stdout"].strip()
 
 

@@ -104,6 +104,7 @@ class DriverRefusals(unittest.TestCase):
             self.assertEqual(report["reason"], "parent-eof")
             self.assertTrue(report["direct_reaped"] and report["group_absent"])
             self.assertTrue(report["fds_closed"])
+            self.assertTrue(self.driver.cleanup_proven(self.driver.validate_evidence(report["evidence"])))
         finally:
             if result_r is not None: os.close(result_r)
             if pid is not None and not reaped:
@@ -121,16 +122,65 @@ class DriverRefusals(unittest.TestCase):
         with self.assertRaises(PermissionError):
             self.driver.signal_owned(denied, 0, signal.SIGKILL)
 
+    def testFiniteEvidenceSchema(self):
+        valid = self.driver.unknown_evidence("guardian-record-unproven")
+        self.assertEqual(self.driver.validate_evidence(valid), valid)
+        for key, value in (("schema", True), ("child_reaped", 1), ("error", "raw-error"),
+                           ("extra", True), ("reason", "x" * 1025)):
+            bad = dict(valid); bad[key] = value
+            with self.assertRaises(ValueError): self.driver.validate_evidence(bad)
+        self.assertFalse(self.driver.cleanup_proven(valid))
+
+    def testCleanupAttemptsKeepFirstFailureAndRunLaterSteps(self):
+        phases = ("term", "drain", "group-kill", "direct-kill", "reap-child", "kill",
+                  "reap-sentinel", "group-check", "drain", "fd-close", "fd-close", "fd-close")
+        for failed_index in range(len(phases)):
+            with self.subTest(failed_index=failed_index):
+                attempts = self.driver.CleanupAttempts()
+                visited = []
+                def fake(index):
+                    visited.append(index)
+                    if index == failed_index: raise PermissionError()
+                    if index == failed_index + 1: raise self.driver.CleanupUnproven("synthetic")
+                for index, stage in enumerate(phases):
+                    attempts.attempt(stage, lambda index=index: fake(index))
+                self.assertEqual(visited, list(range(len(phases))))
+                self.assertEqual((attempts.stage, attempts.error), (phases[failed_index], "permission"))
+                self.assertEqual(attempts.expired, failed_index + 1 < len(phases))
+                proof = self.driver.unknown_evidence("cleanup-unproven")
+                proof.update({key: True for key in self.driver.PROOF_FLAGS - {"deadline"}})
+                self.assertFalse(self.driver.cleanup_proven(proof))
+
+
     def testOverflowTimeoutAndReap(self):
         # Owned fixture subprocesses; these are not window qualification.
-        with tempfile.TemporaryDirectory() as directory:
+        directory = tempfile.mkdtemp()
+        safe_cleanup = False
+        try:
             env = {"PATH": "/usr/bin:/bin", "LANG": "C", "TMPDIR": directory}
-            for source in ("import os;os.write(1,b'x'*20000)",
-                           "import time;time.sleep(20)"):
-                with self.assertRaises(self.driver.Refusal):
-                    self.driver.bounded([sys.executable, "-I", "-B", "-c", source], env, directory, 3)
-            self.assertEqual(self.driver.bounded(
-                [sys.executable, "-I", "-B", "-c", "print('synthetic')"], env, directory, 3), "synthetic")
+            cases = (("overflow", "import os;os.write(1,b'x'*20000)"),
+                     ("timeout", "import time;time.sleep(20)"), ("normal", "print('synthetic')"))
+            for label, source in cases:
+                safe_cleanup = False
+                try:
+                    result = self.driver.bounded([sys.executable, "-I", "-B", "-c", source], env, directory, 3)
+                except self.driver.Refusal as caught:
+                    proof = self.driver.validate_evidence(caught.evidence)
+                    if not self.driver.cleanup_proven(proof):
+                        # Stop before subTest can swallow uncertain process cleanup.
+                        raise self.failureException(label + ":" + str(caught)) from None
+                    safe_cleanup = True
+                    with self.subTest(case=label):
+                        self.assertEqual(proof["reason"], label, label + ":" + str(caught))
+                        self.assertNotEqual(label, "normal", label + ":" + str(caught))
+                else:
+                    safe_cleanup = True
+                    with self.subTest(case=label):
+                        self.assertEqual(label, "normal", "expected finite refusal missing")
+                        self.assertEqual(result, "synthetic")
+        finally:
+            if safe_cleanup: Path(directory).rmdir()
+
 
 
 if __name__ == "__main__":

@@ -1,0 +1,11 @@
+{
+  "exit": 1,
+  "summary": [
+    "Ran 8 tests in 0.843s",
+    "FAILED (failures=1)"
+  ],
+  "evidence": [],
+  "identities_unchanged": true,
+  "retained_root_entries": 0,
+  "native_guest": 0
+}

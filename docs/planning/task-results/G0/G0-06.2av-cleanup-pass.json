@@ -1,0 +1,11 @@
+{
+  "exit": 0,
+  "tests": 9,
+  "failures": 0,
+  "errors": 0,
+  "collection": "complete",
+  "evidence": [],
+  "identities_unchanged": true,
+  "retained_root_entries": 0,
+  "native_guest": 0
+}

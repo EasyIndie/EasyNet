@@ -29,15 +29,15 @@
   "side_effect_authorization": "Author five bounded files and taskresult only; no imports/fakes/compiler/build/native/GUI/network/artifact/SDK/signing/Keychain/settings/runtime/commits/push. Do not create runtime binding or authorize workflowrun. Proposed workflow not pushed by worker.",
   "prepared_by": "root",
   "reviewed_by": "root finite source-authoring scope from independent R conditional contract; no runtime acceptance yet",
-  "note": "<=8k relevant inputs. <=900total source/test lines explicit same-card safety repair ceiling; no new docs/admincards. Follow acceptedcontract. Exact onejob featurepush paths only fivefiles+proposed client-window-admission-runtime.json, timeout5min contentsread checkoutSHA reuse alreadyreviewed controller.yml pin/persistfalse/ref github.sha. Driver default failclosed unless later root/R frozen runtime binding includes source hashes/toolchain/version/provenance+effects accepted; missing/incomplete/unknown cannot launch. Implement own actual NSWindow/NSHostingView SwiftUI controls, normalqueued NSEvent→receipt→realButton action with matchingcurrentevent→idle/selected/idle state and ownstatusregion render-hash transitions; disabled/padding negative. No callbackshortcut, sendEvent directcall/globalinput/TCCcapture. Finite4KiB schema ownfixedtext/enums/booleans/hashes; no paths/rawlogs. Driver source copies rooted0700 and boundedlogs/cache/build cleanup nofollowmanifest; no HOMEforward/redefine, secrets/env leak/nativeengine/networkcalls. Compiler argv uses reviewedproposal but exact version/SDK/compileridentity unknown remain strict runtimebind prerequisites, do not invent official version. Own unreaped child IDs, safe lifetime-retained compiler processgroup guardian, TERM/KILL/reap on overflow/timeout/cancel/EOF, boundedoutput drain/time15host120build; if ownership guardian cannot implement safely record blocker rather than weakened cleanup. State/refusal fixtures supporting only: malformed/missingbinding, unsafepaths/symlinks/hash mismatch/unaccepted toolchain/effects, overflow/timeouts/reap/EOF, duplicateevents/negativeUI/callbacknotqualifying where testable. Tests source only now, no authored imports/compile/run beforeR. New source manifest/generatedwrites can be concise taskresult with remaininggaps; no raw identifiers/secret/personal data. Do not implement full engine/NE/adapters or choose framework. No additionalprimaryresearch beyond one targeted source if exact API needed; use acceptedcontract. Stop and boundedreport if impossible or exceeds5files/900lines, no partialpass or outsideowned hacks.",
+  "note": "<=8k relevant inputs. <=900total source/test lines explicit same-card safety repair ceiling; no new docs/admincards. Follow acceptedcontract. Exact onejob featurepush paths only fivefiles+proposed client-window-admission-runtime.json, timeout5min contentsread checkoutSHA reuse alreadyreviewed controller.yml pin/persistfalse/ref github.sha. Driver default failclosed unless later root/R frozen runtime binding includes source hashes/toolchain/version/provenance+effects accepted; missing/incomplete/unknown cannot launch. Implement own actual NSWindow/NSHostingView SwiftUI controls, normalqueued NSEvent\u2192receipt\u2192realButton action with matchingcurrentevent\u2192idle/selected/idle state and ownstatusregion render-hash transitions; disabled/padding negative. No callbackshortcut, sendEvent directcall/globalinput/TCCcapture. Finite4KiB schema ownfixedtext/enums/booleans/hashes; no paths/rawlogs. Driver source copies rooted0700 and boundedlogs/cache/build cleanup nofollowmanifest; no HOMEforward/redefine, secrets/env leak/nativeengine/networkcalls. Compiler argv uses reviewedproposal but exact version/SDK/compileridentity unknown remain strict runtimebind prerequisites, do not invent official version. Own unreaped child IDs, safe lifetime-retained compiler processgroup guardian, TERM/KILL/reap on overflow/timeout/cancel/EOF, boundedoutput drain/time15host120build; if ownership guardian cannot implement safely record blocker rather than weakened cleanup. State/refusal fixtures supporting only: malformed/missingbinding, unsafepaths/symlinks/hash mismatch/unaccepted toolchain/effects, overflow/timeouts/reap/EOF, duplicateevents/negativeUI/callbacknotqualifying where testable. Tests source only now, no authored imports/compile/run beforeR. New source manifest/generatedwrites can be concise taskresult with remaininggaps; no raw identifiers/secret/personal data. Do not implement full engine/NE/adapters or choose framework. No additionalprimaryresearch beyond one targeted source if exact API needed; use acceptedcontract. Stop and boundedreport if impossible or exceeds5files/900lines, no partialpass or outsideowned hacks.",
   "source_review_sha256": {
     "poc/client-framework/window-admission/Host.swift": "bf5f9f627922e176a977546451e4b1745304551fcc66549d4f7a3c5882652084",
-    "poc/client-framework/window-admission/driver.py": "afe987cb7d9b735c05079e38352a371c8c5ead5e7d999bff1456d3514bc96477",
+    "poc/client-framework/window-admission/driver.py": "180a94574f194ae0b2131e46e9a4f48f7b54a8b70d35ade0fd52493f141a11ae",
     ".github/workflows/client-window-admission.yml": "a504cff8b5c8962e76844293ca7b57267245f3e31ec7aa61172228ddd26d6a00",
     "tests/client_framework/WindowAdmissionTests.swift": "1decb62bbd8c9ab4bf892992a216fd469883bba9891af087d79a48a1d23697c1",
-    "tests/client_framework/test_window_admission_driver.py": "aa36d50296237cb4062bc4108d496b52d7311a395d79e1ffccc868fb2ab76eda"
+    "tests/client_framework/test_window_admission_driver.py": "b537c1d638ee7dd9ff69bc4232ddc8c5a67096f2ae3bb3a7f548fdd5c6ff2f0d"
   },
-  "source_review_status": "source reviewed, full fake7 still EXIT1 afterrepair2; stop further repairs/reruns pending R escalation; native notauthorized",
+  "source_review_status": "independent consolidated source accepted; exact local9fixture PASS, native identity/provenance/effects prerequisites pending",
   "repair_authorization": "Root authorizes one same-card consolidated SOURCE repair of independent R findings; <=900 total lines (was700), same five paths, no scope/functionality expansion, no imports/tests/runtime. Safety fixes require retained-rootFD, geometry conversion, clean env, bounded startup/reap/EOF/FD evidence and explicit Swift parse mode. Runtime/fake grants still withheld.",
   "previous_source_review_sha256": {
     "poc/client-framework/window-admission/Host.swift": "82bb40224942c2390b930d4dcbba03e33bad8c8e18f6cdaa340f64a584ccfe53",
@@ -51,7 +51,7 @@
     "tests/client_framework/test_window_admission_driver.py": "d125367af0787745032d605ab377b523c61a927254345a34759fdd0e8ddb74c6"
   },
   "fixture_evidence": {
-    "status": "reviewed_source_not_behavior_qualified",
+    "status": "exact local default-sandbox9fixture qualified; native/toolchain/GUI notqualified",
     "review_path": "docs/planning/task-results/G0/G0-06.2av-review.md",
     "python_fixture_attempts": [
       {
@@ -65,6 +65,45 @@
         "exit": 1,
         "duration_seconds": 3.45,
         "failure": "normal-child group-cleanup-unproven"
+      },
+      {
+        "count": 8,
+        "exit": 1,
+        "duration_seconds": 0.843,
+        "failure": "stronger reason assertion failed; finite envelope absent from supervisor summary; no cause inferred"
+      },
+      {
+        "count": 8,
+        "exit": 1,
+        "failure": "finite overflow cleanup_stage=kill,error=permission; cleanup proof false",
+        "collection": "complete",
+        "identities_unchanged": true,
+        "retained_root_entries": 1
+      },
+      {
+        "count": 8,
+        "exit": 1,
+        "environment": "approved_escalated",
+        "failure": "same kill/permission proof as sandboxed run",
+        "collection": "complete",
+        "identities_unchanged": true,
+        "retained_root_entries": 1
+      },
+      {
+        "count": 8,
+        "exit": 1,
+        "environment": "default_sandbox_kill_site",
+        "failure": "actual group-kill PermissionError; cleanup proof false",
+        "collection": "complete",
+        "identities_unchanged": true
+      },
+      {
+        "count": 9,
+        "exit": 0,
+        "environment": "default_sandbox_consolidated_cleanup",
+        "collection": "complete",
+        "identities_unchanged": true,
+        "retained_root_entries": 0
       }
     ],
     "hashes_before_after": "all5sources/trustedinterpreter/binding unchanged each attempt",
@@ -72,5 +111,25 @@
     "repair_count": 2,
     "qualification": "not passed; stop retries and escalateR"
   },
-  "publication_guard": "Root mechanically disables admission job with literalfalse while runtimeunqualified. This prevents future identity-only/source publications consuming a GUI guest. Enabling requires new sourcehash/runtimeR acceptance; current blocked state unchanged."
+  "publication_guard": "Root mechanically disables admission job with literalfalse while runtimeunqualified. This prevents future identity-only/source publications consuming a GUI guest. Enabling requires new sourcehash/runtimeR acceptance; current blocked state unchanged.",
+  "evidence_previous_sha256": {
+    "poc/client-framework/window-admission/Host.swift": "bf5f9f627922e176a977546451e4b1745304551fcc66549d4f7a3c5882652084",
+    "poc/client-framework/window-admission/driver.py": "afe987cb7d9b735c05079e38352a371c8c5ead5e7d999bff1456d3514bc96477",
+    ".github/workflows/client-window-admission.yml": "a504cff8b5c8962e76844293ca7b57267245f3e31ec7aa61172228ddd26d6a00",
+    "tests/client_framework/WindowAdmissionTests.swift": "1decb62bbd8c9ab4bf892992a216fd469883bba9891af087d79a48a1d23697c1",
+    "tests/client_framework/test_window_admission_driver.py": "aa36d50296237cb4062bc4108d496b52d7311a395d79e1ffccc868fb2ab76eda"
+  },
+  "evidence_contract": "Same R accepted \u22641024-byte exact-key finite schema1; started vs actually reaped; observed deadline only; mandatory cleanup proof; exact overflow/timeout assertions. Only driver+Pythonfixture changed, \u22641020 total/+120 ceiling, no lifecycle/control-flow changes. Historical two failures remain blocked; no native/guest/activation grant.",
+  "evidence_collection_previous_test_sha256": "3776a4a8201d9601edb1600650289ac64c5ef7779bc673af49f00d109fbe1c83",
+  "evidence_collection_contract": "\u22641030 total; fixture only finite subTest case messages; missing/malformed/unproven cleanup aborts further process cases and retains mkdtemp root. Driver unchanged. Supervisor exact-schema finite envelopes also from assertions, bounded capture; missing extraction explicit failure.",
+  "kill_site_previous_driver_sha256": "4532ab2762411b628d721434a67993e07047d888bbb0b47bddec6520631dc6eb",
+  "kill_site_contract": "sameR accepted \u22645line driver instrumentation only fixed group-kill/direct-kill enum/labels before existing calls; no lifecycle change; \u22641030 total. Exactsource review required before one separately bounded collection.",
+  "cleanup_redesign_contract": "Root authorizes SOURCE ONLY following same-R accepted consolidated contract: only driver guardian cleanup/finiteproof + Pythonfixture, \u22641150 total/+141. Independent cleanup attempts even after failed step/deadline; waits original absolutebounds; sentinelheldunreapedthroughgroupKILL, TERMignored onlysentinel beforeR. Group/directchild/sentinelkills+reaps independent; no signalsafterreap. PermissionError sticky neverbenign; firstcleanupfailure separate from operationfailure; missingproofrefuses, no fallbackpass. Selector/ownedFDclosures independent; private resultFDthroughreport/exit. Pure fakehelperfaultfixture only; no newOSscenario. No imports/tests/native/GUI/guest/runtime/SDK/Keychain/workflowactivation. SameR exactdelta/hashreview before proposed9fixture run.",
+  "cleanup_redesign_previous_sha256": {
+    "poc/client-framework/window-admission/Host.swift": "bf5f9f627922e176a977546451e4b1745304551fcc66549d4f7a3c5882652084",
+    "poc/client-framework/window-admission/driver.py": "21cb94e4e361df19735c7d2e5e416a8af427a26e7fee4e9c143ca6fc0c5f18c3",
+    ".github/workflows/client-window-admission.yml": "a504cff8b5c8962e76844293ca7b57267245f3e31ec7aa61172228ddd26d6a00",
+    "tests/client_framework/WindowAdmissionTests.swift": "1decb62bbd8c9ab4bf892992a216fd469883bba9891af087d79a48a1d23697c1",
+    "tests/client_framework/test_window_admission_driver.py": "097e73c89086ed03dcf2121542d69517aead538eae6b14e8ba153ef03474f2ef"
+  }
 }

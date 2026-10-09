@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "sandboxed": {
+    "exit": 1,
+    "tests": 8,
+    "failures": 1,
+    "errors": 0,
+    "collection": "complete",
+    "evidence": [
+      {
+        "case": "overflow",
+        "proof": {
+          "schema": 1,
+          "reason": "cleanup-unproven",
+          "cleanup_stage": "kill",
+          "error": "permission",
+          "child_started": true,
+          "sentinel_started": true,
+          "child_reaped": false,
+          "sentinel_reaped": false,
+          "group_absent": false,
+          "fds_closed": true,
+          "drain_complete": false,
+          "exec_ready": true,
+          "deadline": false,
+          "exit": "unknown"
+        }
+      }
+    ],
+    "identities_unchanged": true,
+    "retained_root_entries": 1,
+    "native_guest": 0
+  },
+  "approved_escalated": {
+    "exit": 1,
+    "tests": 8,
+    "failures": 1,
+    "errors": 0,
+    "collection": "complete",
+    "evidence": [
+      {
+        "case": "overflow",
+        "proof": {
+          "schema": 1,
+          "reason": "cleanup-unproven",
+          "cleanup_stage": "kill",
+          "error": "permission",
+          "child_started": true,
+          "sentinel_started": true,
+          "child_reaped": false,
+          "sentinel_reaped": false,
+          "group_absent": false,
+          "fds_closed": true,
+          "drain_complete": false,
+          "exec_ready": true,
+          "deadline": false,
+          "exit": "unknown"
+        }
+      }
+    ],
+    "identities_unchanged": true,
+    "retained_root_entries": 1,
+    "native_guest": 0
+  },
+  "equal_finite_results": true,
+  "retained_json_sha256": "f1a920bf9920c909d8909fdeca876d92dff0f0c720f30f9495df57bb681a91b5",
+  "provenance_note": "Escalated collector overwrote same output path before late R preservation message arrived; sandbox result reconstructed from immediately preceding trusted tool finite output, equal to escalated result. No claim of pre-comparison file hash."
+}

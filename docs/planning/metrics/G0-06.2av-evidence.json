@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2av",
+  "status": "exact_local_cleanup9_pass_native_blocked",
+  "comparison_kind": "observational_unpaired",
+  "started_at_utc": "2026-10-09T16:55:40Z",
+  "cutoff_at_utc": "2026-10-09T19:57:40Z",
+  "usage_report_path": "docs/planning/metrics/G0-06.2av-evidence-usage.json",
+  "totals": {
+    "cache_read_fraction": 0.9663288166626258,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 16046464,
+    "calls": 171,
+    "input_tokens": 16605594,
+    "noncached_input_tokens": 559130,
+    "output_tokens": 81518,
+    "reasoning_output_tokens": 37423,
+    "total_tokens": 16687112
+  },
+  "groups": [
+    {
+      "cache_read_fraction": 0.3123782137384362,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 33024,
+      "calls": 3,
+      "effort": "low",
+      "input_tokens": 105718,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 72694,
+      "output_tokens": 495,
+      "reasoning_output_tokens": 282,
+      "role": "automatic_review",
+      "total_tokens": 106213
+    },
+    {
+      "cache_read_fraction": 0.9647189391330407,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 8569088,
+      "calls": 100,
+      "effort": "medium",
+      "input_tokens": 8882471,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 313383,
+      "output_tokens": 34864,
+      "reasoning_output_tokens": 12322,
+      "role": "main",
+      "total_tokens": 8917335
+    },
+    {
+      "cache_read_fraction": 0.9824951525523528,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 6691072,
+      "calls": 55,
+      "effort": "high",
+      "input_tokens": 6810285,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 119213,
+      "output_tokens": 40523,
+      "reasoning_output_tokens": 23998,
+      "role": "subagent",
+      "total_tokens": 6850808
+    },
+    {
+      "cache_read_fraction": 0.9332936861928833,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 753280,
+      "calls": 13,
+      "effort": "medium",
+      "input_tokens": 807120,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 53840,
+      "output_tokens": 5636,
+      "reasoning_output_tokens": 821,
+      "role": "subagent",
+      "total_tokens": 812756
+    }
+  ],
+  "billing_cost": null,
+  "limitations": [
+    "Continuation includes checkpointapproval and source/evidence/error-path reviews, four failing8-fixture observations and final9-fixturePASS; only local synthetic scope qualified.",
+    "Next identity contract work may begin near cutoff; later identity research/publication excluded.",
+    "No matched main-only success sample or bill; cache counters not billing costs.",
+    "Repeated tiny reviews were significant overhead; next consolidated patch/fullreview/boundedrun pattern adopted."
+  ],
+  "fixture_runs": [
+    {
+      "count": 8,
+      "exit": 1,
+      "scope": "presentation incomplete"
+    },
+    {
+      "count": 8,
+      "exit": 1,
+      "scope": "finite kill/permission"
+    },
+    {
+      "count": 8,
+      "exit": 1,
+      "scope": "approved escalated same finite failure"
+    },
+    {
+      "count": 8,
+      "exit": 1,
+      "scope": "group-kill site"
+    },
+    {
+      "count": 9,
+      "exit": 0,
+      "scope": "consolidated cleanup local"
+    }
+  ]
+}
