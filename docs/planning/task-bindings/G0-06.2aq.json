@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2aq",
+  "status": "frozen",
+  "contract_versions": [
+    "user2026-10-09 prioritizeG0closure; previous diagnostic cap and fullscope retained"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/g0-closure-decision.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2aq",
+      "expected": "exit0 planning only"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "read-only evidence review and bounded document writes",
+  "side_effect_authorization": "No runtime/native/download/SDK/VM/install/signing/personal state action. Proposals only; root accepts before dependency changes.",
+  "prepared_by": "root",
+  "reviewed_by": "R task author reviews evidence; root acceptance follows"
+}

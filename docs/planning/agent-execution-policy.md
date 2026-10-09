@@ -16,7 +16,7 @@
 - G0/G1 等阶段验收不是 main 合并或正式生产发布授权。维护 main 修复可在演进分支吸收；
   记录冲突及定向回归，避免在共享长期分支强推改写历史。
 - 测试产物标明 feature SHA 和非正式版本；不要打会触发现有正式 release job 的 semver tag。
-  `tests.yml` 当前只监听 main PR/push 和 semver tags，需要单独任务为 feature PR/push 增加测试覆盖，
+  `tests.yml` 已由 G0-07.3 增加 feature PR/push 测试覆盖，原 Bash jobs 与 tag gate 保留，
   并保持正式 release gate。测试 VPS 的 compat 与生产 balanced 约定继续适用。
 - 在用户“全部演进完成”约束下，G0–G6 全部纳入最终合并检查，不再以只交付核心 G4 为合并门槛。
   可选 Agent、同步、原生 WG 等候选可以经明确 ADR 接受“不实施/不适用”，但不能用
@@ -136,3 +136,7 @@ Go 为候选 A、Rust 为候选 B，仅用于 PoC 比较；新拆 G0-04.2g/j/h/k
 fixture、拒绝验证、auth/trust、transport/auth deadline、bounded output、Run/unknown、cancel，原 G0-04.2a 验收完整候选 A。
 [SSH lab v1](poc/controller-language/ssh-lab-contract.md) 已审查；只解锁具备工具链、
 精确路径与可执行命令的下一张小卡。证据收集不等于生产语言选型。
+
+## 用户确认的 G0 优先收敛
+
+用户2026-10-09要求按建议推进直到G0完成。优先执行 G0-06 收敛/候选资格/ADR与阶段汇总；完整G0不能由Go工程通过代替。aq审查已接受，B准备不等待A签名，最终ADR显式汇合A/B六张资格卡；A的历史失败前置只在独立实证successor覆盖后替换。诊断余量仍仅一个完整工作包、一次guest，未知后停止归因并评估独立环境。缺签名/设备/授权时说明具体阻塞，继续独立准备；既有G1离线例外不扩大。

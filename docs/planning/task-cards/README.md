@@ -333,3 +333,5 @@
 | [G0-06.2ao](G0/G0-06.2ao.md) | GPT-6.1 Sol medium | blocked | 增加诊断器有界失败步骤标记 |
 
 | [G0-06.2ap](G0/G0-06.2ap.md) | GPT-6.1 Sol medium | blocked | 修复驱动与读取助手的绑定版本不一致 |
+
+| [G0-06.2aq](G0/G0-06.2aq.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查 G0 收敛依赖与验收环境 |

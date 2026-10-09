@@ -9365,7 +9365,8 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G0-06.2c"
+        "G0-06.1b",
+        "G0-06.2aq"
       ],
       "model": {
         "tier": "I",
@@ -9427,7 +9428,7 @@
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
       "locks": [
-        "前置卡尚未 verified/accepted-not-applicable",
+        "B 自身公共比较合同、Q-B 环境/构建/权限资格尚未冻结或实证",
         "task binding 尚未冻结具体实现文件/接口/定向测试命令"
       ],
       "escalation": [
@@ -9644,6 +9645,11 @@
       "status": "locked",
       "mode": "review",
       "dependencies": [
+        "G0-06.2a",
+        "G0-06.2b",
+        "G0-06.2c",
+        "G0-06.2d",
+        "G0-06.2e",
         "G0-06.2f"
       ],
       "model": {
@@ -27167,6 +27173,113 @@
         "evidence_path": "docs/planning/task-results/G0/G0-06.2ap.md",
         "reviewed_by": "independent Sol high source and evidence reviews",
         "token_usage": "docs/planning/metrics/G0-06.2ap.json"
+      }
+    },
+    {
+      "id": "G0-06.2aq",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "审查 G0 收敛依赖与验收环境",
+      "status": "verified",
+      "mode": "review",
+      "dependencies": [
+        "G0-06.2am",
+        "G0-07.3"
+      ],
+      "model": {
+        "tier": "R",
+        "type": "强推理设计/审查模型",
+        "example": "GPT-6.1 Sol high；冲突难解时 Astra high",
+        "review": "维护者接受决策/验收结论；模型不能自授资源操作权限",
+        "reason": "决定架构或审查信任、恢复、资源销毁与阶段证据，不能仅凭测试通过",
+        "context": "≤12k，超出先做事实摘要"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/client-framework/lifecycle-preparation.md",
+          "selector": "candidate A actual UI host and isolation preparation limits"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/runner-attribution-contract.md",
+          "selector": "frozen bounded record authority and reader phases"
+        },
+        {
+          "path": "docs/planning/progress-review-2026-10-09.md",
+          "selector": "accepted resequencing and once-only diagnostic cap"
+        },
+        {
+          "path": "docs/planning/task-cards/cards.json",
+          "selector": "G0-06 candidate A/B dependency edges only"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2aq.md",
+      "binding": "docs/planning/task-bindings/G0-06.2aq.json",
+      "allowed_writes": [
+        "docs/planning/poc/client-framework/g0-closure-decision.md",
+        "docs/planning/task-results/G0/G0-06.2aq.md"
+      ],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/g0-closure-decision.md"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "Read bounded input facts; assess unnecessary candidate serial edges",
+        "Write concrete dependency proposal, environment/qualification matrix and ordered closure checklist",
+        "Record reviewed evidence and unknown external conditions; no runtime/new experiments"
+      ],
+      "acceptance": [
+        "给出候选独立前置/历史失败 successor 链和资格门槛；不授予运行或更改依赖权限"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "git branch --show-current",
+            "expectation": "codex/feature/self-hosted-byos-byoc"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit0"
+          },
+          {
+            "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2aq",
+            "expectation": "exit0 planning only"
+          }
+        ],
+        "behavior_check": "给出候选独立前置/历史失败 successor 链和资格门槛；不授予运行或更改依赖权限",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤6k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2aq.md",
+        "reviewed_by": "gpt-6.1-sol high g0_closure_review; root accepted bounded dependency/environment decision",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "high",
+        "token_usage": "Full-chain root measurement follows publication cutoff; no savings or invoice inference"
       }
     }
   ],
