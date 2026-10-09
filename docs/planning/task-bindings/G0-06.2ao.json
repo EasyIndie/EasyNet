@@ -70,5 +70,25 @@
     "warnings": 0,
     "hash_checks": "all11sources+exactlocalPython before/after unchanged",
     "reader_results": "an record8 fake tests reused; reader and related sources unchanged"
+  },
+  "remote_result": {
+    "run_id": 37924738662,
+    "job_id": 113800855399,
+    "url": "https://github.com/EasyIndie/EasyNet/actions/runs/37924738662",
+    "head_sha": "18199e730a699b60e7dd87e4e0bfa4a4abb8d780",
+    "conclusion": "failure",
+    "exit_code": 1,
+    "output": {
+      "category": "unknown",
+      "code": null,
+      "driver_step": "report",
+      "operation": "unknown",
+      "outcome": "unknown",
+      "stage": "unknown",
+      "termination": "unknown"
+    },
+    "image": "macos-15-arm64/20260907.0337.1",
+    "classification": "sequence completed target/helper validation; failure in report observed/no-live or preclean hash check, exact predicate/reader rejection/crash cause unknown; no retry or grant authority",
+    "reviewed_by": "independent Sol high same-card evidence classification"
   }
 }

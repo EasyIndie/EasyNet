@@ -330,4 +330,4 @@
 
 | [G0-06.2an](G0/G0-06.2an.md) | GPT-6.1 Sol medium | blocked | 实现有界 runner 合成崩溃记录观测 |
 
-| [G0-06.2ao](G0/G0-06.2ao.md) | GPT-6.1 Sol medium | review | 增加诊断器有界失败步骤标记 |
+| [G0-06.2ao](G0/G0-06.2ao.md) | GPT-6.1 Sol medium | blocked | 增加诊断器有界失败步骤标记 |

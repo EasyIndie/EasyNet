@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ao",
+  "status": "blocked_native_source_fake_accepted",
+  "strategy": "main_mechanical_independent_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "1338d3c",
+  "implementation_commit": "18199e730a699b60e7dd87e4e0bfa4a4abb8d780",
+  "started_at_utc": "2026-10-09T11:27:39.628174+00:00",
+  "finished_at_utc": "2026-10-09T11:39:07.049761+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none; same-card contract/diff/runtime binding/evidence review",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": true,
+  "repair_rounds": 0,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2ao-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9488592045490809,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 2557056,
+    "calls": 43,
+    "input_tokens": 2694874,
+    "noncached_input_tokens": 137818,
+    "output_tokens": 18432,
+    "reasoning_output_tokens": 6618,
+    "total_tokens": 2713306
+  },
+  "limitations": [
+    "Starts at an cutoff, includes its publication tail and current workflow policy updates; own publication after cutoff excluded.",
+    "Main mechanical patch plus independent R; not main-only and not matched to the larger an implementation. No causal savings or billing conclusion.",
+    "Source/fake first pass only; single native attempt failed at report validation."
+  ]
+}
