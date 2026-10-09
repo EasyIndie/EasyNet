@@ -328,4 +328,4 @@
 
 | [G0-06.2am](G0/G0-06.2am.md) | GPT-6.1 Sol high | verified | 审查 runner 合成进程启动归因的最小观测合同 |
 
-| [G0-06.2an](G0/G0-06.2an.md) | GPT-6.1 Sol medium | review | 实现有界 runner 合成崩溃记录观测 |
+| [G0-06.2an](G0/G0-06.2an.md) | GPT-6.1 Sol medium | blocked | 实现有界 runner 合成崩溃记录观测 |

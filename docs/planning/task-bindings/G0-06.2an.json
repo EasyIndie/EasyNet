@@ -99,5 +99,25 @@
       "warnings": 0,
       "hash_checks": "all11source+exactlocalPython immediatelybeforeaftereachcommand unchanged"
     }
+  },
+  "remote_result": {
+    "run_id": 37855867452,
+    "job_id": 113579765812,
+    "url": "https://github.com/EasyIndie/EasyNet/actions/runs/37855867452",
+    "head_sha": "f3b6d2d78388551874e2e0385e0588d0ce126424",
+    "conclusion": "failure",
+    "exit_code": 1,
+    "output": {
+      "category": "unknown",
+      "code": null,
+      "operation": "unknown",
+      "outcome": "unknown",
+      "stage": "unknown",
+      "termination": "unknown"
+    },
+    "image": "macos-15-arm64/20260907.0337.1",
+    "os": "15.7.9/24G830",
+    "qualification": "blocked; failing guard/launch/helper/report/cleanup step cannot be distinguished; no retry or grants authorized",
+    "reviewed_by": "independent Sol high same-card evidence classification"
   }
 }

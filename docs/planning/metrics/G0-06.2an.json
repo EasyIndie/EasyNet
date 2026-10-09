@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2an",
+  "status": "blocked",
+  "strategy": "delegated_implementation_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "c514446",
+  "implementation_commit": "f3b6d2d78388551874e2e0385e0588d0ce126424",
+  "started_at_utc": "2026-10-08T22:36:02+00:00",
+  "finished_at_utc": "2026-10-09T11:27:39.628174+00:00",
+  "subagent_count": 2,
+  "history_inheritance": "none; same-card two focused repairs and evidence classification",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": false,
+  "repair_rounds": 2,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2an-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9389066352599723,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 10926464,
+    "calls": 100,
+    "input_tokens": 11637434,
+    "noncached_input_tokens": 710970,
+    "output_tokens": 43931,
+    "reasoning_output_tokens": 13257,
+    "total_tokens": 11681365
+  },
+  "limitations": [
+    "Approximate window includes preceding am publication tail, interruption/resumption, approval-service failure, current cost Q&A and aggregation overhead; publication after cutoff excluded.",
+    "Observed usage events and cache counters, not HTTP requests or billed subscription cost. Reasoning already included in output.",
+    "One remote attempt all unknown; failed qualification is not successful delivery.",
+    "No matched main-only same-task control; no causal savings percentage."
+  ]
+}
