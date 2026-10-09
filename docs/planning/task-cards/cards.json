@@ -27592,6 +27592,108 @@
         "reasoning_effort": "medium",
         "token_usage": "docs/planning/metrics/G0-06.2at-usage.json full mixed window, no causal cost estimate"
       }
+    },
+    {
+      "id": "G0-06.2au",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "冻结 runner 可见窗口资格与有界执行合同",
+      "status": "verified",
+      "mode": "review",
+      "dependencies": [
+        "G0-06.2at"
+      ],
+      "model": {
+        "tier": "R",
+        "type": "强推理设计/审查模型",
+        "example": "GPT-6.1 Sol high；冲突难解时 Astra high",
+        "review": "维护者接受决策/验收结论；模型不能自授资源操作权限",
+        "reason": "决定架构或审查信任、恢复、资源销毁与阶段证据，不能仅凭测试通过",
+        "context": "≤12k，超出先做事实摘要"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/client-framework/native-lifecycle-preparation.md",
+          "selector": "source facts and proposals only"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/environment-qualification-plan.md",
+          "selector": "user available targets and actual GUI/security gates"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/lifecycle-preparation.md",
+          "selector": "actual UI common cases; qualification not headless"
+        },
+        {
+          "path": "docs/planning/task-bindings/G0-06.2au.json",
+          "selector": "bounded exact contract review scope"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2au.md",
+      "binding": "docs/planning/task-bindings/G0-06.2au.json",
+      "allowed_writes": [
+        "docs/planning/poc/client-framework/runner-window-qualification-contract.md",
+        "docs/planning/task-results/G0/G0-06.2au.md"
+      ],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/runner-window-qualification-contract.md"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "Freeze minimal own visible-window runner admission contract, not engine or full Q-B qualification",
+        "Specify exact source paths/compiler identity capture/owned build writes/env/bounds/controls/evidence/cleanup and source review before execution",
+        "Identify unknowns and stop conditions; no runtime/credentials/permissions widening"
+      ],
+      "acceptance": [
+        "有界可执行窗口资格合同或具体阻塞；实际窗口/控制路径与offscreen/headless分开；后续Q-B隔离/engine/NE/签名门槛保留"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2au",
+            "expectation": "exit0 planningonly"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit0"
+          }
+        ],
+        "behavior_check": "有界可执行窗口资格合同或具体阻塞；实际窗口/控制路径与offscreen/headless分开；后续Q-B隔离/engine/NE/签名门槛保留",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤8k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2au.md",
+        "reviewed_by": "root accepted conditional source contract, no runtime ready; Sol high independent review",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "high",
+        "token_usage": "docs/planning/metrics/G0-06.2au-usage.json full mixed window"
+      }
     }
   ],
   "parent_gates": {

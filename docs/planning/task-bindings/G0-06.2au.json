@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2au",
+  "status": "frozen",
+  "contract_versions": [
+    "ec5ceec native source facts; user currentdevMac+GitHubrunner only; account available notcredentialgrant",
+    "ar diagnosticbudget0; admission distinct no crash attribution"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/runner-window-qualification-contract.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2au",
+      "expected": "exit0 planningonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "source/primary document review only",
+  "side_effect_authorization": "No compiler/import/runtime/GUI/SDK/VM/engine download/signing/Keychain/profiles/user settings/credential reads; no crash probes or grants. Future runner commands are proposals pending actual source/hash review and exact runtime binding.",
+  "prepared_by": "root",
+  "reviewed_by": "root bounded R contract scope",
+  "note": "<=100line concrete admissioncontract+<=12line result. Use at source facts; <=3 targeted official primary URLs if command/API verification needed (Apple own NSWindow/SwiftUI control/event APIs, official Swift driver). Produce actionable exact future <=3implementation+<=2testpaths and commands for one isolated hosted macOS15arm64 window admission, noengine/network/NE/signing and no SDK download. Prefer installed explicitXcode16.4 SDK15.5; image metadata not static label pin; require observed image/toolchain identity before execution and no silent version substitution. Real own SwiftUI window visible/key in actualGUI session, real control/event path with state observation; offscreen rendering/controller-only notqualification. Explicitly distinguish programmatic callback from actual UI interaction; choose provable own-app UI event mechanism without global input/Accessibility/ScreenRecording permissions or broader TCC grants; if impossible record concrete gap notguess. Never desktop screenshot/unrelated windows or rawpersonal/sessionlogs. Only ownsyntheticwindow evidence, <=4KiB report fixedbooleans/enums/hash; no secrets. Host no personal credential/env attachment, checkoutpersistcredentialsfalse/readcontentsminimal; envallowlist,noHOMEredefine,ownedtemp0700/cache/build manifest/deleteonlyownfiles; build≤120s/run≤15s/job≤5min, boundedoutput+identitysafeTERM/KILL/reap/cleanup, no unexplained newprocessgroup/nativechild. Minimal admission doesnot replace Q-A/Q-B outside-ownedread/write/networkdenial/inheritance/guardian/fullfault proofs. Source authored host/driver/workflow reviewed BEFORE compile/tests/import/run; exactlyoneguestadmission initially, no unchangedreruns/diagbudgetreset. Specify negativecases source/fakes supporting only, runtimefail closed or preciseblockedconditions; no frameworkdecision. Can provide concrete contract conditioned on observed toolchain or mark missing requirement, but not another generic roadmap."
+}

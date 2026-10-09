@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2au",
+  "status": "verified_conditional_contract_only",
+  "strategy": "root_preparation_independent_R_contract_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "ec5ceec",
+  "started_at_utc": "2026-10-09T16:03:49+00:00",
+  "finished_at_utc": "2026-10-09T16:14:10+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none bounded inputs",
+  "main_coordination_included": true,
+  "automatic_review_included": true,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2au-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9717008577878345,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 3623936,
+    "calls": 47,
+    "input_tokens": 3729477,
+    "noncached_input_tokens": 105541,
+    "output_tokens": 18800,
+    "reasoning_output_tokens": 7768,
+    "total_tokens": 3748277
+  },
+  "repair_count": 1,
+  "limitations": [
+    "Includes previous at publication and concrete GUI/workflow-trigger research, root coordination and same-card trigger correction.",
+    "No runtime/source-specific security acceptance, no matched main-only sample or cost winner.",
+    "Own final publication after cutoff excluded."
+  ]
+}
