@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2as",
+  "status": "verified_environment_review_only",
+  "strategy": "root_facts_required_R_target_gate_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "028b737",
+  "started_at_utc": "2026-10-09T15:44:51.366047+00:00",
+  "finished_at_utc": "2026-10-09T15:50:49.307088+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none bounded resources/accepted gates",
+  "main_coordination_included": true,
+  "automatic_review_included": true,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2as-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9661603514202253,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 1575680,
+    "calls": 15,
+    "input_tokens": 1630868,
+    "noncached_input_tokens": 55188,
+    "output_tokens": 11038,
+    "reasoning_output_tokens": 3322,
+    "total_tokens": 1641906
+  },
+  "limitations": [
+    "Previous ar metrics/publication tail and this target review/preparation/root acceptance included.",
+    "No actual VM/GUI/engine/signing qualification, no causal model-route or billing comparison.",
+    "Own final publication after cutoff excluded."
+  ]
+}

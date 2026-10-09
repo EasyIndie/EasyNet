@@ -335,4 +335,4 @@
 | [G0-06.2ap](G0/G0-06.2ap.md) | GPT-6.1 Sol medium | blocked | 修复驱动与读取助手的绑定版本不一致 |
 | [G0-06.2aq](G0/G0-06.2aq.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查 G0 收敛依赖与验收环境 |
 | [G0-06.2ar](G0/G0-06.2ar.md) | GPT-6.1 Sol medium | blocked | 完成最后一次有界 reader 阶段观测工作包 |
-| [G0-06.2as](G0/G0-06.2as.md) | GPT-6.1 Sol high；冲突难解时 Astra high | ready | 审查独立实验环境与 G0 外部资格门槛 |
+| [G0-06.2as](G0/G0-06.2as.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查独立实验环境与 G0 外部资格门槛 |

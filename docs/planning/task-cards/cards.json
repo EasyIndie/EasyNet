@@ -27394,7 +27394,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "审查独立实验环境与 G0 外部资格门槛",
-      "status": "ready",
+      "status": "verified",
       "mode": "review",
       "dependencies": [
         "G0-06.2aq"
@@ -27481,7 +27481,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2as.md",
+        "reviewed_by": "gpt-6.1-sol high g0_environment_review; root accepted resource/target constraints, no runtime qualification",
+        "actual_model": "gpt-6.1-sol",
+        "reasoning_effort": "high",
+        "token_usage": "Full-chain mixed scope docs/planning/metrics/G0-06.2as-usage.json, no cost inference"
+      }
     }
   ],
   "parent_gates": {

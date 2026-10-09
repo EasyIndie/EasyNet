@@ -96,3 +96,5 @@ G0-07.3 已通过 controller CI 和修复 jq1.8 binding 优先级兼容后两套
 aq 独立审查已接受（695ffd5）：B 去除等待A签名的串行边但自身资格仍locked，最终ADR显式汇合A/B六卡。ar 最后有界reader工作包源码/17fakes/独立source-runtime-evidence审查通过；source028b737 run37953433995 为directory-guard/unknown，native qualification blocked，诊断预算0。该标记仅是最后进入的步骤（后续clockcheck也可能保留），不能推断具体目录属性/权限/SIGABRT原因，不再新增归因观测。
 
 当前 fresh hardware：8GiB RAM、8逻辑CPU、swap约2.3GiB已用、35GiB可用盘；无VM安装/启动或个人凭据读取。as 正在审查独立环境资格，Apple账号和实际测试目标可用性待用户说明；G0尚未完成。
+
+as 独立环境资格计划已审并接受；278卡中83 verified、9 blocked、186 locked。没有已资格化UI/NE/签名目标，当前硬件快照不能保证VM余量，签名/独立目标可用性待用户回复。接下来可准备B独立source-only合同；不以文档通过冒充GUI/NE/签名或完整G0。
