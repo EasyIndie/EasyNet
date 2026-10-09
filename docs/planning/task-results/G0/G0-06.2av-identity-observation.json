@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2av",
+  "phase": "identity",
+  "head_sha": "9df77927f1ae5ae52fffa867e2159f36e6a7b7ba",
+  "run_id": 37991083138,
+  "run_url": "https://github.com/EasyIndie/EasyNet/actions/runs/37991083138",
+  "job_id": 114025103313,
+  "job_conclusion": "failure",
+  "run_attempt": 1,
+  "identity_guest_consumed": 1,
+  "report": {
+    "cleanup": {
+      "state": "unknown"
+    },
+    "error": "other",
+    "label": "python",
+    "reason": "identity",
+    "result": "refused",
+    "schema": 1,
+    "stage": "image"
+  },
+  "runner_reported_image": "macos-15-arm64",
+  "runner_reported_image_version": "20260907.0337.1",
+  "interpretation": "Exact finite refusal at stage=image/reason=identity/label=python; individual failed predicate unknown. No identity records or native/GUI execution qualified. Matching runner-reported image alone does not qualify interpreter/metadata/effects.",
+  "scope": "Only finite JSON and selected public runner-image metadata retained; no raw logs, paths, environment or traceback.",
+  "runtime_binding_sha256": "17064ee1453984b62ca7a5d055c94dc2c6be2f69b85dffdc9bf2d38ba27cb10c"
+}

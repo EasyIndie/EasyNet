@@ -27776,7 +27776,7 @@
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
       "locks": [
-        "Exact native toolchain/provenance/effects runtime binding not qualified; metadata-only source preparation underway, no Swift/GUI/guest grant"
+        "ONE identity guest consumed: finite refusal at image/python predicate, failed subpredicate unknown; native/toolchain/effects/GUI remain unqualified, no rerun. Workflow disabled, runtime binding archived."
       ],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
@@ -27819,7 +27819,9 @@
         "qualification": "not passed; stop retries and escalateR",
         "continuation_status": "exact local default-sandbox9fixture PASS after R-directed evidence/error-path contract; source hash180a9457 driver / b537c1 test; native unqualified",
         "continuation_evidence_path": "docs/planning/task-results/G0/G0-06.2av-cleanup-pass.json",
-        "metadata_local_evidence_path": "docs/planning/task-results/G0/G0-06.2av-metadata-local-pass.json"
+        "metadata_local_evidence_path": "docs/planning/task-results/G0/G0-06.2av-metadata-pass.json",
+        "identity_observation_path": "docs/planning/task-results/G0/G0-06.2av-identity-observation.json",
+        "identity_guest_count": 1
       }
     }
   ],

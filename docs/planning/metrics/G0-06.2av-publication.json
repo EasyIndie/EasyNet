@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2av",
+  "status": "one_identity_refused_native_blocked",
+  "comparison_kind": "observational_unpaired",
+  "started_at_utc": "2026-10-09T20:56:10Z",
+  "cutoff_at_utc": "2026-10-09T21:09:20Z",
+  "usage_report_path": "docs/planning/metrics/G0-06.2av-publication-usage.json",
+  "totals": {
+    "cache_read_fraction": 0.9823630458215667,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 6079616,
+    "calls": 54,
+    "input_tokens": 6188767,
+    "noncached_input_tokens": 109151,
+    "output_tokens": 31072,
+    "reasoning_output_tokens": 18387,
+    "total_tokens": 6219839
+  },
+  "groups": [
+    {
+      "cache_read_fraction": 0.787121538521797,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 120576,
+      "calls": 5,
+      "effort": "low",
+      "input_tokens": 153186,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 32610,
+      "output_tokens": 724,
+      "reasoning_output_tokens": 384,
+      "role": "automatic_review",
+      "total_tokens": 153910
+    },
+    {
+      "cache_read_fraction": 0.9870679809842908,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 3928192,
+      "calls": 36,
+      "effort": "medium",
+      "input_tokens": 3979657,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 51465,
+      "output_tokens": 14897,
+      "reasoning_output_tokens": 7722,
+      "role": "main",
+      "total_tokens": 3994554
+    },
+    {
+      "cache_read_fraction": 0.987803051085546,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 2030848,
+      "calls": 13,
+      "effort": "high",
+      "input_tokens": 2055924,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 25076,
+      "output_tokens": 15451,
+      "reasoning_output_tokens": 10281,
+      "role": "subagent",
+      "total_tokens": 2071375
+    }
+  ],
+  "scope": "Disjoint window: sourcecheckpoint commit, binding/activation candidate, publication review/commit/push, one identity observation, standardCI read-only monitoring, archived finite evidence and reviewed shutdown. Closing metrics persistence/commit/disabled push after cutoff excluded.",
+  "conclusion": "High cache, no paired same-scope main-only sample or invoice; cost winner unproved. No new agent fanout/Astra; mechanical main work and same-card necessary R."
+}

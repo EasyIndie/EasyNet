@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "head_sha": "9df77927f1ae5ae52fffa867e2159f36e6a7b7ba",
+  "runs": [
+    {
+      "id": 37991083138,
+      "name": "Conditional metadata identity proposal",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/EasyIndie/EasyNet/actions/runs/37991083138",
+      "head_sha": "9df77927f1ae5ae52fffa867e2159f36e6a7b7ba",
+      "run_attempt": 1
+    },
+    {
+      "id": 37991083115,
+      "name": "Tests",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/EasyIndie/EasyNet/actions/runs/37991083115",
+      "head_sha": "9df77927f1ae5ae52fffa867e2159f36e6a7b7ba",
+      "run_attempt": 1
+    }
+  ],
+  "interpretation": "Standard Tests success does not qualify the refused identity observation or any native/GUI/signing gate."
+}

@@ -37,7 +37,7 @@
     "tests/client_framework/WindowAdmissionTests.swift": "1decb62bbd8c9ab4bf892992a216fd469883bba9891af087d79a48a1d23697c1",
     "tests/client_framework/test_window_admission_driver.py": "22cb979302bb45ff517b6d6e925ec18cec148f8d6927a8851b0b519cffc21f60"
   },
-  "source_review_status": "same-R exact1557 SOURCE/effects accepted, exactlocal11 PASS; conditional identityguest requires frozenruntimebinding/activationhash+sourcecommit review; native/GUI unqualified",
+  "source_review_status": "exact1557local11PASS; oneidentityguestconsumed_refused_stageimage; nativeidentity/effects/GUI unqualified; disabledworkflow restored andruntimebinding archived",
   "repair_authorization": "Root authorizes one same-card consolidated SOURCE repair of independent R findings; <=900 total lines (was700), same five paths, no scope/functionality expansion, no imports/tests/runtime. Safety fixes require retained-rootFD, geometry conversion, clean env, bounded startup/reap/EOF/FD evidence and explicit Swift parse mode. Runtime/fake grants still withheld.",
   "previous_source_review_sha256": {
     "poc/client-framework/window-admission/Host.swift": "82bb40224942c2390b930d4dcbba03e33bad8c8e18f6cdaa340f64a584ccfe53",
@@ -146,9 +146,9 @@
   "metadata_monitor_correction_authorization": "Same-R consolidated final disposition: SOURCE ONLY1600/max+104 from1496, same3paths. SIGINT/SIGTERM cancellation sticky failure enter same independent known-retained-child TERM/KILL/WNOHANG/each-FD-close path, no early exit/die with owned child; no signalsafterreap/unknownownership. Hard capture4096 retention, bounded discard/drain afteroverflow. Publish only exactly ONE strict finite schema validated success/refusal JSON; malformed/extra/raw refuses with unknowncleanup. Explicit SAME CLOCK_MONOTONIC API in Perl/loader/identity deadline+read arithmetic, originalhard90/final5/reader45/noreset; guardian-relative bounds unchanged. No new scenarios/runtimebinding/activation/push/guest/probe. Exact revisedhashreview before ONE proposed11localcollection.",
   "metadata_corrected_local_pass_evidence": "docs/planning/task-results/G0/G0-06.2av-metadata-pass.json",
   "identity_publication_candidate": {
-    "status": "independent_R_accepted_ONE_feature_push_observation",
+    "status": "consumed_refused_no_rerun_workflow_disabled",
     "source_checkpoint": "6408dd2",
-    "runtime_binding": "docs/planning/task-bindings/client-window-identity-runtime.json",
+    "runtime_binding": null,
     "runtime_binding_sha256": "17064ee1453984b62ca7a5d055c94dc2c6be2f69b85dffdc9bf2d38ba27cb10c",
     "candidate_source_sha256": {
       "poc/client-framework/window-admission/Host.swift": "bf5f9f627922e176a977546451e4b1745304551fcc66549d4f7a3c5882652084",
@@ -159,6 +159,9 @@
     },
     "budget": "ONE identity guest only; no rerun/fallback/VM/native/GUI/vendorCLI; finite unknown refusal ends observation",
     "shutdown": "After observation restore literalfalse job and archive consumed binding/evidence; no subsequent guest.",
-    "review_path": "docs/planning/task-results/G0/G0-06.2av-review.md"
+    "review_path": "docs/planning/task-results/G0/G0-06.2av-review.md",
+    "published_head_sha": "9df77927f1ae5ae52fffa867e2159f36e6a7b7ba",
+    "observation_path": "docs/planning/task-results/G0/G0-06.2av-identity-observation.json",
+    "archived_binding": "docs/planning/task-results/G0/G0-06.2av-identity-consumed-binding.json"
   }
 }

@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2av",
+  "comparison_kind": "observational_unpaired",
+  "since": "2026-10-09T16:14:10+00:00",
+  "until_exclusive": "2026-10-09T21:09:20+00:00",
+  "segments": [
+    "G0-06.2av-usage.json",
+    "G0-06.2av-evidence-usage.json",
+    "G0-06.2av-metadata-usage.json",
+    "G0-06.2av-publication-usage.json"
+  ],
+  "totals": {
+    "input_tokens": 54343042,
+    "cached_input_tokens": 53062528,
+    "noncached_input_tokens": 1280514,
+    "output_tokens": 323277,
+    "calls": 532,
+    "cache_read_fraction": 0.9764364681682708
+  },
+  "groups": [
+    {
+      "role": "automatic_review",
+      "model": "codex-auto-review",
+      "effort": "low",
+      "noncached_input_tokens": 179085,
+      "output_tokens": 1703,
+      "calls": 13
+    },
+    {
+      "role": "main",
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "noncached_input_tokens": 592799,
+      "output_tokens": 129835,
+      "calls": 307
+    },
+    {
+      "role": "subagent",
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "noncached_input_tokens": 306097,
+      "output_tokens": 106450,
+      "calls": 125
+    },
+    {
+      "role": "subagent",
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "noncached_input_tokens": 202533,
+      "output_tokens": 85289,
+      "calls": 87
+    }
+  ],
+  "status": "source_and_local_support_passed_one_identity_refused_native_blocked",
+  "limitations": "Contiguous observed-counter windows, not invoice/paired main-only comparison. Closing persistence/commit/disabledpush aftercutoff excluded. Reasoning included in output; no double count.",
+  "decision": "This workflow has substantial coordination/review/repair cost. Savings are not demonstrated despite high cache. Stop further environment attribution; require actual target identity/effects evidence first. Use main for low-risk mechanical work, complete bounded I work plus necessary R only; no fanout/Astra."
+}
