@@ -47,6 +47,27 @@ class Parser(unittest.TestCase):
             self.assertNotIn('SECRET', json.dumps(value))
             self.assertEqual(r.sanitized(json.dumps(value).encode()), value)
 
+    def test_private_envelope_strict_and_no_record_phase_authority(self):
+        value = observe(encode(*sample()))
+        for phase in r.READER_STEPS:
+            wire = json.dumps(dict(record=value, reader_step=phase)).encode()
+            self.assertEqual(r.sanitized_envelope(wire), dict(record=value, reader_step=phase))
+        for wire in (json.dumps(dict(record=value, reader_step='SECRET-CANARY')).encode(),
+                     json.dumps(dict(record=value, reader_step=True)).encode(),
+                     json.dumps(dict(record=value, reader_step=[])).encode(),
+                     json.dumps(dict(record=value, reader_step='parse', extra='SECRET-CANARY')).encode(),
+                     json.dumps(dict(record=dict(value, extra='SECRET-CANARY'), reader_step='parse')).encode(),
+                     json.dumps(dict(record=value, reader_step=[], extra='SECRET-CANARY')).encode(),
+                     json.dumps(dict(record=dict(value, reader_step='complete'), reader_step='parse')).encode(),
+                     b'{"record":{},"reader_step":"parse","reader_step":"complete"}',
+                     b'{"record":{"outcome":"unknown","outcome":"observed"},"reader_step":"parse"}',
+                     json.dumps(value).encode(), b' ' * 513):
+            with self.assertRaises((ValueError, TypeError)):
+                r.sanitized_envelope(wire)
+        meta, body = sample()
+        body['reader_step'] = 'SECRET-CANARY'
+        self.assertEqual(set(observe(encode(meta, body))), r.KEYS)
+
     def test_identity_rejection(self):
         variants = {'pid': [43, True], 'parentPid': [24, True], 'procPath': ['/bin/false'],
                     'procName': ['other'], 'cpuType': ['X86-64'], 'translated': [True],
@@ -121,20 +142,22 @@ class Iterator:
 class Filesystem(unittest.TestCase):
     def fake_scan(self, names=('cat-test.ips',), report=None, candidate=None, mutation=False,
                   fail_open=False, clock_jump=False, fail_read=False, close_error=False,
-                  elapsed=False, delayed_close=False, teardown_jump=False):
+                  elapsed=False, delayed_close=False, teardown_jump=False, initial_identity=False,
+                  fail_record_open=False, directory_guard=False, iterator_close=False, legacy=False):
         raw = encode(*sample()) if report is None else report
         candidate = candidate or info(size=len(raw))
         iterator, closed, opened, reads, consumed = Iterator(names), [], [], [], [0]
         teardown = [False]
+        progress = {}
         def opening(name, flags, **kwargs):
-            if fail_open and name == 'Logs':
+            if (fail_open and name == 'Logs') or (fail_record_open and name.endswith('.ips')):
                 raise OSError()
             opened.append((name, flags, kwargs))
             return len(opened)
         def fstat(fd):
             if fd <= 6:
-                return info(stat.S_IFDIR | 0o700)
-            if mutation and reads:
+                return info(stat.S_IFDIR | (0o722 if directory_guard else 0o700))
+            if initial_identity or (mutation and reads):
                 return info(size=len(raw)+1)
             return candidate
         def reading(fd, cap):
@@ -153,21 +176,29 @@ class Filesystem(unittest.TestCase):
             delay = 600_000_000 if (elapsed and scandir.called) or (delayed_close and teardown[0]) else 0
             jump = 20_000_000 if mono and (clock_jump or (teardown_jump and teardown[0])) else 0
             return 4*T + delay + jump
+        if iterator_close:
+            iterator.close = unittest.mock.Mock(side_effect=OSError())
         with patch.object(r.os, 'environ', {'HOME': '/Users/runner'}), \
                 patch.object(r.os, 'getuid', return_value=501), patch.object(r.os, 'open', side_effect=opening), \
                 patch.object(r.os, 'fstat', side_effect=fstat), patch.object(r.os, 'scandir', return_value=iterator) as scandir, \
                 patch.object(r.os, 'stat', return_value=candidate), patch.object(r.os, 'read', side_effect=reading), \
                 patch.object(r.os, 'close', side_effect=closing), patch.object(r.time, 'time_ns', side_effect=clock), \
                 patch.object(r.time, 'monotonic_ns', side_effect=lambda: clock(True)):
-            value = r.scan(42, 23, T, T+20_000_000, 4*T, 4*T)
+            args = (42, 23, T, T+20_000_000, 4*T, 4*T)
+            value = r.scan(*args) if legacy else r.scan(*args, progress)
         self.assertEqual(set(closed), set(range(1, len(opened)+1)))
         if scandir.called:
-            self.assertTrue(iterator.closed)
+            if iterator_close:
+                iterator.close.assert_called_once()
+            else:
+                self.assertTrue(iterator.closed)
         self.assertTrue(all(0 < cap <= 65536 for cap in reads))
         self.assertLessEqual(consumed[0], candidate.st_size + 1)
+        self.reader_step = progress.get("step")
         return value, reads, opened
 
     def test_owned_scan_and_fd_closure(self):
+        self.assertEqual(self.fake_scan(legacy=True)[0]['outcome'], 'observed')
         value, reads, opened = self.fake_scan()
         self.assertEqual(value['outcome'], 'observed')
         self.assertTrue(all(flags & r.os.O_NOFOLLOW for _, flags, _ in opened))
@@ -177,6 +208,26 @@ class Filesystem(unittest.TestCase):
                         {'teardown_jump': True}, {'report': b'bad'}, {'names': ()},
                         {'names': ('cat-one.ips', 'cat-two.ips')}, {'names': ('other',)*257}):
             self.assertEqual(self.fake_scan(**options)[0], r.unknown())
+
+    def test_finite_scan_fault_phases(self):
+        cases = (({'names': ()}, 'candidate-none'),
+                 ({'names': ('cat-one.ips', 'cat-two.ips')}, 'candidate-ambiguous'),
+                 ({'candidate': info(size=r.LIMIT+1)}, 'candidate-size'),
+                 ({'names': ('other',)*257}, 'entry-limit'),
+                 ({'initial_identity': True}, 'record-identity'),
+                 ({'mutation': True}, 'record-identity'),
+                 ({'fail_read': True}, 'record-read'),
+                 ({'fail_record_open': True}, 'record-open'),
+                 ({'fail_open': True}, 'directory-open'),
+                 ({'directory_guard': True}, 'directory-guard'),
+                 ({'clock_jump': True}, 'scan-cleanup'),
+                 ({'report': b'bad'}, 'record-rejected'),
+                 ({'close_error': True}, 'scan-cleanup'),
+                 ({'iterator_close': True}, 'scan-cleanup'),
+                 ({'delayed_close': True}, 'scan-cleanup'))
+        for options, phase in cases:
+            self.assertEqual(self.fake_scan(**options)[0], r.unknown())
+            self.assertEqual(self.reader_step, phase, options)
 
     def test_candidate_rejections_no_read(self):
         for candidate in (info(stat.S_IFLNK | 0o600), info(nlink=2), info(uid=502),
@@ -200,12 +251,13 @@ class ReaderGuard(unittest.TestCase):
     def test_internal_guest_and_hash_failures(self):
         source = b'def verify():\n    pass\n'
         args = ['reader', '--owned-ips-v1', '42', '23', str(T), str(T+10), str(4*T), str(4*T)]
-        for fault in ('none', 'parent', 'home', 'hash', 'posthash', 'guard-binding', 'legacy-only'):
+        for fault in ('none', 'arguments', 'parent', 'home', 'version', 'binding-read', 'hash', 'guard-load',
+                      'prehash', 'posthash', 'guard-binding', 'legacy-only', 'unknown'):
             digest = hashlib.sha256(source).hexdigest() if fault != 'hash' else '0'*64
             binding = json.dumps({'source_review': {'files_sha256': {'poc/client-framework/lab/attribution_diag.py': digest}}})
             with ExitStack() as stack:
                 for obj, key, value in ((r.os, 'environ', {'HOME': '/other' if fault == 'home' else '/Users/runner'}),
-                        (r.sys, 'argv', args), (r.sys, 'platform', 'darwin'), (r.sys, 'version_info', (3,14,7)),
+                        (r.sys, 'argv', ['reader'] if fault == 'arguments' else args), (r.sys, 'platform', 'darwin'), (r.sys, 'version_info', (3,14,6) if fault == 'version' else (3,14,7)),
                         (r.sys, 'flags', types.SimpleNamespace(isolated=1)), (r.sys, 'dont_write_bytecode', True)):
                     stack.enter_context(patch.object(obj, key, value))
                 stack.enter_context(patch.object(r.os, 'getuid', return_value=501))
@@ -219,7 +271,7 @@ class ReaderGuard(unittest.TestCase):
                     binding_reads.append(path)
                     expected = (driver.BINDING.with_name('G0-06.2an.json')
                                 if fault == 'legacy-only' else driver.BINDING)
-                    if path != expected:
+                    if fault == 'binding-read' or path != expected:
                         raise ValueError('unreviewed binding path')
                     return binding
                 stack.enter_context(patch.object(Path, 'read_text', autospec=True, side_effect=read_binding))
@@ -227,16 +279,27 @@ class ReaderGuard(unittest.TestCase):
                 fake_guard = types.ModuleType('guard')
                 stack.enter_context(patch.object(r.importlib.util, 'module_from_spec', return_value=fake_guard))
                 def fake_exec(*_):
+                    if fault == "guard-load":
+                        raise ValueError()
                     fake_guard.BINDING = (driver.BINDING.with_name('G0-06.2an.json')
                                           if fault == 'guard-binding' else driver.BINDING)
-                    fake_guard.verify = unittest.mock.Mock(side_effect=[None, ValueError()] if fault == 'posthash' else [None, None])
+                    fake_guard.verify = unittest.mock.Mock(side_effect=[ValueError()] if fault == 'prehash' else [None, ValueError()] if fault == 'posthash' else [None, None])
                 stack.enter_context(patch.object(r, 'exec', side_effect=fake_exec, create=True))
-                scan = stack.enter_context(patch.object(r, 'scan', return_value=observe(encode(*sample()))))
+                def fake_scan(*args, progress):
+                    progress['step'] = 'candidate-none' if fault == 'unknown' else 'parse'
+                    return r.unknown() if fault == 'unknown' else observe(encode(*sample()))
+                scan = stack.enter_context(patch.object(r, 'scan', side_effect=fake_scan))
                 emit = stack.enter_context(patch('builtins.print'))
                 r.main()
-            self.assertEqual(json.loads(emit.call_args.args[0])['outcome'], 'observed' if fault == 'none' else 'unknown')
-            self.assertEqual(scan.call_count, 1 if fault in ('none', 'posthash') else 0)
-            self.assertEqual(binding_reads, [] if fault in ('parent', 'home') else [driver.BINDING])
+            self.assertEqual(json.loads(emit.call_args.args[0])['record']['outcome'], 'observed' if fault == 'none' else 'unknown')
+            self.assertEqual(scan.call_count, 1 if fault in ('none', 'posthash', 'unknown') else 0)
+            self.assertEqual(binding_reads, [] if fault in ('arguments', 'parent', 'home', 'version') else [driver.BINDING])
+            phases = {'none': 'complete', 'arguments': 'arguments', 'parent': 'guest',
+                      'home': 'guest', 'version': 'guest', 'binding-read': 'binding-read',
+                      'hash': 'guard-source', 'guard-load': 'guard-load', 'prehash': 'pre-scan-hash',
+                      'posthash': 'post-scan-hash', 'guard-binding': 'binding-match',
+                      'legacy-only': 'binding-read', 'unknown': 'candidate-none'}
+            self.assertEqual(json.loads(emit.call_args.args[0])['reader_step'], phases[fault])
             if fault == 'guard-binding':
                 fake_guard.verify.assert_not_called()
 

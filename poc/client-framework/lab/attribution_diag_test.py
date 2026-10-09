@@ -35,11 +35,11 @@ class Driver(unittest.TestCase):
         allowed = Path('/private/tmp/easynet-g0-06-isolate-fake/allowed')
         value = dict(outcome='observed', stage='cat-image', operation='unknown',
                      termination='sigabrt', category='DYLD', code=1)
-        raw = json.dumps(value).encode()
+        raw = json.dumps(dict(record=value, reader_step='complete')).encode()
         module = types.SimpleNamespace(run_mapping_probe=Mock(return_value=target or result(code=-6)),
                                        _execute=Mock(return_value=helper or result(raw)), _live=live,
                                        _root=Mock(return_value=allowed.parent), check_fixture=Mock())
-        progress = {"step": "preflight"}
+        progress = {"step": "preflight", "reader_step": "not-started"}
         with patch.object(d.os, 'environ', {'HOME': '/Users/runner'}), \
                 patch.object(d.os, 'getpid', return_value=23), \
                 patch.object(d, 'verify', return_value=Path('/fixed/python')) as verify, \
@@ -51,12 +51,14 @@ class Driver(unittest.TestCase):
             except (ValueError, KeyError):
                 got = r.unknown()
         self.step = progress["step"]
+        self.reader_step = progress["reader_step"]
         return got, module, sleep, verify
 
     def test_fixed_once_and_guard_pairing(self):
         got, module, sleep, verify = self.sequence()
         self.assertEqual(got['outcome'], 'observed')
         self.assertEqual(self.step, 'reader-validation')
+        self.assertEqual(self.reader_step, 'complete')
         module.run_mapping_probe.assert_called_once_with(d.LAB / 'mapping-fixture.sb',
             Path('/private/tmp/easynet-g0-06-isolate-fake/allowed'), 'sandbox-eof', 2)
         sleep.assert_called_once_with(3)
@@ -80,13 +82,14 @@ class Driver(unittest.TestCase):
     def test_observer_independent_failures(self):
         for changes in ({'stdout': b'{"secret":"CANARY"}'}, {'stderr': b'SECRET'},
                         {'stderr_closed': False}, {'helper_wait_completed': False}, {'leader_wait_completed': False}):
-            bad = result(json.dumps(r.unknown()).encode())
+            bad = result(json.dumps(dict(record=r.unknown(), reader_step='candidate-none')).encode())
             bad.update(changes)
             got, module, _, _ = self.sequence(helper=bad)
             self.assertEqual(got, r.unknown())
             self.assertEqual(module.run_mapping_probe.call_count, 1)
             self.assertEqual(module._execute.call_count, 1)
             self.assertEqual(self.step, 'reader-validation')
+            self.assertEqual(self.reader_step, 'reader-invalid' if 'stdout' in changes else 'candidate-none')
 
     def test_clocks_and_live_state(self):
         for wall in ([10**9, 1_120_000_000], [10**9, 1_100_000_000, 4_200_000_000]):
@@ -105,7 +108,7 @@ class Driver(unittest.TestCase):
             self.assertEqual(d.main(), 1)
         fixture.assert_not_called()
         verify.assert_not_called()
-        self.assertEqual(json.loads(emit.call_args.args[0]), dict(r.unknown(), driver_step="preflight"))
+        self.assertEqual(json.loads(emit.call_args.args[0]), dict(r.unknown(), driver_step="preflight", reader_step="not-started"))
 
     def test_main_cleanup_and_retention(self):
         fake_environment = {'HOME': '/Users/runner', 'GITHUB_ACTIONS': 'true',
@@ -133,8 +136,12 @@ class Driver(unittest.TestCase):
                 stack.enter_context(patch.object(d, 'load', side_effect=[module, fake_mapping, r]))
                 stack.enter_context(patch.object(d, 'fixture', return_value=Path('/fake/allowed'),
                                                 side_effect=ValueError('SECRET') if fault == 'fixture' else None))
-                stack.enter_context(patch.object(d, 'sequence', return_value=r.unknown() if fault == 'unknown' else observed,
-                                                side_effect=ValueError() if fault == 'sequence' else None))
+                def sequence(*args):
+                    if fault == 'sequence':
+                        raise ValueError()
+                    args[-1]['reader_step'] = 'candidate-none' if fault == 'unknown' else 'complete'
+                    return r.unknown() if fault == 'unknown' else observed
+                stack.enter_context(patch.object(d, 'sequence', side_effect=sequence))
                 emit = stack.enter_context(patch('builtins.print'))
                 self.assertEqual(d.main(), 0 if fault == 'none' else 1)
             self.assertEqual(fake_mapping.clean_fixture.call_count, 1 if fault in ('none', 'postclean-hash', 'cleanup') else 0)
@@ -142,7 +149,9 @@ class Driver(unittest.TestCase):
                          live='report', sequence='target', **{'preclean-hash': 'report',
                          'postclean-hash': 'final-check', 'cleanup': 'cleanup'})
             self.assertEqual(json.loads(emit.call_args.args[0]),
-                             dict(observed if fault == 'none' else r.unknown(), driver_step=steps[fault]))
+                             dict(observed if fault == 'none' else r.unknown(), driver_step=steps[fault],
+                                  reader_step='not-started' if fault in ('source', 'fixture', 'sequence')
+                                  else 'candidate-none' if fault == 'unknown' else 'complete'))
 
     def test_source_hash_exact_set_and_interpreter(self):
         source = b'fake-reviewed-source'
@@ -156,7 +165,7 @@ class Driver(unittest.TestCase):
                 hashes['unreviewed.py'] = digest
             if fault == 'source':
                 hashes[d.SOURCES[0]] = '0'*64
-            binding = json.dumps({'task_id': 'G0-06.2ap', 'status': 'frozen',
+            binding = json.dumps({'task_id': 'G0-06.2ar', 'status': 'frozen',
                                   'source_review': {'files_sha256': hashes}})
             with ExitStack() as stack:
                 stack.enter_context(patch.object(d.os, 'environ', {}))

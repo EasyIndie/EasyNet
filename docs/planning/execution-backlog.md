@@ -4,7 +4,7 @@
 总目标关联：[Epic #13](https://github.com/EasyIndie/EasyNet/issues/13)。
 
 本文是当前推进工作包的主清单；低成本执行粒度见 [小任务目录](atomic-task-catalog.md)，
-168 个原条目已展开为 [275 张独立任务卡](task-cards/README.md)，每卡带模型档位与解锁条件。
+168 个原条目已展开为 [277 张独立任务卡](task-cards/README.md)，每卡带模型档位与解锁条件。
 任务卡与长期 feature 分支规则见 [执行规范](agent-execution-policy.md)。
 产品愿景见 [演进计划](product-evolution-roadmap.md)，
 能力映射见 [仓库审计](repository-audit-2026-10-06.md)。任务 ID 为文档标识，不是 GitHub
@@ -19,8 +19,8 @@ G0-01–05 的限定范围已验收：ADR-004 选择 Go 共同应用服务，ADR
 SSH/vault/结构化结果与存储故障 PoC 已有证据，不能直接当作生产 transport/store/vault。
 客户端 GUI/engine/签名分发尚未选定；Flutter 仍为候选。G0-06.2ap 修复驱动/助手绑定不一致，
 15 项模拟测试通过；一次 runner 观测仍在 report 阶段 unknown，平台 gate 继续 blocked。
-当前 275 卡：78 verified、8 blocked、189 locked；G1–G6 均未进入正式实施，G0-07 尚未建立工程骨架。
-截至复核的工程 HEAD 为 19d4018，已推送 feature 分支，工作区复核时干净；main 未合入。
+当前 277 卡：82 verified、8 blocked、186 locked、1 active；G0-07 Go 骨架/离线测试/CI 已验收，G1–G6 未进入正式实施。G0 优先收敛审查 aq 已接受，最后 reader 工作包 ar 准备中。
+G0-07 CI 源码 a7e3300 已推送 feature；新 G0 收敛决策 695ffd5 为本地提交，main 未合入。状态以 cards.json 为准。
 完整进度、后续顺序和已确认调整见 [2026-10-09 复核提案](progress-review-2026-10-09.md)。
 下方能力表及测试数字保留为 2026-10-06 审计基线，不代表本次重跑或远程最新结果。
 
@@ -261,3 +261,5 @@ J→G2-07；K→G0-06 + G2-08–10。它们是工作包与工程任务两种粒�
 正式选 engine/provider/encryption 前还要核查其锁定版本、依赖许可证与分发要求，形成
 可复现 PoC/ADR；本文不替代这些决策。暂未验证实际云账号、Apple 签名/权限条件、真实 VPS
 或原生 Hysteria CLI 是否有独立 config-check 命令，因此对应任务保留具体验证步骤。
+
+2026-10-09 用户进一步要求优先推进直到G0完成。先执行 [G0收敛决策](poc/client-framework/g0-closure-decision.md) 的最后有界reader工作包与A/B独立资格，真实UI/权限/签名和最终汇合保留；历史blocked不补绿。

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2aq",
+  "status": "verified_dependency_review_only",
+  "strategy": "root_scoped_preparation_required_R",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "f0b887b",
+  "implementation_commit": "695ffd5",
+  "started_at_utc": "2026-10-09T14:58:04.283061+00:00",
+  "finished_at_utc": "2026-10-09T15:30:58+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none bounded decision inputs",
+  "main_coordination_included": true,
+  "automatic_review_included": true,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2aq-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9761746559088752,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 5265408,
+    "calls": 47,
+    "input_tokens": 5393920,
+    "noncached_input_tokens": 128512,
+    "output_tokens": 16814,
+    "reasoning_output_tokens": 3909,
+    "total_tokens": 5410734
+  },
+  "limitations": [
+    "Mixed window includes previous metrics publication tail, G0 status/assessment Q&A, user approval, prerequisite/environment evaluation and R decision review; not pure documentation labor.",
+    "No native observations, no matched successful main-only comparator or billable cost.",
+    "Current final reader implementation/cardprep excluded after sourcecommit cutoff; own metric publication after cutoff."
+  ]
+}

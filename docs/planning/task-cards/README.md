@@ -1,6 +1,6 @@
 # 任务卡与模型分配索引
 
-已将 168 条原任务进一步拆为 **275 张独立卡**，覆盖 56 个工作包。
+已将 168 条原任务进一步拆为 **277 张独立卡**，覆盖 56 个工作包。
 新增 G0-06.2aa 只拆出官方工具链事实准备，原生命周期与平台验收范围保留。
 每卡单独文件，可只把本卡和相关合同交给执行模型，无需读整个目录。
 已完成卡的状态见下表与对应 task-result；其余已具备目标/案例/依赖/模型评估，
@@ -324,14 +324,14 @@
 | [G6-04.2](G6/G6-04.2.md) | GPT-6.1 Sol medium | locked | 接入辅助解释并限制工具执行边界 |
 | [G6-04.3](G6/G6-04.3.md) | GPT-6.1 Sol high；冲突难解时 Astra high | locked | 验证任意 root/destroy 不被自动授权及手工离线路径 |
 
+## 后续 G0 收敛卡
+
+| 任务 | 模型 | 状态 | 目标 |
+|---|---|---|---|
 | [G0-06.2al](G0/G0-06.2al.md) | GPT-6.1 Sol medium | blocked | GitHub macOS runner 限定预检与本机 VM 资源评估 |
-
 | [G0-06.2am](G0/G0-06.2am.md) | GPT-6.1 Sol high | verified | 审查 runner 合成进程启动归因的最小观测合同 |
-
 | [G0-06.2an](G0/G0-06.2an.md) | GPT-6.1 Sol medium | blocked | 实现有界 runner 合成崩溃记录观测 |
-
 | [G0-06.2ao](G0/G0-06.2ao.md) | GPT-6.1 Sol medium | blocked | 增加诊断器有界失败步骤标记 |
-
 | [G0-06.2ap](G0/G0-06.2ap.md) | GPT-6.1 Sol medium | blocked | 修复驱动与读取助手的绑定版本不一致 |
-
 | [G0-06.2aq](G0/G0-06.2aq.md) | GPT-6.1 Sol high；冲突难解时 Astra high | verified | 审查 G0 收敛依赖与验收环境 |
+| [G0-06.2ar](G0/G0-06.2ar.md) | GPT-6.1 Sol medium | active | 完成最后一次有界 reader 阶段观测工作包 |

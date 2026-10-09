@@ -4,10 +4,10 @@ These documents describe proposed evolution, not already implemented features.
 The current implementation remains the Bash deployment tool documented in the
 root README. Technical choices require evidence and an ADR before implementation.
 
-- [2026-10-09 progress review and proposed sequencing](progress-review-2026-10-09.md) — current evidence, remaining phases and changes awaiting confirmation
+- [2026-10-09 progress review and proposed sequencing](progress-review-2026-10-09.md) — review baseline and subsequent accepted execution updates
 
 - [Agent execution and feature branch policy](agent-execution-policy.md) — low-cost task cards and final merge gate
-- [Task cards and per-card models](task-cards/README.md) — 269 independent cards with prerequisites, behavior cases and unlock conditions
+- [Task cards and per-card models](task-cards/README.md) — 277 independent cards with prerequisites, behavior cases and unlock conditions
 - [Model routing and cost calibration](model-routing.md) — Luna/Sol/Astra roles, review and escalation
 - [Main-session/subagent usage comparison](agent-cost-comparison.md) — measured cache/token baseline and per-task comparison method; cost winner unproven
 - [Atomic task catalog](atomic-task-catalog.md) — 168 original entries mapped to the concrete task cards
@@ -40,3 +40,5 @@ root README. Technical choices require evidence and an ADR before implementation
 The initial handoff has been consolidated into these project documents and removed.
 Future work should update the roadmap, ADRs and linked issues rather than preserve
 one-off execution prompts. Proposed issues remain proposals until explicitly opened.
+
+- [Accepted G0 closure and qualification dependencies](poc/client-framework/g0-closure-decision.md) — independent candidate preparation, preserved final gates and once-only diagnostic budget

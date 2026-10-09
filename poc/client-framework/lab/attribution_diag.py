@@ -13,7 +13,7 @@ import uuid
 
 LAB = Path(__file__).absolute().parent
 ROOT = LAB.parents[2]
-BINDING = ROOT / 'docs/planning/task-bindings/G0-06.2ap.json'
+BINDING = ROOT / 'docs/planning/task-bindings/G0-06.2ar.json'
 OLD = ('isolate.py', 'mapping-fixture.sb', 'mapping_diag.py', 'mapping_diag_test.py',
        'mapping_main_test.py', 'fixture.sb')
 NEW = ('attribution_diag.py', 'attribution_record.py', 'attribution_record_test.py',
@@ -37,7 +37,7 @@ def verify():
             value[key] = item
         return value
     binding = json.loads(BINDING.read_text(), object_pairs_hook=unique)
-    require(binding['task_id'] == 'G0-06.2ap' and binding['status'] == 'frozen')
+    require(binding['task_id'] == 'G0-06.2ar' and binding['status'] == 'frozen')
     hashes = binding['source_review']['files_sha256']
     require(type(hashes) is dict and set(hashes) == set(SOURCES))
     for name, digest in hashes.items():
@@ -115,7 +115,10 @@ def sequence(module, mapping, record, allowed, end, progress):
     progress["step"] = "reader-validation"
     after_wall, after_mono = time.time_ns(), time.monotonic_ns()
     verify()
-    value = record.sanitized(helper['stdout'])
+    progress['reader_step'] = 'reader-invalid'
+    envelope = record.sanitized_envelope(helper['stdout'])
+    progress['reader_step'] = envelope['reader_step']
+    value = envelope['record']
     require(mapping.healthy(helper, helper['stdout']) and record.clocks(after_wall, after_mono, t0, m0)
             and time.monotonic() < end)
     return value
@@ -126,7 +129,7 @@ def main():
     end = start + 14
     value = dict(outcome='unknown', stage='unknown', operation='unknown',
                  termination='unknown', category='unknown', code=None)
-    progress = {"step": "preflight"}
+    progress = {"step": "preflight", "reader_step": "not-started"}
     try:
         require(not sys.argv[1:] and sys.platform == 'darwin' and platform.machine() == 'arm64'
                 and platform.mac_ver()[0] == '15.7.9' and os.getuid() != 0
@@ -155,7 +158,7 @@ def main():
     except Exception:
         value = dict(outcome='unknown', stage='unknown', operation='unknown',
                      termination='unknown', category='unknown', code=None)
-    value = dict(value, driver_step=progress["step"])
+    value = dict(value, driver_step=progress["step"], reader_step=progress["reader_step"])
     print(json.dumps(value, sort_keys=True, separators=(',', ':')))
     return 0 if value['outcome'] == 'observed' else 1
 

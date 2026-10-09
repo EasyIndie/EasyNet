@@ -16,6 +16,12 @@ KEYS = {'outcome', 'stage', 'operation', 'termination', 'category', 'code'}
 CATEGORIES = {'DYLD', 'SANDBOX', 'CODESIGNING', 'SIGNAL'}
 NAME = re.compile(r'(cat|sandbox-exec)[-_][A-Za-z0-9._-]{1,160}\.ips')
 LIMIT = 262144
+READER_STEPS = frozenset(('not-started', 'arguments', 'guest', 'binding-read',
+    'guard-source', 'guard-load', 'binding-match', 'pre-scan-hash', 'scan-clock',
+    'directory-open', 'directory-guard', 'enumerate', 'entry-limit', 'candidate-none',
+    'candidate-ambiguous', 'candidate-size', 'record-open', 'record-identity',
+    'record-read', 'parse', 'record-rejected', 'scan-cleanup', 'post-scan-hash',
+    'complete', 'reader-invalid'))
 
 
 def unknown():
@@ -137,6 +143,20 @@ def sanitized(raw):
     return value
 
 
+def sanitized_envelope(raw):
+    """Private helper wire; only a validated record and a fixed phase may escape."""
+    if type(raw) is not bytes or not 0 < len(raw) <= 512:
+        raise ValueError('output bounds')
+    value = loads(raw.decode('utf-8', 'strict'))
+    if type(value) is not dict or set(value) != {'record', 'reader_step'}:
+        raise ValueError('envelope schema')
+    step = value['reader_step']
+    if type(step) is not str or step not in READER_STEPS:
+        raise ValueError('reader enum')
+    record = sanitized(json.dumps(value['record'], separators=(',', ':')).encode())
+    return dict(record=record, reader_step=step)
+
+
 def clocks(wall, mono, base_wall, base_mono, maximum=None):
     dw, dm = wall - base_wall, mono - base_mono
     return (dw >= 0 and dm >= 0 and abs(dw - dm) <= 10_000_000
@@ -148,12 +168,16 @@ def identity(s):
             s.st_size, s.st_mtime_ns, s.st_ctime_ns)
 
 
-def scan(pid, parent, t0, t1, query_wall, query_mono):
+def scan(pid, parent, t0, t1, query_wall, query_mono, progress=None):
     """Exactly one flat pass, one qualifying candidate at most, independent FD close."""
     descriptors, iterator, start_wall, start_mono = [], None, None, None
     result = unknown()
+    def mark(step):
+        if progress is not None:
+            progress["step"] = step
     def query():
         nonlocal iterator, start_wall, start_mono
+        mark("scan-clock")
         uid = os.getuid()
         start_wall, start_mono = time.time_ns(), time.monotonic_ns()
         if not clocks(start_wall, start_mono, query_wall, query_mono, 10**9):
@@ -164,24 +188,30 @@ def scan(pid, parent, t0, t1, query_wall, query_mono):
                 raise ValueError('clock')
             return wall
         flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_DIRECTORY | os.O_NONBLOCK
+        mark('directory-open')
         fd = os.open('/', flags)
         descriptors.append(fd)
+        mark('directory-guard')
         root_stat = os.fstat(fd)
         if not stat.S_ISDIR(root_stat.st_mode) or root_stat.st_uid not in (0, uid) or root_stat.st_mode & 0o022:
             return unknown()
         for component in ('Users', 'runner', 'Library', 'Logs', 'DiagnosticReports'):
             checked()
+            mark('directory-open')
             fd = os.open(component, flags, dir_fd=fd)
             descriptors.append(fd)
+            mark('directory-guard')
             s = os.fstat(fd)
             if (not stat.S_ISDIR(s.st_mode) or s.st_uid not in (0, uid)
                     or s.st_mode & 0o022 or (component == 'DiagnosticReports' and s.st_uid != uid)):
                 return unknown()
         candidate = None
+        mark('enumerate')
         iterator = os.scandir(fd)
         for count, entry in enumerate(iterator, 1):
             checked()
             if count > 256:
+                mark('entry-limit')
                 return unknown()
             if not NAME.fullmatch(entry.name):
                 continue
@@ -191,16 +221,24 @@ def scan(pid, parent, t0, t1, query_wall, query_mono):
                     and not s.st_mode & 0o022 and t0 <= s.st_mtime_ns <= end_wall
                     and t0 <= s.st_ctime_ns <= end_wall):
                 if candidate is not None:
+                    mark('candidate-ambiguous')
                     return unknown()
                 candidate = (entry.name, s)
         checked()
-        if candidate is None or candidate[1].st_size > LIMIT:
+        if candidate is None:
+            mark('candidate-none')
+            return unknown()
+        if candidate[1].st_size > LIMIT:
+            mark('candidate-size')
             return unknown()
         name, before = candidate
+        mark('record-open')
         report_fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=fd)
         descriptors.append(report_fd)
+        mark('record-identity')
         if identity(os.fstat(report_fd)) != identity(before):
             return unknown()
+        mark('record-read')
         data = bytearray()
         while len(data) <= before.st_size:
             checked()
@@ -209,10 +247,14 @@ def scan(pid, parent, t0, t1, query_wall, query_mono):
                 break
             data.extend(chunk)
         end_wall = checked()
+        mark('record-identity')
         if len(data) != before.st_size or identity(os.fstat(report_fd)) != identity(before):
             return unknown()
+        mark('parse')
         result = parse_record(bytes(data), pid, parent, t0, t1, end_wall)
         checked()
+        if result['outcome'] == 'unknown':
+            mark('record-rejected')
         return result
     try:
         result = query()
@@ -238,6 +280,7 @@ def scan(pid, parent, t0, t1, query_wall, query_mono):
         except (OSError, ValueError, TypeError, OverflowError):
             close_failed = True
         if close_failed:
+            mark('scan-cleanup')
             result = unknown()
     return result
 
@@ -256,32 +299,43 @@ def internal_args(argv):
 
 def main():
     value = unknown()
+    progress = {'step': 'arguments'}
     try:
         args = internal_args(sys.argv[1:])
+        progress['step'] = 'guest'
         if (sys.platform != 'darwin' or platform.machine() != 'arm64' or os.getuid() == 0
                 or os.environ.get('HOME') != '/Users/runner' or os.getppid() != args[1]
                 or sys.version_info[:3] != (3, 14, 7) or platform.mac_ver()[0] != '15.7.9'
                 or not sys.flags.isolated or not sys.dont_write_bytecode):
             raise ValueError('guest')
         path = Path(__file__).absolute().with_name('attribution_diag.py')
-        binding_path = path.parents[3] / 'docs/planning/task-bindings/G0-06.2ap.json'
+        binding_path = path.parents[3] / 'docs/planning/task-bindings/G0-06.2ar.json'
+        progress['step'] = 'binding-read'
         binding = loads(binding_path.read_text())
+        progress['step'] = 'guard-source'
         source = path.read_bytes()
         import hashlib
         if hashlib.sha256(source).hexdigest() != binding['source_review']['files_sha256'][
                 'poc/client-framework/lab/attribution_diag.py']:
             raise ValueError('source')
+        progress['step'] = 'guard-load'
         spec = importlib.util.spec_from_file_location('owned_attribution_guard', path)
         guard = importlib.util.module_from_spec(spec)
         exec(compile(source, str(path), 'exec'), guard.__dict__)
+        progress['step'] = 'binding-match'
         if guard.BINDING != binding_path:
             raise ValueError('binding')
+        progress['step'] = 'pre-scan-hash'
         guard.verify()
-        value = scan(*args)
+        value = scan(*args, progress=progress)
+        scan_step = progress['step']
+        progress['step'] = 'post-scan-hash'
         guard.verify()
+        progress['step'] = 'complete' if value['outcome'] == 'observed' else scan_step
     except Exception:
         value = unknown()
-    print(json.dumps(value, sort_keys=True, separators=(',', ':')))
+    print(json.dumps(dict(record=value, reader_step=progress['step']),
+                     sort_keys=True, separators=(',', ':')))
     return 0
 
 

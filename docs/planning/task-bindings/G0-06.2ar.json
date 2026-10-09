@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ar",
+  "status": "frozen",
+  "contract_versions": [
+    "aq accepted @695ffd5 lastdiagnostic cap + original am privacy/source/native invariants; ap binding fix retained"
+  ],
+  "implementation_files": [
+    "poc/client-framework/lab/attribution_diag.py",
+    "poc/client-framework/lab/attribution_record.py"
+  ],
+  "test_files": [
+    "poc/client-framework/lab/attribution_diag_test.py",
+    "poc/client-framework/lab/attribution_record_test.py"
+  ],
+  "commands": [
+    {
+      "command": "root pinned Python -I -B attribution_record_test.py and attribution_diag_test.py after independent review and hash freeze",
+      "expected": "all controlled fakes pass; no actual logs/native calls; all11source+interpreter unchanged before/after"
+    },
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2ar",
+      "expected": "exit0 planningonly"
+    },
+    {
+      "command": "single reviewed source feature push triggers existing macos15 attribution workflow only after concrete runtime approval",
+      "expected": "one bounded guest; sanitized crash record + literal driver_step + finite reader_step; unknown consumes budget and stops"
+    }
+  ],
+  "environment": "source-only then owned fake tests; at most one fresh ephemeral GitHub macos15 guest with exact runtime binding",
+  "side_effect_authorization": "User authorized G0 closure and last one coherent reader workpackage+oneguest. No authored imports/tests/native before independent source review; no local native/logs/SDK/GUI/permissions/grants/pathwidening/rawoutput. Concrete reviewed runtime binding required before push.",
+  "prepared_by": "root frozen bounded contract",
+  "reviewed_by": "independent Sol high source/fake safety and concrete once-only guest binding PASS",
+  "reader_steps": [
+    "not-started",
+    "arguments",
+    "guest",
+    "binding-read",
+    "guard-source",
+    "guard-load",
+    "binding-match",
+    "pre-scan-hash",
+    "scan-clock",
+    "directory-open",
+    "directory-guard",
+    "enumerate",
+    "entry-limit",
+    "candidate-none",
+    "candidate-ambiguous",
+    "candidate-size",
+    "record-open",
+    "record-identity",
+    "record-read",
+    "parse",
+    "record-rejected",
+    "scan-cleanup",
+    "post-scan-hash",
+    "complete",
+    "reader-invalid"
+  ],
+  "source_review": {
+    "status": "independent gpt-6.1-sol high reader_phase_review exact11source/localPython PASS",
+    "files_sha256": {
+      "poc/client-framework/lab/isolate.py": "3bc47c022eb6bf10004372cc4021e0d692720e81b318d5dd0cffb54b18d2522c",
+      "poc/client-framework/lab/mapping-fixture.sb": "1dfc6055110b29f06ccd2026eb230433cd5ca6da9be2354b2c43fb88efba0595",
+      "poc/client-framework/lab/mapping_diag.py": "3918c9408f323cc4390465717e151d841b54a524bb83246185be1d6e48cba59b",
+      "poc/client-framework/lab/mapping_diag_test.py": "552bb9eb486967cc1377db6f458ff35f371a836c13f5172177342cc1c1309f1f",
+      "poc/client-framework/lab/mapping_main_test.py": "09f9b773dc949656ce3769e3449e05123717e5c8eb1247c429bb841091127c72",
+      "poc/client-framework/lab/fixture.sb": "b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82",
+      "poc/client-framework/lab/attribution_diag.py": "e45e4dc7dc019bd4a3da629a87e0e20bfae9c257223432d6e5cf9fcc0adf622e",
+      "poc/client-framework/lab/attribution_record.py": "ea6e9f7e79be883efc8d93c4a00b20ead0b55bfc0c9c6637203ae98c4747390f",
+      "poc/client-framework/lab/attribution_record_test.py": "5ff247c1e05d02f622839bc7dc4202a2a0de5e45f163d7146e1006d7c0125b78",
+      "poc/client-framework/lab/attribution_diag_test.py": "2003de3e09424a62054699225fd6699523effef971a284fb607b60767931e46e",
+      ".github/workflows/client-startup-attribution.yml": "f9ac2b790827c4f865e7fba406bcda847d5b029421962df13c9bf4774fbbce1d"
+    }
+  },
+  "local_fake_executable": {
+    "path": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+    "sha256": "b502cb4c5b46b8d4192ec6bcb600ce8922f1afc396fcf646e8765c6eba74a0bf"
+  },
+  "note": "Only finite phase observability. Preserve original parse_record and sanitized SIX-field crash authority/schema and all return/rejection/identity/time/IO/FD/cleanup predicates. Keep original driver literal driver_step. New PRIVATE helper wire exactly {record:<six-field record>,reader_step:<one enum literal>}, <=512bytes strictduplicate/unknown fields/types/enums rejected; new sanitized_envelope(raw) uses existing sanitized(recordencoded) and fixed phaseenum. Driver emits six crash fields +driver_step+reader_step; validates helper envelope before surfacing fixedphase; invalid helper means reader-invalid and allunknown, not rawJSON. Start reader_step not-started before launch, retain validated phase even if report/outcome rejects; preserve crash resetunknown onouterfailure. Binding identifiers driver+helper move TO ar exactly, path-aware actualdriver.BINDING regressions retained; historical bindings untouched. Helper main uses local progress dictionary only to mark controlled literal gates; scan(...,progress=None) optional final parameter keeps legacy6arg tests possible. Mark guards before attempting them, preserve original empty/ambiguous/size/identity/read/parse/cleanup rejection behavior. Distinguish candidate-none, candidate-ambiguous, candidate-size, record-rejected; after successful posthash retain failure scanphase when recordunknown, observed reachescomplete. Cleanup failure marksscan-cleanup; main failure before/afterguards reports gate entered. No exceptionstrings/counts/PID/time/file/path/environment/image details innewfield. parse_record stillonly6 fields; records cannot setphase. All filesystemtargets/profiles/caps/clocks/launches remainexact original:onecatB target,one3sdelivery,onehelper,oneflat256entries0.5squery,≤262144read,14sdriver; no newquery/retry/grant. Add controlled tests for main pre-scan guards, candidate none/ambiguous, oversized/readidentity failures, parse rejection, closefailure and posthash; fake syscall tests use syntheticFD/stat/entry/data only; envelope rejects unknownphase/extra/duplicates/rawcanary; actualcurrentbindingpath helper reachesmockscan, legacy/version mismatchpre-scan. Update existing driver fakes for envelopedhelper and report retains phase; keep source/schema/hashguard and cleanup cases. Worker source-only/gofmt notrelevant, NEVERimport/test/native/network/commit/newagent; source report <=12lines, root willreview/freeze/run. Workpackage includes source/fakes/oneguest/metrics; 2focusedsource repairsmax. Unknown afterguest ENDdiagnostic budget, assess separateVMqualification notextra crashes.",
+  "runtime_authorization": {
+    "executor": "root Sol medium",
+    "local_fake_executable": {
+      "path": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+      "sha256": "b502cb4c5b46b8d4192ec6bcb600ce8922f1afc396fcf646e8765c6eba74a0bf"
+    },
+    "remote_attempts": 1,
+    "remote_executable_baseline": {
+      "version": "3.14.7",
+      "sha256": "d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3",
+      "provenance": "al observed image baseline, not external release pin"
+    },
+    "stop": "Final approved coherent reader workpackage; one fresh macos15 guest, original one B target/3s wait/onehelper/query, all profile/path/clock/lifecycle/caps unchanged. No retry after failure/unknown/preflight/image/hash drift; budget irrevocably consumed. No local native, additional paths/grants/SDK/UI/signing/VM installations.",
+    "remote_review_status": "independent gpt-6.1-sol high reader_phase_review exact concrete runtime PASS; reviewed binding SHA9907f038343b158d39a90b103240bfb49417371060de62c337b331771f67c942",
+    "remote_command": "python3 -I -B poc/client-framework/lab/attribution_diag.py",
+    "preconditions": "Sol high exact11source+localPython source PASS; root record10+driver7 controlled fake tests exit0/no warnings and all hashes before/after unchanged; exact feature source commit after review and source push, never unchanged rerun.",
+    "evidence": "Same six sanitized crash fields plus existing literal driver_step and fixed reader_step enum only. Phase is last gate entered, not completion/cause/required grant. Unknown cannot unlock lifecycle/SDK/GUI or fullG0."
+  },
+  "controlled_fake_results": {
+    "record_tests": 10,
+    "driver_tests": 7,
+    "exit_codes": [
+      0,
+      0
+    ],
+    "warnings": 0,
+    "hash_checks": "all11source+exactlocalPython+binding before/after EACH command unchanged",
+    "coverage": "strict phase wire; candidate none/ambiguous/size/FD identity/read/parse/close and main pre/post source/binding guards; driver once/unknown retention"
+  }
+}
