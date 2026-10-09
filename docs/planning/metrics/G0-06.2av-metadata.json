@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2av",
+  "status": "exact_local_metadata11_pass_native_blocked",
+  "comparison_kind": "observational_unpaired",
+  "started_at_utc": "2026-10-09T19:57:40Z",
+  "cutoff_at_utc": "2026-10-09T20:56:10Z",
+  "usage_report_path": "docs/planning/metrics/G0-06.2av-metadata-usage.json",
+  "totals": {
+    "cache_read_fraction": 0.9815818457299093,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 17151744,
+    "calls": 174,
+    "input_tokens": 17473575,
+    "noncached_input_tokens": 321831,
+    "output_tokens": 121931,
+    "reasoning_output_tokens": 72778,
+    "total_tokens": 17595506
+  },
+  "groups": [
+    {
+      "cache_read_fraction": 0.6753119419186908,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 57856,
+      "calls": 2,
+      "effort": "low",
+      "input_tokens": 85673,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 27817,
+      "output_tokens": 223,
+      "reasoning_output_tokens": 82,
+      "role": "automatic_review",
+      "total_tokens": 85896
+    },
+    {
+      "cache_read_fraction": 0.9862607927303855,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 10726528,
+      "calls": 109,
+      "effort": "medium",
+      "input_tokens": 10875955,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 149427,
+      "output_tokens": 47301,
+      "reasoning_output_tokens": 32183,
+      "role": "main",
+      "total_tokens": 10923256
+    },
+    {
+      "cache_read_fraction": 0.9712513062332968,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 2604288,
+      "calls": 27,
+      "effort": "high",
+      "input_tokens": 2681374,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 77086,
+      "output_tokens": 31351,
+      "reasoning_output_tokens": 21177,
+      "role": "subagent",
+      "total_tokens": 2712725
+    },
+    {
+      "cache_read_fraction": 0.9823783543610838,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 3763072,
+      "calls": 36,
+      "effort": "medium",
+      "input_tokens": 3830573,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 67501,
+      "output_tokens": 43056,
+      "reasoning_output_tokens": 19336,
+      "role": "subagent",
+      "total_tokens": 3873629
+    }
+  ],
+  "scope": "Metadata source preparation, whole reviews, consolidated corrections and exact local10/11 fixtures; no OSPerl/metadata/native/guest execution. Excludes closing bookkeeping/commit and future binding/activation after cutoff.",
+  "conclusion": "Cache is high; no paired equal-scope main-only sample, invoice or cost winner. Repeated source/bootstrap corrections and coordination have material cost. Mechanical work stays main; bounded complete implementation and necessary security review only, no agent fanout or automatic Astra."
+}

@@ -3,8 +3,10 @@
 import argparse
 import hashlib
 import json
+import math
 import os
 import platform
+import plistlib
 import select
 import selectors
 import signal
@@ -25,6 +27,220 @@ MANIFEST = ["Host.swift", "tmp", "cache", "cache/swift", "cache/clang", "build",
 EFFECTS = ["toolchildren-group-inheritance", "non-daemon-toolchildren", "implicit-signing",
            "guest-framework-writes", "compiler-flags", "guardian-direct-reap-group-reclaim"]
 LIMIT = 16384
+IDENTITY_PYTHON = "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14"
+IDENTITY_PROFILE = {"image_os": "macos15", "image_version": "20260907.0337.1",
+    "os_build": "24G830", "architecture": "arm64", "python_version": "3.14.7",
+    "python_sha256": "d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3",
+    "provenance": "conditional-official-macos-15-arm64-image", "runner_selector": "macos-15"}
+IDENTITY_DEVELOPER = "/Applications/Xcode_16.4.app/Contents/Developer"
+IDENTITY_FILES = {
+    "os": ("/System/Library/CoreServices/SystemVersion.plist", "plist", ("ProductVersion", "ProductBuildVersion")),
+    "xcode": ("/Applications/Xcode_16.4.app/Contents/Info.plist", "plist", ("CFBundleShortVersionString", "CFBundleVersion")),
+    "xcode_build": ("/Applications/Xcode_16.4.app/Contents/version.plist", "plist", ("ProductBuildVersion",)),
+    "sdk": (IDENTITY_DEVELOPER + "/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk/SDKSettings.json", "json", ("Version", "CanonicalName")),
+    "swift": (IDENTITY_DEVELOPER + "/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift", "hash", ())}
+IDENTITY_ENUMS = {
+    "stage": {"bootstrap-module", "bootstrap", "loader", "source-import", "binding", "image", "source", "reader", "cleanup"},
+    "reason": {"module", "deadline", "file", "binding", "identity", "hash", "field", "schema", "cleanup", "reader", "other"},
+    "label": {"bootstrap", "python", "driver", "binding", "source", "os", "xcode", "xcode_build", "sdk", "swift", "root"},
+    "error": {"none", "permission", "not-found", "interrupted", "os", "other"}}
+IDENTITY_CONTEXT = {"stage": "binding", "reason": "binding", "label": "binding"}
+
+
+def validate_identity_refusal(value):
+    if type(value) is not dict or set(value) != {"schema", "result", "stage", "reason", "label", "error", "cleanup"} or (
+            type(value["schema"]) is not int or value["schema"] != 1 or value["result"] != "refused"):
+        raise ValueError("identity-refusal-schema")
+    if any(type(value[key]) is not str or value[key] not in choices for key, choices in IDENTITY_ENUMS.items()):
+        raise ValueError("identity-refusal-enum")
+    proof = value["cleanup"]
+    if type(proof) is not dict or type(proof.get("state")) is not str or proof["state"] not in {"unknown", "observed"}:
+        raise ValueError("identity-refusal-proof")
+    keys = {"state"} if proof["state"] == "unknown" else {"state", "guardian_proven", "manifest_removed", "fds_closed"}
+    if set(proof) != keys or any(type(proof[key]) is not bool for key in keys - {"state"}):
+        raise ValueError("identity-refusal-proof")
+    if len(json.dumps(value).encode()) > 4096: raise ValueError("identity-refusal-size")
+    return value
+
+
+def identity_refusal(error, cleanup=None):
+    context = dict(IDENTITY_CONTEXT)
+    if isinstance(error, TimeoutError) or isinstance(error, Refusal) and str(error) == "identity-deadline": context["reason"] = "deadline"
+    return validate_identity_refusal(dict(schema=1, result="refused", error=error_category(error),
+        cleanup=cleanup or {"state": "unknown"}, **context))
+
+
+def identity_deadline(value):
+    if type(value) not in {float, int} or not math.isfinite(value) or not 5 < value - identity_clock() <= 90:
+        raise Refusal("identity-deadline")
+    return value
+
+
+def identity_tick(deadline):
+    if deadline is not None and identity_clock() >= deadline: raise Refusal("identity-deadline")
+
+
+def identity_clock():
+    return time.clock_gettime(time.CLOCK_MONOTONIC)
+
+
+def read_fixed(path, limit, deadline=None):
+    """Walk retained no-follow directory FDs and read one stable regular file."""
+    fds, data = [], bytearray()
+    closure = CleanupAttempts()
+    try:
+        parts = Path(path).parts
+        if parts[0] != "/" or ".." in parts: raise Refusal("metadata-path")
+        fds.append(os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW))
+        for index, name in enumerate(parts[1:]):
+            identity_tick(deadline)
+            final = index == len(parts) - 2
+            before = os.stat(name, dir_fd=fds[-1], follow_symlinks=False)
+            if final and not stat.S_ISREG(before.st_mode): raise Refusal("metadata-owner-type")
+            flags = os.O_RDONLY | os.O_NOFOLLOW | (os.O_NONBLOCK if final else os.O_DIRECTORY)
+            fd = os.open(name, flags, dir_fd=fds[-1]); fds.append(fd)
+            info = os.fstat(fd)
+            if identity(info) != identity(before) or info.st_uid not in {0, os.getuid()} or (final and not stat.S_ISREG(info.st_mode)):
+                raise Refusal("metadata-owner-type")
+        original = os.fstat(fds[-1])
+        if original.st_size > limit: raise Refusal("metadata-size")
+        hashed = hashlib.sha256()
+        count = 0
+        while True:
+            identity_tick(deadline)
+            block = os.read(fds[-1], min(65536, limit - count + 1))
+            if not block: break
+            count += len(block)
+            if count > limit: raise Refusal("metadata-size")
+            hashed.update(block)
+            if limit <= 1048576: data.extend(block)
+        after = os.fstat(fds[-1])
+        named = os.stat(parts[-1], dir_fd=fds[-2], follow_symlinks=False)
+        stable = lambda info: (identity(info), info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+        if stable(original) != stable(after) or stable(named) != stable(after) or count != after.st_size:
+            raise Refusal("metadata-drift")
+        return bytes(data), hashed.hexdigest(), count
+    finally:
+        for fd in reversed(fds): closure.attempt("fd-close", lambda fd=fd: os.close(fd))
+        if closure.stage is not None:
+            IDENTITY_CONTEXT.update(stage="cleanup", reason="cleanup")
+            raise Refusal("metadata-fd-close")
+
+
+def identity_binding(value):
+    required = {"schema", "phase", "accepted", "one_guest", "profile", "source_hashes"}
+    if not isinstance(value, dict) or set(value) != required or type(value["schema"]) is not int or (
+            value["schema"] != 1 or value["phase"] != "identity" or value["accepted"] is not True or
+            value["one_guest"] is not True or value["profile"] != IDENTITY_PROFILE):
+        raise Refusal("identity-binding")
+    hashes = value["source_hashes"]
+    if not isinstance(hashes, dict) or set(hashes) != set(SOURCES) or any(
+            type(item) is not str or len(item) != 64 or any(c not in "0123456789abcdef" for c in item)
+            for item in hashes.values()): raise Refusal("identity-hashes")
+    return value
+
+
+def identity_read(deadline):
+    records = {}
+    IDENTITY_CONTEXT.update(stage="reader", reason="file", label="python")
+    _, python_hash, executable_bytes = read_fixed(IDENTITY_PYTHON, 536870912, deadline - 5)
+    if python_hash != IDENTITY_PROFILE["python_sha256"]: raise Refusal("identity-python-hash")
+    for label, (path, kind, keys) in IDENTITY_FILES.items():
+        IDENTITY_CONTEXT.update(label=label, reason="file")
+        raw, hashed, count = read_fixed(path, 536870912 - executable_bytes if kind == "hash" else 1048576, deadline - 5)
+        executable_bytes += count if kind == "hash" else 0
+        if executable_bytes > 536870912: raise Refusal("metadata-executable-size")
+        fields = {}
+        if keys:
+            IDENTITY_CONTEXT["reason"] = "field"
+            value = plistlib.loads(raw) if kind == "plist" else json.loads(raw)
+            for key in keys:
+                item = value[key]
+                if type(item) is not str or not 0 < len(item) <= 64 or item.lower() in {
+                        "unknown", "pending", "unfrozen", "unverified"} or any(
+                        c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-" for c in item):
+                    raise Refusal("metadata-field")
+                fields[key] = item
+        records[label] = {"sha256": hashed, "fields": fields}
+    if records["os"]["fields"]["ProductBuildVersion"] != IDENTITY_PROFILE["os_build"]:
+        raise Refusal("metadata-os-build")
+    return {"schema": 1, "result": "identity-observed", "records": records, "swift_cli_version": "unknown"}
+
+
+def identity_read_report(deadline):
+    try: return identity_read(deadline)
+    except BaseException as error: return identity_refusal(error)
+
+
+def identity_observe(value, checkout, parent, overall):
+    IDENTITY_CONTEXT.update(stage="image", reason="identity", label="python")
+    if platform.system() != "Darwin" or platform.machine() != "arm64" or any(
+            os.environ.get(envkey) != value["profile"][key] for envkey, key in (
+                ("ImageOS", "image_os"), ("ImageVersion", "image_version"))) or (
+            sys.version_info[:3] != (3, 14, 7) or sys.executable != IDENTITY_PYTHON):
+        raise Refusal("identity-image-python")
+    for source in SOURCES:
+        IDENTITY_CONTEXT.update(stage="source", reason="hash", label="source")
+        if read_fixed(str(checkout / source), 1048576, overall - 5)[1] != value["source_hashes"][source]:
+            raise Refusal("identity-source-hash")
+    root = Path(tempfile.mkdtemp(prefix="easynet-identity-", dir=parent)); os.chmod(root, 0o700)
+    owned, safe_cleanup, result = OwnedRoot(root), True, None
+    proof = {"state": "unknown"}
+    try:
+        (root / "tmp").mkdir(mode=0o700)
+        source = root / "tmp/reader.py"
+        raw, _, _ = read_fixed(str(checkout / SOURCES[1]), 1048576, overall - 5); source.write_bytes(raw)
+        if digest(source) != value["source_hashes"][SOURCES[1]]: raise Refusal("identity-copy")
+        env = {"PATH": "/usr/bin:/bin", "LANG": "C", "TMPDIR": str(root / "tmp")}
+        argv = [IDENTITY_PYTHON, "-I", "-B", "-c",
+                "import json,runpy,sys;print(json.dumps(runpy.run_path(sys.argv[1])['identity_read_report'](float(sys.argv[2]))))", str(source), str(overall)]
+        IDENTITY_CONTEXT.update(stage="reader", reason="reader", label="driver")
+        remaining = min(45, overall - identity_clock() - 5)
+        if remaining < 2: raise Refusal("identity-deadline")
+        raw = bounded(argv, env, root, remaining)
+        proof = {"state": "observed", "guardian_proven": True, "manifest_removed": False, "fds_closed": False}
+        if len(raw.encode()) > 4096: raise Refusal("identity-report-size")
+        result = json.loads(raw)
+        if result.get("result") == "refused":
+            raise IdentityFailure(validate_identity_refusal(result))
+        if set(result) != {"schema", "result", "records", "swift_cli_version"} or (
+                type(result["schema"]) is not int or result["schema"] != 1 or result["result"] != "identity-observed" or
+                result["swift_cli_version"] != "unknown" or set(result["records"]) != set(IDENTITY_FILES)):
+            raise Refusal("identity-report-schema")
+        for label, record in result["records"].items():
+            if set(record) != {"sha256", "fields"} or type(record["sha256"]) is not str or (
+                    len(record["sha256"]) != 64 or any(c not in "0123456789abcdef" for c in record["sha256"])) or (
+                    set(record["fields"]) != set(IDENTITY_FILES[label][2]) or any(type(item) is not str or
+                    not 0 < len(item) <= 64 or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+                    for c in item) for item in record["fields"].values())):
+                raise Refusal("identity-report-fields")
+        return result
+    except CleanupUnproven:
+        safe_cleanup = False
+        raise
+    except BaseException as error:
+        report = error.report if isinstance(error, IdentityFailure) else identity_refusal(error, proof)
+        raise IdentityFailure(report) from None
+    finally:
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)  # Reserved cleanup is governed by the hard deadline.
+        signal.setitimer(signal.ITIMER_REAL, max(0.001, overall - identity_clock()))
+        IDENTITY_CONTEXT.update(stage="cleanup", reason="cleanup", label="root")
+        try:
+            if safe_cleanup:
+                cleanup(owned, overall, clock=identity_clock)
+                if proof["state"] == "observed": proof["manifest_removed"] = True
+        except BaseException as error:
+            raise IdentityFailure(identity_refusal(error, proof)) from None
+        finally:
+            closed = CleanupAttempts()
+            for name in ("fd", "parent"):
+                fd = getattr(owned, name)
+                if fd is not None: closed.attempt("fd-close", lambda fd=fd: os.close(fd))
+            if closed.stage is not None: raise IdentityFailure(identity_refusal(Refusal("identity-root-fd-close"), proof))
+            if proof["state"] == "observed": proof["fds_closed"] = True
+            if result is not None:
+                result["cleanup"] = proof
+                if len(json.dumps(result).encode()) > 4096: raise Refusal("identity-report-size")
 
 
 class Refusal(Exception):
@@ -36,6 +252,11 @@ class Refusal(Exception):
 class CleanupUnproven(Refusal):
     pass
 
+
+class IdentityFailure(Refusal):
+    def __init__(self, report):
+        self.report = validate_identity_refusal(report)
+        super().__init__("identity-refused")
 
 PROOF_FLAGS = {"child_started", "sentinel_started", "child_reaped", "sentinel_reaped",
                "group_absent", "fds_closed", "drain_complete", "exec_ready", "deadline"}
@@ -477,7 +698,7 @@ class OwnedRoot:
                 os.close(value); setattr(self, name, None)
 
 
-def cleanup(owned, deadline):
+def cleanup(owned, deadline, clock=time.monotonic):
     # Directory-relative no-follow handles anchor all validation and removal.
     owned.verify()
     held = []
@@ -485,7 +706,7 @@ def cleanup(owned, deadline):
     count = 0
 
     def check_budget():
-        if time.monotonic() >= deadline:
+        if clock() >= deadline:
             raise Refusal("filesystem-cleanup-deadline")
 
     def visit(fd, prefix, depth):
@@ -608,19 +829,30 @@ def admit(value, checkout, parent):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--binding", required=True)
-    parser.add_argument("--phase", choices=["admit"], required=True)
+    parser.add_argument("--phase", choices=["admit", "identity"], required=True)
+    parser.add_argument("--identity-deadline", type=float)
     args = parser.parse_args()
     try:
         checkout = Path(__file__).absolute().parents[3]
-        value = binding(args.binding, checkout)
+        if args.phase == "identity":
+            overall = identity_deadline(args.identity_deadline)
+            raw, _, _ = read_fixed(args.binding, 4096, overall - 5)
+            value = identity_binding(json.loads(raw))
+        else: value = binding(args.binding, checkout)
         parent = checked_path(os.environ.get("RUNNER_TEMP", ""), "dir")
         if parent.stat().st_uid != os.getuid():
             raise Refusal("temp-owner")
-        report = admit(value, checkout, parent)
-    except (Refusal, OSError, ValueError, KeyError, TypeError):
-        report = {"schema": 1, "result": "refused"}
-    print(json.dumps(report, separators=(",", ":")))
-    return 0 if report["result"] == "admitted" else 1
+        report = identity_observe(value, checkout, parent, overall) if args.phase == "identity" else admit(value, checkout, parent)
+    except BaseException as error:
+        if args.phase == "identity":
+            report = error.report if isinstance(error, IdentityFailure) else identity_refusal(error)
+        elif isinstance(error, (Refusal, OSError, ValueError, KeyError, TypeError, plistlib.InvalidFileException)):
+            report = {"schema": 1, "result": "refused"}
+        else: raise
+    finally:
+        if args.phase == "identity": signal.setitimer(signal.ITIMER_REAL, 0)
+    print(json.dumps(report, separators=(",", ":"), sort_keys=args.phase == "identity"))
+    return 0 if report["result"] in {"admitted", "identity-observed"} else 1
 
 
 if __name__ == "__main__":

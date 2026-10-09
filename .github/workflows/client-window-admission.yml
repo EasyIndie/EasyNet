@@ -1,4 +1,4 @@
-name: Own window admission
+name: Conditional metadata identity proposal
 on:
   push:
     branches: [codex/feature/self-hosted-byos-byoc]
@@ -9,6 +9,7 @@ on:
       - 'tests/client_framework/WindowAdmissionTests.swift'
       - 'tests/client_framework/test_window_admission_driver.py'
       - 'docs/planning/task-bindings/client-window-admission-runtime.json'
+      - 'docs/planning/task-bindings/client-window-identity-runtime.json'
 permissions:
   contents: read
 jobs:
@@ -21,8 +22,234 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Admission with independently frozen runtime binding
-        run: >-
-          python3 -I -B poc/client-framework/window-admission/driver.py
-          --binding docs/planning/task-bindings/client-window-admission-runtime.json
-          --phase admit
+      - name: Proposed fixed OS preflight before authored Python imports
+        shell: /bin/bash --noprofile --norc {0}
+        run: |
+          # OS Perl/Fcntl/Digest::SHA/JSON::PP/fchdir support awaits independent R.
+          set -euo pipefail
+          if output=$(/usr/bin/env -i PATH=/usr/bin:/bin LANG=C ImageOS="${ImageOS:-}" \
+            ImageVersion="${ImageVersion:-}" RUNNER_TEMP="${RUNNER_TEMP:-}" \
+            /usr/bin/perl - "${GITHUB_WORKSPACE:-}" 2>/dev/null <<'PERL'
+          BEGIN {
+            our ($stage,$reason,$label,$category) = ('bootstrap-module','module','bootstrap','other');
+            our $cancelled = 0;
+            $SIG{INT} = $SIG{TERM} = sub { $cancelled=1; };
+            $SIG{__DIE__} = sub { printf '{"cleanup":{"state":"unknown"},"error":"%s","label":"%s","reason":"%s","result":"refused","schema":1,"stage":"%s"}', $category,$label,$reason,$stage; exit 1; };
+            $SIG{ALRM} = sub { $reason='deadline'; $category='none'; die "refused\n" }; alarm 90;
+          }
+          use strict;
+          use warnings;
+          use Fcntl qw(O_RDONLY O_NOFOLLOW O_DIRECTORY O_NONBLOCK F_SETFD F_GETFL F_SETFL S_ISREG);
+          use POSIX qw(WNOHANG);
+          use Digest::SHA;
+          use JSON::PP;
+          use Time::HiRes ();
+          our ($stage,$reason,$label,$category,$cancelled);
+          my $now = Time::HiRes::clock_gettime(Time::HiRes::CLOCK_MONOTONIC());
+          my $remaining = Time::HiRes::alarm(0);
+          my $deadline = $now + $remaining; # Transfer remaining original timer; never add another90s.
+          Time::HiRes::alarm($deadline-Time::HiRes::clock_gettime(Time::HiRes::CLOCK_MONOTONIC())) if $remaining > 0;
+          sub tick {
+            if ($cancelled) { $reason='cleanup'; die "refused\n"; }
+            Time::HiRes::clock_gettime(Time::HiRes::CLOCK_MONOTONIC()) < $deadline-5 or do { $reason='deadline'; die "refused\n" };
+          }
+          ($stage,$reason) = ('bootstrap','file'); tick();
+          my $root = shift @ARGV;
+          my $python = '/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14';
+          my $pin = 'd8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3';
+          my @sources = ('poc/client-framework/window-admission/Host.swift',
+            'poc/client-framework/window-admission/driver.py', '.github/workflows/client-window-admission.yml',
+            'tests/client_framework/WindowAdmissionTests.swift', 'tests/client_framework/test_window_admission_driver.py');
+          my $profile = {image_os=>'macos15', image_version=>'20260907.0337.1', os_build=>'24G830',
+            architecture=>'arm64', python_version=>'3.14.7', python_sha256=>$pin,
+            provenance=>'conditional-official-macos-15-arm64-image', runner_selector=>'macos-15'};
+          my $json = JSON::PP->new->canonical;
+          sub stable { my @s = stat($_[0]); @s == 13 or die "refused\n"; return join ':', @s[0,1,2,4,7,9,10]; }
+          sub read_fixed {
+            my ($path, $cap, $retain) = @_;
+            $path =~ m{^/} && $path !~ m{(?:^|/)\.\.(?:/|$)} or die "refused\n";
+            my @parts = grep length, split '/', $path;
+            sysopen(my $directory, '/', O_RDONLY|O_NOFOLLOW|O_DIRECTORY) or die "refused\n";
+            my $file;
+            for my $index (0..$#parts) {
+              tick();
+              chdir($directory) or die "refused\n"; # Public handle fchdir; no guessed syscall.
+              my @before = lstat($parts[$index]); @before == 13 or die "refused\n";
+              $index != $#parts || S_ISREG($before[2]) or die "refused\n";
+              my $flags = O_RDONLY|O_NOFOLLOW|($index == $#parts ? O_NONBLOCK : O_DIRECTORY);
+              sysopen(my $next, $parts[$index], $flags) or die "refused\n";
+              my @s = stat($next);
+              @s == 13 && join(':',@s[0,1,2,4]) eq join(':',@before[0,1,2,4]) && ($s[4] == 0 || $s[4] == $<) or die "refused\n";
+              if ($index == $#parts) { $file = $next; last; }
+              close($directory) or die "refused\n"; $directory = $next;
+            }
+            -f $file or die "refused\n";
+            my $before = stable($file); my $count = 0; my $raw = '';
+            my $hash = Digest::SHA->new(256);
+            while (1) {
+              tick();
+              my $amount = sysread($file, my $block, 65536);
+              defined $amount or die "refused\n"; last unless $amount;
+              $count += $amount; $count <= $cap or die "refused\n"; $hash->add($block);
+              $raw .= $block if $cap <= 1048576;
+            }
+            $before eq stable($file) && $before eq stable($parts[-1]) or die "refused\n";
+            close($directory) or die "refused\n";
+            if ($retain) { seek($file,0,0) or die "refused\n"; fcntl($file,F_SETFD,0) or die "refused\n"; }
+            else { close($file) or die "refused\n"; }
+            return ($raw, $hash->hexdigest, $file);
+          }
+          ($label,$reason) = ('binding','binding');
+          my ($raw) = read_fixed("$root/docs/planning/task-bindings/client-window-identity-runtime.json",4096,0);
+          my $value = $json->decode($raw);
+          join(',',sort keys %$value) eq 'accepted,one_guest,phase,profile,schema,source_hashes' or die "refused\n";
+          $json->encode($value->{schema}) eq '1' && !JSON::PP::is_bool($value->{schema}) && $value->{phase} eq 'identity' or die "refused\n";
+          JSON::PP::is_bool($value->{accepted}) && $value->{accepted} && JSON::PP::is_bool($value->{one_guest}) && $value->{one_guest} or die "refused\n";
+          $json->encode($value->{profile}) eq $json->encode($profile) or die "refused\n";
+          $ENV{ImageOS} eq 'macos15' && $ENV{ImageVersion} eq '20260907.0337.1' or die "refused\n";
+          join(',',sort keys %{$value->{source_hashes}}) eq join(',',sort @sources) or die "refused\n";
+          my $driver;
+          for my $source (@sources) {
+            ($label,$reason) = ('source','hash');
+            my (undef,$hash,$fd) = read_fixed("$root/$source",1048576,$source eq $sources[1]);
+            $value->{source_hashes}{$source} =~ /^[0-9a-f]{64}$/ && $hash eq $value->{source_hashes}{$source} or die "refused\n";
+            $driver = $fd if $source eq $sources[1];
+          }
+          ($label,$reason) = ('python','hash');
+          my (undef,$python_hash) = read_fixed($python,536870912,0); $python_hash eq $pin or die "refused\n";
+          ($label,$reason) = ('os','identity');
+          my ($os) = read_fixed('/System/Library/CoreServices/SystemVersion.plist',1048576,0);
+          my @build = $os =~ m{<key>ProductBuildVersion</key>\s*<string>([^<]*)</string>}g;
+          @build == 1 && $build[0] eq '24G830' or die "refused\n"; # Binary/unknown form refuses.
+          chdir($root) or die "refused\n";
+          my $code = <<'PYTHON';
+          import sys
+          stage, reason = 'loader', 'module'
+          try:
+              import os, hashlib, signal, time, json, math
+              deadline = float(sys.argv[4])
+              now = lambda: time.clock_gettime(time.CLOCK_MONOTONIC)
+              if not math.isfinite(deadline) or not 5 < deadline-now() <= 90: raise TimeoutError()
+              def expired(*_): raise TimeoutError()
+              signal.signal(signal.SIGALRM, expired)
+              signal.signal(signal.SIGTERM, expired)
+              signal.setitimer(signal.ITIMER_REAL, deadline-now()-5)
+              reason = 'identity'
+              if sys.version_info[:3] != (3,14,7) or os.uname().machine != 'arm64': raise ValueError()
+              p, fd = sys.argv[1], int(sys.argv[2])
+              reason = 'file'
+              with os.fdopen(fd,'rb') as file: source = file.read(1048577)
+              reason = 'hash'
+              if len(source)>1048576 or hashlib.sha256(source).hexdigest()!=sys.argv[3]: raise ValueError()
+              stage, reason = 'source-import', 'module'
+              sys.argv = [p]+sys.argv[5:]+['--identity-deadline',str(deadline)]
+              exec(compile(source,p,'exec'),{'__name__':'__main__','__file__':p})
+          except SystemExit:
+              raise
+          except BaseException as error:
+              reason = 'deadline' if isinstance(error,TimeoutError) else reason
+              print('{"cleanup":{"state":"unknown"},"error":"other","label":"driver","reason":"'+reason+'","result":"refused","schema":1,"stage":"'+stage+'"}')
+              sys.exit(1)
+          PYTHON
+          tick();
+          ($label,$reason) = ('python','file');
+          pipe(my $capture,my $write) or die "refused\n";
+          my $flags = fcntl($capture,F_GETFL,0); defined $flags or die "refused\n";
+          fcntl($capture,F_SETFL,$flags|O_NONBLOCK) or die "refused\n";
+          Time::HiRes::alarm(0); # Monitor owns the existing deadline; no fatal alarm crosses exec.
+          my $pid = fork(); defined $pid or die "refused\n";
+          if ($pid == 0) {
+            close($capture) or POSIX::_exit(1);
+            open(STDOUT,'>&',$write) or POSIX::_exit(1); close($write) or POSIX::_exit(1);
+            exec {$python} $python,'-I','-B','-c',$code,"$root/$sources[1]",fileno($driver),$value->{source_hashes}{$sources[1]},$deadline,
+              '--binding',"$root/docs/planning/task-bindings/client-window-identity-runtime.json",'--phase','identity';
+            die "refused\n";
+          }
+          my $failed = 0;
+          $failed = 1 unless close($write); $failed = 1 unless close($driver);
+          my ($reaped,$eof,$term,$kill,$exit,$output,$unknown) = (0,0,0,0,1,'',0);
+          while (Time::HiRes::clock_gettime(Time::HiRes::CLOCK_MONOTONIC()) < $deadline) {
+            $failed=1 if $cancelled;
+            my $now = Time::HiRes::clock_gettime(Time::HiRes::CLOCK_MONOTONIC());
+            if (!$reaped && !$term && ($failed || $now >= $deadline-5)) {
+              $term=1; $failed=1 unless kill('TERM',$pid) || $!{ESRCH};
+            }
+            if (!$reaped && !$kill && ($failed || $now >= $deadline-0.1)) {
+              $kill=1; $failed=1 unless kill('KILL',$pid) || $!{ESRCH};
+            }
+            if (!$reaped) {
+              my $waited = waitpid($pid,WNOHANG);
+              if ($waited == $pid) { $reaped=1; $exit=$?; }
+              elsif ($waited < 0 && !$!{EINTR}) { $failed=1; $unknown=1; last; } # Never signal unknown ownership.
+            }
+            if (!$eof) {
+              my $count = sysread($capture,my $block,4096);
+              if (defined $count) {
+                $eof=1 unless $count;
+                my $space = 4096-length($output);
+                $output.=substr($block,0,$space); $failed=1 if $count>$space;
+              } # Overflow bytes are discarded; bounded drain/reap still continue.
+              elsif (!$!{EAGAIN} && !$!{EINTR}) { $failed=1; $eof=1; }
+            }
+            last if $reaped && $eof;
+            Time::HiRes::usleep(10000);
+          }
+          # Known unreaped child: independent final signal/reap attempts even after wait budget.
+          if (!$unknown && !$reaped && !$kill) { $kill=1; kill('KILL',$pid) || $!{ESRCH} or $failed=1; }
+          if (!$unknown && !$reaped) { my $waited=waitpid($pid,WNOHANG); $reaped=1,$exit=$? if $waited == $pid; }
+          $failed=1 unless close($capture);
+          if ($failed || $cancelled || !$reaped || !$eof || $term || $kill || !length($output)) {
+            ($stage,$reason,$label) = ('bootstrap','cleanup','driver'); die "refused\n";
+          }
+          ($stage,$reason,$label) = ('bootstrap','schema','driver');
+          sub keys_exact { ref($_[0]) eq 'HASH' && join(',',sort keys %{$_[0]}) eq $_[1] }
+          sub string_value { defined $_[0] && !ref($_[0]) && substr($json->encode($_[0]),0,1) eq '"' }
+          my $report = $json->decode($output);
+          ref($report) eq 'HASH' && $json->encode($report->{schema}) eq '1' or die "refused\n";
+          string_value($report->{result}) or die "refused\n";
+          my $proof = $report->{cleanup};
+          ref($proof) eq 'HASH' && defined $proof->{state} && !ref($proof->{state}) or die "refused\n";
+          if ($proof->{state} eq 'unknown') { keys_exact($proof,'state') or die "refused\n"; }
+          elsif ($proof->{state} eq 'observed') {
+            keys_exact($proof,'fds_closed,guardian_proven,manifest_removed,state') or die "refused\n";
+            JSON::PP::is_bool($proof->{$_}) or die "refused\n" for qw(fds_closed guardian_proven manifest_removed);
+          } else { die "refused\n"; }
+          if ($report->{result} eq 'refused') {
+            keys_exact($report,'cleanup,error,label,reason,result,schema,stage') or die "refused\n";
+            my %finite = (stage=>'bootstrap-module,bootstrap,loader,source-import,binding,image,source,reader,cleanup',
+              reason=>'module,deadline,file,binding,identity,hash,field,schema,cleanup,reader,other',
+              label=>'bootstrap,python,driver,binding,source,os,xcode,xcode_build,sdk,swift,root',
+              error=>'none,permission,not-found,interrupted,os,other');
+            for my $key (keys %finite) {
+              my %allowed = map { $_=>1 } split ',', $finite{$key};
+              defined $report->{$key} && !ref($report->{$key}) && $allowed{$report->{$key}} or die "refused\n";
+            }
+          } elsif ($report->{result} eq 'identity-observed') {
+            keys_exact($report,'cleanup,records,result,schema,swift_cli_version') && $report->{swift_cli_version} eq 'unknown' or die "refused\n";
+            $proof->{state} eq 'observed' && $proof->{fds_closed} && $proof->{guardian_proven} && $proof->{manifest_removed} && $exit==0 or die "refused\n";
+            keys_exact($report->{records},'os,sdk,swift,xcode,xcode_build') or die "refused\n";
+            my %fields = (os=>'ProductBuildVersion,ProductVersion',sdk=>'CanonicalName,Version',swift=>'',
+              xcode=>'CFBundleShortVersionString,CFBundleVersion',xcode_build=>'ProductBuildVersion');
+            for my $name (keys %fields) {
+              my $record = $report->{records}{$name};
+              keys_exact($record,'fields,sha256') && string_value($record->{sha256}) && $record->{sha256}=~/^[0-9a-f]{64}$/ or die "refused\n";
+              keys_exact($record->{fields},$fields{$name}) or die "refused\n";
+              for my $field (values %{$record->{fields}}) {
+                string_value($field) && $field=~/^[A-Za-z0-9._-]{1,64}$/ && $field!~/^(unknown|pending|unfrozen|unverified)$/i or die "refused\n";
+              }
+            }
+          } else { die "refused\n"; }
+          # Canonical equality rejects duplicates, numeric/string type drift and extra JSON values.
+          my $compact = $output; $compact=~s/\s+//g;
+          my $encoded = $json->encode($report);
+          $compact eq $encoded && length($encoded)<=4096 or die "refused\n";
+          !$cancelled or do { $reason='cleanup'; die "refused\n" };
+          print $encoded; exit($exit == 0 ? 0 : 1);
+          PERL
+          ); then status=0; else status=1; fi
+          if [[ -z "$output" || ${#output} -gt 4096 ]]; then
+            output='{"schema":1,"result":"refused","stage":"bootstrap-module","reason":"module","label":"bootstrap","error":"other","cleanup":{"state":"unknown"}}'
+            status=1
+          fi
+          printf '%s\n' "$output"
+          exit "$status"

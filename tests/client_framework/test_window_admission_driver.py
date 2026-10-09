@@ -151,6 +151,41 @@ class DriverRefusals(unittest.TestCase):
                 proof.update({key: True for key in self.driver.PROOF_FLAGS - {"deadline"}})
                 self.assertFalse(self.driver.cleanup_proven(proof))
 
+    def testIdentityBindingRejectsPhaseDriftAndUnknowns(self):
+        value = dict(schema=1, phase="identity", accepted=True, one_guest=True,
+                     profile=dict(self.driver.IDENTITY_PROFILE),
+                     source_hashes={source: "a" * 64 for source in self.driver.SOURCES})
+        self.assertEqual(self.driver.identity_binding(value), value)
+        for key, replacement in (("schema", True), ("phase", "admit"), ("accepted", False),
+                                 ("one_guest", False), ("profile", {}), ("source_hashes", {}), ("extra", 1)):
+            bad = dict(value); bad[key] = replacement
+            with self.assertRaises(self.driver.Refusal): self.driver.identity_binding(bad)
+        for field in self.driver.IDENTITY_PROFILE:
+            bad = dict(value); bad["profile"] = dict(value["profile"], **{field: "unknown"})
+            with self.assertRaises(self.driver.Refusal): self.driver.identity_binding(bad)
+
+    def testIdentityRefusalVariantsAndFaultsStayFinite(self):
+        report = self.driver.identity_refusal(PermissionError())
+        self.assertEqual(report["error"], "permission")
+        self.assertEqual(report["cleanup"], {"state": "unknown"})
+        self.assertEqual(self.driver.validate_identity_refusal(report), report)
+        for key, value in (("schema", True), ("stage", "raw"), ("reason", "raw"), ("label", "raw"),
+                           ("error", "raw"), ("extra", False), ("cleanup", {"state": "unknown", "fds_closed": True})):
+            bad = dict(report); bad[key] = value
+            with self.assertRaises(ValueError): self.driver.validate_identity_refusal(bad)
+        observed = dict(state="observed", guardian_proven=False, manifest_removed=False, fds_closed=False)
+        self.assertEqual(self.driver.identity_refusal(OSError(), observed)["cleanup"], observed)
+        original = self.driver.time.clock_gettime
+        try:
+            def fixed_clock(clock):
+                self.assertEqual(clock, self.driver.time.CLOCK_MONOTONIC)
+                return 100.0
+            self.driver.time.clock_gettime = fixed_clock
+            self.assertEqual(self.driver.identity_deadline(190.0), 190.0)
+            for value in (None, True, float("nan"), float("inf"), 105.0, 191.0):
+                with self.assertRaises(self.driver.Refusal): self.driver.identity_deadline(value)
+        finally: self.driver.time.clock_gettime = original
+
 
     def testOverflowTimeoutAndReap(self):
         # Owned fixture subprocesses; these are not window qualification.
