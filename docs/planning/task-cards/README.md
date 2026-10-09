@@ -16,8 +16,8 @@
 |---|---|---:|
 | D | Luna low | 5 |
 | C | Luna medium | 84 |
-| I | GPT-6.1 Sol medium | 141 |
-| R | GPT-6.1 Sol high；冲突难解时 Astra high | 39 |
+| I | GPT-6.1 Sol medium | 145 |
+| R | GPT-6.1 Sol high；冲突难解时 Astra high | 41 |
 
 ## G0
 

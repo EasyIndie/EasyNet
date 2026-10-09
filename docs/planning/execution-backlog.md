@@ -1,24 +1,28 @@
 # EasyNet 分阶段可执行推进清单
 
-研究日期：2026-10-06。代码基线：`1d288dc747862486c930d5d21042b3fc4339e16f`。
+初始研究日期：2026-10-06；状态复核：2026-10-09。代码基线：`1d288dc747862486c930d5d21042b3fc4339e16f`。
 总目标关联：[Epic #13](https://github.com/EasyIndie/EasyNet/issues/13)。
 
 本文是当前推进工作包的主清单；低成本执行粒度见 [小任务目录](atomic-task-catalog.md)，
-168 个原条目已展开为 [220 张独立任务卡](task-cards/README.md)，每卡带模型档位与解锁条件。
+168 个原条目已展开为 [275 张独立任务卡](task-cards/README.md)，每卡带模型档位与解锁条件。
 任务卡与长期 feature 分支规则见 [执行规范](agent-execution-policy.md)。
 产品愿景见 [演进计划](product-evolution-roadmap.md)，
 能力映射见 [仓库审计](repository-audit-2026-10-06.md)。任务 ID 为文档标识，不是 GitHub
-Issue 编号。所有工程任务尚未实施；不因列入清单而视为技术决策已接受。
-当前只存在总 Epic，本轮未创建子 Issue、修改外部 Epic 或启动部署。
+Issue 编号。完成状态以 cards.json 和对应证据为准；PoC、已接受 ADR 和产品实现分别记录。
+总 Epic 与原 #5 的关联沿用已有记录；本次复核未操作外部 Issues 或运行新的实验。
 
 ## 1. 当前状态与研究结论
 
-仓库仍是 Bash 服务端部署工具，尚未成为远程基础设施管理产品。当前代码没有新增
-controller、SSH transport、桌面工程、Provider SDK 或加密恢复实现。
-通用 Agent 指引、能力矩阵与合同/ADR 已在 feature 分支本地提交；G0-01/02/03 的限定范围
-已完成，证据见 [本批推进记录](progress-2026-10-06.md)。尚未推送或合 main；G0-04/05/06
-的语言、store、客户端 PoC 及所有功能实现/实机验收仍待执行。
-研究时（2026-10-06）的 GitHub 查询发现 open Issue 为 #13，无 open PR；#5 保留关闭状态与 Runtime 关联。
+仓库的现有产品仍是 Bash 服务端部署工具；新的管理产品尚未形成可用闭环。
+通用 Agent 结构、Repository Audit、Gap Analysis、演进路线、分阶段卡片及 Epic #13 已完成。
+G0-01–05 的限定范围已验收：ADR-004 选择 Go 共同应用服务，ADR-005 选择 SQLite 普通库存。
+SSH/vault/结构化结果与存储故障 PoC 已有证据，不能直接当作生产 transport/store/vault。
+客户端 GUI/engine/签名分发尚未选定；Flutter 仍为候选。G0-06.2ap 修复驱动/助手绑定不一致，
+15 项模拟测试通过；一次 runner 观测仍在 report 阶段 unknown，平台 gate 继续 blocked。
+当前 275 卡：78 verified、8 blocked、189 locked；G1–G6 均未进入正式实施，G0-07 尚未建立工程骨架。
+截至复核的工程 HEAD 为 19d4018，已推送 feature 分支，工作区复核时干净；main 未合入。
+完整进度、后续顺序和待确认调整见 [2026-10-09 复核提案](progress-review-2026-10-09.md)。
+下方能力表及测试数字保留为 2026-10-06 审计基线，不代表本次重跑或远程最新结果。
 
 | 能力 | 当前可复用证据 | 需要补齐的具体工作 |
 |---|---|---|
@@ -34,12 +38,12 @@ controller、SSH transport、桌面工程、Provider SDK 或加密恢复实现�
 | 测试与发布 | 34 Bats 文件、465 test 声明；Ubuntu 双版本 CI、真客户端发布 gate | controller/SSH/状态/故障恢复/macOS/provider 测试；声明数不是实际通过数 |
 | 云与成本 | 暂无 ProviderAdapter/本地计费模型 | API action reconciliation、资源所有权、账单单位/币种、流量可信来源及失败清理 |
 
-前一轮本地 fast suite 444 项、0 失败、5 跳过，ShellCheck 通过。本轮仅文档研究，
-没有重复运行未变更的测试，也未确认远程最新 CI 成功或操作真实 VPS。
+2026-10-06 基线记录：fast suite 444 项、0 失败、5 跳过，ShellCheck 通过。本次进度复核
+仅检查台账/证据与静态计划；未重复 Bats、运行新的诊断或操作真实 VPS。
 
 主要结论：以“保留 Bash 后端，新增本地应用服务与兼容适配器”推进。第一条闭环复用
 Hysteria2；不同时迁移服务端内核、扩展多协议、选择多个 Provider 或实现 GUI。
-控制器使用何种语言应以 SSH/vault/平台集成 PoC 和维护成本为依据。
+控制器语言已由 ADR-004 选择 Go；GUI/engine 与生产 vault 等仍由独立 gate 决定。
 
 ## 2. 执行规则与任务格式
 
@@ -50,7 +54,7 @@ Hysteria2；不同时迁移服务端内核、扩展多协议、选择多个 Prov
 G0 决策后再创建，不先建空壳目录或固定语言。
 
 状态采用 `planned → ready → active → verified`；阻塞记录原因、负责人及解除证据。
-当前各项为 planned。负责人按角色描述，不虚构人员指派；开发/审查/实机验收角色可由
+各卡实际状态以机器台账及证据为准。负责人按角色描述，不虚构人员指派；开发/审查/实机验收角色可由
 同一维护者承担，但验收报告必须独立记录目标、版本、证据与失败条件。
 
 难度 S/M/L 分别表示局部改动、跨模块能力、外部系统/平台集成；不代表日期承诺。
@@ -198,6 +202,9 @@ compat；single-protocol slice 用单独临时目标或隔离测试，不替换�
 release 与 metadata/profile schema。旧客户端不能理解新 schema 时明确阻止升级/给导出路径。
 
 ## 11. 近期具体执行队列
+
+以下是原始阶段队列。2026-10-09 提出的 core/client 调度解耦尚待用户确认和正式 ADR/依赖修订；
+在确认前继续按现有任务依赖执行，不能据提案解锁 G1。详见 [复核提案](progress-review-2026-10-09.md)。
 
 1. **第一批：G0-01→02→03**。先提交文档基线、支持矩阵与应用服务合同，形成可审查结果。
 2. **第二批：G0-04/05/06，再 G0-07**。同题 PoC 评估 controller 与 vault，提前验证 macOS
