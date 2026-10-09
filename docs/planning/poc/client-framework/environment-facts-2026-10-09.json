@@ -18,7 +18,7 @@
     "VM/SDK download/install/start",
     "GUI/NE/runtime probes"
   ],
-  "user_conditions": "User confirmed Apple Developer account availability; only current development Mac and GitHub runner available. No independent VM/Mac or isolated personal-data-free local account confirmed. No credential access authorized.",
+  "user_conditions": "User confirmed active paid Apple Developer membership on2026-10-10; only current development Mac and GitHub runner available. No independent VM/Mac or isolated personal-data-free local account confirmed. No credential/Keychain access granted; entitlement/signing/provisioning route remains unqualified.",
   "primary_sources": [
     {
       "url": "https://developer.apple.com/documentation/virtualization/vzmacosconfigurationrequirements/minimumsupportedmemorysize",

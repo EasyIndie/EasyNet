@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2av",
+  "status": "blocked_fake_cleanup_and_native_unqualified",
+  "strategy": "bounded_I_source_required_R_reused_samecard_two_repairs_root_fakes",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "7009166",
+  "started_at_utc": "2026-10-09T16:14:10+00:00",
+  "finished_at_utc": "2026-10-09T16:55:40+00:00",
+  "subagent_count": 2,
+  "history_inheritance": "none bounded; same agents reused only samecard repairs",
+  "main_coordination_included": true,
+  "automatic_review_included": true,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2av-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.979367686467157,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 13784704,
+    "calls": 133,
+    "input_tokens": 14075106,
+    "noncached_input_tokens": 290402,
+    "output_tokens": 88756,
+    "reasoning_output_tokens": 42129,
+    "total_tokens": 14163862
+  },
+  "repair_count": 2,
+  "fixture_runs": [
+    {
+      "tests": 6,
+      "exit": 1,
+      "seconds": 3.455
+    },
+    {
+      "tests": 7,
+      "exit": 1,
+      "seconds": 3.45
+    }
+  ],
+  "native_guest_count": 0,
+  "limitations": [
+    "Includes previous au publication, user paidmembership clarification, root official SDK release-note research, source/fake/R coordination and all repairs.",
+    "Both fake runs failed normal-child cleanup, not accepted successful delivery or matched main-only sample.",
+    "Native GUI/Swift/toolchain identity were not executed; own publication aftercutoff excluded."
+  ]
+}

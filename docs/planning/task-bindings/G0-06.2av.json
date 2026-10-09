@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2av",
+  "status": "frozen",
+  "contract_versions": [
+    "7009166 accepted conditional own-window admission v1; exact code paths/event/rendered proof",
+    "ar diagnosticbudget0; engine/fullQ-B/NE/signing unqualified"
+  ],
+  "implementation_files": [
+    "poc/client-framework/window-admission/Host.swift",
+    "poc/client-framework/window-admission/driver.py",
+    ".github/workflows/client-window-admission.yml"
+  ],
+  "test_files": [
+    "tests/client_framework/WindowAdmissionTests.swift",
+    "tests/client_framework/test_window_admission_driver.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2av",
+      "expected": "exit0 planningonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "SOURCE AUTHORSHIP ONLY now; later same-card tests/oneguest require independent source-specific R and exact runtime binding",
+  "side_effect_authorization": "Author five bounded files and taskresult only; no imports/fakes/compiler/build/native/GUI/network/artifact/SDK/signing/Keychain/settings/runtime/commits/push. Do not create runtime binding or authorize workflowrun. Proposed workflow not pushed by worker.",
+  "prepared_by": "root",
+  "reviewed_by": "root finite source-authoring scope from independent R conditional contract; no runtime acceptance yet",
+  "note": "<=8k relevant inputs. <=900total source/test lines explicit same-card safety repair ceiling; no new docs/admincards. Follow acceptedcontract. Exact onejob featurepush paths only fivefiles+proposed client-window-admission-runtime.json, timeout5min contentsread checkoutSHA reuse alreadyreviewed controller.yml pin/persistfalse/ref github.sha. Driver default failclosed unless later root/R frozen runtime binding includes source hashes/toolchain/version/provenance+effects accepted; missing/incomplete/unknown cannot launch. Implement own actual NSWindow/NSHostingView SwiftUI controls, normalqueued NSEvent→receipt→realButton action with matchingcurrentevent→idle/selected/idle state and ownstatusregion render-hash transitions; disabled/padding negative. No callbackshortcut, sendEvent directcall/globalinput/TCCcapture. Finite4KiB schema ownfixedtext/enums/booleans/hashes; no paths/rawlogs. Driver source copies rooted0700 and boundedlogs/cache/build cleanup nofollowmanifest; no HOMEforward/redefine, secrets/env leak/nativeengine/networkcalls. Compiler argv uses reviewedproposal but exact version/SDK/compileridentity unknown remain strict runtimebind prerequisites, do not invent official version. Own unreaped child IDs, safe lifetime-retained compiler processgroup guardian, TERM/KILL/reap on overflow/timeout/cancel/EOF, boundedoutput drain/time15host120build; if ownership guardian cannot implement safely record blocker rather than weakened cleanup. State/refusal fixtures supporting only: malformed/missingbinding, unsafepaths/symlinks/hash mismatch/unaccepted toolchain/effects, overflow/timeouts/reap/EOF, duplicateevents/negativeUI/callbacknotqualifying where testable. Tests source only now, no authored imports/compile/run beforeR. New source manifest/generatedwrites can be concise taskresult with remaininggaps; no raw identifiers/secret/personal data. Do not implement full engine/NE/adapters or choose framework. No additionalprimaryresearch beyond one targeted source if exact API needed; use acceptedcontract. Stop and boundedreport if impossible or exceeds5files/900lines, no partialpass or outsideowned hacks.",
+  "source_review_sha256": {
+    "poc/client-framework/window-admission/Host.swift": "bf5f9f627922e176a977546451e4b1745304551fcc66549d4f7a3c5882652084",
+    "poc/client-framework/window-admission/driver.py": "afe987cb7d9b735c05079e38352a371c8c5ead5e7d999bff1456d3514bc96477",
+    ".github/workflows/client-window-admission.yml": "a504cff8b5c8962e76844293ca7b57267245f3e31ec7aa61172228ddd26d6a00",
+    "tests/client_framework/WindowAdmissionTests.swift": "1decb62bbd8c9ab4bf892992a216fd469883bba9891af087d79a48a1d23697c1",
+    "tests/client_framework/test_window_admission_driver.py": "aa36d50296237cb4062bc4108d496b52d7311a395d79e1ffccc868fb2ab76eda"
+  },
+  "source_review_status": "source reviewed, full fake7 still EXIT1 afterrepair2; stop further repairs/reruns pending R escalation; native notauthorized",
+  "repair_authorization": "Root authorizes one same-card consolidated SOURCE repair of independent R findings; <=900 total lines (was700), same five paths, no scope/functionality expansion, no imports/tests/runtime. Safety fixes require retained-rootFD, geometry conversion, clean env, bounded startup/reap/EOF/FD evidence and explicit Swift parse mode. Runtime/fake grants still withheld.",
+  "previous_source_review_sha256": {
+    "poc/client-framework/window-admission/Host.swift": "82bb40224942c2390b930d4dcbba03e33bad8c8e18f6cdaa340f64a584ccfe53",
+    "poc/client-framework/window-admission/driver.py": "752a393bbe6d095468672ddadcec1be7ebdec7c82aac576c632f22d71dc1d5b9",
+    ".github/workflows/client-window-admission.yml": "95fe99a15464cc202ae23235336e25b8be6f8abb7c23fb3b6a2cd9c009230c9b",
+    "tests/client_framework/WindowAdmissionTests.swift": "1decb62bbd8c9ab4bf892992a216fd469883bba9891af087d79a48a1d23697c1",
+    "tests/client_framework/test_window_admission_driver.py": "9a45a933f6c3d608d3ea6188a3916c610dedf158a2eba89e04366fcff03a9424"
+  },
+  "repair2_previous_sha256": {
+    "poc/client-framework/window-admission/driver.py": "4d320f2b1e3b5583021d8faaeab77ad692ce6e2a7b06242a64bd4d40f76b72be",
+    "tests/client_framework/test_window_admission_driver.py": "d125367af0787745032d605ab377b523c61a927254345a34759fdd0e8ddb74c6"
+  },
+  "fixture_evidence": {
+    "status": "reviewed_source_not_behavior_qualified",
+    "review_path": "docs/planning/task-results/G0/G0-06.2av-review.md",
+    "python_fixture_attempts": [
+      {
+        "count": 6,
+        "exit": 1,
+        "duration_seconds": 3.455,
+        "failure": "normal-child group-cleanup-unproven"
+      },
+      {
+        "count": 7,
+        "exit": 1,
+        "duration_seconds": 3.45,
+        "failure": "normal-child group-cleanup-unproven"
+      }
+    ],
+    "hashes_before_after": "all5sources/trustedinterpreter/binding unchanged each attempt",
+    "native_guest_count": 0,
+    "repair_count": 2,
+    "qualification": "not passed; stop retries and escalateR"
+  },
+  "publication_guard": "Root mechanically disables admission job with literalfalse while runtimeunqualified. This prevents future identity-only/source publications consuming a GUI guest. Enabling requires new sourcehash/runtimeR acceptance; current blocked state unchanged."
+}

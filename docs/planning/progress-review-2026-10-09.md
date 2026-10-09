@@ -100,3 +100,7 @@ aq 独立审查已接受（695ffd5）：B 去除等待A签名的串行边但自�
 as 独立环境资格计划已审并接受；278卡中83 verified、9 blocked、186 locked。没有已资格化UI/NE/签名目标，当前硬件快照不能保证VM余量，签名/独立目标可用性待用户回复。接下来可准备B独立source-only合同；不以文档通过冒充GUI/NE/签名或完整G0。
 
 at source preparation accepted: 279 cards, 84 verified /9 blocked /186 locked. User confirms Apple account availability but only current development Mac and GitHub runner; independent VM/Mac not confirmed. Exact native source paths/API/build shape proposed, real UI/NE/signing unqualified. Next freeze one bounded runner GUI admission contract; no further crash attribution.
+
+2026-10-10: au conditional window contract accepted at7009166; 281cards85verified/9blocked/186locked/1ready(av source package). Own-window queued events/rendered-region evidence required; exact feature-source push avoids defaultbranch changes. Current source stage has no runtime grant; toolchain provenance and Cocoa/toolchild/cleanup review remain prerequisites. Full seven client qualification/ADR cards remain locked.
+
+2026-10-10 av checkpoint:281cards85verified/10blocked/186locked. Source900lines independently reviewed, two I repairs; local fullfake6then7 bothexit1 at normalchildcleanup-unproven. No Swift/compiler/GUI/guest, no push. R identifies existingreport loses separate proof predicates; next boundedfailure-envelope contract must distinguish expectedoverflow/timeout from unsafecleanup and precede any newexecution. PaidAppleDeveloper membership confirmed; no credential/Keychain access or qualifiedNE/signing inferred.

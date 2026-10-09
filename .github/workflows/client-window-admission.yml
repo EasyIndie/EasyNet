@@ -1,0 +1,28 @@
+name: Own window admission
+on:
+  push:
+    branches: [codex/feature/self-hosted-byos-byoc]
+    paths:
+      - 'poc/client-framework/window-admission/Host.swift'
+      - 'poc/client-framework/window-admission/driver.py'
+      - '.github/workflows/client-window-admission.yml'
+      - 'tests/client_framework/WindowAdmissionTests.swift'
+      - 'tests/client_framework/test_window_admission_driver.py'
+      - 'docs/planning/task-bindings/client-window-admission-runtime.json'
+permissions:
+  contents: read
+jobs:
+  admission:
+    if: ${{ false }} # Runtime unqualified; re-review source/binding before enabling.
+    runs-on: macos-15
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Admission with independently frozen runtime binding
+        run: >-
+          python3 -I -B poc/client-framework/window-admission/driver.py
+          --binding docs/planning/task-bindings/client-window-admission-runtime.json
+          --phase admit

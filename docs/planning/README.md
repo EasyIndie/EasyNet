@@ -7,7 +7,7 @@ root README. Technical choices require evidence and an ADR before implementation
 - [2026-10-09 progress review and proposed sequencing](progress-review-2026-10-09.md) — review baseline and subsequent accepted execution updates
 
 - [Agent execution and feature branch policy](agent-execution-policy.md) — low-cost task cards and final merge gate
-- [Task cards and per-card models](task-cards/README.md) — 280 independent cards with prerequisites, behavior cases and unlock conditions
+- [Task cards and per-card models](task-cards/README.md) — 281 independent cards with prerequisites, behavior cases and unlock conditions
 - [Model routing and cost calibration](model-routing.md) — Luna/Sol/Astra roles, review and escalation
 - [Main-session/subagent usage comparison](agent-cost-comparison.md) — measured cache/token baseline and per-task comparison method; cost winner unproven
 - [Atomic task catalog](atomic-task-catalog.md) — 168 original entries mapped to the concrete task cards
