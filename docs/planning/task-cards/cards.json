@@ -9935,7 +9935,7 @@
         "reviewed_by": "root source review with one focused repair; hash-frozen offline make check and formatter failure negative",
         "actual_model": "gpt-6-luna",
         "reasoning_effort": "medium",
-        "token_usage": "Full-chain measurement at card cutoff pending; no billing inference"
+        "token_usage": "Full-chain counters docs/planning/metrics/G0-07.2-usage.json; scope limitations G0-07.2.json"
       }
     },
     {
@@ -9944,7 +9944,7 @@
       "parent": "G0-07",
       "phase": "G0",
       "title": "添加 controller CI 并验证旧 Bash CI 保持有效",
-      "status": "locked",
+      "status": "ready",
       "mode": "implementation",
       "dependencies": [
         "G0-07.2"
@@ -9959,20 +9959,29 @@
       },
       "inputs": [
         {
-          "path": ".github/workflows/tests.yml",
-          "selector": "工程脚手架 相关函数/配置；用 rg 定位后只读局部"
+          "path": "controller/Makefile",
+          "selector": "accepted check command only"
         },
         {
-          "path": "tests/run_all_tests.bash",
-          "selector": "工程脚手架 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/task-bindings/G0-07.3.json",
+          "selector": "all frozen CI requirements"
+        },
+        {
+          "path": ".github/workflows/tests.yml",
+          "selector": "trigger branches only"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-07.3.md",
       "binding": "docs/planning/task-bindings/G0-07.3.json",
       "allowed_writes": [
+        ".github/workflows/controller.yml",
+        ".github/workflows/tests.yml",
         "docs/planning/task-results/G0/G0-07.3.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        ".github/workflows/controller.yml",
+        ".github/workflows/tests.yml"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -10008,10 +10017,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "前置卡尚未 verified/accepted-not-applicable",
-        "task binding 尚未冻结具体实现文件/接口/定向测试命令"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 更强评审角色",
         "涉及新 trust/secret/权限/销毁边界立即审查",

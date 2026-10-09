@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-07.3",
+  "status": "frozen",
+  "contract_versions": [
+    "G0-07.2 accepted offline make check @f53127e",
+    "ADR004 nonrelease GUI-independent CI only"
+  ],
+  "implementation_files": [
+    ".github/workflows/controller.yml",
+    ".github/workflows/tests.yml"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    },
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-07.3",
+      "expected": "exit0 planning only"
+    },
+    {
+      "command": "root feature push after independent source review; observe Controller and Tests at exact source SHA",
+      "expected": "Controller check/build and original Bash jobs pass; no release/native diagnostic"
+    }
+  ],
+  "environment": "GitHub hosted ubuntu-24.04 controller job; existing Bash matrix unchanged",
+  "side_effect_authorization": "User authorized feature runner validation; only reviewed feature push, no main/tag/release/deploy/secrets/environment writes. Worker source only; root independent R before push.",
+  "prepared_by": "root",
+  "reviewed_by": "gpt-6.1-sol high controller_ci_review PASS; root exact scoped diff confirmation",
+  "note": "New Controller workflow <=75lines: push ONLY codex/feature/self-hosted-byos-byoc paths controller/** and .github/workflows/controller.yml; pull_request branches main and feature same paths; no dispatch/tags/schedules/pull_request_target. permissions contents read. ubuntu24.04 one job timeout10min. checkout SHA3d3c42e5aac5ba805825da76410c181273ba90b1 verified officialv7, persist-credentials false. Fetch official https://go.dev/dl/go1.27.2.linux-amd64.tar.gz curl fail showerror location into RUNNER_TEMP task-specific dir; verify SHA256 ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5 then extract trusted archive only. No user/script remote execution before hash. Run same make -C controller check GO=<temp>/go/bin/go GOFMT=<temp>/go/bin/gofmt GOCACHE=<temp>/cache GOPATH=<temp>/gopath then build development binary under temp with GOENVoff GOTOOLCHAINlocal GOWORKoff GOPROXYoff GOSUMDBoff CGO0; never publish artifact/release. Existing tests.yml modify ONLY add feature branch under push.branches and pull_request.branches; no other job/action/command changes. This allows once ordinary Bash regression, no native crash trigger paths changed. Runtime exactsourceSHA evidence root handles. Result<=12lines sourcependingR/runtime. Worker no authored runtime/no push/network/commits/newagents.",
+  "source_sha256": {
+    ".github/workflows/controller.yml": "7d9b95a010e6350cdd7caf1b0f0bf6b348c4c416b8427f41c18eb9e1b80ef6b6",
+    ".github/workflows/tests.yml": "61101b312b02d19b3f0050c777ff47f4862cd1236f2abe5f5b4156a0ce423b76"
+  }
+}

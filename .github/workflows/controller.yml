@@ -1,0 +1,61 @@
+name: Controller
+
+on:
+  push:
+    branches:
+      - codex/feature/self-hosted-byos-byoc
+    paths:
+      - 'controller/**'
+      - '.github/workflows/controller.yml'
+  pull_request:
+    branches:
+      - main
+      - codex/feature/self-hosted-byos-byoc
+    paths:
+      - 'controller/**'
+      - '.github/workflows/controller.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  controller:
+    name: Controller check and development build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Check and build with verified Go toolchain
+        shell: bash
+        env:
+          GOENV: 'off'
+          GOTOOLCHAIN: local
+          GOWORK: 'off'
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+          CGO_ENABLED: '0'
+        run: |
+          set -euo pipefail
+          runner_temp="${RUNNER_TEMP:-}"
+          [[ -n "$runner_temp" ]] || { echo 'RUNNER_TEMP is required' >&2; exit 1; }
+          controller_ci_dir=$(mktemp -d "${runner_temp}/easynet-G0-07.3.XXXXXX")
+          archive="${controller_ci_dir}/go1.27.2.linux-amd64.tar.gz"
+          curl --fail --show-error --location \
+            https://go.dev/dl/go1.27.2.linux-amd64.tar.gz --output "$archive"
+          printf '%s  %s\n' \
+            ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5 \
+            "$archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$controller_ci_dir"
+          export GOCACHE="${controller_ci_dir}/cache"
+          export GOPATH="${controller_ci_dir}/gopath"
+          make -C controller check \
+            GO="${controller_ci_dir}/go/bin/go" \
+            GOFMT="${controller_ci_dir}/go/bin/gofmt" \
+            GOCACHE="$GOCACHE" GOPATH="$GOPATH"
+          cd controller
+          "${controller_ci_dir}/go/bin/go" build \
+            -o "${controller_ci_dir}/easynet-controller-development" ./cmd/easynet-controller

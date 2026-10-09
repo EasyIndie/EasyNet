@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-07.2",
+  "status": "verified_offline_tests_only",
+  "strategy": "bounded_C_worker_root_source_review_acceptance",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "a1a3648",
+  "implementation_commit": "f53127e",
+  "started_at_utc": "2026-10-09T14:36:08+00:00",
+  "finished_at_utc": "2026-10-09T14:39:30+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none; same-card one repair reused worker",
+  "main_coordination_included": true,
+  "automatic_review_included": true,
+  "repair_rounds": 1,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-07.2-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9574933012177452,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 1456512,
+    "calls": 29,
+    "input_tokens": 1521172,
+    "noncached_input_tokens": 64660,
+    "output_tokens": 8267,
+    "reasoning_output_tokens": 995,
+    "total_tokens": 1529439
+  },
+  "limitations": [
+    "Includes previous card measurement/publication tail and current card preparation/source/review/repair/offline acceptance; subsequent CI prep excluded.",
+    "No matched accepted main-only counterpart; lower totals versus prior mixed windows are not delegation savings."
+  ]
+}

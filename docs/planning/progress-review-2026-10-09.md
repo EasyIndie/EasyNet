@@ -82,3 +82,9 @@ GitHub runner 已验证能执行限定 guest workflow，尚未证明满足 GUI/N
 
 已检查任务状态/phase/dependencies、accepted ADR 和实际 runner/evidence、用量窗口；任务计划结构校验通过。
 未重跑未变化的 Bats、平台或 crash 试验；没有新 native/runtime/云操作。提案不是接受证明或解锁权限。
+
+## 用户确认后的落地更新
+
+34e5fe7 正式修订 ADR-004/入口依赖并通过独立 R 审查。a1a3648 完成 G0-07.1 的纯标准库 Go development CLI 离线构建；f53127e 完成 G0-07.2 的格式化检查、版本 fixture 和单测，含 formatter 失败负例。G0-07.3 正在接入非发布 CI。此前表格是复核基线；当前状态以 cards.json 与逐卡结果为准。
+
+新 controller 仅提供 --version，不提供 BYOS/BYOC 操作闭环；客户端与完整 G0–G6 gates 未完成。G1 本地库存仍须独立生产合同审查，不能直接复制 PoC。
