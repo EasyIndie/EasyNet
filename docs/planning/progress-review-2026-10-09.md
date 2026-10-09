@@ -90,3 +90,9 @@ GitHub runner 已验证能执行限定 guest workflow，尚未证明满足 GUI/N
 新 controller 仅提供 --version，不提供 BYOS/BYOC 操作闭环；客户端与完整 G0–G6 gates 未完成。G1 本地库存仍须独立生产合同审查，不能直接复制 PoC。
 
 G0-07.3 已通过 controller CI 和修复 jq1.8 binding 优先级兼容后两套 Ubuntu Bash/实客户端矩阵（37947832749，release skipped）。G0-07 三卡验收；当前 81 verified、8 blocked、186 locked。客户端门槛仍未通过，完整 G0 未完成；下一入口 G1-01.1 仍须冻结并审查正式本地模型合同。
+
+## 用户确认 G0 优先后的收敛
+
+aq 独立审查已接受（695ffd5）：B 去除等待A签名的串行边但自身资格仍locked，最终ADR显式汇合A/B六卡。ar 最后有界reader工作包源码/17fakes/独立source-runtime-evidence审查通过；source028b737 run37953433995 为directory-guard/unknown，native qualification blocked，诊断预算0。该标记仅是最后进入的步骤（后续clockcheck也可能保留），不能推断具体目录属性/权限/SIGABRT原因，不再新增归因观测。
+
+当前 fresh hardware：8GiB RAM、8逻辑CPU、swap约2.3GiB已用、35GiB可用盘；无VM安装/启动或个人凭据读取。as 正在审查独立环境资格，Apple账号和实际测试目标可用性待用户说明；G0尚未完成。

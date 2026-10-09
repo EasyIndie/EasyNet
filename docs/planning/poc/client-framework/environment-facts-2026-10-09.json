@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-09",
+  "source": "root trusted read-only system CLI, elevated read after sandbox sysctl denial",
+  "host_os": "macOS27.0 arm64",
+  "memory_bytes": 8589934592,
+  "logical_cpu_count": 8,
+  "swap_used_MiB": 2363.44,
+  "disk_available_GiB_rounded": 35,
+  "xcode_developer_path": "/Applications/Xcode-27.0.0.app/Contents/Developer",
+  "vm_cli_lookup": [
+    "tart",
+    "prlctl",
+    "qemu-system-aarch64"
+  ],
+  "vm_cli_lookup_result": "none resolved through current PATH; does not prove no installed GUI VM app or no VM exists",
+  "operations_not_performed": [
+    "personal Keychain/profiles/settings reads",
+    "VM/SDK download/install/start",
+    "GUI/NE/runtime probes"
+  ],
+  "user_conditions": "AppleDeveloperaccount and independent test target availability requested asynchronously, no answer yet",
+  "primary_sources": [
+    {
+      "url": "https://developer.apple.com/documentation/virtualization/vzmacosconfigurationrequirements/minimumsupportedmemorysize",
+      "fact": "Minimum supported guest memory depends on restore-image/configuration requirements; below requirement unsupported."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+      "fact": "Hosted jobs generally fresh VMs; arm64 macOS nested virtualization unsupported and no static UDID. Same-host development provisioning described, not proof account/profile available."
+    }
+  ]
+}

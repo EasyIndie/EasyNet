@@ -27288,7 +27288,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "完成最后一次有界 reader 阶段观测工作包",
-      "status": "active",
+      "status": "blocked",
       "mode": "implementation",
       "dependencies": [
         "G0-06.2aq"
@@ -27356,6 +27356,110 @@
           }
         ],
         "behavior_check": "Strict fresh runner-only once-B/once-record-query, originalprofile/source unchanged, exact PID/time/parent/image association",
+        "implementation_commands": [],
+        "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
+      },
+      "locks": [
+        "final diagnostic attempt consumed; native qualification unknown, independent environment qualification required"
+      ],
+      "escalation": [
+        "合同不明确/接口需变更，停止交给 更强评审角色",
+        "涉及新 trust/secret/权限/销毁边界立即审查",
+        "超过 3 实现+2 测试文件或建议 200 行 diff 则继续拆卡",
+        "两次局部修复仍失败提交复现，不重复全仓审计"
+      ],
+      "budget": {
+        "context_target": "≤6k",
+        "output": "≤12 行交接 + 本卡 task-result",
+        "retry_limit": 2
+      },
+      "evidence_required": [
+        "读入合同版本/目标 commit",
+        "改动文件与 diff 或明确无改动",
+        "正例/负例与命令 exit code",
+        "实际模型与推理档位/可获取 token 数",
+        "未验证/剩余阻塞，不能伪报实机成功"
+      ],
+      "source_acceptance": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2ar.md",
+        "reviewed_by": "independent Sol high source/runtime/evidence PASS; native gate remains blocked",
+        "actual_model": "gpt-6.1-sol medium worker/high R",
+        "controlled_fake_tests": 17,
+        "token_usage": "docs/planning/metrics/G0-06.2ar-usage.json whole chain, no billing comparator"
+      }
+    },
+    {
+      "id": "G0-06.2as",
+      "source_id": "G0-06.2",
+      "parent": "G0-06",
+      "phase": "G0",
+      "title": "审查独立实验环境与 G0 外部资格门槛",
+      "status": "ready",
+      "mode": "review",
+      "dependencies": [
+        "G0-06.2aq"
+      ],
+      "model": {
+        "tier": "R",
+        "type": "强推理设计/审查模型",
+        "example": "GPT-6.1 Sol high；冲突难解时 Astra high",
+        "review": "维护者接受决策/验收结论；模型不能自授资源操作权限",
+        "reason": "决定架构或审查信任、恢复、资源销毁与阶段证据，不能仅凭测试通过",
+        "context": "≤12k，超出先做事实摘要"
+      },
+      "inputs": [
+        {
+          "path": "docs/planning/poc/client-framework/environment-facts-2026-10-09.json",
+          "selector": "all fresh hardware/officialfacts and user conditions unknown"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/g0-closure-decision.md",
+          "selector": "Q-A/Q-B/Q-NE actual gates, no-authority defaults"
+        },
+        {
+          "path": "docs/planning/task-results/G0/G0-06.2ar.md",
+          "selector": "final diagnostic consumed, no further reader query permitted"
+        },
+        {
+          "path": "docs/planning/poc/client-framework/native-evidence.md",
+          "selector": "UI/NE/signing distinctions only"
+        }
+      ],
+      "output": "docs/planning/task-results/G0/G0-06.2as.md",
+      "binding": "docs/planning/task-bindings/G0-06.2as.json",
+      "allowed_writes": [
+        "docs/planning/poc/client-framework/environment-qualification-plan.md",
+        "docs/planning/task-results/G0/G0-06.2as.md"
+      ],
+      "implementation_writes": [
+        "docs/planning/poc/client-framework/environment-qualification-plan.md"
+      ],
+      "forbidden": [
+        "main 分支/正式 release/外部 Issue 自动写入",
+        "依赖合同或语言架构的隐式改变",
+        "真实运行标识及原始 secret 写入文档/日志",
+        "未绑定路径和非本任务功能"
+      ],
+      "steps": [
+        "Assess trusted resource facts and accepted qualification criteria only",
+        "Propose bounded target options/selection rules and exact external prerequisites",
+        "Record blocked-ready distinction and next source/fixture preparation without runtime authority"
+      ],
+      "acceptance": [
+        "基于实际资源判断可用目标/阻塞；区分runner构建、实际UI/NE/签名资格；给出满足条件后可冻结的目标合同清单，不擅自安装采购或缩小G0"
+      ],
+      "verification": {
+        "planning_checks": [
+          {
+            "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2as",
+            "expectation": "exit0 planningonly"
+          },
+          {
+            "command": "git diff --check",
+            "expectation": "exit0"
+          }
+        ],
+        "behavior_check": "给出候选独立前置/历史失败 successor 链和资格门槛；不授予运行或更改依赖权限",
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ar",
+  "status": "blocked_native_source17fakes_accepted",
+  "strategy": "bounded_I_required_R_root_fake_and_once_guest",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "695ffd5",
+  "implementation_commit": "028b7373758f6cacd9e9f4e91530ce1d8caf1200",
+  "started_at_utc": "2026-10-09T15:30:58+00:00",
+  "finished_at_utc": "2026-10-09T15:44:51.366047+00:00",
+  "subagent_count": 2,
+  "history_inheritance": "none; same-card R reused for runtime/evidence",
+  "main_coordination_included": true,
+  "automatic_review_included": true,
+  "repair_rounds": 0,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2ar-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9776322660765293,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 6670208,
+    "calls": 57,
+    "input_tokens": 6822819,
+    "noncached_input_tokens": 152611,
+    "output_tokens": 24465,
+    "reasoning_output_tokens": 7920,
+    "total_tokens": 6847284
+  },
+  "limitations": [
+    "Includes previous review metrics publication and current source/fakes/R/runtime/result plus root hardware/official environment research for next-step; not pure implementation labor.",
+    "Final single guest outcome unknown; finite phase observation does not qualify native/GUI. No future crash-reader retries allowed.",
+    "No matched accepted main-only sample or billable alias fees; root+worker+R+auto all included; own publication excluded."
+  ]
+}

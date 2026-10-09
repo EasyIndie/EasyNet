@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2as",
+  "status": "frozen",
+  "contract_versions": [
+    "aq accepted695ffd5; ar finalattempt37953433995 consumed0",
+    "trusted fresh hardware snapshot+primary source facts2026-10-09"
+  ],
+  "implementation_files": [
+    "docs/planning/poc/client-framework/environment-qualification-plan.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2as",
+      "expected": "exit0 planningonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    }
+  ],
+  "environment": "read-only review and document preparation",
+  "side_effect_authorization": "No installs/downloads/VMstarts/GUI/NE/signing/Keychain/settings reads/cloudspend/secretcollection; no newcrashquery. Useraccount/device availability unanswered, recordconditions notguess.",
+  "prepared_by": "root",
+  "reviewed_by": "R target/resource gate review then rootacceptance"
+}

@@ -35,7 +35,7 @@ Go/SQLite 已接受后可先完成 GUI-independent G0-07 skeleton/fixtures/非�
 
 ## 模型分工与升级条件
 
-派发模型与推理档位按 [模型路由](model-routing.md) 的精确映射：D `gpt-6-luna` low、C `gpt-6-luna` medium、I `gpt-6.1-sol` medium、R `gpt-6.1-sol` high；仅 Sol 无法解决复杂争议时用 `gpt-6-astra` high。默认不用 xhigh/max、不自动升档；卡片分配见 [277 张任务卡](task-cards/README.md)。
+派发模型与推理档位按 [模型路由](model-routing.md) 的精确映射：D `gpt-6-luna` low、C `gpt-6-luna` medium、I `gpt-6.1-sol` medium、R `gpt-6.1-sol` high；仅 Sol 无法解决复杂争议时用 `gpt-6-astra` high。默认不用 xhigh/max、不自动升档；卡片分配见 [278 张任务卡](task-cards/README.md)。
 用户已明确授权按任务卡分配使用子 Agent。主 Agent 只派发 ready 卡，指定可用的模型与
 推理档位；普通文档、状态台账、root 命令和普通事实核对可直接完成。较完整文档/报告用 D；
 已冻结小函数用 C；SSH/vault/state concurrency 用 I；纯官方事实收集用 C，资料取舍用 R。无需逐卡重复请求模型授权；不自动生成数百个新聊天。
@@ -96,7 +96,7 @@ ID / 上层工作包：
 升级条件：
 ```
 
-没有精确路径、验收命令、行为样例、冻结依赖的条目只可 planned；168 个原条目已拆成 277 张卡；各卡的 ready/locked 状态以 task-cards 台账为准。G0 的架构/PoC 工作分别用证据表与单候选验收代替实现函数接口。
+没有精确路径、验收命令、行为样例、冻结依赖的条目只可 planned；168 个原条目已拆成 278 张卡；各卡的 ready/locked 状态以 task-cards 台账为准。G0 的架构/PoC 工作分别用证据表与单候选验收代替实现函数接口。
 
 ## 第一张任务卡（执行记录）
 

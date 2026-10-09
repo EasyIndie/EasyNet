@@ -107,5 +107,27 @@
     "warnings": 0,
     "hash_checks": "all11source+exactlocalPython+binding before/after EACH command unchanged",
     "coverage": "strict phase wire; candidate none/ambiguous/size/FD identity/read/parse/close and main pre/post source/binding guards; driver once/unknown retention"
-  }
+  },
+  "remote_result": {
+    "run_id": 37953433995,
+    "url": "https://github.com/EasyIndie/EasyNet/actions/runs/37953433995",
+    "source_commit": "028b7373758f6cacd9e9f4e91530ce1d8caf1200",
+    "head_sha": "028b7373758f6cacd9e9f4e91530ce1d8caf1200",
+    "conclusion": "failure",
+    "exit_code": 1,
+    "output": {
+      "category": "unknown",
+      "code": null,
+      "driver_step": "report",
+      "operation": "unknown",
+      "outcome": "unknown",
+      "reader_step": "directory-guard",
+      "stage": "unknown",
+      "termination": "unknown"
+    },
+    "interpretation": "directory-guard is last entered gate; enumeration not reached. Does not establish fstat/trust itself failed: a subsequent clock check can retain that label. Component/predicate/exception/crash cause/required permissions unknown.",
+    "remaining_native_attempts": 0,
+    "stop": "Final diagnostic attempt consumed; no additional crash/reader queries or grants; assess separate environment qualification."
+  },
+  "evidence_review": "independent Sol high reader_phase_review PASS; source17fake+finiteobservability accepted, native qualification blocked"
 }
