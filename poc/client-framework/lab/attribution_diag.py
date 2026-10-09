@@ -13,7 +13,7 @@ import uuid
 
 LAB = Path(__file__).absolute().parent
 ROOT = LAB.parents[2]
-BINDING = ROOT / 'docs/planning/task-bindings/G0-06.2ao.json'
+BINDING = ROOT / 'docs/planning/task-bindings/G0-06.2ap.json'
 OLD = ('isolate.py', 'mapping-fixture.sb', 'mapping_diag.py', 'mapping_diag_test.py',
        'mapping_main_test.py', 'fixture.sb')
 NEW = ('attribution_diag.py', 'attribution_record.py', 'attribution_record_test.py',
@@ -37,7 +37,7 @@ def verify():
             value[key] = item
         return value
     binding = json.loads(BINDING.read_text(), object_pairs_hook=unique)
-    require(binding['task_id'] == 'G0-06.2ao' and binding['status'] == 'frozen')
+    require(binding['task_id'] == 'G0-06.2ap' and binding['status'] == 'frozen')
     hashes = binding['source_review']['files_sha256']
     require(type(hashes) is dict and set(hashes) == set(SOURCES))
     for name, digest in hashes.items():

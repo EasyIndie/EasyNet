@@ -12,6 +12,9 @@ from unittest.mock import patch
 spec = importlib.util.spec_from_file_location('record', Path(__file__).with_name('attribution_record.py'))
 r = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(r)
+driver_spec = importlib.util.spec_from_file_location('driver_binding', Path(__file__).with_name('attribution_diag.py'))
+driver = importlib.util.module_from_spec(driver_spec)
+driver_spec.loader.exec_module(driver)
 T = 1_000_000_000
 UUID = '12345678-1234-1234-1234-123456789abc'
 
@@ -197,7 +200,7 @@ class ReaderGuard(unittest.TestCase):
     def test_internal_guest_and_hash_failures(self):
         source = b'def verify():\n    pass\n'
         args = ['reader', '--owned-ips-v1', '42', '23', str(T), str(T+10), str(4*T), str(4*T)]
-        for fault in ('none', 'parent', 'home', 'hash', 'posthash'):
+        for fault in ('none', 'parent', 'home', 'hash', 'posthash', 'guard-binding', 'legacy-only'):
             digest = hashlib.sha256(source).hexdigest() if fault != 'hash' else '0'*64
             binding = json.dumps({'source_review': {'files_sha256': {'poc/client-framework/lab/attribution_diag.py': digest}}})
             with ExitStack() as stack:
@@ -211,11 +214,21 @@ class ReaderGuard(unittest.TestCase):
                 stack.enter_context(patch.object(r.platform, 'mac_ver', return_value=('15.7.9', (), '')))
                 for key in ('monotonic', 'monotonic_ns', 'time_ns'):
                     stack.enter_context(patch.object(r.time, key, return_value=0))
-                stack.enter_context(patch.object(Path, 'read_text', return_value=binding))
+                binding_reads = []
+                def read_binding(path, *_args, **_kwargs):
+                    binding_reads.append(path)
+                    expected = (driver.BINDING.with_name('G0-06.2an.json')
+                                if fault == 'legacy-only' else driver.BINDING)
+                    if path != expected:
+                        raise ValueError('unreviewed binding path')
+                    return binding
+                stack.enter_context(patch.object(Path, 'read_text', autospec=True, side_effect=read_binding))
                 stack.enter_context(patch.object(Path, 'read_bytes', return_value=source))
                 fake_guard = types.ModuleType('guard')
                 stack.enter_context(patch.object(r.importlib.util, 'module_from_spec', return_value=fake_guard))
                 def fake_exec(*_):
+                    fake_guard.BINDING = (driver.BINDING.with_name('G0-06.2an.json')
+                                          if fault == 'guard-binding' else driver.BINDING)
                     fake_guard.verify = unittest.mock.Mock(side_effect=[None, ValueError()] if fault == 'posthash' else [None, None])
                 stack.enter_context(patch.object(r, 'exec', side_effect=fake_exec, create=True))
                 scan = stack.enter_context(patch.object(r, 'scan', return_value=observe(encode(*sample()))))
@@ -223,6 +236,9 @@ class ReaderGuard(unittest.TestCase):
                 r.main()
             self.assertEqual(json.loads(emit.call_args.args[0])['outcome'], 'observed' if fault == 'none' else 'unknown')
             self.assertEqual(scan.call_count, 1 if fault in ('none', 'posthash') else 0)
+            self.assertEqual(binding_reads, [] if fault in ('parent', 'home') else [driver.BINDING])
+            if fault == 'guard-binding':
+                fake_guard.verify.assert_not_called()
 
 
 if __name__ == '__main__':

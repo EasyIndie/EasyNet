@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ap",
+  "status": "frozen",
+  "contract_versions": [
+    "am@86300ad reader contract unchanged",
+    "ao@18199e7 driver literal-step contract unchanged",
+    "ap fixed binding consistency contract independent R PASS"
+  ],
+  "implementation_files": [
+    "poc/client-framework/lab/attribution_diag.py",
+    "poc/client-framework/lab/attribution_record.py"
+  ],
+  "test_files": [
+    "poc/client-framework/lab/attribution_diag_test.py",
+    "poc/client-framework/lab/attribution_record_test.py"
+  ],
+  "commands": [
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-06.2ap",
+      "expected": "exit0 planonly"
+    },
+    {
+      "command": "git diff --check",
+      "expected": "exit0"
+    },
+    {
+      "command": "root pinned Python -I -B attribution_record_test.py and attribution_diag_test.py with frozen hashes immediately before/after each",
+      "expected": "8 record+7 driver controlled fake tests pass without warnings"
+    }
+  ],
+  "environment": "one fresh GitHub macos15-arm64 repaired-source diagnostic after runtime review",
+  "side_effect_authorization": "User authorized GitHub runner validation and continuation. Root-only repaired-source observation after concrete runtime binding PASS, source commit and frozenhash/fake checks. No unchanged retry, personalhost native/logs/production.",
+  "prepared_by": "root Sol medium",
+  "reviewed_by": "independent Sol high contract and diff PASS",
+  "source_review": {
+    "status": "independent Sol high exact-hash diff PASS",
+    "files_sha256": {
+      "poc/client-framework/lab/isolate.py": "3bc47c022eb6bf10004372cc4021e0d692720e81b318d5dd0cffb54b18d2522c",
+      "poc/client-framework/lab/mapping-fixture.sb": "1dfc6055110b29f06ccd2026eb230433cd5ca6da9be2354b2c43fb88efba0595",
+      "poc/client-framework/lab/mapping_diag.py": "3918c9408f323cc4390465717e151d841b54a524bb83246185be1d6e48cba59b",
+      "poc/client-framework/lab/mapping_diag_test.py": "552bb9eb486967cc1377db6f458ff35f371a836c13f5172177342cc1c1309f1f",
+      "poc/client-framework/lab/mapping_main_test.py": "09f9b773dc949656ce3769e3449e05123717e5c8eb1247c429bb841091127c72",
+      "poc/client-framework/lab/fixture.sb": "b554c29d574b6c1852f7facbdbd8e4fe10af7864ec64637a3191055e2e8e3c82",
+      "poc/client-framework/lab/attribution_diag.py": "e9e5749208a336b364bb06a717734e1f15917cca72b8b78539122200e1ff6f77",
+      "poc/client-framework/lab/attribution_record.py": "40d387911c1e1ac7019468821e7cb6654e880fa9ae4eabca0287a5372e518d2c",
+      "poc/client-framework/lab/attribution_record_test.py": "b33c43e759171fd822e8f625d13bc4f6031a6299a8a83172e08c67dd7162fdbb",
+      "poc/client-framework/lab/attribution_diag_test.py": "942918dd05fa7aed1ebdc4135c14b84503060c7195bcfbb73a83c942c8b8b844",
+      ".github/workflows/client-startup-attribution.yml": "f9ac2b790827c4f865e7fba406bcda847d5b029421962df13c9bf4774fbbce1d"
+    }
+  },
+  "runtime_authorization": {
+    "executor": "root Sol medium",
+    "local_fake_executable": {
+      "path": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+      "sha256": "b502cb4c5b46b8d4192ec6bcb600ce8922f1afc396fcf646e8765c6eba74a0bf"
+    },
+    "remote_attempts": 1,
+    "remote_executable_baseline": {
+      "version": "3.14.7",
+      "sha256": "d8f1d508de5acfd500f20d1949528375ff4a1f470efb267f00d1770941cdeee3",
+      "provenance": "al observed image baseline, not external release pin"
+    },
+    "stop": "One fresh guest observation of repaired binding path; original B/profile, one reader/query, limits, cleanup qualifications unchanged; no extra permissions/paths/raw logs/SDK/GUI/local native; failure/unknown/hash mismatch stops, no automatic rerun",
+    "remote_review_status": "independent Sol high concrete runtime binding PASS; once only",
+    "remote_command": "python3 -I -B poc/client-framework/lab/attribution_diag.py",
+    "preconditions": "independent exacthash source PASS; pinned record8+driver7 tests passed all11+Python before/after unchanged; root source commit exact feature; single sourcepush triggers same unchanged pathfilteredworkflow",
+    "evidence": "same six crash fields plus literal driver_step; known binding bug fixed, original an cause unexplained; no full isolation or SDK/GUI qualification from this run"
+  },
+  "controlled_fake_results": {
+    "record_tests": 8,
+    "driver_tests": 7,
+    "exit_codes": [
+      0,
+      0
+    ],
+    "warnings": 0,
+    "hash_checks": "all11source+exactlocalPython before/after each command unchanged",
+    "regression": "actual driver BINDING path-aware reader guard, legacy-only/guard-path/hash fail before scan"
+  }
+}

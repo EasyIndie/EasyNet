@@ -156,7 +156,7 @@ class Driver(unittest.TestCase):
                 hashes['unreviewed.py'] = digest
             if fault == 'source':
                 hashes[d.SOURCES[0]] = '0'*64
-            binding = json.dumps({'task_id': 'G0-06.2ao', 'status': 'frozen',
+            binding = json.dumps({'task_id': 'G0-06.2ap', 'status': 'frozen',
                                   'source_review': {'files_sha256': hashes}})
             with ExitStack() as stack:
                 stack.enter_context(patch.object(d.os, 'environ', {}))

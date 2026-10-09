@@ -264,7 +264,7 @@ def main():
                 or not sys.flags.isolated or not sys.dont_write_bytecode):
             raise ValueError('guest')
         path = Path(__file__).absolute().with_name('attribution_diag.py')
-        binding_path = path.parents[3] / 'docs/planning/task-bindings/G0-06.2an.json'
+        binding_path = path.parents[3] / 'docs/planning/task-bindings/G0-06.2ap.json'
         binding = loads(binding_path.read_text())
         source = path.read_bytes()
         import hashlib
@@ -274,6 +274,8 @@ def main():
         spec = importlib.util.spec_from_file_location('owned_attribution_guard', path)
         guard = importlib.util.module_from_spec(spec)
         exec(compile(source, str(path), 'exec'), guard.__dict__)
+        if guard.BINDING != binding_path:
+            raise ValueError('binding')
         guard.verify()
         value = scan(*args)
         guard.verify()
