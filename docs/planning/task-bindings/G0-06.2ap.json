@@ -77,5 +77,25 @@
     "warnings": 0,
     "hash_checks": "all11source+exactlocalPython before/after each command unchanged",
     "regression": "actual driver BINDING path-aware reader guard, legacy-only/guard-path/hash fail before scan"
+  },
+  "remote_result": {
+    "run_id": 37929861941,
+    "job_id": 113817652301,
+    "url": "https://github.com/EasyIndie/EasyNet/actions/runs/37929861941",
+    "head_sha": "c4230d32d0c385ae284a3ea733974a60470501e8",
+    "image": "macos-15-arm64/20260907.0337.1",
+    "conclusion": "failure",
+    "exit_code": 1,
+    "output": {
+      "category": "unknown",
+      "code": null,
+      "driver_step": "report",
+      "operation": "unknown",
+      "outcome": "unknown",
+      "stage": "unknown",
+      "termination": "unknown"
+    },
+    "classification": "binding repair accepted but native unknown remains at report predicate/preclean hash; no precise cause or retry/grant authority",
+    "reviewed_by": "independent Sol high evidence classification"
   }
 }

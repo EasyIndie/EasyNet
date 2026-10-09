@@ -332,4 +332,4 @@
 
 | [G0-06.2ao](G0/G0-06.2ao.md) | GPT-6.1 Sol medium | blocked | 增加诊断器有界失败步骤标记 |
 
-| [G0-06.2ap](G0/G0-06.2ap.md) | GPT-6.1 Sol medium | review | 修复驱动与读取助手的绑定版本不一致 |
+| [G0-06.2ap](G0/G0-06.2ap.md) | GPT-6.1 Sol medium | blocked | 修复驱动与读取助手的绑定版本不一致 |

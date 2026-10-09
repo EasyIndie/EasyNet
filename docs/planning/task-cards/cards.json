@@ -27019,7 +27019,7 @@
       "parent": "G0-06",
       "phase": "G0",
       "title": "修复驱动与读取助手的绑定版本不一致",
-      "status": "review",
+      "status": "blocked",
       "mode": "implementation",
       "dependencies": [
         "G0-06.2am"
@@ -27118,7 +27118,12 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-06.2ap.md",
+        "reviewed_by": "independent Sol high source and evidence reviews",
+        "token_usage": "docs/planning/metrics/G0-06.2ap.json"
+      }
     }
   ],
   "parent_gates": {

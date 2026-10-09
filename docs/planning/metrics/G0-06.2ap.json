@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-06.2ap",
+  "status": "blocked_native_source_fake_repair_accepted",
+  "strategy": "main_mechanical_independent_review",
+  "comparison_kind": "observational_unpaired",
+  "input_commit": "d70bfbf",
+  "implementation_commit": "c4230d32d0c385ae284a3ea733974a60470501e8",
+  "started_at_utc": "2026-10-09T11:39:07.049761+00:00",
+  "finished_at_utc": "2026-10-09T12:28:26.721578+00:00",
+  "subagent_count": 1,
+  "history_inheritance": "none; same-card contract/diff/runtime/evidence reviews",
+  "main_coordination_included": true,
+  "implementation_review_repair_included": true,
+  "automatic_review_included": true,
+  "measurement_overhead_included": true,
+  "first_pass": true,
+  "repair_rounds": 0,
+  "billing_cost": null,
+  "usage_report_path": "docs/planning/metrics/G0-06.2ap-usage.json",
+  "observed_usage_summary": {
+    "cache_read_fraction": 0.9623315989320073,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 3497216,
+    "calls": 42,
+    "input_tokens": 3634107,
+    "noncached_input_tokens": 136891,
+    "output_tokens": 15228,
+    "reasoning_output_tokens": 4569,
+    "total_tokens": 3649335
+  },
+  "limitations": [
+    "Approximate window includes previous ao publication tail, interruption/resumption, canonical initial reads and measurement; own publication after cutoff excluded.",
+    "Main mechanical patch plus required independent review, not matched main-only or successful native qualification.",
+    "Source/fake first pass; single repaired-source native observation unknown.",
+    "Binding migration defect corrected, original an failure not explained; no billing or causal cost winner."
+  ]
+}
