@@ -36,8 +36,8 @@ def transition($before; $after):
   end);
 try (
   exact(["schemaVersion","history"]) and .schemaVersion == 1 and
-  (.history | type == "array" and length > 0 and all(.[]; snapshot) and
+  (.history | . as $h | type == "array" and length > 0 and all(.[]; snapshot) and
     (.[0] | .remoteState == "planned" and .localState == "connected" and
       .action == "create" and .evidenceRef == null) and
-    . as $h | all(range(1; length); transition($h[. - 1]; $h[.])))
+    all(range(1; length); transition($h[. - 1]; $h[.])))
 ) catch false

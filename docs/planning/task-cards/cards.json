@@ -9944,7 +9944,7 @@
       "parent": "G0-07",
       "phase": "G0",
       "title": "添加 controller CI 并验证旧 Bash CI 保持有效",
-      "status": "ready",
+      "status": "active",
       "mode": "implementation",
       "dependencies": [
         "G0-07.2"
@@ -9976,11 +9976,15 @@
       "allowed_writes": [
         ".github/workflows/controller.yml",
         ".github/workflows/tests.yml",
+        "docs/planning/contracts/validate-operation.jq",
+        "docs/planning/contracts/validate-events.jq",
         "docs/planning/task-results/G0/G0-07.3.md"
       ],
       "implementation_writes": [
         ".github/workflows/controller.yml",
-        ".github/workflows/tests.yml"
+        ".github/workflows/tests.yml",
+        "docs/planning/contracts/validate-operation.jq",
+        "docs/planning/contracts/validate-events.jq"
       ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",

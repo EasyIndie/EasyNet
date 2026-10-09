@@ -4,14 +4,22 @@
   "status": "frozen",
   "contract_versions": [
     "G0-07.2 accepted offline make check @f53127e",
-    "ADR004 nonrelease GUI-independent CI only"
+    "ADR004 nonrelease GUI-independent CI only",
+    "Same-card CI repair: explicit array binding before boolean chain; preserve contract semantics across jq1.6/1.8"
   ],
   "implementation_files": [
     ".github/workflows/controller.yml",
     ".github/workflows/tests.yml"
   ],
-  "test_files": [],
+  "test_files": [
+    "docs/planning/contracts/validate-operation.jq",
+    "docs/planning/contracts/validate-events.jq"
+  ],
   "commands": [
+    {
+      "command": "bats tests/test_operation_contract.bats tests/test_event_contract.bats tests/test_error_contract.bats",
+      "expected": "exit0 all positive/negative/control-suffix contracts with jq1.6 local; runner matrix confirms newer jq"
+    },
     {
       "command": "git diff --check",
       "expected": "exit0"
@@ -28,10 +36,12 @@
   "environment": "GitHub hosted ubuntu-24.04 controller job; existing Bash matrix unchanged",
   "side_effect_authorization": "User authorized feature runner validation; only reviewed feature push, no main/tag/release/deploy/secrets/environment writes. Worker source only; root independent R before push.",
   "prepared_by": "root",
-  "reviewed_by": "gpt-6.1-sol high controller_ci_review PASS; root exact scoped diff confirmation",
-  "note": "New Controller workflow <=75lines: push ONLY codex/feature/self-hosted-byos-byoc paths controller/** and .github/workflows/controller.yml; pull_request branches main and feature same paths; no dispatch/tags/schedules/pull_request_target. permissions contents read. ubuntu24.04 one job timeout10min. checkout SHA3d3c42e5aac5ba805825da76410c181273ba90b1 verified officialv7, persist-credentials false. Fetch official https://go.dev/dl/go1.27.2.linux-amd64.tar.gz curl fail showerror location into RUNNER_TEMP task-specific dir; verify SHA256 ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5 then extract trusted archive only. No user/script remote execution before hash. Run same make -C controller check GO=<temp>/go/bin/go GOFMT=<temp>/go/bin/gofmt GOCACHE=<temp>/cache GOPATH=<temp>/gopath then build development binary under temp with GOENVoff GOTOOLCHAINlocal GOWORKoff GOPROXYoff GOSUMDBoff CGO0; never publish artifact/release. Existing tests.yml modify ONLY add feature branch under push.branches and pull_request.branches; no other job/action/command changes. This allows once ordinary Bash regression, no native crash trigger paths changed. Runtime exactsourceSHA evidence root handles. Result<=12lines sourcependingR/runtime. Worker no authored runtime/no push/network/commits/newagents.",
+  "reviewed_by": "gpt-6.1-sol high controller_ci_review source PASS + repair1 PASS; root exact hash freeze",
+  "note": "New Controller workflow <=75lines: push ONLY codex/feature/self-hosted-byos-byoc paths controller/** and .github/workflows/controller.yml; pull_request branches main and feature same paths; no dispatch/tags/schedules/pull_request_target. permissions contents read. ubuntu24.04 one job timeout10min. checkout SHA3d3c42e5aac5ba805825da76410c181273ba90b1 verified officialv7, persist-credentials false. Fetch official https://go.dev/dl/go1.27.2.linux-amd64.tar.gz curl fail showerror location into RUNNER_TEMP task-specific dir; verify SHA256 ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5 then extract trusted archive only. No user/script remote execution before hash. Run same make -C controller check GO=<temp>/go/bin/go GOFMT=<temp>/go/bin/gofmt GOCACHE=<temp>/cache GOPATH=<temp>/gopath then build development binary under temp with GOENVoff GOTOOLCHAINlocal GOWORKoff GOPROXYoff GOSUMDBoff CGO0; never publish artifact/release. Existing tests.yml modify ONLY add feature branch under push.branches and pull_request.branches; no other job/action/command changes. This allows once ordinary Bash regression, no native crash trigger paths changed. Runtime exactsourceSHA evidence root handles. Result<=12lines sourcependingR/runtime. Worker no authored runtime/no push/network/commits/newagents. Exact-SHA Ubuntu26.04 contract positive failures exposed jq binding/and precedence incompatibility. Root mechanical same-card repair allowed ONLY two offline reference checker files: bind .history/.events array before boolean tests, preserve predicates/transitions and rejection tests. Independent R source review before jq/Bats runtime and runner. No production contract field/state changes. Existing error/event/operation Bats suites are read-only test inputs.",
   "source_sha256": {
     ".github/workflows/controller.yml": "7d9b95a010e6350cdd7caf1b0f0bf6b348c4c416b8427f41c18eb9e1b80ef6b6",
-    ".github/workflows/tests.yml": "61101b312b02d19b3f0050c777ff47f4862cd1236f2abe5f5b4156a0ce423b76"
+    ".github/workflows/tests.yml": "61101b312b02d19b3f0050c777ff47f4862cd1236f2abe5f5b4156a0ce423b76",
+    "docs/planning/contracts/validate-operation.jq": "f267b4669624af77cf138d794afdd3ca46a812a2c80cee2d3c04280dd8852087",
+    "docs/planning/contracts/validate-events.jq": "2ab2b041a2596ab14a2c174009c3553541fa3f2cfe16641974a3b7c3a893bad1"
   }
 }

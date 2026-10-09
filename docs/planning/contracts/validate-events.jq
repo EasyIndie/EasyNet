@@ -19,8 +19,8 @@ def event:
   (.payload | snapshot);
 try (
   exact(["schemaVersion","events"]) and .schemaVersion == 1 and
-  (.events | type == "array" and length > 0 and all(.[]; event) and
-    . as $e | all(range(0; length);
+  (.events | . as $e | type == "array" and length > 0 and all(.[]; event) and
+    all(range(0; length);
       $e[.].seq == . + 1 and
       ($e[.].payload | [.operationId,.targetId,.planHash]) ==
       ($e[0].payload | [.operationId,.targetId,.planHash])))
