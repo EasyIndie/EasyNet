@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "task_id": "G0-07.1",
+  "status": "frozen",
+  "contract_versions": [
+    "ADR-004 accepted Go and 2026-10-09 user-approved resequencing @34e5fe7",
+    "ADR-005 accepted inventory direction, no production driver selection"
+  ],
+  "implementation_files": [
+    "controller/go.mod",
+    "controller/cmd/easynet-controller/main.go",
+    "controller/README.md"
+  ],
+  "test_files": [],
+  "commands": [
+    {
+      "command": "env GOENV=off GOTOOLCHAIN=local GOWORK=off GOPROXY=off GOSUMDB=off CGO_ENABLED=0 GOCACHE=/private/tmp/easynet-controller-build-cache /private/tmp/easynet-controller-go-1.27.2-8j_rrxci/go/bin/go -C controller build -o /private/tmp/easynet-controller-scaffold ./cmd/easynet-controller",
+      "expected": "exit0 pure standard library offline build"
+    },
+    {
+      "command": "/private/tmp/easynet-controller-scaffold --version",
+      "expected": "exit0 stdout easynet-controller development newline; stderr empty"
+    },
+    {
+      "command": "/private/tmp/easynet-controller-scaffold deploy",
+      "expected": "exit2 fixed usage stderr; stdout empty; no deployment"
+    },
+    {
+      "command": "/private/tmp/easynet-controller-scaffold",
+      "expected": "exit2 same fixed usage; no default operational action"
+    },
+    {
+      "command": "python3 -I -B docs/planning/validate_task_cards.py --card G0-07.1",
+      "expected": "exit0 planonly"
+    }
+  ],
+  "environment": "owned local offline fixture; root executes only after source review",
+  "side_effect_authorization": "User approved GUI-independent Go skeleton. Root-owned temp compiler/cache/artifact; no network during build, no UI/native/vault/SSH/config/deploy. Official upstreamGo downloaded+SHAverified separately. Worker source/gofmt/diff only.",
+  "prepared_by": "root Sol medium",
+  "reviewed_by": "root frozen scaffold contract; independent resequencing R PASS; lowrisk source root review before build",
+  "toolchain": {
+    "executable": "/private/tmp/easynet-controller-go-1.27.2-8j_rrxci/go/bin/go",
+    "sha256": "516c1fbb53b5f8f4852f0c3c379d45bcff53a1032e5cd1a9ca1738f03ba07cb1",
+    "version": "go version go1.27.2 darwin/arm64",
+    "archive_sha256": "76812b213b1b2302c978d28fa52fa92d541704b9e7d9d5db8002c50e4018c4c5",
+    "source": "https://go.dev/dl/",
+    "gofmt": "/private/tmp/easynet-controller-go-1.27.2-8j_rrxci/go/bin/gofmt",
+    "gofmt_sha256": "5894006a03afafb375c8dcde9eeae1e6e5bd292d5e6d8a5eaac9ff0974694482"
+  },
+  "note": "C Luna medium fresh<=4kcore, source-only. Module github.com/EasyIndie/EasyNet/controller, go1.27.2. No external dependencies/go.sum/toolchain directive/GUI/provider/SQLite/PoC imports. main package run(args []string,out,err io.Writer) int internal scaffold helper: ONLY exact one --version writes fixed easynet-controller development newline stdout returns0 (write error returns1 without raw error); all other args/missing fixed usage: easynet-controller --version newline stderr, returns2. main only os.Exit(run(os.Args[1:],os.Stdout,os.Stderr)). No secret/error/argv echo, config/env reads, sockets/files/commands besides process exit. README <=35lines describes development-only version stub, module/build instructions and remaining stage gates. Use supplied exact gofmt only; never authored imports/go test/run/build or binary launches before rootreview. No tests untilG0-07.2; root verifiesbuild/version/invalid/missing after codehashfrozen. Report<=12lines sourcependingrootacceptance; no commits/network/settings/personalreads/newagents.",
+  "source_sha256": {
+    "controller/go.mod": "328cc0b6ffb548dd6337140953b492ec7fd26db9c1a6679d1bbb32fcf05abe0a",
+    "controller/cmd/easynet-controller/main.go": "a56d3d44adbd975880202b5942e0a91d6c81c33508f4ccbafe549e75e409d2b0",
+    "controller/README.md": "2182800501d6f69d46b05558481e7a11868c0452223a5865af75f3651c881e37"
+  }
+}

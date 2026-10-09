@@ -9733,7 +9733,7 @@
       "parent": "G0-07",
       "phase": "G0",
       "title": "按选定语言建立最小可构建工程",
-      "status": "locked",
+      "status": "verified",
       "mode": "implementation",
       "dependencies": [
         "G0-04.3",
@@ -9749,20 +9749,27 @@
       },
       "inputs": [
         {
-          "path": ".github/workflows/tests.yml",
-          "selector": "工程脚手架 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/adr/ADR-004-controller-language.md",
+          "selector": "decision and accepted resequencing gate only"
         },
         {
-          "path": "tests/run_all_tests.bash",
-          "selector": "工程脚手架 相关函数/配置；用 rg 定位后只读局部"
+          "path": "docs/planning/task-bindings/G0-07.1.json",
+          "selector": "frozen scaffold contract, paths and exact commands"
         }
       ],
       "output": "docs/planning/task-results/G0/G0-07.1.md",
       "binding": "docs/planning/task-bindings/G0-07.1.json",
       "allowed_writes": [
+        "controller/go.mod",
+        "controller/cmd/easynet-controller/main.go",
+        "controller/README.md",
         "docs/planning/task-results/G0/G0-07.1.md"
       ],
-      "implementation_writes": [],
+      "implementation_writes": [
+        "controller/go.mod",
+        "controller/cmd/easynet-controller/main.go",
+        "controller/README.md"
+      ],
       "forbidden": [
         "main 分支/正式 release/外部 Issue 自动写入",
         "依赖合同或语言架构的隐式改变",
@@ -9798,9 +9805,7 @@
         "implementation_commands": [],
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
-      "locks": [
-        "task binding 尚未冻结具体实现文件/接口/定向测试命令"
-      ],
+      "locks": [],
       "escalation": [
         "合同不明确/接口需变更，停止交给 Sol",
         "涉及新 trust/secret/权限/销毁边界立即审查",
@@ -9818,7 +9823,14 @@
         "正例/负例与命令 exit code",
         "实际模型与推理档位/可获取 token 数",
         "未验证/剩余阻塞，不能伪报实机成功"
-      ]
+      ],
+      "completion": {
+        "evidence_path": "docs/planning/task-results/G0/G0-07.1.md",
+        "reviewed_by": "root source review + hash-frozen offline build and exact CLI acceptance",
+        "actual_model": "gpt-6-luna",
+        "reasoning_effort": "medium",
+        "token_usage": "Measurement pending full-chain cutoff; no billing or causal comparison"
+      }
     },
     {
       "id": "G0-07.2",
