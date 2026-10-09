@@ -9737,8 +9737,7 @@
       "mode": "implementation",
       "dependencies": [
         "G0-04.3",
-        "G0-05.3",
-        "G0-06.3"
+        "G0-05.3"
       ],
       "model": {
         "tier": "C",
@@ -9800,7 +9799,6 @@
         "unlock_requirement": "准备者在 binding 写精确命令与预期结果，先验证命令存在；无法固定时保持 locked"
       },
       "locks": [
-        "前置卡尚未 verified/accepted-not-applicable",
         "task binding 尚未冻结具体实现文件/接口/定向测试命令"
       ],
       "escalation": [
@@ -10575,7 +10573,8 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G1-02.1"
+        "G1-02.1",
+        "G0-06.3"
       ],
       "model": {
         "tier": "I",
@@ -16539,7 +16538,8 @@
       "status": "locked",
       "mode": "implementation",
       "dependencies": [
-        "G1-01.3c"
+        "G1-01.3c",
+        "G0-06.3"
       ],
       "model": {
         "tier": "C",

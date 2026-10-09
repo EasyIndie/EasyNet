@@ -80,9 +80,15 @@ OS vault adapter 或其他 native 集成不可行；它们保持独立、未选�
 
 ## 进入生产前的 gates 与下一步
 
-1. 继续 G0-05 本地状态合同/存储比较、G0-06 客户端框架与 engine gates，按依赖推进
-   G0-07 共同服务工程骨架。G0 验收前不进入 G1；后续 Bash adapter 按已接受架构复用
-   Bash。本 ADR 不固定 API、迁移目录或绕过任何未完成 gate。
+1. 2026-10-09 用户确认、独立架构复核接受 core/client 调度解耦：Go/SQLite 决策已接受后，
+   G0-07 可先建立 GUI/engine-independent service skeleton、合同 fixture 与非发布 CI。
+   完整 G0 仍要求客户端可行路线与工程验收；未通过完整 G0 时，提前范围只限
+   G1-01.* 的 ServerTarget 纯模型/owned inventory/离线故障测试，以及 G1-02.1 的
+   CredentialStore 合同/fake adapter，必须先冻结 successor production contract。
+   G1-02.2 真实 vault 与 G2-07.1 成本入口增加 G0-06.3 gate，真实 SSH/部署/VPN/签名
+   及 G1-13/最终 G1、G2 平台验收保持；离线成功不授予其资格。
+   后续 Bash adapter 继续复用 Bash；本修订不选 GUI/engine、vault 或生产 SQLite driver，
+   不删除 G0–G6 范围或提前合并 main。
 2. 先审查 successor production contracts：trust enrollment/rotation、credential lifecycle、
    权限与输入约束；完整落实 ADR-003 的授权、回执、锁、durable ownership/reconciliation
    与重启恢复 gates。fixture unknown/no-replay 不得替代这些实现和验收。

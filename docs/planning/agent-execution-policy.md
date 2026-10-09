@@ -25,6 +25,14 @@
   实客户端/实机验收、secret 扫描、最终 main 差异评审。获得最终合并授权后再合并。
   本规范不是提前授权 merge/deploy/云资源销毁。
 
+## 2026-10-09 用户确认的 core/client 调度修订
+
+Go/SQLite 已接受后可先完成 GUI-independent G0-07 skeleton/fixtures/非发布 CI。
+整体 G0 尚未验收时，提前范围只限 G1-01.* 的本地模型/owned inventory/离线测试与 G1-02.1 fake adapter；
+先冻结 successor production contract，不能直接用 PoC 代替产品实现。真实 vault/SSH/部署/VPN/签名以及完整 client/G1/final gates 保留。
+客户端诊断只剩一个完整 reader-phase 工作包、一次 guest 观测；无可行动证据停止追加，VM 资格另评估。
+一次一张 ready 卡；源码、定向测试、证据与用量同卡收敛，root负责机械状态和执行命令。
+
 ## 模型分工与升级条件
 
 派发模型与推理档位按 [模型路由](model-routing.md) 的精确映射：D `gpt-6-luna` low、C `gpt-6-luna` medium、I `gpt-6.1-sol` medium、R `gpt-6.1-sol` high；仅 Sol 无法解决复杂争议时用 `gpt-6-astra` high。默认不用 xhigh/max、不自动升档；卡片分配见 [275 张任务卡](task-cards/README.md)。

@@ -1,6 +1,6 @@
 # EasyNet 产品演进计划
 
-更新：2026-10-06。总跟踪：[Epic #13](https://github.com/EasyIndie/EasyNet/issues/13)。
+更新：2026-10-09。总跟踪：[Epic #13](https://github.com/EasyIndie/EasyNet/issues/13)。
 本文将初始产品方案与仓库审计结果整合为长期演进计划；不代表未来功能已经实现。
 初始交接资料已完成吸收并清理，后续以本目录、ADR 和关联 Issue 维护计划。
 具体工程推进以 [分阶段可执行清单](execution-backlog.md) 的任务与验收 gate 为准。
@@ -100,3 +100,11 @@ Hetzner、Vultr、DigitalOcean 是第一批 Provider 候选，后续厂商只作
 MVP 不做中央 SaaS、团队 RBAC、多用户计费、大量 Provider/协议、强制 Agent、
 自研 VPN 协议或 AI 自动运维。总 Epic 完成要求涵盖 BYOS、BYOC、运维、退出和恢复；
 Phase 1A 成功仅表示技术闭环完成，不能代表完整产品交付。
+
+## 2026-10-09 已接受的调度修订
+
+用户确认、独立架构复核后，GUI-independent Go skeleton/合同 fixture/CI 先按已接受 Go/SQLite 方向推进。
+完整 G0 未完成前，仅提前 G1-01.* 本地模型/owned inventory/离线测试和 G1-02.1 fake adapter；
+先冻结 successor contract，不直接复制 lab schema/driver。真实 vault/SSH/部署/VPN/签名与完整 client/最终验收 gate 保留。
+客户端 reader-phase 诊断最多一个完整工作包、一次 guest 观测；无可行动证据即停止追加诊断，另行评估临时 VM。
+全 G0–G6 范围和单次最终 main 合并约束保持。精确依赖和资格以 ADR-004、卡片/binding 为准。
