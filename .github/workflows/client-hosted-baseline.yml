@@ -1,0 +1,63 @@
+name: Client hosted metadata baseline (disabled source proposal)
+on:
+  push:
+    branches: [codex/feature/self-hosted-byos-byoc]
+    paths:
+      - poc/client-framework/hosted-ci/baseline.sh
+      - poc/client-framework/hosted-ci/observe.py
+      - .github/workflows/client-hosted-baseline.yml
+      - tests/client_framework/test_hosted_baseline.py
+permissions:
+  contents: read
+jobs:
+  synthetic:
+    if: ${{ false && github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc' }}
+    runs-on: macos-15
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: 'SOURCE_COMMIT_NOT_FROZEN'
+          persist-credentials: false
+      - name: Verify reviewed synthetic sources and run fixed suite
+        shell: /bin/bash --noprofile --norc {0}
+        run: |
+          set -eu
+          observer_hash='79394936e61caa7b7afb186d42be4991cf85fd2cb04560809606c28d68c00b5f'
+          fixture_hash='c8cde5ce28136b2ad40c22406a798e88e7e05bf1928de87e06511685be6dc890'
+          [[ $observer_hash =~ ^[a-f0-9]{64}$ && $fixture_hash =~ ^[a-f0-9]{64}$ ]]
+          for file in poc/client-framework/hosted-ci/observe.py tests/client_framework/test_hosted_baseline.py; do
+            [[ -f $file && ! -L $file ]]
+            actual=$(/usr/bin/env -i PATH=/usr/bin:/bin LANG=C LC_ALL=C /usr/bin/shasum -a 256 "$file")
+            expected=$observer_hash
+            [[ $file != tests/client_framework/test_hosted_baseline.py ]] || expected=$fixture_hash
+            [[ ${actual%% *} == "$expected" ]]
+          done
+          exec /usr/bin/env -i PATH=/usr/bin:/bin LANG=C LC_ALL=C \
+            /usr/bin/python3 -I -B tests/client_framework/test_hosted_baseline.py 2>/dev/null
+  metadata:
+    if: ${{ false && github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc' && github.sha == 'REVIEWED_FEATURE_SHA_NOT_FROZEN' }}
+    runs-on: macos-15
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify reviewed execution sources before launch
+        shell: /bin/bash --noprofile --norc {0}
+        run: |
+          set -eu
+          # Placeholders deliberately refuse; root freezes exact hashes after review.
+          shell_hash='REVIEWED_BASELINE_SHA256_NOT_FROZEN'
+          observer_hash='REVIEWED_OBSERVER_SHA256_NOT_FROZEN'
+          [[ $shell_hash =~ ^[a-f0-9]{64}$ && $observer_hash =~ ^[a-f0-9]{64}$ ]]
+          [[ -f poc/client-framework/hosted-ci/baseline.sh && ! -L poc/client-framework/hosted-ci/baseline.sh ]]
+          [[ -f poc/client-framework/hosted-ci/observe.py && ! -L poc/client-framework/hosted-ci/observe.py ]]
+          actual=$(/usr/bin/env -i PATH=/usr/bin:/bin LANG=C LC_ALL=C /usr/bin/shasum -a 256 poc/client-framework/hosted-ci/baseline.sh)
+          [[ ${actual%% *} == "$shell_hash" ]]
+          actual=$(/usr/bin/env -i PATH=/usr/bin:/bin LANG=C LC_ALL=C /usr/bin/shasum -a 256 poc/client-framework/hosted-ci/observe.py)
+          [[ ${actual%% *} == "$observer_hash" ]]
+          exec /usr/bin/env -i PATH=/usr/bin:/bin LANG=C LC_ALL=C \
+            ImageOS="${ImageOS-}" ImageVersion="${ImageVersion-}" \
+            /bin/bash --noprofile --norc poc/client-framework/hosted-ci/baseline.sh

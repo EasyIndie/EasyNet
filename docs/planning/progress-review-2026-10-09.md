@@ -114,3 +114,11 @@ at source preparation accepted: 279 cards, 84 verified /9 blocked /186 locked. U
 2026-10-10 用户环境补充：当前设备为个人自用、无可重置全新 VM；hosted CI 作为环境资格主线，组织凭据可用于签名/公证路线准备。新路线先无密钥基线与实际 A/B 引擎/GUI，再有界 OS/架构兼容矩阵，独立签名/公证/NE验收；本机账户/Xcode登录不再是CI准备前置。旧ar/av失败与预算不重置、不自动复跑；新合同须review/frozen后执行。CLI组织密钥元数据403、仓库列表空不证明组织继承不可用，现待secret名称/用途映射（不索取值）。任务计数与最终 G0–G6/main门槛不变。
 
 Hosted CI 路线与基线静态源码合同已由独立R接受用于准备；五个工作包仍planned，runtime binding/CLI effects/helper资格未冻结。下一步先复用精确已审helper做小固定用途适配，不新建大型bootstrap；缺复用条件先给最小方案与预算，不直接runner试跑。执行者root机械文档+fresh R Solhigh，未运行源码/guest/签名或读取secret值；本轮用量见metrics/hosted-ci-route-preparation.json，非配对对照。
+
+2026-10-10 凭据补充：仓库继承接口与组织设置页均确认 7 个组织 Actions Secrets，
+均为 Public repositories 范围。用户确认除 Network Extension provisioning profile 外，
+所列签名、公证认证与团队材料均具备；profile 明确缺失，材料有效性与 API 私钥编码处理仍待验证。
+详情见 [凭据盘点](poc/client-framework/apple-credential-inventory-2026-10-10.md)。
+组织总列表 CLI 403 不再作为材料未知或仓库继承不可用的依据。
+用户再次要求推进 G0 完成：先落实无密钥基线的静态准备/复用评估，
+按既定合同审查后才执行；不重置旧预算，不将 profile 缺失改为资格通过。

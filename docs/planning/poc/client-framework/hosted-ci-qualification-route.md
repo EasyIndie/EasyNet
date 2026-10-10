@@ -17,7 +17,7 @@
   工具版本可以按冻结合同选择/取得，不为迁就一条历史 Homebrew 路径放宽身份验证。
 - hosted VM 的整体销毁可保护个人开发机，但不证明测试子进程、端口、文件与权限生命周期正确。
   仍需 owned 工程、合成数据、时间/输出限制、进程回收及独立效果审查。
-  新合同须逐项保留 owned-root/decoy、测试进程外部读写/网络拒绝、子进程继承、
+  engine/GUI/NE 新合同须逐项保留 owned-root/decoy、测试进程外部读写/网络拒绝、子进程继承、
   身份/组/权限及回收证明；依赖取得与 artifact 上传的允许网络另行冻结，不授予测试进程外网访问。
 - arm64 runner 不支持 nested virtualization，也没有 static UDID。若开发 provisioning
   确需固定设备身份，独立评估 Intel 路线；不能据此推定任一 profile 已可用。
@@ -28,7 +28,7 @@
 
 | 工作包 | 输入与交付 | 执行/评审 | 验收与停止点 |
 |---|---|---|---|
-| 1. 无密钥环境合同 | 固定 `macos-15` arm64 基线；明确 Xcode/SDK/工具来源、真实入口身份、有限环境报告及 owned effects | 主会话机械准备；冻结小采集器 C Luna medium；合同 R Sol high | source/hash/effects 审查后一次基线观测；分项拒绝，不能继续执行 GUI 或改用发现路径 |
+| 1. 无密钥环境合同 | 固定 `macos-15` arm64 的 trusted vendor metadata observer；仅版本文本，身份 not-qualified | 主会话机械准备；有界流式收尾 I Sol medium；合同 R Sol high | 按 v2 source/hash 审查与合成测试后一次基线观测；不授予 GUI/engine 执行资格 |
 | 2. A/B 真引擎与 GUI | 各候选完整工程/依赖 pins、代理模式 loopback nonce、Connect/Cancel/Stop/Restart 和回收矩阵 | I Sol medium，一个候选整包；R 关键边界一次完整审查 | 实际 UI→engine 数据面与失败矩阵；无 GUI/效果资格就 blocked，不以 headless 替代 |
 | 3. 兼容矩阵 | 基线成功后，同一已审测试分别用于 `macos-26` arm64、`macos-15-intel` x64 | C 机械适配；跨架构问题 I；root 合并有限结果 | 每格一次初始验收、最多一次基于明确故障的修复；无自动轮换 OS 找到绿色结果 |
 | 4. Apple 签名与公证 | 明确渠道、secret 名称映射、Developer ID/P12、认证材料、临时 keychain、entitlements/profile、产物清单 | I Sol medium；R 权限/密钥/分发整包 | 先不带凭据的 contract/fake，再限定可信 feature commit 的实际签名、公证和验证；证据不等于正式发布 |
@@ -50,8 +50,10 @@ av 已观测的 image identity 拒绝及其未知原因保持原记录，不能�
 是分别核验的条件。
 
 - GitHub 发布 token 不是 Apple 签名身份；公证认证凭据也不能替代签名证书及私钥。
-- 当前 CLI 组织 secret 元数据读取返回 403，仓库级 secret 列表为空；这不证明 Actions
-  无法继承组织 secret。只核对名称/用途/可见范围，不下载、输出或提交 secret 值。
+- 组织总列表此前返回 403；2026-10-10 仓库继承接口成功确认 7 个组织 Secrets，
+  仓库级 Secrets 与 Environments 为空。名称与用途推断见[凭据盘点](apple-credential-inventory-2026-10-10.md)；
+  用户确认除 Network Extension profile 外所列材料均具备；profile 明确缺失，
+  API Key 编码格式与实际材料有效性尚未验证。只读取元数据，不下载、输出或提交 secret 值。
 - secret 名称、证书类型/profile/capability 与可见范围确认后，才冻结签名 workflow。
   不向 fork/untrusted PR、日志、cache 或 artifacts 暴露材料；签名 job 与无密钥实验分开。
   实际凭据 job 绑定已审 feature SHA、依赖与 action pins，并验证待签 artifact digest；
@@ -63,5 +65,10 @@ av 已观测的 image identity 拒绝及其未知原因保持原记录，不能�
 
 ## 下一步
 
-此路线已独立审查接受；[基线合同草案](hosted-baseline-contract.md)允许有界静态源码准备，尚未冻结 runtime binding。并行等待组织 secret 名称/用途映射，
+root 已接受独立 R 的 [baseline v2 successor](hosted-baseline-contract.md)及[逐项审查](../../task-results/G0/hosted-baseline-review.md)。
+仅工作包1信任官方 fresh VM 的固定 vendor CLI 收集有限 metadata；不新增 candidate sandbox。
+外部拒绝、任意后代、实际入口/developer 身份及 VM 清理不宣称已证明；
+完整不可信候选保护保留到工作包2/5。允许小型源码准备，未授予 fixture/guest 或任何凭据执行。
+
+此路线已独立审查接受；[基线合同草案](hosted-baseline-contract.md)允许有界静态源码准备，尚未冻结 runtime binding。组织 secret 名称已盘点，用户确认现有签名/认证材料具备，profile 缺失；编码处理与实测仍待完成，
 不阻塞无密钥合同准备。当前个人开发机不承接可破坏系统状态的实验，也不安装 VM。
