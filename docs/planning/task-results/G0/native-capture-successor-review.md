@@ -75,19 +75,9 @@ This permits an explicit safe refusal, not positive descendant-cleanup qualifica
 compile timeout taking this path still fails closed. Engine/GUI containment gates retain
 their positive cleanup requirements; this disposition cannot transfer to those candidates.
 
-## Tiny mock-only grant and later gate
+## Finite evidence limits
 
-Root may accept one invocation of the existing 18th test after source/hash review; it mocks
-Popen/getpgid/killpg and uses closed local pipes, so starts no child or toolchain. From repo
-root, exact command (fixed trusted `/usr/bin/python3`, allowance one invocation, 10s maximum):
-
-```sh
-/usr/bin/python3 -I -B -c 'import json,runpy,unittest; n=runpy.run_path("docs/planning/poc/client-framework/native-lab/Tests/test_build.py"); r=unittest.TestResult(); n["BuildTests"]("test_signal_failure_does_not_skip_direct_child_reap").run(r); print(json.dumps({"case":"test_signal_failure_does_not_skip_direct_child_reap","tests":r.testsRun,"failures":len(r.failures),"errors":len(r.errors),"passed":r.wasSuccessful()})); raise SystemExit(0 if r.wasSuccessful() else 1)'
-```
-
-This checks only the skipped-reap regression; it cannot qualify TERM/EOF or actual processes.
-No full suite until these source corrections and hashes are frozen/reviewed. A later fresh
-finite grant must bind that corrected package and the same 18-case suite, once per named target.
+The initial proposed mock-only invocation was superseded by the consumed local18 grant below.
 Use only failure case IDs selected from the frozen 18 unittest names and ≤2 capture records
 per case, with whitelist command/exit/deadline/bytes/drained/fd_closed/reaped/cancelled/
 group_observation/ownership plus the three finite fields above. Bound summary to 16KiB;
@@ -198,3 +188,24 @@ remain unknown. Amend source/contract and extend one existing synthetic case wit
 delayed metadata before new hashes/review. No adaptive timeout, retries, extra instrumentation or
 research sweep. Any materially corrected successor requires its own exact finite grant;
 all existing grants remain consumed. G0 and app/GUI/engine/NE/full acceptance remain blocked.
+
+## Deadline amendment static acceptance and new preparation direction
+
+Accept the exact two-file diff: metadata default 5→14 seconds plus matching docstring/contract.
+Driver SHA256 `3b3dc8c62cb0a1cf2f755927892dafca17be50dc496df2b9f91539b9493aba9f`;
+contract SHA256 `252dfc5c271ce20eb6c45baaeb0e9059feccb770050db3d2f181d8eabe4f0b54`.
+Tests remain `ed9f3345cbc06cfce31215703e34f1f5f7239d080e931c27dd385438e07b70e7`.
+The actual metadata call default changes; capture cleanup logic and explicit 120s compile,
+180s whole cap, 2s TERM/2s KILL reserves remain unchanged. No mirrored default-value test or
+redundant local invocation is required for this narrow amendment; existing18 safety cases
+must still pass on the fresh hosted target before compiler execution. The earlier suggestion
+to extend a delayed-metadata fixture is superseded by this static-only amendment decision.
+
+Permit preparation of new `native-metadata-deadline-hosted18-v1`, one hosted18→conditional
+compile attempt, local allowance 0. Old/local/capture-successor/ar/av budgets remain 0.
+This is a materially changed work window, not a retry of the same bound package. Freeze a
+new source checkpoint, contract/source manifest, distinct successor archive/inline binding,
+unique activation predicate and actual activation SHA for final review before push. Preserve
+the existing trusted-vendor-only scope/time/output limits; no adaptive budget or probe.
+The amendment may still time out; cause and eventual compatibility remain unknown. No runtime
+ran or executable activation was granted here; G0/app/GUI/engine/NE/full gates stay intact.

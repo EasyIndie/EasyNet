@@ -127,7 +127,7 @@ def checkpoint(deadline, cancel=None):
 
 
 def capture(argv, root, env, whole, budget, records, cancel=None):
-    """5s metadata has 1s work + 2s TERM + 2s KILL/drain/reap allowance."""
+    """14s metadata has 10s work + 2s TERM + 2s KILL/drain/reap allowance."""
     if cancel is None:
         with Cancellation() as local:
             return capture(argv, root, env, whole, budget, records, local)
@@ -474,7 +474,7 @@ def build_owned(repo, binding, cancel):
             require(digest(regular(target, 8192, 0o600, whole - 4)) == digest(data[f"{P}/{name}"]), "source-mismatch")
         expected = inventory(root, sorted(p.name for p in root.iterdir()), whole - 4)
         env = environment(root)
-        def run(argv, budget=5):
+        def run(argv, budget=14):
             nonlocal expected
             checkpoint(whole - 4, cancel)
             require(expected is not None, "cleanup")

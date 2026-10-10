@@ -144,9 +144,10 @@ No explicit codesign, keychain, certificate, notarization or provisioning invoca
 Do not call the output fully unsigned: the vendor linker may supply an ad-hoc signature;
 this grants neither distribution nor GUI/NE qualification, and uses no organization secret.
 
-Metadata calls: 5s each including cleanup; compile: 120s including TERM 2s/KILL+reap 2s;
+Metadata calls: fixed 14s each including cleanup; compile: 120s including TERM 2s/KILL+reap 2s;
 whole driver: 180s monotonic absolute deadline, including source/hash/inventory/artifact
-phases. Five-second metadata budgets reserve four seconds for cleanup (one second work).
+phases. Fourteen-second metadata budgets reserve four seconds for cleanup (ten seconds work).
+Whole-cap exhaustion fails closed; no adaptive budget, retries or renewed runtime grant.
 Retain at most 64KiB per stream, drain
 continuously with byte counters; preflight overflow fails, compile overflow fails after
 bounded cleanup. Start each command in a new owned group, track child identity and reaping;
