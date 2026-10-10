@@ -161,3 +161,11 @@ R指出可静态确认的独立缺陷：异常组信号失败会跳过直接chil
 精确binding与目标，不能沿用消耗的17-case授权。Q-B编译/.2d继续blocked，完整G0未完成。
 01:58–02:38:41Z工作包用量330,680非缓存input/65,115output，cache97.68%；含主会话协调、I/R与自动审批，
 后续关闭工作未计入。见 metrics/native-build.json；无配对main-only验收样本/账单，不能证明多代理更省。
+
+2026-10-10 用户继续授权后，独立 R 冻结有界 capture successor：TERM后EOF先wait、只在
+明确持有身份且超时后KILL；逻辑 swiftc argv0 与canonical散列路径分离；有限失败字段。
+Darwin identity/absent只可在已审无fork溢出/独立owner的负例条件下验证“明确拒绝”，
+不是positive group/engine/GUI containment通过；真实编译若发生该拒绝仍失败关闭。
+跳过reap mock 1/1先通过；集中两文件修复后，唯一新命名local18目标全部18/18 PASS，
+0fail/errors/skips，fixture cleanup passed，137bytes输出；记录 native-capture-successor-local-record.json。
+该目标额度已消耗，旧17/ar/av额度保持0；下一步仅冻结新source SHA后的hosted18→compile绑定。

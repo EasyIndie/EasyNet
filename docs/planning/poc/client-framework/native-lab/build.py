@@ -1,4 +1,5 @@
 """Compile-only candidate. CLI is inert until a separately reviewed binding exists."""
+import errno
 import hashlib
 import json
 import os
@@ -133,7 +134,8 @@ def capture(argv, root, env, whole, budget, records, cancel=None):
     end = min(whole, time.monotonic() + budget)
     rec = {"command": len(records), "exit": None, "deadline": budget, "bytes": [0, 0],
            "drained": False, "fd_closed": False, "reaped": False, "cancelled": False,
-           "group_observation": "not-requested", "ownership": "not-spawned"}
+           "group_observation": "not-requested", "ownership": "not-spawned",
+           "primary_error": "none", "group_stage": "none", "group_errno": "none"}
     records.append(rec)
     proc = None
     sel = selectors.DefaultSelector()
@@ -154,10 +156,21 @@ def capture(argv, root, env, whole, budget, records, cancel=None):
                 require(max(rec["bytes"]) <= 65536, "overflow")
         rec["drained"] = not sel.get_map()
     def owned_signal(sig):
-        require(proc.returncode is None and rec["ownership"] == "held"
-                and signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL, "cleanup")
-        require(os.getpgid(proc.pid) == proc.pid, "cleanup")
-        os.killpg(proc.pid, sig)
+        stage = "identity"
+        try:
+            require(proc.returncode is None and rec["ownership"] == "held"
+                    and signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL, "cleanup")
+            require(os.getpgid(proc.pid) == proc.pid, "cleanup")
+            stage = "term" if sig == signal.SIGTERM else "kill"
+            os.killpg(proc.pid, sig)
+        except (OSError, Reject) as exc:
+            if rec["group_stage"] == "none":
+                rec["group_stage"] = stage
+                number = getattr(exc, "errno", None)
+                rec["group_errno"] = ("absent" if number == errno.ESRCH else "permission"
+                                      if number in (errno.EPERM, errno.EACCES) else
+                                      "other" if isinstance(exc, OSError) else "none")
+            raise
         rec["group_observation"] = "signals-issued-unproven"
     try:
         checkpoint(end - 4, cancel)
@@ -168,7 +181,7 @@ def capture(argv, root, env, whole, budget, records, cancel=None):
         for index, stream in enumerate((proc.stdout, proc.stderr)):
             os.set_blocking(stream.fileno(), False)
             sel.register(stream, selectors.EVENT_READ, index)
-        # No poll/wait before EOF: a dead unreaped leader still anchors the group.
+        # No poll/wait before EOF: inherited writers may still hold the pipes.
         drain(end - 4, True)
         require(rec["drained"], "timeout")
         checkpoint(end - 4, cancel)
@@ -180,48 +193,71 @@ def capture(argv, root, env, whole, budget, records, cancel=None):
         rec["ownership"] = "released"
     except Reject as exc:
         error = exc.code
+        if proc is not None and rec["ownership"] == "not-spawned":
+            rec["group_stage"] = "identity"
     except KeyboardInterrupt:
         cancel.mark()
         error = "cancelled"
-    except (OSError, ValueError):
+    except (OSError, ValueError) as exc:
         error = "spawn" if proc is None else "cleanup"
+        if proc is not None and rec["ownership"] == "not-spawned":
+            rec["group_stage"] = "identity"
+            rec["group_errno"] = ("absent" if getattr(exc, "errno", None) == errno.ESRCH else
+                                  "permission" if getattr(exc, "errno", None) in (errno.EPERM, errno.EACCES)
+                                  else "other")
     finally:
+        rec["primary_error"] = error or "none"
         rec["cancelled"] = cancel.cancelled
         if proc is not None:
             if not rec["reaped"]:
                 try:
                     owned_signal(signal.SIGTERM)
-                    drain(max(time.monotonic(), end - 2), False)
-                    # Still held; KILL reaches inherited writers even if TERM closed pipes.
-                    owned_signal(signal.SIGKILL)
-                except (OSError, Reject):
+                    drain(end - 2, False)
+                    if rec["drained"]:
+                        try:
+                            proc.wait(timeout=max(0, end - 2 - time.monotonic()))
+                            rec["reaped"] = True
+                            rec["ownership"] = "released"
+                        except subprocess.TimeoutExpired:
+                            pass
+                    if not rec["reaped"]:
+                        owned_signal(signal.SIGKILL)
+                except (OSError, ValueError, Reject):
                     rec["ownership"] = "ambiguous"
                     error = "cleanup"
                 # Group signaling failure must never skip direct-child cleanup.
                 try:
                     drain(end, False)
-                except (OSError, Reject):
+                except (OSError, ValueError, Reject):
                     error = "cleanup"
                 try:
-                    proc.wait(timeout=max(0.001, end - time.monotonic()))
-                    rec["reaped"] = True
-                    rec["ownership"] = "released"
+                    if not rec["reaped"]:
+                        proc.wait(timeout=max(0, end - time.monotonic()))
+                        rec["reaped"] = True
+                        rec["ownership"] = "released"
                 except (OSError, Reject, subprocess.TimeoutExpired):
                     rec["ownership"] = "ambiguous"
                     error = "cleanup"
             rec["exit"] = proc.returncode
             for stream in (proc.stdout, proc.stderr):
                 if stream is not None:
-                    stream.close()
+                    try:
+                        stream.close()
+                    except OSError:
+                        error = "cleanup"
         sel.close()
-        rec["fd_closed"] = True
+        rec["cancelled"] = cancel.cancelled
+        rec["fd_closed"] = proc is None or all(stream is None or stream.closed
+                                               for stream in (proc.stdout, proc.stderr))
     if error:
         raise Reject(error)
-    require(max(rec["bytes"]) <= 65536, "overflow")
-    require(rec["exit"] == 0, "compile" if budget == 120 else "tool-unavailable")
+    rec["primary_error"] = ("overflow" if max(rec["bytes"]) > 65536 else
+                            ("compile" if budget == 120 else "tool-unavailable") if rec["exit"] != 0 else "none")
+    require(rec["primary_error"] == "none", rec["primary_error"])
     try:
         return bytes(chunks[0]).decode("utf-8", errors="strict").strip()
     except UnicodeDecodeError:
+        rec["primary_error"] = "identity"
         raise Reject("identity") from None
 
 
@@ -265,13 +301,14 @@ def identity(run, observed, deadline=float("inf")):
     for path in (compiler, sdk):
         require(path.resolve().is_relative_to(DEV.resolve()), "identity")
     sha, size = entry_hash(compiler.resolve(strict=True), deadline)
-    version = run([str(compiler.resolve()), "--version"])
+    version = run([str(compiler), "--version"])
     require(0 < len(version.encode()) <= 2048 and all(c == "\n" or 32 <= ord(c) <= 126
                                                     for c in version), "identity")
-    help_text = run([str(compiler.resolve()), "-help"])
+    help_text = run([str(compiler), "-help"])
     require(all(re.search(r"(?<![\w-])" + re.escape(flag) + r"(?![\w-])", help_text)
                 for flag in REQUIRED), "flags")
-    return {"path": str(compiler.resolve()), "version": version, "sha256": sha, "size": size}, sdk.resolve()
+    return {"path": str(compiler), "hash_path": str(compiler.resolve()),
+            "version": version, "sha256": sha, "size": size}, sdk.resolve()
 
 
 def artifact(executable, plist, deadline=float("inf")):

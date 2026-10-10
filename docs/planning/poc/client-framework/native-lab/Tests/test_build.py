@@ -21,11 +21,13 @@ spec.loader.exec_module(b)
 
 
 class BuildTests(unittest.TestCase):
+    capture_records = {}
     def setUp(self):
         parent = "/private/tmp" if Path("/private/tmp").exists() else "/tmp"
         self.temp = tempfile.TemporaryDirectory(prefix="easynet-qb-test-", dir=parent)
         self.root = Path(self.temp.name).resolve()
         (self.root / "tmp").mkdir()
+        self.records = self.capture_records[self._testMethodName] = []
 
     def tearDown(self):
         self.temp.cleanup()
@@ -46,6 +48,8 @@ class BuildTests(unittest.TestCase):
             return value, records
         except b.Reject as exc:
             return exc.code, records
+        finally:
+            self.records.extend(records[:max(0, 2 - len(self.records))])
 
     def manifest(self):
         entries = {}
@@ -133,7 +137,13 @@ class BuildTests(unittest.TestCase):
 
     def test_flood_timeout_and_kill_reap(self):
         value, records = self.fake("import os\nos.write(1, b'x' * 131072)\n")
-        self.assertEqual(value, "overflow")
+        if value == "cleanup":
+            rec = records[0]
+            self.assertEqual((rec["primary_error"], rec["group_stage"], rec["group_errno"]),
+                             ("overflow", "identity", "absent"))
+            self.assertTrue(all(rec[key] for key in ("drained", "reaped", "fd_closed")))
+        else:
+            self.assertEqual(value, "overflow")
         self.assertGreater(records[0]["bytes"][0], 65536)
         value, records = self.fake("import signal,time\nsignal.signal(signal.SIGTERM, signal.SIG_IGN)\ntime.sleep(30)\n")
         self.assertEqual(value, "timeout")
@@ -146,7 +156,7 @@ class BuildTests(unittest.TestCase):
         self.assertTrue(records[0]["drained"] and records[0]["reaped"])
 
     def test_spawn_failure_and_malformed_text(self):
-        records = []
+        records = self.records
         self.reject("spawn", b.capture, [str(self.root / "absent")], self.root, {},
                     time.monotonic() + 10, 5, records)
         self.assertTrue(records[0]["fd_closed"])
@@ -195,7 +205,9 @@ class BuildTests(unittest.TestCase):
 
     def test_owned_early_exit_hung_writer_and_cancellation(self):
         fifo = self.root / "owner-control"
+        ready = self.root / "owner-ready"
         os.mkfifo(fifo, 0o600)
+        started = time.monotonic()
         # Independent live fixture owner holds its own group identity until fixed
         # cleanup command/watchdog. It never signals a remembered/reaped PID.
         program = f"""import os,signal,time
@@ -203,6 +215,8 @@ if os.fork():
  os._exit(0)
 signal.signal(signal.SIGTERM, signal.SIG_IGN)
 control=os.open({str(fifo)!r},os.O_RDONLY|os.O_NONBLOCK)
+with open({str(ready)!r},"x") as marker:
+ marker.write("ready")
 end=time.monotonic()+6
 while time.monotonic()<end:
  if os.read(control,16)==b'cleanup':
@@ -212,9 +226,14 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
 """
         try:
             value, records = self.fake(program)
-            self.assertEqual(value, "timeout")
-            self.assertTrue(records[0]["drained"] and records[0]["reaped"])
-            self.assertEqual(records[0]["group_observation"], "signals-issued-unproven")
+            self.assertIn(value, ("timeout", "cleanup"))
+            self.assertTrue(records[0]["reaped"] and records[0]["fd_closed"])
+            if value == "cleanup":
+                self.assertEqual(records[0]["primary_error"], "timeout")
+                self.assertEqual((records[0]["group_stage"], records[0]["group_errno"]), ("identity", "absent"))
+            else:
+                self.assertTrue(records[0]["drained"])
+                self.assertEqual(records[0]["group_observation"], "signals-issued-unproven")
         finally:
             try:
                 fd = os.open(fifo, os.O_WRONLY | os.O_NONBLOCK)
@@ -226,6 +245,17 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
                     os.write(fd, b"cleanup")
                 finally:
                     os.close(fd)
+            self.assertEqual(ready.read_text(), "ready")
+            while True:
+                self.assertLess(time.monotonic(), started + 7, "fixture exit deadline")
+                try:
+                    fd = os.open(fifo, os.O_WRONLY | os.O_NONBLOCK)
+                except OSError as exc:
+                    self.assertEqual(exc.errno, errno.ENXIO)
+                    break
+                os.close(fd)
+                self.assertLess(time.monotonic(), started + 7, "fixture reader persisted")
+                time.sleep(0.02)
         value, records = self.fake("import os,signal,time\nos.kill(os.getppid(),signal.SIGTERM)\ntime.sleep(30)\n")
         self.assertEqual(value, "cancelled")
         self.assertTrue(records[0]["cancelled"] and records[0]["reaped"])
@@ -260,7 +290,9 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
         developer = self.root / "developer"
         developer.mkdir()
         compiler = developer / "swiftc"
-        compiler.write_bytes(b"vendor-entry")
+        target = developer / "swift-frontend"
+        target.write_bytes(b"vendor-entry")
+        compiler.symlink_to(target)
         sdk = developer / "MacOSX15.5.sdk"
         sdk.mkdir()
         alias = developer / "MacOSX.sdk"
@@ -270,17 +302,19 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
                 return str(compiler)
             if "--show-sdk-path" in argv:
                 return str(alias)
+            self.assertEqual(argv[0], str(compiler))
             if "--version" in argv:
                 return "Apple Swift version 6.1.2"
             return " ".join(b.REQUIRED)
         with patch.multiple(b, DEV=developer, SWIFT=compiler, SDK=sdk):
             info, found = b.identity(fake_run, b.BASE)
             self.assertEqual(info["size"], len(b"vendor-entry"))
+            self.assertEqual((info["path"], info["hash_path"]), (str(compiler), str(target)))
             self.assertEqual(found, sdk)
             alias.unlink()
             alias.symlink_to(self.root)
             self.reject("identity", b.identity, fake_run, b.BASE)
-        self.reject("timeout", b.entry_hash, compiler, time.monotonic() - 1)
+        self.reject("timeout", b.entry_hash, target, time.monotonic() - 1)
         self.reject("timeout", b.sources, self.root, None, time.monotonic() - 1)
         value, records = self.fake("print('ok')\n", budget=4)
         self.assertEqual(value, "timeout")
@@ -294,13 +328,15 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
             streams.append(os.fdopen(reader, "rb"))
         proc = Mock(pid=123, returncode=None, stdout=streams[0], stderr=streams[1])
         proc.wait.side_effect = [b.subprocess.TimeoutExpired("fixture", 1), 0]
-        records = []
+        records = self.records
         with patch.object(b.subprocess, "Popen", return_value=proc), \
              patch.object(b.os, "getpgid", return_value=123), \
              patch.object(b.os, "killpg", side_effect=PermissionError):
             self.reject("cleanup", b.capture, ["inert mock"], self.root, {},
                         time.monotonic() + 10, 5, records)
         self.assertEqual(proc.wait.call_count, 2)
+        self.assertEqual(records[0]["primary_error"], "timeout")
+        self.assertEqual((records[0]["group_stage"], records[0]["group_errno"]), ("term", "other"))
         self.assertTrue(records[0]["reaped"] and records[0]["fd_closed"])
         self.assertTrue(all(stream.closed for stream in streams))
 
@@ -323,9 +359,28 @@ if __name__ == "__main__":
     with contextlib.redirect_stdout(captured), contextlib.redirect_stderr(captured):
         suite = unittest.defaultTestLoader.loadTestsFromTestCase(BuildTests)
         result = unittest.TextTestRunner(stream=captured).run(suite)
-    print(json.dumps({"schema": 1, "tests": result.testsRun,
-                      "failures": len(result.failures), "errors": len(result.errors),
-                      "skipped": len(result.skipped),
-                      "result": "passed" if result.wasSuccessful() else "failed",
-                      "fixture_cleanup": "passed" if result.wasSuccessful() else "unknown"}))
+    fields = {"command", "exit", "deadline", "bytes", "drained", "fd_closed", "reaped", "cancelled",
+              "group_observation", "ownership", "primary_error", "group_stage", "group_errno"}
+    names = {
+        'test_source_identity_and_tampering', 'test_unfrozen_and_extra_manifest',
+        'test_links_modes_and_bounds', 'test_environment_is_constructed',
+        'test_changed_baseline_rejected_without_locator', 'test_escaped_locator',
+        'test_bounded_output_success_and_nonzero', 'test_flood_timeout_and_kill_reap',
+        'test_inherited_pipes_are_drained_before_success', 'test_spawn_failure_and_malformed_text',
+        'test_artifact_valid_and_rejection_matrix', 'test_inventory_and_cleanup_reject_unexpected_or_replaced',
+        'test_owned_early_exit_hung_writer_and_cancellation', 'test_term_output_and_wait_ownership_guard',
+        'test_canonical_inventory_adoption_and_multidir_cleanup', 'test_sdk_alias_stream_hash_and_whole_deadline',
+        'test_signal_failure_does_not_skip_direct_child_reap', 'test_missing_binding_is_finite_and_no_build',
+    }
+    failed = sorted({case._testMethodName for case, _ in result.failures + result.errors} & names)
+    output = {"schema": 1, "tests": result.testsRun, "failures": len(result.failures),
+              "errors": len(result.errors), "skipped": len(result.skipped),
+              "result": "passed" if result.wasSuccessful() else "failed",
+              "fixture_cleanup": "passed" if result.wasSuccessful() else "unknown",
+              "failed_cases": failed, "captures": {name: [{key: value for key, value in rec.items() if key in fields}
+                  for rec in BuildTests.capture_records.get(name, [])[:2]] for name in failed}}
+    encoded = json.dumps(output, sort_keys=True, separators=(",", ":"))
+    if len(encoded.encode()) > 16384:
+        encoded = json.dumps({"schema": 1, "result": "failed", "error": "overflow"})
+    print(encoded)
     sys.exit(0 if result.wasSuccessful() else 1)

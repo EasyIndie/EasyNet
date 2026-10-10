@@ -49,11 +49,12 @@ jobs:
             assert hashlib.sha256(manifest).hexdigest() == binding['manifest']
             suite = subprocess.run(['/usr/bin/python3', '-I', '-B', str(root / base / 'Tests/test_build.py')],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
-            assert len(suite.stdout) <= 4096 and not suite.stderr
+            assert len(suite.stdout) <= 16384 and not suite.stderr
             record = json.loads(suite.stdout)
             print(json.dumps({'phase': 'synthetic', 'record': record}), flush=True)
-            assert suite.returncode == 0 and record == {'schema': 1, 'tests': 17, 'failures': 0,
-              'errors': 0, 'skipped': 0, 'result': 'passed', 'fixture_cleanup': 'passed'}
+            assert suite.returncode == 0 and record == {'schema': 1, 'tests': 18, 'failures': 0,
+              'errors': 0, 'skipped': 0, 'result': 'passed', 'fixture_cleanup': 'passed',
+              'failed_cases': [], 'captures': {}}
             path = root / 'docs/planning/task-bindings/native-build-runtime.json'
             fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
             with os.fdopen(fd, 'w') as stream:

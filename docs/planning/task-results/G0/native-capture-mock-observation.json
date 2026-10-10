@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "phase": "mock-only",
+  "case": "test_signal_failure_does_not_skip_direct_child_reap",
+  "tests": 1,
+  "failures": 0,
+  "errors": 0,
+  "result": "passed",
+  "driver_sha256": "84b24bd7c9e52fecb9266a68a732b3854e6ec6292b401095f4a78baea03696d7",
+  "test_sha256": "5be4ac6fa49a3f5e36b3727d986d7d97daf319468c61f9135da56c6720a3eec3",
+  "real_child": "not-started",
+  "compiler": "not-run",
+  "full_suite": "not-run",
+  "group_cleanup_qualification": "not-established"
+}
