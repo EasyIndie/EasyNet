@@ -163,6 +163,50 @@ the source checkpoint SHA, exact inline binding, reviewed final workflow digest/
 and once-only trigger; their final review is the remaining execution prerequisite.
 Frozen SHA-256: tests `ccaca6f95bede58d54f77205a3cb9a74c6621fb42c59a5608ddf4f2af0bae1df`
 (313 lines); workflow `789c40cf336bf316594442d69b907f906d1a3587458c2f37af1f89b4d86175da`
-(73 lines); contract `6db69f2c08a7ef729aac87b1b3948632792a303c7c37c1c3736e4b7732bd1b337`.
+(73 lines); contract `6db69f2c08a7ef729aac87b1b3948632792a303c7c37c1c3736e4b7732bd1b33`.
 Driver remains the reviewed 511-line `15a8d305…be78f35b` snapshot above. No new helper,
 diagnostic stage, local rerun or expanded runtime privilege is required or granted.
+
+## Exact activation review — one hosted job approved
+
+Source checkpoint `6d783478932e8818c67f7f3cfb204a84c275ef41`: Git-object hashes,
+sizes and 100644 modes match the five-file binding; contract digest above verified.
+Activation commit `392c44eb9bba3a6db474745a7fa133dc06ad7d8a` is approved for the exact
+feature-branch push and one new fresh guest, budget **1**; no manual rerun or retry.
+Workflow SHA-256 `2881deb126bf7dc2489e25b6c96d81151f11d08d58af601321df8528a651acb2`;
+archived binding SHA-256 `7cdff457a817763a1bae3417eab6d487c6be463cb3fabf7a894aca2705991eaa`.
+Reviewed diff: fixed repository/feature/push/exact-message gate, literal source checkout,
+and public inline binding matching the archived JSON. Checkpoint workflow digest remains
+`789c40cf…86175da`; activation digest is separate, avoiding an identity/hash cycle.
+Synthetic 17-pass/zero-error/failure/skip and cleanup gate precedes fixed compile/inspection;
+failure or ambiguity consumes the guest and stops. No app launch, engine/GUI/NE/secrets.
+Root disables the gate and archives remaining budget zero after observation. Local/ar/av
+budgets stay zero; trusted vendor compile effects provide no candidate isolation qualification.
+Only static Git/hash reads ran in this review; push/guest remains for root execution.
+
+## Consumed hosted qualification — closure accepted, Q-B blocked
+
+Run `38017582161` reports 17 tests, three failures, zero errors/skips and cleanup unknown;
+compiler gate refused, so no native compilation occurred. Matching local failure counts do
+not identify hosted cases or cause. Standard Tests `38017582571` passed their separate scope.
+Disabled job/empty inline binding accepted; guest/local/ar/av budgets are zero, no rerun.
+Static defect: abnormal cleanup wraps TERM/drain/KILL/wait in one try; any signal/identity
+OSError skips bounded direct-child wait/reap entirely. This can leave an already-exited
+owned child unreaped. Separate always-attempted bounded direct-child reaping from group
+signaling; retain ambiguity and never signal a released/unverified group. Also prefer bounded
+wait after pipe EOF before escalating KILL. These are actionable source repairs, not proof
+of the hosted failure cause; no actual predicate or platform qualification is established.
+Q-B compile and G0-06.2d remain blocked. Static repair may proceed; another qualification
+requires explicit authorization for the materially corrected package and a new finite target
+budget, or an explicit reviewed candidate ADR disposition. Do not replenish existing grants
+or create a renamed diagnostic run. No compiler/GUI/engine/NE success can be claimed.
+
+Source-only follow-up accepted: split signaling/drain/direct wait fixes the concrete skipped-
+reap path; the added pipe-based test mocks Popen/getpgid/killpg and checks two waits/closure.
+Driver 519 lines SHA `84b24bd7c9e52fecb9266a68a732b3854e6ec6292b401095f4a78baea03696d7`;
+tests 331 lines SHA `5be4ac6fa49a3f5e36b3727d986d7d97daf319468c61f9135da56c6720a3eec3`.
+The 18-test suite remains unexecuted; consumed 17-test binding cannot authorize this source.
+Next input is an exact reviewed binding with explicit finite allowance for the corrected
+package/target. New human permission was an R interpretation of the once-only contract,
+not a blanket requirement for continuously authorized static work; no budget reset is assumed.
+No runtime grant; disabled workflow/evidence closure may be committed and pushed.

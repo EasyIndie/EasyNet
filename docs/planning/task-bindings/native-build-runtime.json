@@ -4,9 +4,11 @@
   "contract": "6db69f2c08a7ef729aac87b1b3948632792a303c7c37c1c3736e4b7732bd1b33",
   "feature": "6d783478932e8818c67f7f3cfb204a84c275ef41",
   "grant": "one-compile-only",
-  "guest_remaining": 1,
+  "guest_remaining": 0,
   "local_remaining": 0,
   "manifest": "8962fed3050bc27baaca7a3dc9c1f99269b8ac6a0dcecfd854b8a4badc710798",
+  "observed_run": 38017582161,
+  "outcome": "synthetic-failed-compile-not-run",
   "python_trust": "fresh-vendor-system-entry-/usr/bin/python3-isolated-no-bytecode",
   "python_verified": true,
   "schema": 1,
@@ -42,7 +44,7 @@
       "type": "regular"
     }
   },
-  "status": "frozen",
+  "status": "consumed",
   "target": "macos-15-arm64",
   "workflow": "789c40cf336bf316594442d69b907f906d1a3587458c2f37af1f89b4d86175da"
 }

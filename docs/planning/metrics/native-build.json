@@ -1,0 +1,82 @@
+{
+  "billing_cost": null,
+  "closing_after_cutoff": "Closure triage/persistence excluded.",
+  "comparison_kind": "observational-unpaired",
+  "conclusion": "Necessary independent safety review did not produce accepted runtime qualification. High cache is not proof of savings; no matched main-only successful comparison or invoice. Repeated coordination and failed preparation are material costs. Avoid further speculative probes/helper growth; need actionable source evidence before another grant.",
+  "dispatch_error": "Root sent continuation to completed reviewer using send_message; idle agent did not start, creating needless main waiting. Corrected with followup_task.",
+  "groups": [
+    {
+      "cache_read_fraction": 0.8961063094700834,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 472576,
+      "calls": 14,
+      "effort": "low",
+      "input_tokens": 527366,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 54790,
+      "output_tokens": 1026,
+      "reasoning_output_tokens": 726,
+      "role": "automatic_review",
+      "total_tokens": 528392
+    },
+    {
+      "cache_read_fraction": 0.9847728344694087,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 8547712,
+      "calls": 98,
+      "effort": "medium",
+      "input_tokens": 8679882,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 132170,
+      "output_tokens": 21736,
+      "reasoning_output_tokens": 6939,
+      "role": "main",
+      "total_tokens": 8701618
+    },
+    {
+      "cache_read_fraction": 0.9777342324462327,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 3849984,
+      "calls": 37,
+      "effort": "high",
+      "input_tokens": 3937659,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 87675,
+      "output_tokens": 20807,
+      "reasoning_output_tokens": 8964,
+      "role": "subagent",
+      "total_tokens": 3958466
+    },
+    {
+      "cache_read_fraction": 0.9487224295568143,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 1036928,
+      "calls": 18,
+      "effort": "medium",
+      "input_tokens": 1092973,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 56045,
+      "output_tokens": 21546,
+      "reasoning_output_tokens": 4249,
+      "role": "subagent",
+      "total_tokens": 1114519
+    }
+  ],
+  "outcome": "Local17/3fail and hosted17/3fail; hosted failed cases/primary cause unknown; compiler/engine/GUI/NE not run. Budget0, workflowdisabled.",
+  "schema": 1,
+  "since": "2026-10-10T01:58:00+00:00",
+  "status": "source-reviewed-local-and-hosted-synthetic-failed-compile-not-run",
+  "totals": {
+    "cache_read_fraction": 0.9767746321783861,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 13907200,
+    "calls": 167,
+    "input_tokens": 14237880,
+    "noncached_input_tokens": 330680,
+    "output_tokens": 65115,
+    "reasoning_output_tokens": 20878,
+    "total_tokens": 14302995
+  },
+  "until_exclusive": "2026-10-10T02:38:41+00:00",
+  "work_package": "native-compile-qualification"
+}

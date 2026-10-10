@@ -13,7 +13,7 @@ import sys
 import tempfile
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 spec = importlib.util.spec_from_file_location("native_build", Path(__file__).parents[1] / "build.py")
 b = importlib.util.module_from_spec(spec)
@@ -285,6 +285,24 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
         value, records = self.fake("print('ok')\n", budget=4)
         self.assertEqual(value, "timeout")
         self.assertFalse(records[0]["reaped"])
+
+    def test_signal_failure_does_not_skip_direct_child_reap(self):
+        streams = []
+        for _ in range(2):
+            reader, writer = os.pipe()
+            os.close(writer)
+            streams.append(os.fdopen(reader, "rb"))
+        proc = Mock(pid=123, returncode=None, stdout=streams[0], stderr=streams[1])
+        proc.wait.side_effect = [b.subprocess.TimeoutExpired("fixture", 1), 0]
+        records = []
+        with patch.object(b.subprocess, "Popen", return_value=proc), \
+             patch.object(b.os, "getpgid", return_value=123), \
+             patch.object(b.os, "killpg", side_effect=PermissionError):
+            self.reject("cleanup", b.capture, ["inert mock"], self.root, {},
+                        time.monotonic() + 10, 5, records)
+        self.assertEqual(proc.wait.call_count, 2)
+        self.assertTrue(records[0]["reaped"] and records[0]["fd_closed"])
+        self.assertTrue(all(stream.closed for stream in streams))
 
     def test_missing_binding_is_finite_and_no_build(self):
         with patch.object(b, "build", side_effect=AssertionError("build must not run")):

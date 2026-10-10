@@ -37,11 +37,14 @@ Let `P=docs/planning/poc/client-framework/native-lab`. One I implementation card
 
 Source review records all five files' exact paths/types/modes/byte limits/SHA-256 as a
 version-1 source manifest in the future binding; no separate generator or fixture stage.
-Budget: Host <=60 lines, plist <=30, driver <=520, tests <=320, workflow <=75.
+Budget: Host <=60 lines, plist <=30, driver <=520, tests <=335, workflow <=75.
 Root accepts the independent R's consolidated correction estimate (+100/+80), solely
 for ownership/cancel/drain, failure cleanup, bounded hashing and valid artifact cases.
 Root accepts +20 test/+15 workflow lines for finite buffered suite output and immutable
 verification-before-import bootstrap; no new helper or experiment stage is added.
+Post-failure source-only repair adds one mocked signal-error/reap case (+15 test lines).
+The resulting suite has 18 cases, unexecuted; old 17-case binding is consumed and cannot
+authorize current source. No renewed local/guest attempt is granted by this amendment.
 Report a concrete shortfall before exceeding these limits; do not compress code to fit.
 
 The first Host is a real window implementation, with honest `idle / runtime unqualified`

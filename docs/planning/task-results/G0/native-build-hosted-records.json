@@ -1,0 +1,19 @@
+[
+  {
+    "phase": "synthetic",
+    "record": {
+      "errors": 0,
+      "failures": 3,
+      "fixture_cleanup": "unknown",
+      "result": "failed",
+      "schema": 1,
+      "skipped": 0,
+      "tests": 17
+    }
+  },
+  {
+    "error": "qualification",
+    "result": "refused",
+    "schema": 1
+  }
+]

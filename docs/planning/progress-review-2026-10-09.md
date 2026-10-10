@@ -151,3 +151,13 @@ Q-B 源码集中修复后，唯一 local 合成验收 17tests/3failures/0errors�
 job仍disabled/checkout placeholder/binding absent，未执行编译器或生成应用。
 root 又一次将后续请求以不启动 idle turn 的 send_message 发给完成的 R，造成无效等待；
 已改用 followup_task。此为调度错误，必须计入用量，不作为多代理节省证据。
+
+唯一 hosted Q-B qualification [38017582161](https://github.com/EasyIndie/EasyNet/actions/runs/38017582161)
+synthetic17/3fail/0errors/0skips、fixture cleanup unknown，gate拒绝，compiler未运行。
+与local计数相同不证明失败case或原因相同。标准 [Tests38017582571](https://github.com/EasyIndie/EasyNet/actions/runs/38017582571)
+PASS。入口关闭、inline binding清空、runtime binding consumed，guest/local预算0。
+R指出可静态确认的独立缺陷：异常组信号失败会跳过直接child wait/reap；root已准备拆分收尾与mock回归，
+18-case successor未执行，不是hosted失败归因或资格通过。下一运行必须审materially corrected source/
+精确binding与目标，不能沿用消耗的17-case授权。Q-B编译/.2d继续blocked，完整G0未完成。
+01:58–02:38:41Z工作包用量330,680非缓存input/65,115output，cache97.68%；含主会话协调、I/R与自动审批，
+后续关闭工作未计入。见 metrics/native-build.json；无配对main-only验收样本/账单，不能证明多代理更省。

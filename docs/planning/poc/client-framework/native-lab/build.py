@@ -194,7 +194,15 @@ def capture(argv, root, env, whole, budget, records, cancel=None):
                     drain(max(time.monotonic(), end - 2), False)
                     # Still held; KILL reaches inherited writers even if TERM closed pipes.
                     owned_signal(signal.SIGKILL)
+                except (OSError, Reject):
+                    rec["ownership"] = "ambiguous"
+                    error = "cleanup"
+                # Group signaling failure must never skip direct-child cleanup.
+                try:
                     drain(end, False)
+                except (OSError, Reject):
+                    error = "cleanup"
+                try:
                     proc.wait(timeout=max(0.001, end - time.monotonic()))
                     rec["reaped"] = True
                     rec["ownership"] = "released"
