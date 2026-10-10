@@ -69,3 +69,15 @@ R permits root to freeze and execute this exact local attempt once, enforcing th
 Disabled hosted draft86 lines is below90: if:false/FROZEN_BINDING empty, pinned checkout action, full21 exact synthetic record then one conditional compile, original artifact success and qualified metadata checks.
 No further draft source repair needed. Activation remains separately blocked on fresh immutable feature/ref, workflow/source/contract/manifest/consumed-binding identity and explicit new one-attempt hosted grant.
 The old checkout ref is a disabled placeholder and must be replaced during that mechanical freeze. Full21/compile/G0 remain untested; old budgets are not reopened.
+
+## Exact hosted activation review — accepted for one attempt
+
+Local2 record passed:0.389851s/214B stdout/0 stderr; local grant consumed0. This is not full21 or real build acceptance.
+Source checkout `fc71a550a532a899e19fbe1ae4c1102bc4b94a7f` verified: five exact source hashes/sizes/modes, canonical manifest, contract and archived consumed grant hash all match.
+Frozen new binding SHA256 `7d5185b4f3efd8550d7a7161a1dd2156ad0a18e68401a1947f85a54e00f4d8bf`:guest1/local0, producer21/one-compile-only, inline equals file.
+Activation workflow7239B/SHA256 `3b033ade3023fd037cc293238c0c71d02a90ec42a165ed7677df69475dbe0eec`; reviewed disabled source workflow5412B/SHA256 `8a92d7555bbd705d88ac7de9b13351eb3ec6235b06909b9af2099ac8b2170217`.
+Diff changes only name/push-message guard/immutable ref/inline binding; bootstrap identical and inert AST parses. Checkout action pin/persist-credentials:false retained.
+Full21 exact synthetic PASS is required before one driver invocation; baseline enforces arm64; qualified metadata precedes original compile argv and all original artifact/cleanup predicates.
+R permits exactly one activation commit/push with message `Run one qualified SDK producer fc71a550a532a899e19fbe1ae4c1102bc4b94a7f`, then one hosted attempt under root's frozen budget.
+Dispatch/retry/rerun is not authorized; consume the grant and disable activation after the attempt regardless of result. GitHub's message guard is not a durable replay-prevention claim.
+This review ran only static hashes/Git reads/diff/AST; no push/runtime/test. Old grants stay zero; GUI/engine/NE/signing/fullG0 gates remain.
