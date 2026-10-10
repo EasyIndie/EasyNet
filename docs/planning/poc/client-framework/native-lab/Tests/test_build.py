@@ -459,7 +459,17 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
                                   "platform_version_present": False})
         self.assertNotIn("secret", json.dumps(jobs))
         self.assertEqual(b.driver_jobs("ld irrelevant-sdk-text", logical, canonical)[0]["sdk"], "absent")
+        for value in ("15.5", '"15.5"'):
+            plan = f'swift-frontend -target arm64-apple-macosx15.0 -sdk "{logical}" -target-sdk-version {value}'
+            self.assertEqual(b.driver_jobs(plan, logical, canonical), [{"tool": "frontend", "target": "expected",
+                "sdk": "qualified-logical", "platform_version_present": False}])
         malformed = ("", "ld 'broken", "ld \0secret", "ld \ud800", "ld @secret", "ld -filelist secret",
+            "swift-frontend -target-sdk-version", 'swift-frontend -target-sdk-version ""',
+            "swift-frontend -target-sdk-version -sdk x", "swift-frontend -target-sdk-version @x",
+            "swift-frontend -target-sdk-version 15 -target-sdk-version 15",
+            "swift-frontend -target-sdk-versionx 15", "swift-frontend -target-sdk-version=15",
+            "swift-frontend -Xfrontend -target-sdk-version 15", "swift-frontend -Wl,-target-sdk-version,15",
+            "clang -target-sdk-version 15", "ld -target-sdk-version 15",
             "ld -Xlinker", "ld -Xfrontend", 'ld -Xlinker ""', 'ld -Xfrontend ""',
             "ld -target", 'ld --target=""', "ld -sdk -next", "ld -sdk=x", "ld -targetx x",
             "ld --target=", "ld -isysroot=/secret", "ld -syslibrootx x", "ld -platform_version=x",

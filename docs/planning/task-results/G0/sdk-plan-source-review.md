@@ -193,3 +193,35 @@ once. Consume at dispatch; failure stops without retry. Archive the outcome at
 zero and disable the workflow/clear inline binding afterward. Source/binding/
 workflow changes invalidate this grant. R ran no tests, driver or hosted work.
 SDK artifact equality and all G0/build/final acceptance gates remain open.
+
+## Hosted closure — refused plan, allowance consumed
+
+Run 38048229650 used activation
+`db46def2d41c365d80fc94b196a4d581e6b0e77f`. R verified the finite
+`sdk-driver-jobs-hosted-records.json` (8,022 bytes), SHA-256
+`cb45696d9349a59935926892336dcb5bf2a08ec4d684664229368c38867504ed`.
+Closed full19 passed with zero failures/errors/skips and passed fixture cleanup.
+Commands 0..9 exited 0, were reaped/drained/fd-closed and released ownership.
+Command 9 used the 120-second bound and returned 2,692 stdout / zero stderr
+bytes; parsing then refused plan-format. driver_jobs/artifact/SDK-semantic fields
+are null, artifact predicate not-run, cleanup removed, candidate false and
+GUI/engine/NE not-run. No parsed forwarding observation or producer cause follows.
+The new archived binding is consumed with local/guest budgets both zero.
+R verified local workflow false and inline binding empty. No retry/new grant.
+
+## Bounded source disposition — printed-syntax proof blocked
+
+Exactly two same-tag official source opens were attempted. Tagged
+[Options.swift](https://github.com/swiftlang/swift-driver/blob/swift-6.1.2-RELEASE/Sources/SwiftOptions/Options.swift)
+defines -target-sdk-version as a separate frontend/noDriver option, distinct
+from target. Static comparison demonstrates that the parser's broad target
+prefix rejects that supported spelling; it is not a target-triple operand.
+The tagged
+[FrontendJobHelpers.swift](https://github.com/swiftlang/swift-driver/blob/swift-6.1.2-RELEASE/Sources/SwiftDriver/Jobs/FrontendJobHelpers.swift)
+open returned Internal Error, so this bounded review did not establish that
+the driver's printed jobs generate it. No raw plan was retained; the actual
+failed token and vendor implementation/cause remain unknown.
+Required printed-generation proof is absent: stop guest extensions and freeze
+no correction/runtime grant. A retrievable same-tag frontend construction
+source demonstrating that option is the specific missing evidence. R executed
+no candidate or fixture. SDK artifact equality remains 15.5 and gates stay open.

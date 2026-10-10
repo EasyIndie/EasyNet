@@ -253,3 +253,39 @@ full18PASS、compileexit0，明确argvSDK为MacOSX15.5.sdk但artifact仍15.0.0�
 标准Tests38045574663PASS；GUI/engine/NE/签名/最终ADR和完整G0未通过。
 下一张仅官方Swift6.1.2 producer源码事实收集，Luna medium，限定查询/文件预算；
 不继续盲目编译，可能的print-jobs需另外冻结有界合同后才能执行。
+
+SDK参数计划阶段：source3f0f0bd/activationdb46def，
+[38048229650](https://github.com/EasyIndie/EasyNet/actions/runs/38048229650)
+full19PASS，命令0–9全部exit0/reap/drain/FDclose；计划命令stdout2692/stderr0，
+但解析拒绝plan-format，driver_jobsnull、artifactnull/predicatenotrun，cleanupremoved。
+未启动app/GUI/engine/NE，未执行后续编译；SDK原因与构建资格未解决。
+新local-sdk-driver-jobs-v1 1/1PASS（0.253s/188bytes）；全新旧预算consumed0，
+入口禁用/inline空，有限记录sdk-driver-jobs-hosted-records.json；标准Tests38048229588PASS。
+源码修正涵盖授权类型、残缺wrapper、目录完整性失败不可被重取快照覆盖；
+mocked正常计划/篡改失败fixture纯自有目录/无工具，原18方法不变+1方法。
+官方tag Options证实独立target-sdk-version语法与现有宽target前缀冲突，
+尚缺tag frontend生成来源，不能将该静态冲突认定为真实失败参数；没有新runtime grant。
+成本记录更新至11:26:11Z：sdk-progression-usage.json，整体缓存97.28%，
+包括root/C/I/R/自动审批、草案预算回退、修正与中断；不是配对A/B或账单。
+
+2026-10-10 SDK frontend 静态修复（主会话机械实现、同卡独立R整包审查）：
+只让 frontend 精确消费独立 -target-sdk-version 参数，保留所有未知前缀/包装形式拒绝、
+现有输出语义与SDK equality。原18测试 AST不变，仍19方法；新正反例在同一方法内。
+唯一 local-sdk-frontend-metadata-v1 1/1PASS（0.394s/194bytes），无失败/错误/跳过，
+fixture cleanup passed；local/guest额度0。未执行compiler、full19或新的hosted。
+审查与有限结果分别为 sdk-frontend-review.md / sdk-frontend-local-record.json。
+该静态缺陷与真实 plan-format 失败 token 的因果联系仍未证实。
+
+下一步顺序调整仅针对缺失证据，不改变 G0 范围或放宽验收：
+
+| 顺序 | 可执行交付与解锁条件 | 执行模型 |
+|---|---|---|
+| 1 | SDK producer 合同依据：定向取回 tagged Darwin linker source，追踪SDK路径/版本来源；区分输入SDK身份与Mach-O声明。先静态事实与合同审查，禁止继续无证据print-jobs guest | C Luna medium有界事实，R Sol high关键取舍 |
+| 2 | 依据接受的SDK语义决定准确构建合同及必要测试；只有具体修正/全包source审查后才评估新运行资格。输入hash或SDK版本查询不能单独解释产物标记 | 短冻结修正root；复杂解析I Sol medium |
+| 3 | 候选B实际GUI/engine完整工作包：真实窗口→Connect/Cancel/Stop/Restart→loopback nonce及故障/回收矩阵；前置构建、目标身份与效果保护均须通过。A独立前置仍保留 | I Sol medium完整包、R一次边界审查 |
+| 4 | 独立签名/公证准备：组织名称映射、API密钥编码、Developer ID资格、临时Keychain清理、可信SHA/产物摘要；材料只在接受的job中使用，缺NE profile单列 | I Sol medium、R凭据/权限审查 |
+| 5 | 各候选权限/系统VPN与签名真实验收→G0-06.3最终ADR处置→汇合G0-01–07。NE profile、系统同意及真实路由/DNS验证不可由代理模式或公证替代 | I/R；需要人工系统同意时单独说明 |
+
+目前不能把测试声明数、准备卡通过率或编译exit0换算为G0完成百分比。
+后续模型策略继续以全链路数据为依据：主会话处理短冻结修正，C只读事实，
+I完成有界实现，R集中审查关键边界；不为纯台账再生成子代理，不反复新建同卡实现者。

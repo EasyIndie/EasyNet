@@ -19,8 +19,8 @@ G0-01–05 的限定范围已验收：ADR-004 选择 Go 共同应用服务，ADR
 SSH/vault/结构化结果与存储故障 PoC 已有证据，不能直接当作生产 transport/store/vault。
 客户端 GUI/engine/签名分发尚未选定；Flutter 仍为候选。G0-06.2ap 修复驱动/助手绑定不一致，
 15 项模拟测试通过；一次 runner 观测仍在 report 阶段 unknown，平台 gate 继续 blocked。
-当前 278 卡：83 verified、9 blocked、186 locked；G0-07 Go 骨架/离线测试/CI 已验收，G1–G6 未进入正式实施。G0 优先收敛审查 aq 已接受，最后 reader 工作包 ar 源码/17fakes已审，单次guest为directory-guard/unknown，观测预算0；转入独立环境资格。
-G0-07 CI 源码 a7e3300 已推送 feature；新 G0 收敛决策 695ffd5 为本地提交，main 未合入。状态以 cards.json 为准。
+2026-10-10 台账为 281 卡：85 verified、10 blocked、186 locked；其中 G0 为 85 verified、10 blocked、7 locked。这些数量包含前置审查和准备卡，不能换算为产品完成百分比。G0-07 Go 骨架/离线测试/CI 已验收，G1–G6 未进入正式实施。G0 收敛审查 aq 已接受；最后 reader 工作包 ar 单次 guest 为 directory-guard/unknown，观测预算0。独立 hosted baseline 已观察；原生实际编译成功，但产物 SDK15.0.0 与合同15.5.0不符，后续参数计划被 plan-format 拒绝；GUI/engine/权限/签名仍未验收。
+相关源码与激活记录已推送 feature；main 未合入。已有运行额度保持消耗完毕，最新诊断、源码修复和下一步依赖见下述进度记录。状态以 cards.json 为准。
 完整进度、后续顺序和已确认调整见 [2026-10-09 复核提案](progress-review-2026-10-09.md)。
 下方能力表及测试数字保留为 2026-10-06 审计基线，不代表本次重跑或远程最新结果。
 

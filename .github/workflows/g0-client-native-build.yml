@@ -1,4 +1,4 @@
-name: G0 native SDK driver plan (one shot)
+name: G0 native preparation (disabled)
 on:
   workflow_dispatch:
   push:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   compile:
-    if: ${{ github.event_name == 'push' && github.event.head_commit.message == 'Run one bounded native SDK driver plan 3f0f0bda6e4a85aa0e80e4afb1f4957bdd292e9f' }}
+    if: ${{ false }}
     runs-on: macos-15
     timeout-minutes: 10
     steps:
@@ -20,7 +20,7 @@ jobs:
           lfs: false
       - name: Verify immutable sources, synthetic gate, then driver plan only
         env:
-          FROZEN_BINDING: '{"activation_message":"Run one bounded native SDK driver plan 3f0f0bda6e4a85aa0e80e4afb1f4957bdd292e9f","checkout":"3f0f0bda6e4a85aa0e80e4afb1f4957bdd292e9f","consumed_binding_sha256":"bd6d2f00d50ddbbeeda696edd927b682c0faf1afaf16cc9c54ca94058633c693","contract":"c502d465adbb4d8808e96da904db9000ee2c2544624171b489318ff1bc170f20","feature":"3f0f0bda6e4a85aa0e80e4afb1f4957bdd292e9f","grant":"one-driver-jobs-only","guest_remaining":1,"local_remaining":0,"manifest":"9467a77b00bcc8699acb06b32e050c3629255100d6d8608004fb841762e18706","python_trust":"fresh-vendor-system-entry-/usr/bin/python3-isolated-no-bytecode","python_verified":true,"qualification":"sdk-driver-jobs-hosted19-v1","schema":1,"sources":{".github/workflows/g0-client-native-build.yml":{"mode":420,"sha256":"fd5cf19072fc03b2f10c294ab380ba61e93a32eae31fd6b4f3ff81f7437b0d4e","size":4256,"type":"regular"},"docs/planning/poc/client-framework/native-lab/Host.swift":{"mode":420,"sha256":"189c478947d08115be289b553f23203d6f2bcf3cbc9001c4256bcb5b857d9a32","size":880,"type":"regular"},"docs/planning/poc/client-framework/native-lab/Info.plist":{"mode":420,"sha256":"54d00a6f0939fa213658c54fd1d138aa7ae1f68c1471ba3d4c35abc6b2f31aaf","size":631,"type":"regular"},"docs/planning/poc/client-framework/native-lab/Tests/test_build.py":{"mode":420,"sha256":"b3b446f113bad3d0452ba1674317c0e003f42413fb62d2e29e40b8b93bd3100b","size":33127,"type":"regular"},"docs/planning/poc/client-framework/native-lab/build.py":{"mode":420,"sha256":"983ed20135a64d05250e33790eb37d4a36aa41570c55d8010ccc96b58853ad20","size":33792,"type":"regular"}},"status":"frozen","target":"macos-15-arm64","workflow":"fd5cf19072fc03b2f10c294ab380ba61e93a32eae31fd6b4f3ff81f7437b0d4e"}'
+          FROZEN_BINDING: ''
         run: |
           /usr/bin/python3 -I -B - <<'PY'
           import hashlib, json, os, pathlib, stat, subprocess, sys
