@@ -44,3 +44,13 @@ root 冻结此 exact binding 后可仅执行一次；source hash 验证必须先
 target-variant triple 和 target-cpu 在 frontend helper 由 parsedOptions 显式输入生成；当前冻结 argv 未提供它们。它们不可当无关元数据跳过，保留拒绝，未来输入变更须另审。
 只准原三 source paths：driver≤700/40,960、tests≤600/40,960、contract≤245/32,768；无 helper/import/phase/字段。先准备完整 diff/hash 包审查，超界先停止，不能压缩或删用例；本报告不授新本地/guest 运行。
 SDKSettings 到 frontend 转发已证明，至实际 Mach-O producer 标记仍缺直接证据；继续优先合同/生成链 source-only 判断。保持产物SDK15.5 equality，不强制 marker，不盲开 print-jobs guest。
+
+## 完整 metadata-set 包接受与一次本地冻结
+
+R 一次审完三个完整 diff 和 planned binding；三选项 closed set/按 spelling 去重、瞬时消费及全部拒绝行为符合上文，参数化用例覆盖全部三项，不删原边界；mock/owned范围不变。AST/旧18AST/19名/预算/diff通过，未执行。
+driver690/34,275B SHA f4309afd0679e52ad7124181735b015aa8fbae510370dafaba351dfbc3721959；tests589/34,132B SHA d2e3472f789ab9650ba35765ac064e771a756a3140b6dcb0f447e537fb527eb3；contract245/18,933B SHA28bb76c17fa525dc86faa0dcfae75f7625be6f19cc985b716fd6b0e97b92f2c4。
+接受 exact planned local-sdk-metadata-set-v1.json，当前文件 SHA068d7c14f509dd4d6f51ce7933a1962db38cf0a5ac002ce3cb080b023eba5ed5。
+已核 consumed metadata-v1 前件文件 SHA401a169ec98cd3954bce64bd5dddc7391a6441a2bac3c5b26631fa9c44de8c6b；新 argv[4] 仅替换 target+三个 source hash，其余不变。
+wrapper1,961B SHA4055c16280243e5bf978a4272f080d54e71ed81be80ad28f108ada0a0400eeeb；cwd repo、/usr/bin/python3 -I -B -c、method test_driver_jobs_parser_and_grant、10s/1024B、local1/guest0。
+root 可只将此 planned binding frozen 后执行一次 puremock 方法；hash验证先于导入，dispatch消费。要求 exit0/tests1/PASS/零失败错误跳过/cleanup passed/≤1KiB finite output；失败停止，无重试，记录闭合 consumed0。
+此包不准 full19/guest/compiler/app，全部旧额度保持0；source/binding变化使本次许可失效。无新 print-jobs 试探：后续优先 SDK 元数据/链接 producer 完整合同 source-only 审查，保留未知实际 token/cause，不放宽 SDK15.5 equality 或强制 marker。

@@ -282,17 +282,18 @@ def driver_jobs(text, logical_sdk, canonical_sdk):
             job = {"tool": {"swift-frontend": "frontend", "clang": "clang", "ld": "ld"}.get(tool, "other"),
                    "target": "absent", "sdk": "absent", "platform_version_present": False}
             index = 1
-            frontend_sdk_seen = False
+            frontend_sdk_seen = set()
             while index < len(tokens):
                 token = tokens[index]
                 operands = []
                 category = None
                 wrapped_parts = []
-                if token == "-target-sdk-version":
-                    require(tool == "swift-frontend" and not frontend_sdk_seen
+                if token in ("-target-sdk-version", "-target-sdk-name", "-target-variant-sdk-version"):
+                    require(tool == "swift-frontend" and token not in frontend_sdk_seen
                             and index + 1 < len(tokens) and tokens[index + 1]
                             and not tokens[index + 1].startswith(("-", "@")), "plan-format")
-                    frontend_sdk_seen, index = True, index + 2
+                    frontend_sdk_seen.add(token)
+                    index += 2
                 elif token.startswith("-X"):
                     require(index + 1 < len(tokens) and tokens[index + 1], "plan-format")
                     wrapped = tokens[index + 1]

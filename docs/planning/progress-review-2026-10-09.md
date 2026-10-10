@@ -289,3 +289,11 @@ fixture cleanup passed；local/guest额度0。未执行compiler、full19或新�
 目前不能把测试声明数、准备卡通过率或编译exit0换算为G0完成百分比。
 后续模型策略继续以全链路数据为依据：主会话处理短冻结修正，C只读事实，
 I完成有界实现，R集中审查关键边界；不为纯台账再生成子代理，不反复新建同卡实现者。
+
+Frontend三项SDK元数据完整源码修复已独立审查；唯一local-sdk-metadata-set-v1
+1/1PASS（0.401s/189bytes）、零失败/错误/跳过、cleanup passed，额度consumed0。
+源码690/589/245行，原18方法不变；未重跑full19/compiler/guest。
+进一步定向读取tagged Jobs目录后发现最初链接器文件实际存在：加号编码为%2B的
+Contents请求成功，早先404不能证明文件缺失。tagged链接实现传递 --sysroot
+而非先前参考main分支的-isysroot；现parser缺这一SDK语义分类，是下一张明确源码修正卡。
+该事实不证明真实plan-format失败token或SDK15.0原因；不恢复旧运行额度。

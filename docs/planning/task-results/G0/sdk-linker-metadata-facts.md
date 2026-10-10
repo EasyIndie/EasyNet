@@ -41,3 +41,17 @@ blob `79bce9cc2613216328b905e26836e54211d5eb01` (22,909 bytes).
   to the contract's required Mach-O SDK 15.5 marker remains unknown.
 - Installed Apple binary behavior and the real failed token remain unobserved;
   no cause for a mismatch can be inferred from this source attempt.
+
+## Tagged linker source located by the task owner
+
+A later read-only Jobs directory listing confirms the originally requested file
+exists in this tag. Retrieval with the `+` encoded as `%2B` succeeded; the earlier
+404 is not evidence that the source file is absent. The Contents response reports
+blob `929e5fe1aaf11f1e0014604c10b6456098f12cdb`, 10,893 bytes.
+[Tagged linker source](https://github.com/swiftlang/swift-driver/blob/swift-6.1.2-RELEASE/Sources/SwiftDriver/Jobs/DarwinToolchain%2BLinkerSupport.swift#L224-L240)
+uses **`--sysroot`** plus `targetInfo.sdkPath` at lines224–226 and `--target=...`
+at236–237. It selects `.dynamicLinker` for executable output at81–93.
+This differs from the previously consulted main-branch `-isysroot` spelling;
+current parser does not classify `--sysroot` as an SDK flag. That is an independent
+semantic coverage gap, not evidence of the actual failed token or SDK15.0 cause.
+Neither inspected source proves the installed linker argv or final Mach-O marker.
