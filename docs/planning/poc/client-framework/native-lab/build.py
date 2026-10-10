@@ -16,7 +16,7 @@ import uuid
 
 P = "docs/planning/poc/client-framework/native-lab"
 FILES = {f"{P}/Host.swift": 8192, f"{P}/Info.plist": 4096,
-         f"{P}/build.py": 32768, f"{P}/Tests/test_build.py": 24576,
+         f"{P}/build.py": 32768, f"{P}/Tests/test_build.py": 26624,
          ".github/workflows/g0-client-native-build.yml": 8192}
 DEV = Path("/Applications/Xcode_16.4.app/Contents/Developer")
 SWIFT = DEV / "Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
@@ -315,6 +315,7 @@ def artifact(executable, plist, deadline=float("inf"), out=None):
     if out is None:
         out = {}
     out["artifact_predicate"] = "file-mode-bounds"
+    out["artifact_sdk_version"] = None
     checkpoint(deadline)
     try:
         data = regular(executable, 32 * 1024 * 1024, 0o700, deadline)
@@ -346,6 +347,9 @@ def artifact(executable, plist, deadline=float("inf"), out=None):
             require(length >= 24, "artifact")
             out["artifact_predicate"] = "build-fields"
             platform, minimum, sdk, tools = struct.unpack_from("<4I", data, offset + 8)
+            major = sdk >> 16
+            out["artifact_sdk_version"] = ({"major": major, "minor": (sdk >> 8) & 255,
+                                            "patch": sdk & 255} if major <= 255 else None)
             out["artifact_build_mismatches"] = {"platform": platform != 1,
                 "minimum": minimum != 0xF0000, "sdk": sdk != 0xF0500,
                 "length": length != 24 + 8 * tools}
@@ -445,7 +449,7 @@ def result():
             "feature": None, "workflow": None, "contract": None, "manifest": None,
             "run_token": None, "baseline": {}, "compiler": None, "sdk": None, "sources": {},
             "artifact": None, "artifact_predicate": "not-run", "commands": [], "generated": None, "cleanup": "not-created",
-            "primary-error": "none", "artifact_build_mismatches": None,
+            "primary-error": "none", "artifact_build_mismatches": None, "artifact_sdk_version": None,
             "external-effects": "trusted-vendor-not-denied", "candidate-executed": False,
             "gui": "not-run", "engine": "not-run", "ne": "not-run"}
 
@@ -566,10 +570,14 @@ def emit(out):
                              "plist-read", "plist-content", "passed"):
             predicate = "not-run"
         mismatches = out.get("artifact_build_mismatches")
+        sdk_version = out.get("artifact_sdk_version")
         out = result()
         if (isinstance(mismatches, dict) and set(mismatches) == {"platform", "minimum", "sdk", "length"}
                 and all(type(value) is bool for value in mismatches.values())):
             out["artifact_build_mismatches"] = mismatches
+        if (isinstance(sdk_version, dict) and set(sdk_version) == {"major", "minor", "patch"}
+                and all(type(value) is int and 0 <= value <= 255 for value in sdk_version.values())):
+            out["artifact_sdk_version"] = {key: sdk_version[key] for key in ("major", "minor", "patch")}
         out["artifact_predicate"] = predicate
         out.update(result="failed", error="overflow", cleanup="unknown")
         encoded = json.dumps(out, sort_keys=True, separators=(",", ":"))

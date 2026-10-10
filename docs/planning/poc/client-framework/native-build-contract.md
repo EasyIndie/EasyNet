@@ -210,3 +210,10 @@ Retain A/B engine/permission/signing gates, final ADR dispositions and all G0–
 
 `artifact_build_mismatches` defaults null; after build-version unpack it contains only
 platform/minimum/sdk/length booleans, retained on refusal with unchanged validation.
+
+One semantic exception: `artifact_sdk_version` is null before build-version unpack,
+or exactly major/minor/patch integers in 0..255. Decode the full high 16-bit major;
+an out-of-range major stays null, without truncation. No other raw header data is
+permitted. SDK equality, mismatch map, compiler argv and acceptance remain unchanged.
+Overflow fallback retains only an exact-key, integer-only, bounded semantic object.
+The expanded synthetic test source has a finite 26KiB admission cap; other file caps remain unchanged.

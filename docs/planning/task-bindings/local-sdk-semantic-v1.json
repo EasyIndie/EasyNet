@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-c",
+    "import contextlib, hashlib, io, json, pathlib, runpy, signal, sys, unittest\nmethod = \"test_artifact_valid_and_rejection_matrix\"\nout = {\"schema\": 1, \"target\": \"local-sdk-semantic-v1\", \"methods\": [method], \"result\": \"failed\", \"tests\": 0, \"failures\": 0, \"errors\": 1, \"skipped\": 0, \"fixture_cleanup\": \"unknown\"}\ndef timeout(signum, frame):\n    raise TimeoutError()\nsignal.signal(signal.SIGALRM, timeout)\nsignal.alarm(10)\ntry:\n    expected = {\"docs/planning/poc/client-framework/native-lab/build.py\": \"8f230e9a9d7f45f42a16e4be57f42a685c7eee1d7f7f06e3aa3651c605f6cc1f\", \"docs/planning/poc/client-framework/native-lab/Tests/test_build.py\": \"cbc114e5e526881ddac1d60c11684998998a8c2ef8a31b2221e09533f9d4757a\", \"docs/planning/poc/client-framework/native-build-contract.md\": \"9c3f3a37366927008b23dcfcff6ecccbeb39d811261de768857ca38ababbb13c\"}\n    for path, digest in expected.items():\n        if hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest() != digest:\n            raise ValueError()\n    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):\n        module = runpy.run_path(\"docs/planning/poc/client-framework/native-lab/Tests/test_build.py\", run_name=\"artifact_predicate_target\")\n        result = unittest.TestResult()\n        unittest.TestSuite([module[\"BuildTests\"](method)]).run(result)\n    passed = result.wasSuccessful() and result.testsRun == 1 and not result.skipped\n    out.update(result=\"passed\" if passed else \"failed\", tests=result.testsRun, failures=len(result.failures), errors=len(result.errors), skipped=len(result.skipped), fixture_cleanup=\"passed\" if passed else \"unknown\")\nexcept (Exception, KeyboardInterrupt):\n    pass\nfinally:\n    signal.alarm(0)\nencoded = json.dumps(out, sort_keys=True, separators=(\",\", \":\"))\nif len(encoded.encode()) > 1024:\n    encoded = '{\"schema\":1,\"result\":\"failed\",\"error\":\"overflow\"}'\n    out[\"result\"] = \"failed\"\nprint(encoded)\nsys.exit(0 if out[\"result\"] == \"passed\" else 1)"
+  ],
+  "cwd": "/Users/joker/Documents/EasyNet",
+  "deadline_seconds": 10,
+  "guest_remaining": 0,
+  "local_remaining": 0,
+  "max_output_bytes": 1024,
+  "schema": 1,
+  "status": "consumed",
+  "target": "local-sdk-semantic-v1"
+}

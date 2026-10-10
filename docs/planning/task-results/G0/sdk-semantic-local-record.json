@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "target": "local-sdk-semantic-v1",
+  "exit_code": 0,
+  "wall_seconds": 0.233088417,
+  "stdout_bytes": 192,
+  "result": {
+    "errors": 0,
+    "failures": 0,
+    "fixture_cleanup": "passed",
+    "methods": [
+      "test_artifact_valid_and_rejection_matrix"
+    ],
+    "result": "passed",
+    "schema": 1,
+    "skipped": 0,
+    "target": "local-sdk-semantic-v1",
+    "tests": 1
+  },
+  "scope": "one isolated pure-file artifact test; no compiler or guest"
+}

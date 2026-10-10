@@ -180,11 +180,31 @@ class BuildTests(unittest.TestCase):
         valid = executable.read_bytes()
         self.assertEqual(b.artifact(executable, plist)["size"], len(valid))
         output = b.result()
-        self.assertEqual((output["artifact_predicate"], output["artifact_build_mismatches"]), ("not-run", None))
+        self.assertEqual((output["artifact_predicate"], output["artifact_build_mismatches"],
+                          output["artifact_sdk_version"]), ("not-run", None, None))
         self.assertEqual(b.artifact(executable, plist, out=output),
                          {"sha256": b.digest(valid), "size": len(valid)})
         self.assertEqual(output["artifact_predicate"], "passed")
         self.assertEqual(output["artifact_build_mismatches"], dict.fromkeys(("platform", "minimum", "sdk", "length"), False))
+        self.assertEqual(output["artifact_sdk_version"], {"major": 15, "minor": 5, "patch": 0})
+        for encoded, version in ((0, (0, 0, 0)), (0xF0501, (15, 5, 1)),
+                                 (0xFFFFFF, (255, 255, 255)), (0x1000000, None)):
+            data = bytearray(valid)
+            struct.pack_into("<I", data, 144, encoded)
+            executable.write_bytes(data)
+            self.reject("artifact", b.artifact, executable, plist, float("inf"), output)
+            self.assertEqual(output["artifact_predicate"], "build-fields")
+            self.assertEqual(output["artifact_build_mismatches"], {"platform": False, "minimum": False, "sdk": True, "length": False})
+            self.assertEqual(output["artifact_sdk_version"], None if version is None else dict(zip(("major", "minor", "patch"), version)))
+        valid_version = {"major": 15, "minor": 5, "patch": 1}
+        for diagnostic, expected in ((valid_version, valid_version), (None, None), ("15.5.1", None),
+                ({"major": 15, "minor": 5}, None), ({**valid_version, "extra": 0}, None),
+                ({**valid_version, "major": True}, None), ({**valid_version, "minor": -1}, None),
+                ({**valid_version, "major": 256}, None)):
+            with contextlib.redirect_stdout(io.StringIO()) as stream:
+                b.emit({"artifact_sdk_version": diagnostic, "padding": "x" * 16385})
+            self.assertLessEqual(len(stream.getvalue().encode()), 16384)
+            self.assertEqual(json.loads(stream.getvalue())["artifact_sdk_version"], expected)
         for offset, key, value in ((136, "platform", 2), (140, "minimum", 0), (144, "sdk", 0), (148, "length", 1)):
             data = bytearray(valid)
             struct.pack_into("<I", data, offset, value)
@@ -213,9 +233,11 @@ class BuildTests(unittest.TestCase):
             variants.append((data, predicate))
         for data, predicate in variants:
             executable.write_bytes(data)
-            output = {}
+            output = {"artifact_sdk_version": {"major": 15, "minor": 5, "patch": 1}}
             self.reject("artifact", b.artifact, executable, plist, float("inf"), output)
             self.assertEqual(output["artifact_predicate"], predicate)
+            if predicate in ("header-length", "header-fields", "command-length", "segment-length", "segment-bounds"):
+                self.assertIsNone(output["artifact_sdk_version"])
         executable.write_bytes(valid)
         plist.write_bytes(b"malformed")
         output = {}

@@ -222,3 +222,14 @@ cleanupremoved，入口禁用/inline空，新archiveconsumed0；标准Tests38033
 有限记录artifact-build-map-hosted-records.json；未启动app/GUI/engine/NE，构建及G0资格未通过。
 费用统计扩展到07:17:21Z；截止后SDK来源审查/关闭另计，metrics/artifact-predicate.json。
 下一步只针对SDK版本产生链静态审查，不能强制标记15.5以制造通过或盲目重编译。
+
+2026-10-10 SDK语义证据工作包：root按冻结范围直接实现，独立R审查；
+保持原SDK15.5.0校验/四项mismatch/argv，新增有限major/minor/patch诊断。
+唯一local-sdk-semantic-v1 1/1PASS，0.233s，所有新旧local额度0；无本机编译。
+源阶段观察窗10:13:00–10:23:38Z（起点取整，关闭与hosted准备另计），
+metrics/sdk-semantic-source-usage.json：root Sol medium与R Sol high，
+未缓存输入261396、输出13674、总输入缓存命中92.89%。包含主会话首次
+169191输入/24320缓存的上下文恢复成本；不能仅把主会话编码成本与worker比较。
+该任务与此前Luna二进制fixture工作不同，未形成配对实验，不能宣称哪条路更省。
+下一步是精确冻结一次hosted18→conditional compile，读取SDK语义实际值；
+GUI/engine/NE/签名/最终G0均仍未验收。
