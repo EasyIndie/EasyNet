@@ -1,0 +1,20 @@
+{
+  "target": "local-sdk-sysroot-v1",
+  "exit": 0,
+  "elapsed_seconds": 0.39185125000949483,
+  "stdout_bytes": 184,
+  "stderr_bytes": 0,
+  "result": {
+    "errors": 0,
+    "failures": 0,
+    "fixture_cleanup": "passed",
+    "methods": [
+      "test_driver_jobs_parser_and_grant"
+    ],
+    "result": "passed",
+    "schema": 1,
+    "skipped": 0,
+    "target": "local-sdk-sysroot-v1",
+    "tests": 1
+  }
+}

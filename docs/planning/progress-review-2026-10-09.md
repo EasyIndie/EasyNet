@@ -297,3 +297,13 @@ Frontend三项SDK元数据完整源码修复已独立审查；唯一local-sdk-me
 Contents请求成功，早先404不能证明文件缺失。tagged链接实现传递 --sysroot
 而非先前参考main分支的-isysroot；现parser缺这一SDK语义分类，是下一张明确源码修正卡。
 该事实不证明真实plan-format失败token或SDK15.0原因；不恢复旧运行额度。
+
+--sysroot共享SDK类别覆盖修复已exact整包R审查，唯一local-sdk-sysroot-v1
+1/1PASS（0.392s/184bytes）、零失败/错误/跳过，cleanup passed，binding consumed0。
+原18方法不变；源码690/596/245行。当前三个定向puremock结果不代表新源码full19或
+hosted已通过。SDKparser源码工作包到此收敛，不继续逐参数guest；后继只按完整SDK
+元数据/链接产物合同包推进。所有workflow禁用/inline空，无新compile/app/GUI/engine/NE。
+成本统计窗口更新到11:51:06Z，含上述事实定位、三次主会话修复与独立审查；
+截止后本段收尾/提交另计。仍未形成配对对照，不宣称主会话或多代理费用胜出。
+G0最终剩余仍为：准确构建资格、候选A/B真实UI/engine、各自权限/签名、NE profile
+与系统同意/路由DNS实证、客户端ADR与G0汇合；当前完整G0没有通过。

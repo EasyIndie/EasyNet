@@ -270,8 +270,8 @@ def driver_jobs(text, logical_sdk, canonical_sdk):
         lines = [line for line in text.splitlines() if line.strip()]
         require(1 <= len(lines) <= 8, "plan-format")
         jobs = []
-        relevant = r"^(?:--?target|-sdk|-isysroot|-syslibroot|-platform_version)"
-        flags = dict.fromkeys(("-sdk", "-isysroot", "-syslibroot"), "sdk")
+        relevant = r"^(?:--?target|-sdk|-isysroot|-syslibroot|--sysroot|-platform_version)"
+        flags = dict.fromkeys(("-sdk", "-isysroot", "-syslibroot", "--sysroot"), "sdk")
         flags.update({"-target": "target", "--target": "target", "-platform_version": "platform_version_present"})
         for line in lines:
             tokens = shlex.split(line, posix=True, comments=False)

@@ -54,3 +54,22 @@ driver690/34,275B SHA f4309afd0679e52ad7124181735b015aa8fbae510370dafaba351dfbc3
 wrapper1,961B SHA4055c16280243e5bf978a4272f080d54e71ed81be80ad28f108ada0a0400eeeb；cwd repo、/usr/bin/python3 -I -B -c、method test_driver_jobs_parser_and_grant、10s/1024B、local1/guest0。
 root 可只将此 planned binding frozen 后执行一次 puremock 方法；hash验证先于导入，dispatch消费。要求 exit0/tests1/PASS/零失败错误跳过/cleanup passed/≤1KiB finite output；失败停止，无重试，记录闭合 consumed0。
 此包不准 full19/guest/compiler/app，全部旧额度保持0；source/binding变化使本次许可失效。无新 print-jobs 试探：后续优先 SDK 元数据/链接 producer 完整合同 source-only 审查，保留未知实际 token/cause，不放宽 SDK15.5 equality 或强制 marker。
+
+## Metadata 闭合与 tagged --sysroot 覆盖提案
+
+R 核 sdk-metadata-set-local-record.json：exit0/1PASS/零失败错误跳过/cleanup passed，0.4008130410074955秒、stdout189/stderr0；精确wrapper一致，binding consumed/local0/guest0。接受此 source-only 闭合的 commit/push；禁用工作流/旧额度0保持，无 activation/新运行。
+本地 tagged linker 文本10,893B，git blob929e5fe1aaf11f1e0014604c10b6456098f12cdb机械验证一致；[224–237行](https://github.com/swiftlang/swift-driver/blob/swift-6.1.2-RELEASE/Sources/SwiftDriver/Jobs/DarwinToolchain%2BLinkerSupport.swift#L224-L237) 显式生成 --sysroot +SDKpath 与 --target=triple。先前404不能证明文件不存在；当前 parser 默默忽略该 SDK forwarding，构成独立语义覆盖缺口。
+接受 source-only 最小补丁：flags 把 exact --sysroot 归入现有 sdk 类别，relevant regex 纳入 --sysroot 前缀；仅 direct 单操作数，沿用 SDK共同类别的重复/冲突/缺空参/flag或@值拒绝、既有分类与全部边界。
+joined/未知近似/包装形式拒绝；不接受新别名或输出字段，不留原始值，不改元数据3项、compile argv/phase/artifact gate。
+同一 parser/mock 方法补 logical/canonical direct 正例及 same/cross-SDK duplicate（含反向顺序）、缺参/空参/flag或@值/近似/joined/Xwrapper/Wl包装反例；保持旧18AST/19名/owned无Popen，原三source路径与700/600/245行、40960/40960/32768B不变。
+root 可按此准备一个完整 source+exact planned binding 包供一次审查；超界停止，不删案例/压缩。本提案不授本地或guest，不得因覆盖修复盲开runner。
+tagged forwarding不证明 installed linker argv或Mach-O标记，实际 failed token/SDK15.0 cause仍未知；产物SDK15.5 equality保持，后续合同/最终producer链仍须source-only证据。
+
+## Sysroot 精确包终审与最后一次纯 mock allowance
+
+R 一次接受三个完整 source diff：仅 flags/relevant prefix 两行、同一方法 direct正例/完整SDK双顺序冲突与格式反例、contract原行说明；原18 AST/19名/owned无Popen范围、全部预算与diff通过，未执行。
+driver690/34,298B SHA88ba9d5ed33ef8fc97cee454a155960df7f009dd0a0af3af2b25f182a7a4e381；tests596/34,860B SHA25557c9292e6f536243b2f17466137c886f21738c78db6dedc8551c7e9f843f5；contract245/18,989B SHA22224115cc6544d2912d6e585637f8f9983fbf2a4b2be40e2027ff3b576f98c6。
+接受 exact planned local-sdk-sysroot-v1.json SHA814e13b531547968d3b6f98da8ebaf51fd152d710a6830de39cbadccf92f037a；前件 consumed metadata-set-v1 文件 SHAf111edd5e3f372f2171d5901774d2c96d7ccd9df1720e2d5bd06c05cb6604d3d 已核两预算0。
+wrapper仅 target+三个source hash替换，1,956B SHAa4a49880f465dfd6f1dded107680f95b38450f5fd6cfa21732034f7566e52129；cwd repo、/usr/bin/python3 -I -B -c、同method与run_name、10s/1024B、local1/guest0不变。
+root 可将此binding frozen后仅运行一次纯mock方法，先hash核验再导入，dispatch消费；exit0/tests1/PASS/零fail-error-skip/cleanup passed/≤1KiB为成功，失败即停无重试，finite记录后闭合consumed0。source/binding变化使许可失效。
+除此不准local/guest/full19/compiler/app；结束此parser source-card，后继只审完整SDK元数据/链接产物合同包，不再逐flag循环观测。实际失败token/cause未知，所有artifact/G0/final gates与SDK15.5 equality不变，不强制marker。

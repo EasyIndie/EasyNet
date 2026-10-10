@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-c",
+    "import contextlib, hashlib, io, json, pathlib, runpy, signal, sys, unittest\nmethod = \"test_driver_jobs_parser_and_grant\"\nout = {\"schema\": 1, \"target\": \"local-sdk-sysroot-v1\", \"methods\": [method], \"result\": \"failed\", \"tests\": 0, \"failures\": 0, \"errors\": 1, \"skipped\": 0, \"fixture_cleanup\": \"unknown\"}\ndef timeout(signum, frame):\n    raise TimeoutError()\nsignal.signal(signal.SIGALRM, timeout)\nsignal.alarm(10)\ntry:\n    expected = {\"docs/planning/poc/client-framework/native-lab/build.py\": \"88ba9d5ed33ef8fc97cee454a155960df7f009dd0a0af3af2b25f182a7a4e381\", \"docs/planning/poc/client-framework/native-lab/Tests/test_build.py\": \"25557c9292e6f536243b2f17466137c886f21738c78db6dedc8551c7e9f843f5\", \"docs/planning/poc/client-framework/native-build-contract.md\": \"22224115cc6544d2912d6e585637f8f9983fbf2a4b2be40e2027ff3b576f98c6\"}\n    for path, digest in expected.items():\n        if hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest() != digest:\n            raise ValueError()\n    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):\n        module = runpy.run_path(\"docs/planning/poc/client-framework/native-lab/Tests/test_build.py\", run_name=\"artifact_predicate_target\")\n        result = unittest.TestResult()\n        unittest.TestSuite([module[\"BuildTests\"](method)]).run(result)\n    passed = result.wasSuccessful() and result.testsRun == 1 and not result.skipped\n    out.update(result=\"passed\" if passed else \"failed\", tests=result.testsRun, failures=len(result.failures), errors=len(result.errors), skipped=len(result.skipped), fixture_cleanup=\"passed\" if passed else \"unknown\")\nexcept (Exception, KeyboardInterrupt):\n    pass\nfinally:\n    signal.alarm(0)\nencoded = json.dumps(out, sort_keys=True, separators=(\",\", \":\"))\nif len(encoded.encode()) > 1024:\n    encoded = '{\"schema\":1,\"result\":\"failed\",\"error\":\"overflow\"}'\n    out[\"result\"] = \"failed\"\nprint(encoded)\nsys.exit(0 if out[\"result\"] == \"passed\" else 1)"
+  ],
+  "cwd": "/Users/joker/Documents/EasyNet",
+  "deadline_seconds": 10,
+  "guest_remaining": 0,
+  "local_remaining": 0,
+  "max_output_bytes": 1024,
+  "schema": 1,
+  "status": "consumed",
+  "target": "local-sdk-sysroot-v1"
+}

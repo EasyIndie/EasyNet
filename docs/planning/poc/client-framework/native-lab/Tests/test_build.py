@@ -459,6 +459,9 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
                                   "platform_version_present": False})
         self.assertNotIn("secret", json.dumps(jobs))
         self.assertEqual(b.driver_jobs("ld irrelevant-sdk-text", logical, canonical)[0]["sdk"], "absent")
+        for path, expected in ((logical, "qualified-logical"), (canonical, "qualified-canonical")):
+            self.assertEqual(b.driver_jobs(f'clang --sysroot "{path}"', logical, canonical), [{"tool": "clang",
+                "target": "absent", "sdk": expected, "platform_version_present": False}])
         metadata = ("-target-sdk-version", "-target-sdk-name", "-target-variant-sdk-version")
         for extra in [f'{flag} {value}' for flag in metadata for value in ("15.5", '"15.5"')] + [
                 '-target-sdk-version 15.5 -target-sdk-name macosx15.5 -target-variant-sdk-version 18.5']:
@@ -483,7 +486,11 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
             f'{tool} {prefix}{flag}{suffix}' for flag in metadata for tool, prefix, suffix in
             (("swift-frontend", "-Xfrontend ", " 15"), ("swift-frontend", "-Wl,", ",15"),
              ("clang", "", " 15"), ("ld", "", " 15")))
-        for text in malformed + metadata_bad:
+        sysroot_bad = ("clang --sysroot", 'clang --sysroot ""', "clang --sysroot -sdk x", "clang --sysroot @x",
+            "clang --sysroot=x", "clang --sysrootx x", "clang -Xlinker --sysroot x", "clang -Wl,--sysroot,x") + tuple(
+            f'clang {first} x {second} x' for flag in ("--sysroot", "-sdk", "-isysroot", "-syslibroot")
+            for first, second in (("--sysroot", flag), (flag, "--sysroot")))
+        for text in malformed + metadata_bad + sysroot_bad:
             with self.subTest(case=text):
                 self.reject("plan-format", b.driver_jobs, text, logical, canonical)
         for args in ((None, logical, canonical), ("ld", None, canonical), ("ld", logical, b"sdk")):

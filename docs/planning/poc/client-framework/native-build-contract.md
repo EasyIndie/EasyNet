@@ -239,7 +239,7 @@ checks, artifact null/predicate not-run, candidate false and GUI/engine/NE not-r
 `driver_jobs(text, logical_sdk, canonical_sdk)` accepts strings, strict UTF-8 <=64KiB,
 1..8 nonblank shlex POSIX lines, <=512 tokens/job and <=4096 UTF-8 bytes/token.
 Reject NUL/quote/encoding errors, @ references, -filelist, dangling wrappers and malformed/duplicate
-relevant options. Exact frontend-only -target-sdk-version/-target-sdk-name/-target-variant-sdk-version each consumes one nonempty non-flag/@ operand once per job, retaining no value; exact target/SDK flags and three platform forms follow the review;
+relevant options. Exact frontend-only -target-sdk-version/-target-sdk-name/-target-variant-sdk-version each consumes one nonempty non-flag/@ operand once per job, retaining no value; exact target/SDK flags (including direct --sysroot in the shared SDK category) and three platform forms follow the review;
 unknown relevant prefix/joined/wrapped forms refuse. Keep only tool/target/sdk enums
 and platform_version_present boolean; no raw argv/path/version text. Planned forwarding
 proves no executed downstream argv, installed compiler implementation or mismatch cause.
