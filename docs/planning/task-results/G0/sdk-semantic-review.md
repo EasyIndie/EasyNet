@@ -36,7 +36,7 @@ R accepts the root's pre-edit estimate of approximately 30 additional test
 lines: the 490-line cap preserves all five SDK cases, stale reset and strict
 overflow refusal coverage without compressed assertions. No behavior scope,
 new helper, test method, driver/contract cap or execution grant is added.
-The R report is this document only, capped at 190 lines for exact review. All other files,
+The R report is this document only, capped at 240 lines for consolidated review. All other files,
 workflow bodies/bindings, compiler argv, source inputs and phases stay outside
 the implementation scope.
 
@@ -188,3 +188,48 @@ Final driver SHA `aa7cefb0e8a12179e54cacfc89f806f0285af7cf9358b450b3e16ff823d315
 contract SHA `7f123df03b3638da814efe9a2405c11d5fceefd8b72a1a606dc027f60f577822` (219 lines).
 Test/hash unchanged; historical local evidence binds the original hashes.
 Root may make the source-only checkpoint, without a cap-only retest or runtime.
+
+## Consolidated immutable hosted package — accepted once
+
+R accepts checkpoint `ffcb6cfb1f080639ff2756fdda0f258aa2dc9a7a` and
+`docs/planning/task-bindings/sdk-semantic-runtime.json`, SHA-256
+`47f71ad7b26bdb4bc743d959ed3747a2ef0c1af32035471285e06bcf7ef19938`.
+Canonical source manifest SHA-256:
+`13f462d81cf486864f68a4de6ed787e0b4bfbfd289313e1f3aea416f592e1150`.
+All five immutable source blobs match their exact regular 0644 entries and
+size bounds, including test 25,718<=26,624 and driver 28,730<=32,768 bytes.
+Contract and consumed native-binding digests match the immutable tree;
+the prior native binding remains consumed with both budgets zero.
+
+The checked-out disabled 78-line workflow digest is
+`4d76087a9a50c713a712632e50be660e23793b086a61a33cfcd0a2813c1af0a7`.
+The actual reviewed activated 78-line workflow digest is separately
+`ff6643f7bf6816dd05a0b9fdf18e5b6ad181cc048c6564e734a2aa612ac9b976`.
+Its inline binding equals the new binding; its complete bootstrap/run body
+equals the disabled immutable workflow. Only names, exact push-message gate,
+immutable checkout ref and frozen inline binding change. The pinned checkout
+action remains `3d3c42e5aac5ba805825da76410c181273ba90b1` with credentials,
+submodules and LFS disabled; permissions remain contents:read, without secrets.
+
+Root may commit this review with that exact activation using the sole message
+`Run one native SDK semantic observation ffcb6cfb1f080639ff2756fdda0f258aa2dc9a7a`
+and push once on the feature branch. Before dispatch, mechanically record the
+resulting full activation SHA and verify the reviewed workflow/binding hashes,
+message and immutable checkout ref; do not modify them after this review.
+This accepts the user-authorized once-only `sdk-semantic-hosted18-v1` target
+macos-15-arm64, local=0/guest=1: revised full18 exact pass/cleanup precedes
+one conditional compile under the existing fixed bounds. Workflow dispatch
+cannot activate the push-only gate. No candidate executable, helper, GUI,
+engine, NE, signing material or binary retention is permitted.
+
+Consume the guest allowance at dispatch, reflected in closure after the
+observation; no second attempt or automatic budget restoration. Preserve only
+bounded synthetic/compile JSON and relevant activation/run identity, then
+disable the workflow and clear the inline binding. Any failure stops even
+if it follows compile exit 0 or reveals a semantic SDK value. Such a value
+neither proves producer cause nor changes SDK equality or artifact acceptance.
+
+Review checks: immutable Git blobs, hashes/sizes/modes, manifest, binding/inline
+equality, old budget closure, exact workflow diff and bootstrap AST; all pass.
+R executed no candidate import, tests, compiler, guest or external research.
+All GUI/engine/NE/signing/device, candidate disposition, G0–G6/main gates remain.
