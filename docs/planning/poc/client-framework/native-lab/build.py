@@ -7,6 +7,7 @@ from pathlib import Path
 import plistlib
 import re
 import selectors
+import shlex
 import signal
 import stat
 import struct
@@ -16,7 +17,7 @@ import uuid
 
 P = "docs/planning/poc/client-framework/native-lab"
 FILES = {f"{P}/Host.swift": 8192, f"{P}/Info.plist": 4096,
-         f"{P}/build.py": 32768, f"{P}/Tests/test_build.py": 26624,
+         f"{P}/build.py": 40960, f"{P}/Tests/test_build.py": 40960,
          ".github/workflows/g0-client-native-build.yml": 8192}
 DEV = Path("/Applications/Xcode_16.4.app/Contents/Developer")
 SWIFT = DEV / "Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
@@ -261,6 +262,76 @@ def capture(argv, root, env, whole, budget, records, cancel=None):
         raise Reject("identity") from None
 
 
+def driver_jobs(text, logical_sdk, canonical_sdk):
+    """Keep semantic planned forwarding only; never run or retain printed argv."""
+    require(all(isinstance(value, str) for value in (text, logical_sdk, canonical_sdk)), "plan-format")
+    try:
+        require(len(text.encode("utf-8", errors="strict")) <= 65536 and "\0" not in text, "plan-format")
+        lines = [line for line in text.splitlines() if line.strip()]
+        require(1 <= len(lines) <= 8, "plan-format")
+        jobs = []
+        relevant = r"^(?:--?target|-sdk|-isysroot|-syslibroot|-platform_version)"
+        flags = dict.fromkeys(("-sdk", "-isysroot", "-syslibroot"), "sdk")
+        flags.update({"-target": "target", "--target": "target", "-platform_version": "platform_version_present"})
+        for line in lines:
+            tokens = shlex.split(line, posix=True, comments=False)
+            require(1 <= len(tokens) <= 512 and tokens[0] and not tokens[0].startswith("-"), "plan-format")
+            require(all(len(token.encode("utf-8")) <= 4096 and not token.startswith("@")
+                        and token != "-filelist" for token in tokens), "plan-format")
+            tool = Path(tokens[0]).name
+            job = {"tool": {"swift-frontend": "frontend", "clang": "clang", "ld": "ld"}.get(tool, "other"),
+                   "target": "absent", "sdk": "absent", "platform_version_present": False}
+            index = 1
+            while index < len(tokens):
+                token = tokens[index]
+                operands = []
+                category = None
+                wrapped_parts = []
+                if token.startswith("-X"):
+                    require(index + 1 < len(tokens) and tokens[index + 1], "plan-format")
+                    wrapped = tokens[index + 1]
+                    if token == "-Xlinker" and wrapped == "-platform_version":
+                        require(tokens[index:index + 8:2] == ["-Xlinker"] * 4
+                                and len(tokens[index:index + 8]) == 8, "plan-format")
+                        operands = tokens[index + 3:index + 8:2]
+                        category, index = "platform_version_present", index + 8
+                    else:
+                        wrapped_parts = wrapped.split(",")
+                        index += 2
+                elif token.startswith("-") and "," in token and not token.startswith("--target="):
+                    parts = token.split(",")
+                    if parts[0] == "-Wl" and parts[1] == "-platform_version":
+                        require(len(parts) == 5, "plan-format")
+                        operands, category = parts[2:], "platform_version_present"
+                    else:
+                        wrapped_parts = parts
+                    index += 1
+                elif token in flags:
+                    category = flags[token]
+                    count = 3 if category == "platform_version_present" else 1
+                    operands = tokens[index + 1:index + 1 + count]
+                    require(len(operands) == count, "plan-format")
+                    index += count + 1
+                elif token.startswith("--target="):
+                    operands, category = [token[len("--target="):]], "target"
+                    index += 1
+                else:
+                    require(not re.match(relevant, token), "plan-format")
+                    index += 1
+                require(not any(re.match(relevant, part) or part.startswith("@") or part == "-filelist"
+                                for part in wrapped_parts), "plan-format")
+                if category is not None:
+                    require(all(value and not value.startswith(("-", "@")) for value in operands)
+                            and job[category] in ("absent", False), "plan-format")
+                    values = ({"arm64-apple-macosx15.0": "expected"} if category == "target" else
+                              {canonical_sdk: "qualified-canonical", logical_sdk: "qualified-logical"})
+                    job[category] = True if category == "platform_version_present" else values.get(operands[0], "other")
+            jobs.append(job)
+        return jobs
+    except (UnicodeError, ValueError):
+        raise Reject("plan-format") from None
+
+
 def entry_hash(path, deadline):
     """Selected vendor entry: explicitly bounded 512MiB streaming observation."""
     try:
@@ -448,7 +519,7 @@ def result():
     return {"schema": 1, "phase": "compile", "result": "rejected", "error": "source-mismatch",
             "feature": None, "workflow": None, "contract": None, "manifest": None,
             "run_token": None, "baseline": {}, "compiler": None, "sdk": None, "sources": {},
-            "artifact": None, "artifact_predicate": "not-run", "commands": [], "generated": None, "cleanup": "not-created",
+            "driver_jobs": None, "artifact": None, "artifact_predicate": "not-run", "commands": [], "generated": None, "cleanup": "not-created",
             "primary-error": "none", "artifact_build_mismatches": None, "artifact_sdk_version": None,
             "external-effects": "trusted-vendor-not-denied", "candidate-executed": False,
             "gui": "not-run", "engine": "not-run", "ne": "not-run"}
@@ -475,10 +546,14 @@ def build_owned(repo, binding, cancel):
     root = None
     expected = None
     try:
+        require(isinstance(binding, dict), "source-mismatch")
+        diagnostic = binding.get("grant") == "one-driver-jobs-only"
+        require(diagnostic == (binding.get("qualification") == "sdk-driver-jobs-hosted19-v1"), "identity")
+        out["phase"] = "driver-jobs" if diagnostic else "compile"
         data = sources(Path(repo), binding, whole - 4)
         out.update({name: binding[name] for name in ("feature", "workflow", "contract", "manifest")})
         out["sources"] = {name: digest(value) for name, value in data.items()}
-        require(binding.get("grant") == "one-compile-only" and binding.get("python_verified") is True,
+        require((diagnostic or binding.get("grant") == "one-compile-only") and binding.get("python_verified") is True,
                 "identity")  # Trusted pre-import launcher must independently enforce both.
         token = uuid.uuid4().hex
         parent = Path("/private/tmp")
@@ -526,11 +601,18 @@ def build_owned(repo, binding, cancel):
         compiler, sdk = identity(run, observed, whole - 4)
         out["compiler"], out["sdk"] = compiler, {"path": str(sdk), "version": "15.5"}
         executable = root / "app/EasyNetNativeLab.app/Contents/MacOS/EasyNetNativeLab"
-        run([compiler["path"], "-parse-as-library", "-emit-executable", "-swift-version", "6", "-Onone",
+        argv = [compiler["path"], "-parse-as-library", "-emit-executable", "-swift-version", "6", "-Onone",
              "-target", "arm64-apple-macosx15.0", "-sdk", str(sdk), "-module-cache-path",
              str(root / "module-cache"), "-module-name", "EasyNetNativeLab", "-framework", "SwiftUI",
              "-framework", "AppKit", "-framework", "Foundation", str(root / "src/Host.swift"),
-             "-o", str(executable)], 120)
+             "-o", str(executable)]
+        planned = run(argv + (["-driver-print-jobs"] if diagnostic else []), 120)
+        if diagnostic:
+            require(expected is not None, "cleanup")
+            observations = driver_jobs(planned, str(sdk), str(sdk.resolve(strict=True)))
+            checkpoint(whole - 4, cancel)
+            out.update(result="planned", error="none", driver_jobs=observations)
+            return out
         out["artifact_predicate"] = "file-preflight"
         try:
             regular(executable, 32 * 1024 * 1024, deadline=whole - 4)
@@ -562,6 +644,7 @@ def build_owned(repo, binding, cancel):
 def emit(out):
     encoded = json.dumps(out, sort_keys=True, separators=(",", ":"))
     if len(encoded.encode()) > 16384:
+        phase = out.get("phase")
         predicate = out.get("artifact_predicate")
         if predicate not in ("not-run", "file-preflight", "file-mode-bounds", "header-length",
                              "header-fields", "command-header", "command-length", "build-length",
@@ -572,6 +655,7 @@ def emit(out):
         mismatches = out.get("artifact_build_mismatches")
         sdk_version = out.get("artifact_sdk_version")
         out = result()
+        out["phase"] = "driver-jobs" if phase == "driver-jobs" else "compile"
         if (isinstance(mismatches, dict) and set(mismatches) == {"platform", "minimum", "sdk", "length"}
                 and all(type(value) is bool for value in mismatches.values())):
             out["artifact_build_mismatches"] = mismatches

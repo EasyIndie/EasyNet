@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "target": "local-sdk-driver-jobs-v1",
+  "exit_code": 0,
+  "wall_seconds": 0.253321625,
+  "stdout_bytes": 188,
+  "result": {
+    "errors": 0,
+    "failures": 0,
+    "fixture_cleanup": "passed",
+    "methods": [
+      "test_driver_jobs_parser_and_grant"
+    ],
+    "result": "passed",
+    "schema": 1,
+    "skipped": 0,
+    "target": "local-sdk-driver-jobs-v1",
+    "tests": 1
+  },
+  "scope": "owned parser and mocked planning/adoption fixtures; no subprocess/compiler/guest"
+}

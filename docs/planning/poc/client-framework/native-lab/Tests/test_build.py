@@ -442,6 +442,96 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
         self.assertTrue(records[0]["reaped"] and records[0]["fd_closed"])
         self.assertTrue(all(stream.closed for stream in streams))
 
+    def test_driver_jobs_parser_and_grant(self):
+        logical, canonical = "/qualified SDK", "/canonical SDK"
+        expected = {"tool": "frontend", "target": "expected", "sdk": "qualified-logical",
+                    "platform_version_present": True}
+        prefix = '"/vendor tools/swift-frontend" -target arm64-apple-macosx15.0 -sdk "/qualified SDK" '
+        for form in ("-platform_version macos 15.0 15.5", "-Wl,-platform_version,macos,15.0,15.5",
+                     "-Xlinker -platform_version -Xlinker macos -Xlinker 15.0 -Xlinker 15.5"):
+            self.assertEqual(b.driver_jobs("\n" + prefix + form + "\n", logical, canonical), [expected])
+        for tool, flag in (("clang", "-isysroot"), ("ld", "-syslibroot")):
+            jobs = b.driver_jobs(f'{tool} --target=other {flag} "{canonical}"', logical, canonical)
+            self.assertEqual(jobs, [{"tool": tool, "target": "other", "sdk": "qualified-canonical",
+                                     "platform_version_present": False}])
+        jobs = b.driver_jobs("unknown --target arm64-apple-macosx15.0 -sdk secret-path -Xlinker harmless", logical, canonical)
+        self.assertEqual(jobs[0], {"tool": "other", "target": "expected", "sdk": "other",
+                                  "platform_version_present": False})
+        self.assertNotIn("secret", json.dumps(jobs))
+        self.assertEqual(b.driver_jobs("ld irrelevant-sdk-text", logical, canonical)[0]["sdk"], "absent")
+        malformed = ("", "ld 'broken", "ld \0secret", "ld \ud800", "ld @secret", "ld -filelist secret",
+            "ld -Xlinker", "ld -Xfrontend", 'ld -Xlinker ""', 'ld -Xfrontend ""',
+            "ld -target", 'ld --target=""', "ld -sdk -next", "ld -sdk=x", "ld -targetx x",
+            "ld --target=", "ld -isysroot=/secret", "ld -syslibrootx x", "ld -platform_version=x",
+            "ld -target x --target x", "ld -target x --target=y", "ld -sdk x -isysroot x",
+            "ld -sdk x -syslibroot y", "ld -platform_version macos 15", "ld -platform_version macos -x 15",
+            "ld -Wl,-platform_version,macos,15", "ld -Wl,-platform_version,macos,15,15,extra",
+            "ld -Wl,-platform_version,,15,15", "ld -Xlinker -platform_version -Xlinker macos",
+            "ld -Xlinker -platform_version macos 15 15", "ld -Wl,-target,x", "ld -Xfrontend -sdk",
+            "ld -Xlinker -sdk", "ld -Wp,-syslibroot,x", "ld -Wl,-platform_versionx,macos,15,15",
+            "ld -platform_version macos 15 15 -Wl,-platform_version,macos,15,15",
+            "\n".join(["ld"] * 9), "ld " + "x " * 512, "ld " + "x" * 4097,
+            "ld " + "é" * 2049, "ld " + "x" * 65536)
+        for text in malformed:
+            with self.subTest(case=malformed.index(text)):
+                self.reject("plan-format", b.driver_jobs, text, logical, canonical)
+        for args in ((None, logical, canonical), ("ld", None, canonical), ("ld", logical, b"sdk")):
+            self.reject("plan-format", b.driver_jobs, *args)
+        self.assertEqual(len(b.driver_jobs("\n".join(["ld"] * 8), logical, canonical)), 8)
+        self.assertEqual(b.driver_jobs("ld " + "x " * 511, logical, canonical)[0]["target"], "absent")
+        self.assertEqual(b.driver_jobs("ld " + "é" * 2048, logical, canonical)[0]["sdk"], "absent")
+        binding = self.manifest()
+        bad_bindings = [(None, "source-mismatch"), ([], "source-mismatch")] + [
+            (dict(binding, grant=grant, qualification=qualification, python_verified=True), "identity")
+            for grant, qualification in (("one-driver-jobs-only", None), ("one-driver-jobs-only", "wrong"),
+                ("one-compile-only", "sdk-driver-jobs-hosted19-v1"), (None, "sdk-driver-jobs-hosted19-v1"))]
+        for invalid, code in bad_bindings:
+            with patch.object(b, "capture") as capture, patch.object(b.Path, "mkdir") as mkdir:
+                out = b.build(self.root, invalid)
+            self.assertEqual((out["error"], out["cleanup"], out["commands"]), (code, "not-created", []))
+            self.assertIsNone(out["driver_jobs"])
+            capture.assert_not_called()
+            mkdir.assert_not_called()
+        binding.update(grant="one-driver-jobs-only", qualification="sdk-driver-jobs-hosted19-v1", python_verified=True)
+        for mutate in (False, True):
+            def fake_capture(argv, root, env, whole, budget, records, cancel):
+                self.assertTrue(root.is_relative_to(self.root))
+                records.append({"reaped": True, "drained": True, "fd_closed": True})
+                if budget == 120:
+                    self.assertEqual(argv[-1], "-driver-print-jobs")
+                    if mutate:
+                        (root / "src/Host.swift").write_bytes(b"changed fixed fixture")
+                    return f'ld -sdk "{self.root}"'
+                return {"-productVersion": b.BASE["os"], "-buildVersion": b.BASE["build"],
+                        "-m": b.BASE["arch"], "-version": b.BASE["xcode"],
+                        "--show-sdk-version": b.BASE["sdk_version"]}[argv[-1]]
+            def owned_path(value):
+                return self.root if value == "/private/tmp" else Path(value)
+            with patch.object(b, "Path", side_effect=owned_path), \
+                 patch.object(b, "identity", return_value=({"path": "inert compiler"}, self.root)), \
+                 patch.object(b, "capture", side_effect=fake_capture) as capture, \
+                 patch.object(b, "artifact") as artifact, patch.object(b.subprocess, "Popen") as spawn, \
+                 patch.dict(os.environ, ImageOS=b.BASE["image_os"], ImageVersion=b.BASE["image_version"]):
+                out = b.build(self.root, binding)
+            self.assertEqual(capture.call_count, 6)
+            artifact.assert_not_called()
+            spawn.assert_not_called()
+            self.assertEqual((out["phase"], out["artifact"], out["artifact_predicate"]), ("driver-jobs", None, "not-run"))
+            self.assertFalse(out["candidate-executed"])
+            self.assertEqual(tuple(out[key] for key in ("gui", "engine", "ne")), ("not-run",) * 3)
+            owned = self.root / ("easynet-qb-build-" + out["run_token"])
+            if mutate:
+                self.assertEqual((out["result"], out["error"], out["cleanup"]), ("failed", "cleanup", "retained"))
+                self.assertIsNone(out["driver_jobs"])
+                self.assertEqual((owned / "src/Host.swift").read_bytes(), b"changed fixed fixture")
+                info = owned.stat()
+                b.cleanup(owned, info.st_uid, info.st_ino, b.inventory(owned, b.TOPS))
+            else:
+                self.assertEqual((out["result"], out["error"], out["cleanup"]), ("planned", "none", "removed"))
+                self.assertEqual(out["driver_jobs"], [{"tool": "ld", "target": "absent", "sdk": "qualified-logical",
+                                                       "platform_version_present": False}])
+            self.assertFalse(owned.exists())
+
     def test_missing_binding_is_finite_and_no_build(self):
         with patch.object(b, "build", side_effect=AssertionError("build must not run")):
             with contextlib.redirect_stdout(io.StringIO()) as stream:
@@ -464,7 +554,7 @@ if __name__ == "__main__":
     fields = {"command", "exit", "deadline", "bytes", "drained", "fd_closed", "reaped", "cancelled",
               "group_observation", "ownership", "primary_error", "group_stage", "group_errno"}
     names = {
-        'test_source_identity_and_tampering', 'test_unfrozen_and_extra_manifest',
+        'test_driver_jobs_parser_and_grant', 'test_source_identity_and_tampering', 'test_unfrozen_and_extra_manifest',
         'test_links_modes_and_bounds', 'test_environment_is_constructed',
         'test_changed_baseline_rejected_without_locator', 'test_escaped_locator',
         'test_bounded_output_success_and_nonzero', 'test_flood_timeout_and_kill_reap',

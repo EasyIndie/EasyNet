@@ -131,3 +131,26 @@ Root may dispatch the accepted I/Sol medium source card now; only the three path
 above are implementation writes. R then reviews exact diff/hashes/limits; local
 parser execution requires its own bounded grant. No code/test/compiler/guest or
 new runtime grant is performed or issued by this source-contract disposition.
+
+## Explicit source-budget amendment — accepted
+
+Root reports I's readable draft reached 680 lines/33,620 driver bytes, exceeding
+the frozen 32,768-byte cap by 852; I stopped before execution. The test estimate
+also exceeded its proposed byte cap. Freeze both bounds together once: driver
+700 lines/40,960 bytes, tests 550 lines/32,768 bytes, contract 245 lines/32,768.
+R observed driver/contract baseline and a saved test draft (535 lines/30,076
+bytes), not a fully restored tree; leave the related draft intact for review.
+
+Set FILES driver entry to 40,960 and test entry to 32,768, preserving every
+other bound. No helper file, compression, dropped
+case, action, input or semantic scope change. I may resume the same draft/context
+within the same three allowed source paths; stop before any new cap excess.
+Complete all three sources before one exact diff/hash R review. No incremental
+test or runtime grant is added by either source-budget correction.
+
+The future immutable workflow bootstrap must use max 40,960 only when
+`name == base + 'build.py'`; all other verified files retain max 32,768.
+That exact bound adjustment needs source-checkpoint/activation review with
+the eventual complete binding. It adds no command and does not change manifest
+authentication, exact hashes, modes, file counts or action pins. No workflow
+activation, test, compiler, guest or renewed runtime allowance is granted now.

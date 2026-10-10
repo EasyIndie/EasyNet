@@ -216,6 +216,30 @@ or exactly major/minor/patch integers in 0..255. Decode the full high 16-bit maj
 an out-of-range major stays null, without truncation. No other raw header data is
 permitted. SDK equality, mismatch map, compiler argv and acceptance remain unchanged.
 Overflow fallback retains only an exact-key, integer-only, bounded semantic object.
-The expanded synthetic test source has a finite 26KiB admission cap; other file caps remain unchanged.
+The expanded synthetic test source has a finite 40KiB admission cap; the driver cap is amended below.
 Compile uses the fixed versioned SDK logical path after strict canonical equality/containment and version qualification.
 This preserves qualified input spelling; artifact SDK equality and all other argv/checks remain unchanged.
+
+## Frozen driver-jobs source phase — no runtime grant
+
+The [accepted SDK producer review](../../task-results/G0/sdk-producer-review.md) freezes
+only driver/parser, existing tests and this contract: 700/600/245 lines respectively,
+40,960/40,960/32,768 bytes, per the [corrective review](../../task-results/G0/sdk-plan-source-review.md).
+FILES and future bootstrap 40KiB reads apply only to exact driver/test paths; other source reads stay 32KiB.
+The pure-file parser/grant case joins unchanged 18 names (19 total); future immutable
+activation must separately update expected19/planned rules. AST/hash/diff checks
+authorize no candidate import, test, compiler, guest, push or activation.
+Select driver-jobs only for grant `one-driver-jobs-only` and qualification
+`sdk-driver-jobs-hosted19-v1`; non-dict bindings or mismatched pairs reject before commands/staging.
+Use qualified fixed compile argv plus only `-driver-print-jobs`, existing 120s/180s
+bounds, adopted inventory/cleanup; failed adoption stays refused. Parse stdout in memory; never execute
+printed commands or read response/file lists. Return planned/driver-jobs before artifact
+checks, artifact null/predicate not-run, candidate false and GUI/engine/NE not-run.
+`driver_jobs` defaults null; `plan-format` and overflow retain no rejected text.
+`driver_jobs(text, logical_sdk, canonical_sdk)` accepts strings, strict UTF-8 <=64KiB,
+1..8 nonblank shlex POSIX lines, <=512 tokens/job and <=4096 UTF-8 bytes/token.
+Reject NUL/quote/encoding errors, @ references, -filelist, dangling wrappers and malformed/duplicate
+relevant options. Exact target/SDK flags and three platform forms follow the review;
+unknown relevant prefix/joined/wrapped forms refuse. Keep only tool/target/sdk enums
+and platform_version_present boolean; no raw argv/path/version text. Planned forwarding
+proves no executed downstream argv, installed compiler implementation or mismatch cause.
