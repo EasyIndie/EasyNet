@@ -5,7 +5,7 @@
   "contract": "10c69cb93cca1cd9a99bfc0da6423cc8315d550b46bb716b17da54ff1360ae9e",
   "feature": "c321567055d776a094f055cca48c9ef3f75dc8d5",
   "grant": "one-compile-only",
-  "guest_remaining": 1,
+  "guest_remaining": 0,
   "local_remaining": 0,
   "manifest": "9d037e4b2f632f7798cd8e33de3febe58066f06e1ad739d55ef36a234a557d2f",
   "python_trust": "fresh-vendor-system-entry-/usr/bin/python3-isolated-no-bytecode",
@@ -44,7 +44,7 @@
       "type": "regular"
     }
   },
-  "status": "frozen",
+  "status": "consumed",
   "target": "macos-15-arm64",
   "workflow": "516260ec89637a72e7dd54cc3936e58c060e707e4a7544b2c0344f9ba1ebc46f"
 }

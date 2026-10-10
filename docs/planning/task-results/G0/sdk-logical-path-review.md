@@ -136,3 +136,19 @@ R checks: immutable blobs/modes/hashes/sizes, manifest, contract, archive closur
 inline equality, exact workflow diff and unchanged bootstrap AST; passed.
 R performed no candidate execution, runtime or research. All full build/G0,
 GUI/engine/NE/signing/device, G0–G6 and main gates remain intact.
+
+## Hosted differential closure
+
+Accept [finite hosted record](sdk-logical-path-hosted-records.json), run
+`38045574643`: full18 passed with zero failures/errors/skips and cleanup passed.
+All ten commands exited 0 with drain/FD-close/reap; command 9 compiled/linked.
+The qualified logical SDK operand was MacOSX15.5.sdk, query version 15.5, while
+artifact semantic SDK remained 15.0.0 with only SDK mismatch true. Artifact
+rejected at build-fields/null; staging removed, candidate false, GUI/engine/NE
+not-run. Thus logical path preservation alone did not resolve the mismatch;
+this does not establish the producer cause or qualify the build.
+
+Reviewed activation/workflow identity matches the accepted package. New archive
+is consumed/local=0/guest=0; local false gate/empty inline and unchanged bootstrap
+are accepted pending root closure commit/push. No fix or further runtime grant
+follows. Keep SDK equality, all checks and all remaining qualification gates.

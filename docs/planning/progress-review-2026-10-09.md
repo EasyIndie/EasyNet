@@ -243,3 +243,13 @@ artifact仍null/cleanupremoved；未启动app/GUI/engine/NE，不能通过Q-B构
 下一步审查已验证版本化SDK路径的保留方案，禁止强制标记或降低原15.5.0校验。
 全链路用量记录sdk-semantic-total-usage.json截止10:29:51Z，关闭/后继准备另计；
 主会话与独立R，无实现worker；仍无同任务配对，不能认定单会话更省。
+
+已验证版本化SDK路径差异：sourcec321567、activationc164fb3，
+[38045574643](https://github.com/EasyIndie/EasyNet/actions/runs/38045574643)
+full18PASS、compileexit0，明确argvSDK为MacOSX15.5.sdk但artifact仍15.0.0，
+仅sdk mismatch；路径拼写差异未解决，不据此确认原因、不降低15.5.0校验。
+定向local-sdk-logical-path-v1 1/1PASS（0.229s/201bytes）；local/guest均consumed0，
+入口禁用/inline空；有限结果sdk-logical-path-hosted-records.json。
+标准Tests38045574663PASS；GUI/engine/NE/签名/最终ADR和完整G0未通过。
+下一张仅官方Swift6.1.2 producer源码事实收集，Luna medium，限定查询/文件预算；
+不继续盲目编译，可能的print-jobs需另外冻结有界合同后才能执行。
