@@ -4,32 +4,32 @@
   "conclusion": "No matched main-only or I Sol implementation sample; cannot quantify savings. Luna reduced model tier but review/correction overhead is part of package cost. Use C for deterministic field plumbing; binary-layout fixture design should be frozen by R or implemented by I, avoiding repeated low-tier speculative fixture construction. Independent safety review remains required.",
   "groups": [
     {
-      "cache_read_fraction": 0.8681511231862659,
+      "cache_read_fraction": 0.9038958935077033,
       "cache_write_input_tokens": 0,
-      "cached_input_tokens": 176384,
-      "calls": 7,
+      "cached_input_tokens": 491008,
+      "calls": 14,
       "effort": "low",
-      "input_tokens": 203172,
+      "input_tokens": 543213,
       "model": "codex-auto-review",
-      "noncached_input_tokens": 26788,
-      "output_tokens": 827,
-      "reasoning_output_tokens": 390,
+      "noncached_input_tokens": 52205,
+      "output_tokens": 1404,
+      "reasoning_output_tokens": 543,
       "role": "automatic_review",
-      "total_tokens": 203999
+      "total_tokens": 544617
     },
     {
-      "cache_read_fraction": 0.9902724146260143,
+      "cache_read_fraction": 0.991323925724617,
       "cache_write_input_tokens": 0,
-      "cached_input_tokens": 6424320,
-      "calls": 61,
+      "cached_input_tokens": 8369280,
+      "calls": 76,
       "effort": "medium",
-      "input_tokens": 6487427,
+      "input_tokens": 8442528,
       "model": "gpt-6.1-sol",
-      "noncached_input_tokens": 63107,
-      "output_tokens": 16326,
-      "reasoning_output_tokens": 5220,
+      "noncached_input_tokens": 73248,
+      "output_tokens": 22388,
+      "reasoning_output_tokens": 7512,
       "role": "main",
-      "total_tokens": 6503753
+      "total_tokens": 8464916
     },
     {
       "cache_read_fraction": 0.9412035474088709,
@@ -46,35 +46,35 @@
       "total_tokens": 1719091
     },
     {
-      "cache_read_fraction": 0.9668509667603482,
+      "cache_read_fraction": 0.9718866607284721,
       "cache_write_input_tokens": 0,
-      "cached_input_tokens": 4566528,
-      "calls": 51,
+      "cached_input_tokens": 5853824,
+      "calls": 60,
       "effort": "high",
-      "input_tokens": 4723094,
+      "input_tokens": 6023155,
       "model": "gpt-6.1-sol",
-      "noncached_input_tokens": 156566,
-      "output_tokens": 23186,
-      "reasoning_output_tokens": 9035,
+      "noncached_input_tokens": 169331,
+      "output_tokens": 28051,
+      "reasoning_output_tokens": 10044,
       "role": "subagent",
-      "total_tokens": 4746280
+      "total_tokens": 6051206
     }
   ],
-  "outcome": "Pure artifact1PASS, hosted18PASS/compileexit0/artifactbuild-fields refusal; officialformatstaticreviewfound no independently demonstrated bug. Source-only 4boolean mismatch map + fixed onehot/n0/n1 artifact fixtures PASS1. No further compiler/runner; allbudgets0,realfieldunknown.",
+  "outcome": "Two isolatedartifactmethodsPASS, two hosted18PASS/compileexit0; materially instrumented secondhosted isolatedsdk mismatch only(platform/minimum/lengthfalse),cleanupremoved,candidateneverlaunched. ActualSDKsemanticversion andcauseunknown. Allbudgetsconsumed0.",
   "rework": "C Luna medium produced struct.pack arity/headercount/methodname/predicateexpectation defects. R caught before execution. Same-C correction left pack arity unfixed; root applied three explicit trailing zeros and contract cap445. Scope stopped for narrow cap decisions rather than code compression.",
   "since": "2026-10-10T06:46:00+00:00",
   "totals": {
-    "cache_read_fraction": 0.9735757847809865,
+    "cache_read_fraction": 0.9763688142090488,
     "cache_write_input_tokens": 0,
-    "cached_input_tokens": 12770304,
-    "calls": 142,
-    "input_tokens": 13116908,
-    "noncached_input_tokens": 346604,
-    "output_tokens": 56215,
-    "reasoning_output_tokens": 22324,
-    "total_tokens": 13173123
+    "cached_input_tokens": 16317184,
+    "calls": 173,
+    "input_tokens": 16712111,
+    "noncached_input_tokens": 394927,
+    "output_tokens": 67719,
+    "reasoning_output_tokens": 25778,
+    "total_tokens": 16779830
   },
-  "until_exclusive": "2026-10-10T07:09:51+00:00",
-  "window_note": "Start rounded to 06:46:00 UTC; final closure after07:09:51 cutoff excluded.",
+  "until_exclusive": "2026-10-10T07:17:21+00:00",
+  "window_note": "Start rounded to06:46:00 UTC; final SDK source investigation/closure after07:17:21 cutoff excluded.",
   "work_package": "native-artifact-predicate"
 }

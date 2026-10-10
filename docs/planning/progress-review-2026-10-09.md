@@ -213,3 +213,12 @@ R静态拦截了section打包/命令计数/方法名/期望编号错误；同C�
 源码/测试/合同591/455/212，精确hash经R审；未再运行hosted/compiler/full18。
 费用更新到07:09:51Z，完整用量metrics/artifact-predicate.json；后续关闭不在截止内。
 下一真实字段资格需另行冻结reviewedtarget，不能恢复旧预算；G0/GUI/engine/NE/签名仍保留。
+
+四bool字段观测的独立一次性grant经精确R审：源码292af6fa、activation36e484f9；
+新目标 [38033726243](https://github.com/EasyIndie/EasyNet/actions/runs/38033726243)
+hosted18/18PASS，实际compileexit0；明确sdk:true，其余platform/minimum/length:false。
+只证明SDK标记不等于合同15.5.0，真实标记值和产生原因未知，不能猜patch/SDK0或其他版本。
+cleanupremoved，入口禁用/inline空，新archiveconsumed0；标准Tests38033726249PASS。
+有限记录artifact-build-map-hosted-records.json；未启动app/GUI/engine/NE，构建及G0资格未通过。
+费用统计扩展到07:17:21Z；截止后SDK来源审查/关闭另计，metrics/artifact-predicate.json。
+下一步只针对SDK版本产生链静态审查，不能强制标记15.5以制造通过或盲目重编译。
