@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "record": {
+    "errors": 0,
+    "failures": 0,
+    "fixture_cleanup": "passed",
+    "methods": [
+      "test_artifact_valid_and_rejection_matrix"
+    ],
+    "result": "passed",
+    "schema": 1,
+    "skipped": 0,
+    "target": "local-artifact-predicate-v1",
+    "tests": 1
+  },
+  "exit_code": 0,
+  "stdout_bytes": 198,
+  "wall_time_seconds": 0.227057
+}

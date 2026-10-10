@@ -37,7 +37,7 @@ Let `P=docs/planning/poc/client-framework/native-lab`. One I implementation card
 
 Source review records all five files' exact paths/types/modes/byte limits/SHA-256 as a
 version-1 source manifest in the future binding; no separate generator or fixture stage.
-Budget: Host <=60 lines, plist <=30, driver <=560, tests <=390, workflow <=75.
+Budget: Host <=60 lines, plist <=30, driver <=590, tests <=445, workflow <=75.
 Root accepts the independent R's consolidated correction estimate (+100/+80), solely
 for ownership/cancel/drain, failure cleanup, bounded hashing and valid artifact cases.
 Root accepts +20 test/+15 workflow lines for finite buffered suite output and immutable
@@ -183,6 +183,18 @@ root cleanup status, `external-effects=trusted-vendor-not-denied`,
 Preserve a finite primary-error on cleanup failure; cancellation uses error=cancelled.
 Never emit raw rejected metadata/diagnostics, environment, credentials or unbounded exception strings.
 Successful compilation qualifies only this source/toolchain/build shape; .2d remains locked.
+
+`artifact_predicate` is a closed diagnostic field: `not-run` until artifact checking,
+then one of `file-preflight`, `file-mode-bounds`, `header-length`, `header-fields`,
+`command-header`, `command-length`, `build-length`, `build-fields`, `segment-length`,
+`segment-bounds`, `segment-overlap`, `section-vm`, `section-file`, `entry-command`,
+`entry-bounds`, `plist-read`, `plist-content` or `passed`. It carries no rejected bytes,
+exception text or addresses. Rejections retain error=`artifact`; `passed` records validator
+acceptance only, before later inventory and cleanup. Calls without an output mapping keep
+the same digest/size return. Synthetic tests cover the existing zero-section shape plus a
+multi-section shape with file-backed and zerofill sections and VM/file-boundary rejection;
+this adds no compiler-produced evidence and does not change acceptance. Predicate refusals
+retain error=`artifact`; timeout, internal and cleanup behavior keeps its existing semantics.
 
 Compile prerequisites are finite: source/build preparation and review, immutable binding,
 one new compile-only grant, fresh matching hosted image and usable selected toolchain.

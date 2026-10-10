@@ -67,14 +67,26 @@ class BuildTests(unittest.TestCase):
                 "contract": b.digest(contract.read_bytes()), "sources": entries,
                 "manifest": b.digest(json.dumps(entries, sort_keys=True, separators=(",", ":")).encode())}
 
-    def binary(self):
+    def binary(self, sectioned=False):
         executable = self.root / "EasyNetNativeLab"
-        segment = struct.pack("<II16sQQQQiiII", 0x19, 72, b"__TEXT", 0x100000000,
-                              4096, 0, 256, 7, 5, 0, 0)
-        entry = struct.pack("<IIQQ", 0x80000028, 24, 200, 0)
+        if sectioned:
+            section1 = struct.pack("<16s16sQQ8I", b"__one", b"__TEXT", 0x1000001E0, 16, 480, 0, 0, 0, 0, 0, 0, 0)
+            section2 = struct.pack("<16s16sQQ8I", b"__two", b"__TEXT", 0x1000001F0, 16, 496, 0, 0, 0, 0, 0, 0, 0)
+            zero = struct.pack("<16s16sQQ8I", b"__zero", b"__BSS", 0x100001100, 64, 9999, 0, 0, 0, 1, 0, 0, 0)
+            segment = (struct.pack("<II16sQQQQiiII", 0x19, 232, b"__TEXT", 0x100000000,
+                                   4096, 0, 512, 7, 5, 2, 0) + section1 + section2 +
+                       struct.pack("<II16sQQQQiiII", 0x19, 152, b"__BSS", 0x100001000,
+                                   4096, 512, 0, 3, 3, 1, 0) + zero)
+            entry_at, commands, total_size = 480, 432, 512
+        else:
+            segment = struct.pack("<II16sQQQQiiII", 0x19, 72, b"__TEXT", 0x100000000,
+                                  4096, 0, 256, 7, 5, 0, 0)
+            entry_at, commands, total_size = 200, 120, 256
+        entry = struct.pack("<IIQQ", 0x80000028, 24, entry_at, 0)
         build = struct.pack("<6I", 0x32, 24, 1, 0xF0000, 0xF0500, 0)
-        data = struct.pack("<8I", 0xFEEDFACF, 0x100000C, 0, 2, 3, 120, 0, 0) + segment + entry + build
-        executable.write_bytes(data + bytes(256 - len(data)))
+        count = 4 if sectioned else 3
+        data = struct.pack("<8I", 0xFEEDFACF, 0x100000C, 0, 2, count, commands, 0, 0) + segment + entry + build
+        executable.write_bytes(data + bytes(total_size - len(data)))
         executable.chmod(0o700)
         plist = self.root / "Info.plist"
         plist.write_bytes(plistlib.dumps({"CFBundlePackageType": "APPL", "CFBundleExecutable": executable.name,
@@ -166,23 +178,68 @@ class BuildTests(unittest.TestCase):
     def test_artifact_valid_and_rejection_matrix(self):
         executable, plist = self.binary()
         valid = executable.read_bytes()
-        self.assertEqual(b.artifact(executable, plist)["size"], 256)
-        variants = [b"", valid[:40], b"\xca\xfe\xba\xbe" + valid[4:]]
+        self.assertEqual(b.artifact(executable, plist)["size"], len(valid))
+        output = b.result()
+        self.assertEqual(output["artifact_predicate"], "not-run")
+        self.assertEqual(b.artifact(executable, plist, out=output),
+                         {"sha256": b.digest(valid), "size": len(valid)})
+        self.assertEqual(output["artifact_predicate"], "passed")
+        variants = [(b"", "header-length"), (valid[:40], "header-fields"),
+                    (b"\xca\xfe\xba\xbe" + valid[4:], "header-fields")]
         for offset, value in ((4, 0x1000007), (12, 1), (20, 16), (36, 7),
                               (36, 64), (136, 0xE0000), (140, 0xF0400), (144, 1),
                               (112, 9999), (80, 9999), (92, 1), (96, 1)):
             data = bytearray(valid)
             struct.pack_into("<I", data, offset, value)
-            variants.append(data)
-        for data in variants:
+            predicate = ("header-fields" if offset in (4, 12, 20) else
+                         "command-length" if offset == 36 and value == 7 else
+                         "segment-length" if offset == 36 else
+                         "build-fields" if offset in (136, 140, 144) else
+                         "entry-bounds" if offset == 112 else
+                         "segment-bounds" if offset in (80, 96) else
+                         "entry-bounds" if offset == 92 else "segment-bounds")
+            variants.append((data, predicate))
+        for data, predicate in variants:
             executable.write_bytes(data)
-            self.reject("artifact", b.artifact, executable, plist)
+            output = {}
+            self.reject("artifact", b.artifact, executable, plist, float("inf"), output)
+            self.assertEqual(output["artifact_predicate"], predicate)
         executable.write_bytes(valid)
         plist.write_bytes(b"malformed")
-        self.reject("artifact", b.artifact, executable, plist)
+        output = {}
+        self.reject("artifact", b.artifact, executable, plist, float("inf"), output)
+        self.assertEqual(output["artifact_predicate"], "plist-read")
+        plist.write_bytes(plistlib.dumps({}))
+        output = {}
+        self.reject("artifact", b.artifact, executable, plist, float("inf"), output)
+        self.assertEqual(output["artifact_predicate"], "plist-content")
+        plist.write_bytes(plistlib.dumps({"CFBundlePackageType": "APPL", "CFBundleExecutable": executable.name,
+            "CFBundleIdentifier": "com.example.easynet.native-lab", "CFBundleName": "EasyNet Native Lab",
+            "CFBundleVersion": "0.0.1", "CFBundleShortVersionString": "0.0.1",
+            "LSMinimumSystemVersion": "15.0"}))
+        sectioned, section_plist = self.binary(sectioned=True)
+        section_output = {}
+        section_valid = sectioned.read_bytes()
+        self.assertEqual(b.artifact(sectioned, section_plist, out=section_output),
+                         {"sha256": b.digest(section_valid), "size": len(section_valid)})
+        self.assertEqual(section_output["artifact_predicate"], "passed")
+        section_data = bytearray(sectioned.read_bytes())
+        struct.pack_into("<Q", section_data, 136, 0x100001FFC)
+        sectioned.write_bytes(section_data)
+        section_output = {}
+        self.reject("artifact", b.artifact, sectioned, section_plist, float("inf"), section_output)
+        self.assertEqual(section_output["artifact_predicate"], "section-vm")
+        struct.pack_into("<Q", section_data, 136, 0x1000001E0)
+        struct.pack_into("<I", section_data, 152, 510)
+        sectioned.write_bytes(section_data)
+        section_output = {}
+        self.reject("artifact", b.artifact, sectioned, section_plist, float("inf"), section_output)
+        self.assertEqual(section_output["artifact_predicate"], "section-file")
         executable.unlink()
         executable.symlink_to(plist)
-        self.reject("artifact", b.artifact, executable, plist)
+        output = {}
+        self.reject("artifact", b.artifact, executable, plist, float("inf"), output)
+        self.assertEqual(output["artifact_predicate"], "file-mode-bounds")
 
     def test_inventory_and_cleanup_reject_unexpected_or_replaced(self):
         owned = self.root / "owned"

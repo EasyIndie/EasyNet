@@ -311,7 +311,10 @@ def identity(run, observed, deadline=float("inf")):
             "version": version, "sha256": sha, "size": size}, sdk.resolve()
 
 
-def artifact(executable, plist, deadline=float("inf")):
+def artifact(executable, plist, deadline=float("inf"), out=None):
+    if out is None:
+        out = {}
+    out["artifact_predicate"] = "file-mode-bounds"
     checkpoint(deadline)
     try:
         data = regular(executable, 32 * 1024 * 1024, 0o700, deadline)
@@ -321,7 +324,9 @@ def artifact(executable, plist, deadline=float("inf")):
         raise Reject("artifact") from None
     except OSError:
         raise Reject("artifact") from None
+    out["artifact_predicate"] = "header-length"
     require(len(data) >= 32, "artifact")
+    out["artifact_predicate"] = "header-fields"
     magic, cpu, _, kind, count, size, _, _ = struct.unpack_from("<8I", data)
     require(magic == 0xFEEDFACF and cpu == 0x100000C and kind == 2
             and 0 < count <= 4096 and 8 * count <= size <= len(data) - 32, "artifact")
@@ -331,46 +336,60 @@ def artifact(executable, plist, deadline=float("inf")):
     entry = None
     for _ in range(count):
         checkpoint(deadline)
+        out["artifact_predicate"] = "command-header"
         require(offset + 8 <= 32 + size, "artifact")
         command, length = struct.unpack_from("<2I", data, offset)
+        out["artifact_predicate"] = "command-length"
         require(length >= 8 and length % 8 == 0 and offset + length <= 32 + size, "artifact")
         if command == 0x32:
+            out["artifact_predicate"] = "build-length"
             require(length >= 24, "artifact")
+            out["artifact_predicate"] = "build-fields"
             platform, minimum, sdk, tools = struct.unpack_from("<4I", data, offset + 8)
             require(platform == 1 and minimum == 0xF0000 and sdk == 0xF0500
                     and length == 24 + 8 * tools, "artifact")
             build += 1
         if command == 0x19:
+            out["artifact_predicate"] = "segment-length"
             require(length >= 72, "artifact")
+            out["artifact_predicate"] = "segment-bounds"
             _, _, _, vm, vm_size, file_at, file_size, maxprot, prot, sections, _ = struct.unpack_from("<II16sQQQQiiII", data, offset)
             require(length == 72 + 80 * sections and file_at + file_size <= len(data)
                     and file_size <= vm_size and 0 <= prot <= maxprot <= 7
                     and prot & ~maxprot == 0, "artifact")
             if file_size:
+                out["artifact_predicate"] = "segment-overlap"
                 require(all(file_at + file_size <= a or file_at >= z for a, z, _ in segments), "artifact")
                 segments.append((file_at, file_at + file_size, prot))
             for index in range(sections):
+                out["artifact_predicate"] = "section-vm"
                 section = offset + 72 + 80 * index
                 address, section_size, section_at = struct.unpack_from("<QQI", data, section + 32)
                 flags = struct.unpack_from("<I", data, section + 64)[0]
                 require(vm <= address <= vm + vm_size and section_size <= vm + vm_size - address, "artifact")
                 if flags & 0xFF not in (1, 0xC, 0x12):
+                    out["artifact_predicate"] = "section-file"
                     require(file_at <= section_at and section_at + section_size <= file_at + file_size, "artifact")
         if command == 0x80000028:
+            out["artifact_predicate"] = "entry-command"
             require(length == 24 and entry is None, "artifact")
             entry, _ = struct.unpack_from("<QQ", data, offset + 8)
         offset += length
+    out["artifact_predicate"] = "entry-bounds"
     require(offset == 32 + size and build == 1 and entry is not None
             and any(a <= entry < z and prot & 4 for a, z, prot in segments)
             and entry >= 32 + size, "artifact")
     try:
+        out["artifact_predicate"] = "plist-read"
         metadata = plistlib.loads(regular(plist, 4096, 0o600, deadline))
     except (Reject, OSError, ValueError, plistlib.InvalidFileException):
         raise Reject("artifact") from None
+    out["artifact_predicate"] = "plist-content"
     require(metadata == {"CFBundlePackageType": "APPL", "CFBundleExecutable": executable.name,
             "CFBundleIdentifier": "com.example.easynet.native-lab", "CFBundleName": "EasyNet Native Lab",
             "CFBundleVersion": "0.0.1", "CFBundleShortVersionString": "0.0.1",
             "LSMinimumSystemVersion": "15.0"}, "artifact")
+    out["artifact_predicate"] = "passed"
     return {"sha256": digest(data), "size": len(data)}
 
 
@@ -422,7 +441,7 @@ def result():
     return {"schema": 1, "phase": "compile", "result": "rejected", "error": "source-mismatch",
             "feature": None, "workflow": None, "contract": None, "manifest": None,
             "run_token": None, "baseline": {}, "compiler": None, "sdk": None, "sources": {},
-            "artifact": None, "commands": [], "generated": None, "cleanup": "not-created",
+            "artifact": None, "artifact_predicate": "not-run", "commands": [], "generated": None, "cleanup": "not-created",
             "primary-error": "none",
             "external-effects": "trusted-vendor-not-denied", "candidate-executed": False,
             "gui": "not-run", "engine": "not-run", "ne": "not-run"}
@@ -505,12 +524,13 @@ def build_owned(repo, binding, cancel):
              str(root / "module-cache"), "-module-name", "EasyNetNativeLab", "-framework", "SwiftUI",
              "-framework", "AppKit", "-framework", "Foundation", str(root / "src/Host.swift"),
              "-o", str(executable)], 120)
+        out["artifact_predicate"] = "file-preflight"
         try:
             regular(executable, 32 * 1024 * 1024, deadline=whole - 4)
         except (Reject, OSError):
             raise Reject("artifact") from None
         os.chmod(executable, 0o700, follow_symlinks=False)
-        out["artifact"] = artifact(executable, root / "app/EasyNetNativeLab.app/Contents/Info.plist", whole - 4)
+        out["artifact"] = artifact(executable, root / "app/EasyNetNativeLab.app/Contents/Info.plist", whole - 4, out)
         out["generated"] = digest(json.dumps(inventory(root, ["tmp", "module-cache", "app"], whole - 4),
                                             sort_keys=True, separators=(",", ":")).encode())
         expected = inventory(root, sorted(p.name for p in root.iterdir()), whole - 4)
@@ -535,7 +555,15 @@ def build_owned(repo, binding, cancel):
 def emit(out):
     encoded = json.dumps(out, sort_keys=True, separators=(",", ":"))
     if len(encoded.encode()) > 16384:
+        predicate = out.get("artifact_predicate")
+        if predicate not in ("not-run", "file-preflight", "file-mode-bounds", "header-length",
+                             "header-fields", "command-header", "command-length", "build-length",
+                             "build-fields", "segment-length", "segment-bounds", "segment-overlap",
+                             "section-vm", "section-file", "entry-command", "entry-bounds",
+                             "plist-read", "plist-content", "passed"):
+            predicate = "not-run"
         out = result()
+        out["artifact_predicate"] = predicate
         out.update(result="failed", error="overflow", cleanup="unknown")
         encoded = json.dumps(out, sort_keys=True, separators=(",", ":"))
     print(encoded)
