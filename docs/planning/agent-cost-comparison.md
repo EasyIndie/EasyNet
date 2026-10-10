@@ -233,3 +233,25 @@ High cache did not eliminate preparation, coordination and repeated source corre
 Disjoint publicationwindow20:56:10–21:09:20Z measured109,151noncachedinput/31,072output/cache98.24%; main51,465/14,897, R25,076/15,451, automaticreview32,610/724. One identityguest refused; no I work/nativeGUI in this segment. See [publication](metrics/G0-06.2av-publication.json). Four contiguous windows16:14:10–21:09:20Z total **1,280,514 noncachedinput/323,277 output/cache97.64%**, including main/I/R/automaticreview. [Whole-card aggregation](metrics/G0-06.2av-whole.json) names source counter files and excludes closing persistence/commit/disabledpush aftercutoff.
 
 This is substantial cost for source/local qualification while nativegate remains blocked. Do not present multi-agent execution as the default cost-saving answer: cache is high, but coordination, repeated reviews and repairs are real. No paired main-only sample or bill exists to quantify the alternative. Stop further environment attribution on this exhausted attempt; first require actual target identity/effects evidence. Keep low-risk mechanical work main, complete bounded I tasks plus necessary R, no fanout or automatic expensive escalation.
+
+## 2026-10-10 SDK推进混合路由观察
+
+[完整计数](metrics/sdk-progression-usage.json)，10:13:00–10:43:30Z；起点取整，
+截止后producer审查/记录提交另计。包括root小改动、独立R、两次不同源码的
+hosted观测与关闭，以及Luna官方producer事实收集；不是配对A/B。
+
+| 路由 | 非缓存输入 | 缓存输入 | 输出 |
+|---|---:|---:|---:|
+| root Sol medium | 253265 | 8455936 | 21946 |
+| R Sol high | 143058 | 5646592 | 30111 |
+| C Luna medium | 85397 | 849664 | 3699 |
+| 自动审批另列 | 76370 | 770816 | 1725 |
+
+整体输入缓存96.57%；root首个请求169191输入/24320缓存的恢复成本已计入。
+按已核实[标准Codex credit权重](https://learn.chatgpt.com/docs/pricing)，
+若无速度倍率，前三行估值约39.29/28.80/0.47 credits；不是账单，自动审批
+不猜计价，包含订阅用量也不按该权重直接计算。总token数不能替代模型权重。
+当前可行动结论：成本重点在协调/独立R链路，限定查询的Luna事实收集成本较小；
+保留安全审查，减少重复交接与超界研究。短冻结改动root，较完整有界事实收集C，
+复杂二进制fixture交I或先冻结完整格式。质量修正必须计入，C两处措辞修正已包含。
+尚无等难度/同输入/同验收对照，不能宣称混合路由或单会话已胜出。
