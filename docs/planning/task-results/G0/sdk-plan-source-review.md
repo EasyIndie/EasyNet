@@ -156,3 +156,40 @@ cleanup. driver_jobs must have at most eight entries with exact keys, closed
 enums and strict bool platform fields. Existing deadlines/output/action limits
 remain; no subsequent compile, app, signing, secrets or upload is authorized.
 Any hosted allowance awaits the checkpoint and exact binding/workflow review.
+
+## Consolidated immutable hosted package — accepted
+
+R accepts the narrow bootstrap ceiling of 100 lines: the actual activation is
+87 lines, adding nine explicit semantic/result checks without dropping prior
+checks or changing actions, permissions, deadlines, output limits or source
+count. Exact-path admission is 40,960 bytes for build.py and Tests/test_build.py;
+all other bootstrap reads retain 32,768 bytes. Bootstrap AST/diff checks pass.
+
+Source checkpoint: `3f0f0bda6e4a85aa0e80e4afb1f4957bdd292e9f`.
+Binding `docs/planning/task-bindings/sdk-driver-jobs-runtime.json` SHA-256:
+`7b6bf7bd534121e05acdec5059b6779d7614d0f8694f739c2428ae50457f0a10`.
+Manifest: `9467a77b00bcc8699acb06b32e050c3629255100d6d8608004fb841762e18706`.
+Actual activated workflow SHA-256:
+`202efd2d4ea5929fc4b2aed60f599c5ccd471919b685fbd9e0cc7a9d8e8c1744`.
+The separate immutable 78-line disabled source workflow SHA-256 is
+`fd5cf19072fc03b2f10c294ab380ba61e93a32eae31fd6b4f3ff81f7437b0d4e`.
+R verified immutable blob hashes, sizes and 100644 modes, the three accepted
+source hashes, canonical manifest hash and exact inline/binding equality.
+The archived native binding is consumed, both budgets zero; only its ephemeral
+checkout copy is replaced after verified synthetic success. No old grant revives.
+
+Grant exactly one new macos-15-arm64 hosted allowance, guest=1/local=0,
+one-driver-jobs-only / sdk-driver-jobs-hosted19-v1: closed full19 must pass,
+then the distinct driver-jobs phase must return planned with cleanup removed,
+artifact null/predicate not-run, candidate false and GUI/engine/NE not-run.
+Its 1..8 semantic jobs require exact keys, closed tool/target/SDK enums and
+strict bool platform fields. The diagnostic appends only -driver-print-jobs;
+no subsequent compile, app, signing, install, secrets or upload is allowed.
+
+Root may commit this reviewed activation/binding/report with exact message
+`Run one bounded native SDK driver plan 3f0f0bda6e4a85aa0e80e4afb1f4957bdd292e9f`,
+verify that actual commit's identity and unchanged reviewed blobs, then push
+once. Consume at dispatch; failure stops without retry. Archive the outcome at
+zero and disable the workflow/clear inline binding afterward. Source/binding/
+workflow changes invalidate this grant. R ran no tests, driver or hosted work.
+SDK artifact equality and all G0/build/final acceptance gates remain open.
