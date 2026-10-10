@@ -144,3 +144,34 @@ repo代码仅两已核hash的显式import；mock/provider-refused main不调用�
 root冻结后R再审最终predicate/全部hash/commit绑定才能授运行；workflow平台控制面日志并非fixture JSON，成功不证明VM销毁或任意后代清理。
 local预算0、两次失败及ar/av全部保留；通过后也仅可准备metadata runtime binding，不能完成Q-A/Q-B/GUI/NE/ADR或G0。
 本轮仅静态读取/字节hash与whitespace检查，未修改observer/test/workflow、未运行源码/fixture/真实CLI/guest或读取凭据。
+
+## 精确 hosted synthetic runtime acceptance
+
+2026-10-10；R只读核对Git对象、最终workflow与binding，**接受并冻结一次synthetic-only runtime**，尚未运行。
+source `f051f82a497a20d490f549f26523872079060652` 的observer/test字节SHA与上节一致；未凭工作目录相同推定commit相同。
+activation `2d4806b6ba4232fa8cdd902be681b150bafa2425` 的parent恰为source；仅workflow两行predicate/ref变更。
+最终workflow SHA `4743209ed50d29724b1da39d70999032d10b23d9cb018fa8bf210ffd09f54e92`；source checkout/action/两hash/closed env/命令均一致。
+activation消息恰为 `Run one hosted synthetic fixture f051f82a497a20d490f549f26523872079060652`，predicate限定本repo/feature及此完整消息。
+metadata job literal false/未冻结占位完整保留；权限contents read、无应用secrets/cache/upload/matrix/重试，现有release gate未改。
+`hosted-synthetic-runtime.json` status改frozen；只授权root将此**指定activation SHA**正常push至指定feature ref，不force、不顺带后续commit。
+该push可触发现有常规CI；仅本synthetic fresh macos-15 job获一次新guest预算，无手动rerun/重复消息/其他OS执行授权。
+执行仅固定 `/usr/bin/python3 -I -B tests/client_framework/test_hosted_baseline.py`；hash校验后才能import，供应方vendor loader/stdlib沿用信任合同。
+预期suite≤30s、job硬停2min；通过要求exit0及有限schema1/resultpassed/tests8/failures0/errors0一致；缺报告/超限/非零保留failed/unknown。
+root记录实际run/job/commit结果并使synthetic恢复禁用；guest额度本次使用后0，未运行不得先记pass。
+local预算始终0，两次本机失败/旧ar/av不改；不授予真实metadata CLI/engine/GUI/NE/签名/凭据或正式发布。
+本轮只更改binding状态与本审查记录，未执行任何源码、fixture、guest或Git写操作；whitespace检查通过。
+
+## Hosted synthetic evidence / metadata 静态冻结接受
+
+2026-10-10；依据root已核验的run `38014394083` / job `114101346437`记录，接受唯一JSON schema1/passed/tests8/failures0/errors0及job success，metadata skipped。
+这是新source的hosted synthetic-fixture-only通过，不归因两次local失败，不提升任意后代/外部拒绝/engine/GUI/NE/签名资格。
+observation JSON保留local unknown、两次5/7与剩余0；synthetic predicate恢复literal false；binding改consumed，guest/local remaining均0。
+静态核对metadata机械冻结：baseline仅expected placeholder→已审observer hash，shell SHA `81be011a5bf5801e976d8ed81d0665fd21cbcba44f4d5686abd17d3f5bc69c2c`；observer仍 `79394936e61caa7b7afb186d42be4991cf85fd2cb04560809606c28d68c00b5f`。
+workflow仅冻结metadata shell/observer hash，metadata false与未冻结runtime占位仍保留；当前不运行真实CLI。
+接受v2五条固定sw_vers/uname/xcodebuild/xcrun argv的trusted vendor效果scope；允许fresh VM系统读取/服务/cache，不称外部拒绝或精确toolchain identity。
+沿用closed CLI env、provider有限数据、stream/report cap、90s总/每命令≤10s、natural not-requested及异常held-leader收尾；任何stderr/未知格式/非零/清理unknown拒绝。
+root可创建metadata source checkpoint；随后activation仅改metadata predicate为repo/feature/精确一次message及checkout.ref固定source SHA，synthetic始终false。
+最终source SHA、activation SHA、workflow SHA、两个执行hash、固定baseline命令/provider映射与预算须另建metadata binding再R runtime审；不能保留github.sha自引用假装冻结。
+真实metadata初始guest预算尚未使用，拟一次macos-15观察；不复用synthetic/local/ar-av额度，不自动授第二次修复运行或其他OS。
+本接受只授静态commit准备，不授push触发、CLI/guest/tests/凭据/系统变更；metadata成功也仅metadata-observed，不完成其余G0-06资格。
+R本轮只读/evidence一致性/hash及binding/review修改，whitespace通过；未远程重跑/下载日志或执行任何源码。

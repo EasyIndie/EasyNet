@@ -7,7 +7,7 @@ refuse() {
 }
 [[ $# == 0 ]] || refuse
 observer="${BASH_SOURCE[0]%/*}/observe.py"
-expected='REVIEWED_OBSERVER_SHA256_NOT_FROZEN'
+expected='79394936e61caa7b7afb186d42be4991cf85fd2cb04560809606c28d68c00b5f'
 [[ $expected =~ ^[a-f0-9]{64}$ ]] || refuse
 [[ -f $observer && ! -L $observer ]] || refuse
 [[ -x /usr/bin/python3 ]] || refuse

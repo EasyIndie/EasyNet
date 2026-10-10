@@ -122,3 +122,10 @@ Hosted CI 路线与基线静态源码合同已由独立R接受用于准备；五
 组织总列表 CLI 403 不再作为材料未知或仓库继承不可用的依据。
 用户再次要求推进 G0 完成：先落实无密钥基线的静态准备/复用评估，
 按既定合同审查后才执行；不重置旧预算，不将 profile 缺失改为资格通过。
+
+G0 hosted observer 已实施：官方 vendor metadata 观测与不可信候选隔离拆分经独立R接受，
+完整候选门槛保持。两次本机初版合成测试5/7，失败原因unknown；local预算0。
+自然退出语义修订后，固定source f051f82、activation 2d4806b 的唯一hosted合成验收
+[38014394083](https://github.com/EasyIndie/EasyNet/actions/runs/38014394083)全部8tests PASS，
+metadata job skipped。synthetic已恢复disabled，guest预算0；这不覆盖engine/GUI/NE/签名，
+任务计数与完整G0门槛不变。下一步仅冻结真实metadata观测绑定。

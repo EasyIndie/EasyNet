@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "phase": "synthetic-only",
+  "status": "consumed",
+  "reviewed_by": "independent R",
+  "review_evidence": "docs/planning/task-results/G0/hosted-baseline-review.md",
+  "repository": "EasyIndie/EasyNet",
+  "branch": "codex/feature/self-hosted-byos-byoc",
+  "source_commit": "f051f82a497a20d490f549f26523872079060652",
+  "activation_commit": "2d4806b6ba4232fa8cdd902be681b150bafa2425",
+  "activation_message": "Run one hosted synthetic fixture f051f82a497a20d490f549f26523872079060652",
+  "workflow_sha256": "4743209ed50d29724b1da39d70999032d10b23d9cb018fa8bf210ffd09f54e92",
+  "source_hashes": {
+    "poc/client-framework/hosted-ci/observe.py": "79394936e61caa7b7afb186d42be4991cf85fd2cb04560809606c28d68c00b5f",
+    "tests/client_framework/test_hosted_baseline.py": "c8cde5ce28136b2ad40c22406a798e88e7e05bf1928de87e06511685be6dc890"
+  },
+  "runner": "macos-15",
+  "guest_budget": 1,
+  "guest_budget_remaining": 0,
+  "local_budget": 0,
+  "local_budget_remaining": 0,
+  "observation_evidence": "docs/planning/task-results/G0/hosted-synthetic-observation.json",
+  "suite_expected_seconds": 30,
+  "job_timeout_minutes": 2,
+  "command": ["/usr/bin/python3", "-I", "-B", "tests/client_framework/test_hosted_baseline.py"],
+  "expected": {"exit": 0, "schema": 1, "result": "passed", "tests": 8, "failures": 0, "errors": 0},
+  "real_metadata_cli": false,
+  "secrets": false,
+  "qualification": "synthetic-fixture-only"
+}

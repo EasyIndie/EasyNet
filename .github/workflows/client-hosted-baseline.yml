@@ -11,7 +11,7 @@ permissions:
   contents: read
 jobs:
   synthetic:
-    if: ${{ github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc' && github.event.head_commit.message == 'Run one hosted synthetic fixture f051f82a497a20d490f549f26523872079060652' }}
+    if: ${{ false }} # Single synthetic guest consumed; runtime must be reviewed before enabling.
     runs-on: macos-15
     timeout-minutes: 2
     steps:
@@ -49,8 +49,8 @@ jobs:
         run: |
           set -eu
           # Placeholders deliberately refuse; root freezes exact hashes after review.
-          shell_hash='REVIEWED_BASELINE_SHA256_NOT_FROZEN'
-          observer_hash='REVIEWED_OBSERVER_SHA256_NOT_FROZEN'
+          shell_hash='81be011a5bf5801e976d8ed81d0665fd21cbcba44f4d5686abd17d3f5bc69c2c'
+          observer_hash='79394936e61caa7b7afb186d42be4991cf85fd2cb04560809606c28d68c00b5f'
           [[ $shell_hash =~ ^[a-f0-9]{64}$ && $observer_hash =~ ^[a-f0-9]{64}$ ]]
           [[ -f poc/client-framework/hosted-ci/baseline.sh && ! -L poc/client-framework/hosted-ci/baseline.sh ]]
           [[ -f poc/client-framework/hosted-ci/observe.py && ! -L poc/client-framework/hosted-ci/observe.py ]]

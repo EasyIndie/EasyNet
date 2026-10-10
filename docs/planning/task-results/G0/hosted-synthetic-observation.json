@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "qualification": "synthetic-fixture-only",
+  "source_commit": "f051f82a497a20d490f549f26523872079060652",
+  "activation_commit": "2d4806b6ba4232fa8cdd902be681b150bafa2425",
+  "run_id": 38014394083,
+  "job_id": 114101346437,
+  "run_url": "https://github.com/EasyIndie/EasyNet/actions/runs/38014394083",
+  "conclusion": "success",
+  "summary": {"schema": 1, "result": "passed", "tests": 8, "failures": 0, "errors": 0},
+  "metadata_job": "skipped",
+  "guest_budget_remaining": 0,
+  "local_budget_remaining": 0,
+  "local_prior_runs": [{"tests": 7, "passing": 5, "failed": 2}, {"tests": 7, "passing": 5, "failed": 2}],
+  "local_failure_cause": "unknown",
+  "engine_gui_ne_signing_qualified": false
+}
