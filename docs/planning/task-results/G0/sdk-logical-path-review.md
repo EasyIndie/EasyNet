@@ -91,3 +91,48 @@ binding identity, actual activation/workflow identity and same 78-line bootstrap
 action and fixed budgets; revised full18 before one conditional compile.
 No runtime is granted before that independent exact-package review. Old
 budgets remain zero. Artifact SDK equality and all remaining gates stay intact.
+
+## Consolidated hosted differential — accepted once
+
+R accepts immutable checkpoint `c321567055d776a094f055cca48c9ef3f75dc8d5`,
+new `docs/planning/task-bindings/sdk-logical-path-runtime.json` SHA-256
+`7aef9d19e99925d32ed73774bce5cae8b9f91598caaffd6292228e1ffd38fd5d`,
+and canonical manifest digest
+`9d037e4b2f632f7798cd8e33de3febe58066f06e1ad739d55ef36a234a557d2f`.
+Five immutable blobs match exact regular 0644 entries, hashes and size bounds;
+driver/test/contract hashes match the accepted source above. Contract and
+consumed native-binding digests match the immutable tree; prior grants are zero.
+
+Disabled checkout workflow digest:
+`516260ec89637a72e7dd54cc3936e58c060e707e4a7544b2c0344f9ba1ebc46f`.
+Actual activated workflow digest:
+`8de15729332b469a9432a820d3490d5c92a011685dd1cd89a388bc1d25c0670a`.
+Inline binding equals the new binding, including qualification
+`sdk-logical-path-hosted18-v1`, target macos-15-arm64, local=0/guest=1.
+Both workflow versions retain 78 lines and identical complete bootstrap;
+only names, exact push-message gate, immutable checkout ref and inline change.
+Checkout remains `3d3c42e5aac5ba805825da76410c181273ba90b1`, credentials/
+submodules/LFS disabled, contents:read and no secrets, matrix or install.
+
+Root may commit this review with the exact one-shot message
+`Run one native qualified SDK logical path c321567055d776a094f055cca48c9ef3f75dc8d5`
+and push once on the feature branch. Before dispatch, record full activation
+SHA and mechanically verify reviewed workflow/binding digests, message and
+checkout ref; no post-review edits to binding/workflow. Consume guest allowance
+at push, reflected in the closure archive afterward; old budgets stay zero.
+
+One revised full18 exact pass/cleanup must precede one conditional compile.
+Keep the 10-minute job, 60-second suite, 185-second driver wrapper and internal
+180-second whole/120-second compile/14-second metadata limits. Verification
+precedes candidate import; the sole archived native-binding replacement remains
+ephemeral. No app execution, helper, new inspection/command, raw dump, binary
+retention, GUI, engine, NE or signing follows. Failure stops with no retry.
+Retain finite synthetic/compile records and activation/run identity, then
+disable workflow/clear inline and close new binding at zero. A changed SDK
+value supports a path differential without proving an internal producer route;
+artifact SDK equality and every other check remain mandatory.
+
+R checks: immutable blobs/modes/hashes/sizes, manifest, contract, archive closure,
+inline equality, exact workflow diff and unchanged bootstrap AST; passed.
+R performed no candidate execution, runtime or research. All full build/G0,
+GUI/engine/NE/signing/device, G0–G6 and main gates remain intact.

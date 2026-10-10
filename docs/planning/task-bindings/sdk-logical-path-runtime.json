@@ -1,0 +1,50 @@
+{
+  "activation_message": "Run one native qualified SDK logical path c321567055d776a094f055cca48c9ef3f75dc8d5",
+  "checkout": "c321567055d776a094f055cca48c9ef3f75dc8d5",
+  "consumed_binding_sha256": "bd6d2f00d50ddbbeeda696edd927b682c0faf1afaf16cc9c54ca94058633c693",
+  "contract": "10c69cb93cca1cd9a99bfc0da6423cc8315d550b46bb716b17da54ff1360ae9e",
+  "feature": "c321567055d776a094f055cca48c9ef3f75dc8d5",
+  "grant": "one-compile-only",
+  "guest_remaining": 1,
+  "local_remaining": 0,
+  "manifest": "9d037e4b2f632f7798cd8e33de3febe58066f06e1ad739d55ef36a234a557d2f",
+  "python_trust": "fresh-vendor-system-entry-/usr/bin/python3-isolated-no-bytecode",
+  "python_verified": true,
+  "qualification": "sdk-logical-path-hosted18-v1",
+  "schema": 1,
+  "sources": {
+    ".github/workflows/g0-client-native-build.yml": {
+      "mode": 420,
+      "sha256": "516260ec89637a72e7dd54cc3936e58c060e707e4a7544b2c0344f9ba1ebc46f",
+      "size": 4259,
+      "type": "regular"
+    },
+    "docs/planning/poc/client-framework/native-lab/Host.swift": {
+      "mode": 420,
+      "sha256": "189c478947d08115be289b553f23203d6f2bcf3cbc9001c4256bcb5b857d9a32",
+      "size": 880,
+      "type": "regular"
+    },
+    "docs/planning/poc/client-framework/native-lab/Info.plist": {
+      "mode": 420,
+      "sha256": "54d00a6f0939fa213658c54fd1d138aa7ae1f68c1471ba3d4c35abc6b2f31aaf",
+      "size": 631,
+      "type": "regular"
+    },
+    "docs/planning/poc/client-framework/native-lab/Tests/test_build.py": {
+      "mode": 420,
+      "sha256": "ae23440737a69060e27aeddcf157a32f0a4449be6ad4712264395d5724ab39d6",
+      "size": 26161,
+      "type": "regular"
+    },
+    "docs/planning/poc/client-framework/native-lab/build.py": {
+      "mode": 420,
+      "sha256": "d1854d945c75615e36364f8dc535852c26af714fc67fa4a3a9a5882ca590c55b",
+      "size": 28720,
+      "type": "regular"
+    }
+  },
+  "status": "frozen",
+  "target": "macos-15-arm64",
+  "workflow": "516260ec89637a72e7dd54cc3936e58c060e707e4a7544b2c0344f9ba1ebc46f"
+}
