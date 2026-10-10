@@ -146,3 +146,35 @@ Only exact passed18/empty failure evidence unlocks compiler within that single j
 failure/timeout stops; no retry or independent compiler attempt. The selected vendor compiler
 trust exception remains compile-only. No guest/app/GUI/engine/NE or G0 completion is accepted.
 This direction permits binding preparation; execution still requires final immutable review.
+
+## Hosted successor activation package — scoped acceptance
+
+Source checkpoint `b7c21bc0059fb7fa2a845f359e987cbf06514bb2` matches accepted driver/tests,
+Host/plist, contract digest and consumed original binding. Its dormant workflow digest is
+`3942cbfcec6042440508fea828bbbb86c6d40eeff964c735b64449a91a1f6ff9`.
+Accept final activation workflow SHA256
+`6cae26f85b867acf70990fee9465b15b222142bef7b216b21fea62067909f9de` and successor archive SHA256
+`b9ede1a91a39e25c991a0b42df275c8f34cd38a4271bee9f01b05c9048d54d50`.
+Static calculation verifies inline/archive equality and manifest
+`70d428f04502861f2e34c11c6632107d3bdeb9902c4dbe03f7e25d2ad0d0ea92`.
+These digests have separate scopes: five source entries include the checkpoint's dormant
+workflow; the activation digest covers the executable bootstrap/inline grant reviewed here.
+No activated-workflow self-hash or replacement source digest is implied.
+
+Accept 78 workflow lines under a narrow ≤80-line exception to the former 75-line cap.
+The four added bootstrap lines verify the fixed original consumed-binding digest, require
+status consumed/guest_remaining 0, then unlink only its ephemeral checkout copy after the
+passing synthetic gate, before the driver's unchanged O_EXCL runtime-binding write. The
+archived original grant remains consumed; separate successor archive records the new grant.
+This permits fixed-path binding substitution, not arbitrary checkout deletion or budget reset.
+
+Grant `native-capture-successor-hosted18-v1` one fresh macos-15-arm64 job, hosted allowance
+1→0 on attempt, local allowance 0. The exact push-only repository/feature/message predicate is
+`Run one native capture successor b7c21bc0059fb7fa2a845f359e987cbf06514bb2`.
+Checkout remains the literal source checkpoint; only exact passed18/empty failure evidence
+unlocks one conditional compile within that job. Preserve existing time/output/trust limits.
+No workflow_dispatch run, manual rerun, independent compile or old-grant replenishment.
+Root must first supply the actual activation commit SHA for final static identity approval;
+this acceptance does not yet authorize push of an unidentified commit. After observation,
+disable the gate and archive the successor's consumed outcome/remaining 0, even on failure.
+No tests/toolchain/candidate ran in this review. App/GUI/engine/NE/G0/final gates remain intact.
