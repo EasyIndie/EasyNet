@@ -36,7 +36,7 @@ R accepts the root's pre-edit estimate of approximately 30 additional test
 lines: the 490-line cap preserves all five SDK cases, stale reset and strict
 overflow refusal coverage without compressed assertions. No behavior scope,
 new helper, test method, driver/contract cap or execution grant is added.
-The R report is this document only, capped at 240 lines for consolidated review. All other files,
+The R report is this document only, capped at 260 lines for closure review. All other files,
 workflow bodies/bindings, compiler argv, source inputs and phases stay outside
 the implementation scope.
 
@@ -233,3 +233,28 @@ Review checks: immutable Git blobs, hashes/sizes/modes, manifest, binding/inline
 equality, old budget closure, exact workflow diff and bootstrap AST; all pass.
 R executed no candidate import, tests, compiler, guest or external research.
 All GUI/engine/NE/signing/device, candidate disposition, G0–G6/main gates remain.
+
+## Hosted closure and next source disposition
+
+Accept [finite record](sdk-semantic-hosted-records.json), run `38044984525`,
+activation `cf22191bac43e8cc5a9ee37810adb188b7c1d683`: full18 passed;
+commands 0–9 exited 0, drained/FD-closed/reaped; artifact rejected only SDK,
+now truthfully 15.0.0. Qualified xcrun remained 15.5; artifact null, cleanup
+removed, candidate false and GUI/engine/NE not-run. Archive is consumed/zero;
+local workflow false/inline empty is accepted, pending root closure commit/push.
+
+Accept a bounded next source proposal: use the already-validated exact logical
+`SDK` constant (MacOSX15.5.sdk) as identity's returned compile SDK path, rather
+than canonical `sdk.resolve()`. Preserve strict canonical equality/containment,
+SDK 15.5 query and artifact equality, compiler/other flags and every check.
+The cited linker source permits path-sensitive SDK inference; 15.0.0 makes
+the differential actionable, without proving cause or promising 15.5 output.
+Do not force platform metadata, read SDK settings or add probes.
+Freeze only driver<=615, tests<=490/26KiB, contract<=225: one return-path
+change; same identity test also covers versioned alias→unversioned directory,
+asserting logical path retained, canonical target equal and escape refused;
+same18 names; contract states the qualified logical SDK argv exception.
+Root may prepare source only, then R reviews exact diff/hashes. No local test
+or hosted budget is granted now. Any later differential compile needs a fresh
+immutable package/full18 gate and one separate grant; failure stops without
+weakening acceptance. Full G0/build qualification and all final gates stay open.

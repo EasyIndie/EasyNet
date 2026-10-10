@@ -233,3 +233,13 @@ metrics/sdk-semantic-source-usage.json：root Sol medium与R Sol high，
 该任务与此前Luna二进制fixture工作不同，未形成配对实验，不能宣称哪条路更省。
 下一步是精确冻结一次hosted18→conditional compile，读取SDK语义实际值；
 GUI/engine/NE/签名/最终G0均仍未验收。
+
+SDK语义一次hosted观测已结束：sourceffcb6cf、activationcf22191，
+[38044984525](https://github.com/EasyIndie/EasyNet/actions/runs/38044984525)
+full18PASS、compileexit0；SDK标记实际15.0.0，仅sdk mismatch。
+artifact仍null/cleanupremoved；未启动app/GUI/engine/NE，不能通过Q-B构建资格。
+有限结果sdk-semantic-hosted-records.json；新archiveconsumed0，入口禁用且inline空。
+标准Tests38044984594PASS。实际数字不能单独证明链接器原因；
+下一步审查已验证版本化SDK路径的保留方案，禁止强制标记或降低原15.5.0校验。
+全链路用量记录sdk-semantic-total-usage.json截止10:29:51Z，关闭/后继准备另计；
+主会话与独立R，无实现worker；仍无同任务配对，不能认定单会话更省。
