@@ -129,3 +129,9 @@ G0 hosted observer 已实施：官方 vendor metadata 观测与不可信候选�
 [38014394083](https://github.com/EasyIndie/EasyNet/actions/runs/38014394083)全部8tests PASS，
 metadata job skipped。synthetic已恢复disabled，guest预算0；这不覆盖engine/GUI/NE/签名，
 任务计数与完整G0门槛不变。下一步仅冻结真实metadata观测绑定。
+
+唯一真实metadata观测 [38014757342](https://github.com/EasyIndie/EasyNet/actions/runs/38014757342)
+PASS：macOS15.7.9/build24G830 arm64、Xcode16.4/build16F6、SDK15.5；五项均自然child reap/drain/FD闭合。
+完整有限记录见 task-results/G0/hosted-metadata-record.json；synthetic skipped，入口恢复disabled，预算0。
+这只取得文本版本，不授予toolchain身份/engine/GUI/NE/签名资格。下一工作是冻结候选B的源码/构建与Q-B合同，
+不再盲目诊断个人机或旧identity tuple；完整G0依旧未完成。

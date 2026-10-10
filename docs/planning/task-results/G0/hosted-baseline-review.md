@@ -175,3 +175,33 @@ root可创建metadata source checkpoint；随后activation仅改metadata predica
 真实metadata初始guest预算尚未使用，拟一次macos-15观察；不复用synthetic/local/ar-av额度，不自动授第二次修复运行或其他OS。
 本接受只授静态commit准备，不授push触发、CLI/guest/tests/凭据/系统变更；metadata成功也仅metadata-observed，不完成其余G0-06资格。
 R本轮只读/evidence一致性/hash及binding/review修改，whitespace通过；未远程重跑/下载日志或执行任何源码。
+
+## 精确 metadata runtime acceptance
+
+2026-10-10；R接受并冻结metadata-only runtime；本轮只读Git对象，不执行源码/CLI/guest。
+source `5ecacc5f601c7442fd6c40e1041db5bf341cb2f2` 的shell/observer字节SHA准确匹配81be011…/793949…；沿用已审v2效果与合成证据。
+activation `5ee0478a14538400f40745bffdc4630e6c21b15e` 的parent恰为source，只改metadata predicate及checkout.ref两行。
+最终workflow SHA `c2f538b641e30e5a56a2016ff3e91a3bd467775911bea712cd337ba6e01f0518`匹配binding；精确消息 `Run one hosted metadata baseline 5ecacc5f601c7442fd6c40e1041db5bf341cb2f2`、repo/feature固定。
+checkout完整action SHA/persistfalse/source ref、两执行hash、baseline二次校验、closedenv与仅ImageOS/ImageVersion有限转发均成立。
+五argv/固定entry与v2相符，无发现/安装/凭据/GUI操作；provider标签和默认工具链版本不作精确身份证明。
+metadata binding改frozen，并将toolchain/descendants/external-effects/vm-cleanup四个既有未知边界常量纳入expected，避免观测被误标完整资格。
+准许root**正常push指定activation SHA**至指定feature一次，不force、不顺带未审commit；现有标准CI可照常运行，release gate未改。
+只授一个fresh macos-15 metadata guest；synthetic literal false/remaining0、local0保持，不手动rerun/重复消息/换OS或自动追加修复。
+总90s含收尾、每CLI≤10s/捕获≤4096、report≤4096，job5min；要求exit0、schema1/metadata-observed/errornone、5条完整顺序observed与provider/cleanup/schema一致。
+natural child reaped/not-requested，drain/fds true；任一非零/stderr/格式/清理unknown/缺报告/超限失败或unknown，不安装或改环境继续。
+通过仅version-metadata-only，后代/外部拒绝/VM销毁及toolchain identity仍未证明，不授engine/GUI/NE/签名资格。
+root记录实际run/job/有限报告，消耗metadata一次额度后恢复false、binding consumed+remaining0；结果与禁用同包关闭。
+本轮仅binding/review修改及whitespace检查通过；无Git写操作、CLI/fixture/guest或凭据读取。
+
+## Metadata evidence / 工作包关闭接受
+
+2026-10-10；依据root核验的唯一run `38014757342` / job `114102459593` success，定向核对record/observation/binding一致，接受metadata-observed。
+5个label顺序完整且均observed/errornone；每项child reaped/group not-requested/drain true/fds true，四个未知边界常量保持；无原始路径/PID/环境/流。
+ImageOS macos15、ImageVersion 20260907.0337.1；OS15.7.9/build24G830/arm64/Xcode16.4 build16F6/SDK15.5，是默认工具的有限版本信息，非精确身份或资格。
+source/activation对应5ecacc5…/5ee0478…；synthetic skipped；metadata observation剩余guest/local均0且明确仅version-metadata-only。
+metadata binding改consumed及guest/local remaining0；synthetic已consumed，workflow两个predicate均literal false，关闭diff仅禁用metadata一行。
+接受该无密钥hosted baseline工作包的限定范围关闭；无下一实验/修复/retry/OS矩阵/CLI/guest/凭据授权。
+root可提交/push当前禁用关闭及证据/metrics；不重复激活消息、不复跑旧SHA，既有release gate不改。
+两次local失败原因仍unknown；任意后代/外部拒绝/VM销毁及toolchain/Q-A/Q-B/GUI/NE/签名资格保持未证明，不宣称G0完成。
+常规CI38014394023据root记录success；38014757324仍待root核对，本审查不把未核对的常规CI记pass。
+R本轮仅静态evidence一致性与binding/review修改，whitespace通过；未执行源码、fixture、CLI、guest或Git写操作。

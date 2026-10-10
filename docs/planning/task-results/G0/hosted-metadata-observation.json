@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "qualification": "version-metadata-only",
+  "source_commit": "5ecacc5f601c7442fd6c40e1041db5bf341cb2f2",
+  "activation_commit": "5ee0478a14538400f40745bffdc4630e6c21b15e",
+  "run_id": 38014757342,
+  "job_id": 114102459593,
+  "run_url": "https://github.com/EasyIndie/EasyNet/actions/runs/38014757342",
+  "conclusion": "success",
+  "record_path": "docs/planning/task-results/G0/hosted-metadata-record.json",
+  "synthetic_job": "skipped",
+  "guest_budget_remaining": 0,
+  "local_budget_remaining": 0,
+  "os": "15.7.9",
+  "build": "24G830",
+  "architecture": "arm64",
+  "xcode": "16.4",
+  "xcode_build": "16F6",
+  "sdk": "15.5",
+  "toolchain_engine_gui_ne_signing_qualified": false
+}

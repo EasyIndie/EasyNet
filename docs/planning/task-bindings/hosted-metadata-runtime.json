@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "phase": "metadata-only",
+  "status": "consumed",
+  "reviewed_by": "independent R",
+  "review_evidence": "docs/planning/task-results/G0/hosted-baseline-review.md",
+  "repository": "EasyIndie/EasyNet",
+  "branch": "codex/feature/self-hosted-byos-byoc",
+  "source_commit": "5ecacc5f601c7442fd6c40e1041db5bf341cb2f2",
+  "activation_commit": "5ee0478a14538400f40745bffdc4630e6c21b15e",
+  "activation_message": "Run one hosted metadata baseline 5ecacc5f601c7442fd6c40e1041db5bf341cb2f2",
+  "workflow_sha256": "c2f538b641e30e5a56a2016ff3e91a3bd467775911bea712cd337ba6e01f0518",
+  "source_hashes": {
+    "poc/client-framework/hosted-ci/baseline.sh": "81be011a5bf5801e976d8ed81d0665fd21cbcba44f4d5686abd17d3f5bc69c2c",
+    "poc/client-framework/hosted-ci/observe.py": "79394936e61caa7b7afb186d42be4991cf85fd2cb04560809606c28d68c00b5f"
+  },
+  "runner": "macos-15",
+  "guest_budget": 1,
+  "guest_budget_remaining": 0,
+  "local_budget": 0,
+  "local_budget_remaining": 0,
+  "observation_evidence": "docs/planning/task-results/G0/hosted-metadata-observation.json",
+  "overall_seconds": 90,
+  "job_timeout_minutes": 5,
+  "entry": ["/bin/bash", "--noprofile", "--norc", "poc/client-framework/hosted-ci/baseline.sh"],
+  "cli_argv": [
+    ["/usr/bin/sw_vers", "-productVersion"],
+    ["/usr/bin/sw_vers", "-buildVersion"],
+    ["/usr/bin/uname", "-m"],
+    ["/usr/bin/xcodebuild", "-version"],
+    ["/usr/bin/xcrun", "--sdk", "macosx", "--show-sdk-version"]
+  ],
+  "provider_fields": ["ImageOS", "ImageVersion"],
+  "expected": {"exit": 0, "schema": 1, "phase": "metadata", "result": "metadata-observed", "error": "none", "commands": 5, "toolchain": "not-qualified", "descendants": "not-proven", "external-effects": "trusted-vendor-not-denied", "vm-cleanup": "provider-managed-unverified"},
+  "synthetic_guest_remaining": 0,
+  "secrets": false,
+  "engine_gui_ne_signing": false,
+  "qualification": "version-metadata-only"
+}

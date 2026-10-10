@@ -1,7 +1,8 @@
 # Hosted baseline — bounded static preparation
 
-Latest checkpoint: v2 implementation exists; initial local synthetic run failed (5/7 passing),
-group cleanup unknown for normal child despite child reap/drain/FD closure. Runtime/guest remains unfrozen.
+Latest checkpoint: revised v2 source accepted; hosted synthetic 8/8 PASS and five version metadata observations PASS.
+Both one-guest bindings consumed; workflow restored disabled. Local prior 5/7 failures/cause unknown remain historical.
+Only synthetic/metadata evidence; toolchain identity, engine/GUI/NE/signing remain unqualified.
 The v1 static-only state below is historical, not the current source checkpoint.
 
 2026-10-10；工作包 1；状态 **planned / implementation blocked**，不是 ready binding。

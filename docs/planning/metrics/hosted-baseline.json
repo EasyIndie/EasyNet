@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "work_package": "hosted_baseline",
+  "status": "synthetic_and_version_metadata_accepted_not_G0_complete",
+  "comparison_kind": "observational_unpaired",
+  "since": "2026-10-10T01:11:14.644000+00:00",
+  "until_exclusive": "2026-10-10T01:54:25+00:00",
+  "usage_report_path": "docs/planning/metrics/hosted-baseline-usage.json",
+  "totals": {
+    "cache_read_fraction": 0.9832964575950305,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 23549312,
+    "calls": 194,
+    "input_tokens": 23949351,
+    "noncached_input_tokens": 400039,
+    "output_tokens": 86528,
+    "reasoning_output_tokens": 28183,
+    "total_tokens": 24035879
+  },
+  "groups": [
+    {
+      "cache_read_fraction": 0.9231969132044681,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 717312,
+      "calls": 18,
+      "effort": "low",
+      "input_tokens": 776987,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 59675,
+      "output_tokens": 2162,
+      "reasoning_output_tokens": 946,
+      "role": "automatic_review",
+      "total_tokens": 779149
+    },
+    {
+      "cache_read_fraction": 0.9928968149123489,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 17410816,
+      "calls": 113,
+      "effort": "medium",
+      "input_tokens": 17535373,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 124557,
+      "output_tokens": 34573,
+      "reasoning_output_tokens": 11952,
+      "role": "main",
+      "total_tokens": 17569946
+    },
+    {
+      "cache_read_fraction": 0.972798313514938,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 3691648,
+      "calls": 41,
+      "effort": "high",
+      "input_tokens": 3794875,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 103227,
+      "output_tokens": 31284,
+      "reasoning_output_tokens": 11151,
+      "role": "subagent",
+      "total_tokens": 3826159
+    },
+    {
+      "cache_read_fraction": 0.9388854990673768,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 1729536,
+      "calls": 22,
+      "effort": "medium",
+      "input_tokens": 1842116,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 112580,
+      "output_tokens": 18509,
+      "reasoning_output_tokens": 4134,
+      "role": "subagent",
+      "total_tokens": 1860625
+    }
+  ],
+  "scope": "Root coordination, one bounded I reused for source repair, one same-package R for contract/source/runtime/evidence, two local failed synthetic observations and two distinct accepted hosted synthetic/metadata guests. Closing collection/persistence after cutoff excluded.",
+  "routing_issue": "One repair was sent to an idle completed agent with send_message instead of followup_task; waiting added main coordination calls and elapsed time, not a new I run. Root then performed the frozen repair. Record as dispatch error, not an efficiency benefit.",
+  "outcome": "Hosted synthetic 8/8 and five version observations passed. Actual toolchain identity/engine/GUI/NE/signing unqualified; local group-error cause unknown.",
+  "conclusion": "High cache does not establish lower cost. No matched main-only accepted-scope sample or invoice; no cost winner. Keep frozen mechanical repairs in main and consolidate necessary implementation/review packets.",
+  "billing_cost": null
+}

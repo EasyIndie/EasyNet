@@ -36,7 +36,7 @@ jobs:
           exec /usr/bin/env -i PATH=/usr/bin:/bin LANG=C LC_ALL=C \
             /usr/bin/python3 -I -B tests/client_framework/test_hosted_baseline.py 2>/dev/null
   metadata:
-    if: ${{ github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc' && github.event.head_commit.message == 'Run one hosted metadata baseline 5ecacc5f601c7442fd6c40e1041db5bf341cb2f2' }}
+    if: ${{ false }} # Single metadata guest consumed; review a new binding before enabling.
     runs-on: macos-15
     timeout-minutes: 5
     steps:
