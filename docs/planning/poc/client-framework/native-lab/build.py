@@ -308,7 +308,7 @@ def identity(run, observed, deadline=float("inf")):
     require(all(re.search(r"(?<![\w-])" + re.escape(flag) + r"(?![\w-])", help_text)
                 for flag in REQUIRED), "flags")
     return {"path": str(compiler), "hash_path": str(compiler.resolve()),
-            "version": version, "sha256": sha, "size": size}, sdk.resolve()
+            "version": version, "sha256": sha, "size": size}, SDK
 
 
 def artifact(executable, plist, deadline=float("inf"), out=None):

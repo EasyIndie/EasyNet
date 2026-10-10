@@ -217,3 +217,5 @@ an out-of-range major stays null, without truncation. No other raw header data i
 permitted. SDK equality, mismatch map, compiler argv and acceptance remain unchanged.
 Overflow fallback retains only an exact-key, integer-only, bounded semantic object.
 The expanded synthetic test source has a finite 26KiB admission cap; other file caps remain unchanged.
+Compile uses the fixed versioned SDK logical path after strict canonical equality/containment and version qualification.
+This preserves qualified input spelling; artifact SDK equality and all other argv/checks remain unchanged.

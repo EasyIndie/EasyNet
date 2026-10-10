@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "target": "local-sdk-logical-path-v1",
+  "exit_code": 0,
+  "wall_seconds": 0.228984958,
+  "stdout_bytes": 201,
+  "result": {
+    "errors": 0,
+    "failures": 0,
+    "fixture_cleanup": "passed",
+    "methods": [
+      "test_sdk_alias_stream_hash_and_whole_deadline"
+    ],
+    "result": "passed",
+    "schema": 1,
+    "skipped": 0,
+    "target": "local-sdk-logical-path-v1",
+    "tests": 1
+  },
+  "scope": "owned pure-file identity fixture and unchanged pre-spawn timeout; no compiler/guest"
+}
