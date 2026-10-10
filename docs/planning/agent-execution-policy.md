@@ -140,3 +140,7 @@ fixture、拒绝验证、auth/trust、transport/auth deadline、bounded output�
 ## 用户确认的 G0 优先收敛
 
 用户2026-10-09要求按建议推进直到G0完成。优先执行 G0-06 收敛/候选资格/ADR与阶段汇总；完整G0不能由Go工程通过代替。aq审查已接受，B准备不等待A签名，最终ADR显式汇合A/B六张资格卡；A的历史失败前置只在独立实证successor覆盖后替换。诊断余量仍仅一个完整工作包、一次guest，未知后停止归因并评估独立环境。缺签名/设备/授权时说明具体阻塞，继续独立准备；既有G1离线例外不扩大。
+
+## 2026-10-10 hosted CI 与组织凭据补充
+
+用户确认开发机是个人自用、无可反复重置的全新 VM，提出按 hosted macOS 版本测试并使用组织凭据完成公证/发布。[hosted CI 路线](poc/client-framework/hosted-ci-qualification-route.md)已经独立 R 审查接受，作为环境准备主线；个人实验账户/本机 Xcode 登录不再是无密钥 CI 前置。先限定 macos-15 arm64 基线，再按成功合同扩展 macos-26 arm64、macos-15-intel；每格预算与 tool/source/action 身份单独冻结。标签不是精确镜像 pin，GUI/NE/系统同意与完整 gate 不免除。ar/av 已消耗预算与禁用状态保持，新合同接受前不重跑/新开 guest。组织 secret 的名称、用途、仓库范围需先核对，不读值或触碰个人 Keychain；签名/公证单独可信 SHA job，正式 release/main 仍遵从最终门槛。

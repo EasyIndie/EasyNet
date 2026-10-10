@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "work_package": "hosted_ci_route_preparation",
+  "status": "route_reviewed_baseline_static_authoring_allowed_runtime_planned",
+  "comparison_kind": "observational_unpaired",
+  "since": "2026-10-10T00:25:00.736000+00:00",
+  "until_exclusive": "2026-10-10T00:34:27+00:00",
+  "usage_report_path": "docs/planning/metrics/hosted-ci-route-preparation-usage.json",
+  "totals": {
+    "cache_read_fraction": 0.9236060684166264,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 2863104,
+    "calls": 27,
+    "input_tokens": 3099919,
+    "noncached_input_tokens": 236815,
+    "output_tokens": 20296,
+    "reasoning_output_tokens": 10633,
+    "total_tokens": 3120215
+  },
+  "groups": [
+    {
+      "cache_read_fraction": 0.224287673320128,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 5888,
+      "calls": 1,
+      "effort": "low",
+      "input_tokens": 26252,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 20364,
+      "output_tokens": 229,
+      "reasoning_output_tokens": 155,
+      "role": "automatic_review",
+      "total_tokens": 26481
+    },
+    {
+      "cache_read_fraction": 0.9369422023213339,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 2385408,
+      "calls": 15,
+      "effort": "medium",
+      "input_tokens": 2545950,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 160542,
+      "output_tokens": 15697,
+      "reasoning_output_tokens": 9129,
+      "role": "main",
+      "total_tokens": 2561647
+    },
+    {
+      "cache_read_fraction": 0.8940549574866832,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 471808,
+      "calls": 11,
+      "effort": "high",
+      "input_tokens": 527717,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 55909,
+      "output_tokens": 4370,
+      "reasoning_output_tokens": 1349,
+      "role": "subagent",
+      "total_tokens": 532087
+    }
+  ],
+  "scope": "User-directed hosted CI plan, primary facts, secret names/visibility metadata attempts, root documents and one fresh same-package R Solhigh review plus baseline-contract review. No authored code/guest/signing/secret values. Closing persistence/commit after cutoff excluded.",
+  "conclusion": "No matched main-only sample or bill; no costwinner. Mechanical preparation in main, one bounded R agent, no implementation fanout."
+}

@@ -5,7 +5,16 @@ G0-06.2as；2026-10-09；R 文档审查已由 root 接受；不授予运行、�
 [A preparation v1](lifecycle-preparation.md)、[ar 最后观测](../../task-results/G0/G0-06.2ar.md)。
 feature 分支已核对；A=Flutter、B=SwiftUI/原生是待比较候选，本卡不选择框架或 engine。
 
-## 当前结论
+## 2026-10-10 用户补充：hosted CI 主路线
+
+用户明确当前 Mac 为个人自用设备，无可重置全新 VM；Actions 可取得组织凭据。
+[hosted CI 与组织签名路线](hosted-ci-qualification-route.md)作为独立 R 审查接受的下一步准备方案：
+以 fresh hosted jobs 准备 OS/架构资格和后续 Apple 签名、公证，个人 Mac/本机 Xcode
+登录不再是 CI 准备前置。GUI/系统 VPN/entitlement 实证及完整 gate 不变。
+下文保留原审查时的事实与资源建议，不把原独立设备优先建议视为当前必须条件。
+历史 ar/av 预算不重置，旧 workflow 保持禁用；新合同审查后才可开展新限定实验。
+
+## 原审查结论
 
 没有已经资格化的真实 UI/engine、NE 或签名验收目标；完整 G0 仍未通过。
 ar 唯一剩余 guest 已消耗，directory-guard 为最后进入阶段，六项 crash 字段 unknown。

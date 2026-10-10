@@ -42,3 +42,5 @@ Future work should update the roadmap, ADRs and linked issues rather than preser
 one-off execution prompts. Proposed issues remain proposals until explicitly opened.
 
 - [Accepted G0 closure and qualification dependencies](poc/client-framework/g0-closure-decision.md) — independent candidate preparation, preserved final gates and once-only diagnostic budget
+
+- [Hosted macOS CI and organization signing route](poc/client-framework/hosted-ci-qualification-route.md) — user-directed fresh-runner baseline, bounded compatibility matrix and separate Apple signing/NE gates; old observation budgets remain closed.

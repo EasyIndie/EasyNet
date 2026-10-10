@@ -28,5 +28,11 @@
       "url": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
       "fact": "Hosted jobs generally fresh VMs; arm64 macOS nested virtualization unsupported and no static UDID. Same-host development provisioning described, not proof account/profile available."
     }
-  ]
+  ],
+  "user_update_2026_10_10": {
+    "personal_host": "User confirms current Mac is personal-use; no fresh repeatedly resettable VM available.",
+    "ci_route": "User proposes hosted macOS version matrix and confirms Actions can obtain organization credentials for notarization/publication.",
+    "credential_metadata_observation": "Current CLI cannot list organization Actions secret metadata (HTTP403); repository-level list empty. Inherited organization visibility and Apple credential types remain unverified. No values read or used.",
+    "scope": "No local VM/account/signing configuration required before secretless CI preparation; fresh target does not imply GUI/NE/signing qualification or formal release authorization."
+  }
 }
