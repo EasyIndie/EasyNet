@@ -180,10 +180,22 @@ class BuildTests(unittest.TestCase):
         valid = executable.read_bytes()
         self.assertEqual(b.artifact(executable, plist)["size"], len(valid))
         output = b.result()
-        self.assertEqual(output["artifact_predicate"], "not-run")
+        self.assertEqual((output["artifact_predicate"], output["artifact_build_mismatches"]), ("not-run", None))
         self.assertEqual(b.artifact(executable, plist, out=output),
                          {"sha256": b.digest(valid), "size": len(valid)})
         self.assertEqual(output["artifact_predicate"], "passed")
+        self.assertEqual(output["artifact_build_mismatches"], dict.fromkeys(("platform", "minimum", "sdk", "length"), False))
+        for offset, key, value in ((136, "platform", 2), (140, "minimum", 0), (144, "sdk", 0), (148, "length", 1)):
+            data = bytearray(valid)
+            struct.pack_into("<I", data, offset, value)
+            executable.write_bytes(data)
+            self.reject("artifact", b.artifact, executable, plist, float("inf"), output)
+            self.assertEqual(output["artifact_build_mismatches"], {field: field == key for field in ("platform", "minimum", "sdk", "length")})
+        data = bytearray(valid)
+        for offset, value in ((20, 128), (132, 32), (148, 1), (152, 3), (156, 0)):
+            struct.pack_into("<I", data, offset, value)
+        executable.write_bytes(data)
+        self.assertEqual(b.artifact(executable, plist)["sha256"], b.digest(data))
         variants = [(b"", "header-length"), (valid[:40], "header-fields"),
                     (b"\xca\xfe\xba\xbe" + valid[4:], "header-fields")]
         for offset, value in ((4, 0x1000007), (12, 1), (20, 16), (36, 7),

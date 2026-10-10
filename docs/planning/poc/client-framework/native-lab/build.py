@@ -346,6 +346,9 @@ def artifact(executable, plist, deadline=float("inf"), out=None):
             require(length >= 24, "artifact")
             out["artifact_predicate"] = "build-fields"
             platform, minimum, sdk, tools = struct.unpack_from("<4I", data, offset + 8)
+            out["artifact_build_mismatches"] = {"platform": platform != 1,
+                "minimum": minimum != 0xF0000, "sdk": sdk != 0xF0500,
+                "length": length != 24 + 8 * tools}
             require(platform == 1 and minimum == 0xF0000 and sdk == 0xF0500
                     and length == 24 + 8 * tools, "artifact")
             build += 1
@@ -442,7 +445,7 @@ def result():
             "feature": None, "workflow": None, "contract": None, "manifest": None,
             "run_token": None, "baseline": {}, "compiler": None, "sdk": None, "sources": {},
             "artifact": None, "artifact_predicate": "not-run", "commands": [], "generated": None, "cleanup": "not-created",
-            "primary-error": "none",
+            "primary-error": "none", "artifact_build_mismatches": None,
             "external-effects": "trusted-vendor-not-denied", "candidate-executed": False,
             "gui": "not-run", "engine": "not-run", "ne": "not-run"}
 
@@ -562,7 +565,11 @@ def emit(out):
                              "section-vm", "section-file", "entry-command", "entry-bounds",
                              "plist-read", "plist-content", "passed"):
             predicate = "not-run"
+        mismatches = out.get("artifact_build_mismatches")
         out = result()
+        if (isinstance(mismatches, dict) and set(mismatches) == {"platform", "minimum", "sdk", "length"}
+                and all(type(value) is bool for value in mismatches.values())):
+            out["artifact_build_mismatches"] = mismatches
         out["artifact_predicate"] = predicate
         out.update(result="failed", error="overflow", cleanup="unknown")
         encoded = json.dumps(out, sort_keys=True, separators=(",", ":"))

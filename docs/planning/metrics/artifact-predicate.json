@@ -1,0 +1,80 @@
+{
+  "billing_cost": null,
+  "comparison_kind": "observational-unpaired",
+  "conclusion": "No matched main-only or I Sol implementation sample; cannot quantify savings. Luna reduced model tier but review/correction overhead is part of package cost. Use C for deterministic field plumbing; binary-layout fixture design should be frozen by R or implemented by I, avoiding repeated low-tier speculative fixture construction. Independent safety review remains required.",
+  "groups": [
+    {
+      "cache_read_fraction": 0.8681511231862659,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 176384,
+      "calls": 7,
+      "effort": "low",
+      "input_tokens": 203172,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 26788,
+      "output_tokens": 827,
+      "reasoning_output_tokens": 390,
+      "role": "automatic_review",
+      "total_tokens": 203999
+    },
+    {
+      "cache_read_fraction": 0.9902724146260143,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 6424320,
+      "calls": 61,
+      "effort": "medium",
+      "input_tokens": 6487427,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 63107,
+      "output_tokens": 16326,
+      "reasoning_output_tokens": 5220,
+      "role": "main",
+      "total_tokens": 6503753
+    },
+    {
+      "cache_read_fraction": 0.9412035474088709,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 1603072,
+      "calls": 23,
+      "effort": "medium",
+      "input_tokens": 1703215,
+      "model": "gpt-6-luna",
+      "noncached_input_tokens": 100143,
+      "output_tokens": 15876,
+      "reasoning_output_tokens": 7679,
+      "role": "subagent",
+      "total_tokens": 1719091
+    },
+    {
+      "cache_read_fraction": 0.9668509667603482,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 4566528,
+      "calls": 51,
+      "effort": "high",
+      "input_tokens": 4723094,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 156566,
+      "output_tokens": 23186,
+      "reasoning_output_tokens": 9035,
+      "role": "subagent",
+      "total_tokens": 4746280
+    }
+  ],
+  "outcome": "Pure artifact1PASS, hosted18PASS/compileexit0/artifactbuild-fields refusal; officialformatstaticreviewfound no independently demonstrated bug. Source-only 4boolean mismatch map + fixed onehot/n0/n1 artifact fixtures PASS1. No further compiler/runner; allbudgets0,realfieldunknown.",
+  "rework": "C Luna medium produced struct.pack arity/headercount/methodname/predicateexpectation defects. R caught before execution. Same-C correction left pack arity unfixed; root applied three explicit trailing zeros and contract cap445. Scope stopped for narrow cap decisions rather than code compression.",
+  "since": "2026-10-10T06:46:00+00:00",
+  "totals": {
+    "cache_read_fraction": 0.9735757847809865,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 12770304,
+    "calls": 142,
+    "input_tokens": 13116908,
+    "noncached_input_tokens": 346604,
+    "output_tokens": 56215,
+    "reasoning_output_tokens": 22324,
+    "total_tokens": 13173123
+  },
+  "until_exclusive": "2026-10-10T07:09:51+00:00",
+  "window_note": "Start rounded to 06:46:00 UTC; final closure after07:09:51 cutoff excluded.",
+  "work_package": "native-artifact-predicate"
+}

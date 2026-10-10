@@ -172,3 +172,108 @@ archive consumption/remaining 0 and preserve finite evidence, including the acti
 The previous automatic-stop rule still prohibits arbitrary follow-on qualification;
 this named preparation needs the separate final immutable review and grants no successor.
 R executed no behavior here. Historical failure cause and G0/full acceptance stay unknown.
+
+## Hosted closure — build-fields is a group, not an observed field value
+
+Accept [finite hosted evidence](artifact-predicate-hosted-records.json), run `38032893036`:
+synthetic18 passed with empty failure evidence; commands 0-9 exited 0, including actual
+compile/link. The next failure is artifact/build-fields; artifact is null, cleanup removed,
+candidate-executed false and GUI/engine/NE not-run. Accept false workflow gate/empty inline
+and artifact-predicate archive consumed/local 0/guest 0; older grants remain unchanged/zero.
+This proves the validator reached the LC_BUILD_VERSION field group and rejected it.
+It does not prove which conjunct failed or establish the removed binary's actual values.
+
+## Primary format evidence — no demonstrated strict-format defect
+
+On 2026-10-10, narrow primary-source review found the following:
+
+- Apple's [Mach-O loader header](https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/EXTERNAL_HEADERS/mach-o/loader.h)
+  defines macOS platform as 1; minos/sdk use packed major/minor/patch fields; the build
+  command consists of six uint32 fields and ntools pairs of uint32 fields. Consequently
+  15.0.0 encodes as 0xF0000 and 15.5.0 as 0xF0500; its size is 24+8*ntools.
+- Apple's public [ld64 load-command writer](https://raw.githubusercontent.com/apple-oss-distributions/ld64/main/src/ld/HeaderAndLoadCommands.hpp)
+  writes platform/minos/sdk/ntools and computes this structure-plus-tools size with
+  8-byte alignment for 64-bit output. Since 24+8*n is already aligned, this supports
+  the existing equality; it does not justify changing equality to a permissive inequality.
+
+These primary definitions support the source layout/encoding checks. The exact platform,
+minimum and SDK values are also deliberately frozen experiment requirements, not universal
+valid-Mach-O values. Public source is not evidence of this Xcode linker binary's emitted
+fields; no Darwin Swift-driver/linker flag trace was observed. SDK query/path identity and
+the requested macOS15.0 target do not independently reveal the output command's fields.
+No independently demonstrated format bug follows. Preserve all acceptance checks and do
+not change SDK/minimum expectations, introduce linker flags or blame a specific field.
+
+## Smallest source-only discrimination proposal; runtime remains stopped
+
+Propose one optional result field `artifact_build_mismatch`, initially null. Immediately
+after the existing four-field unpack, before the unchanged combined require, populate a
+fixed map of exactly four booleans: platform=(platform!=1), minimum=(minimum!=0xF0000),
+sdk=(sdk!=0xF0500), length=(length!=24+8*tools). Keep build-fields as the active group ID.
+Retain the map through rejection/cleanup; overflow fallback copies only exact named bools.
+No numeric values, strings, addresses, paths, binary retention, helper/tool or new phase.
+This distinguishes simultaneous mismatches rather than assuming only the first conjunct.
+
+A future source package needs its own bounded plan/diff review and isolated artifact-case
+validation: all-false valid ntools=0 and ntools=1 shapes, each single mismatch, one multiple
+mismatch, identical artifact rejection and exact finite map semantics. Report any cap
+shortfall; do not remove checks or compress code. This proposal authorizes no implementation,
+test, guest or compile here. It is discriminating preparation, not proof of a defect or
+permission for a third speculative compile. Any materially revised observation requires
+fresh independently reviewed immutable target/grant; consumed budgets remain zero and the
+automatic-stop rule persists. G0, accepted-artifact/build, GUI/engine/NE/final gates stay open.
+
+Freeze root-mechanical source scope only: driver <=595/tests <=455/contract <=212,
+same 18 names, no helpers/check changes, fixed bool map/default null and safe fallback.
+Correct fixture slots are platform136/minimum140/sdk144/ntools148; 132 is cmdsize.
+Include valid ntools1 and each one-hot mismatch; report cap shortfall before compression.
+Exact revised diff/hashes need R review before any new isolated artifact-target grant.
+
+## Exact build-map source review and one isolated local target
+
+Accept root's three-file mechanical diff, 591/455/212 lines within 595/455/212 caps.
+The implemented name is `artifact_build_mismatches` (plural); its default is null,
+its four fixed booleans are calculated after unpack and before the unchanged require,
+and overflow fallback retains only the exact key set with actual bool values.
+All acceptance expressions, deadlines, cleanup rules and 18 method names are unchanged.
+Artifact-case additions verify default null, valid ntools0/all-false, four one-hot
+refusals at 136/140/144/148, and valid ntools1 digest; no test invokes a child/toolchain.
+
+Independently verified SHA256:
+driver `e9d832e59ef57514ce5aba32f1e4eeee76f6a4506d2053933361b1ed746462bf`;
+tests `cc1b41eff4e0f0034e21c2dab87f80f335bba1c2e5ce682075326f7f81421e27`;
+contract `f19720d2f3769b6dd57f330f4b842643b5cc333e781754d6c60fc7b85aad262d`.
+
+Grant `local-artifact-build-map-v1` exactly once, local allowance 1, guest/hosted 0.
+Freeze `/usr/bin/python3 -I -B -c SCRIPT`, cwd `/Users/joker/Documents/EasyNet`:
+SCRIPT is exactly argv[4] from consumed `local-artifact-predicate-v1.json`, substituting
+only its target literal and the three prior hashes with the new target/hashes above.
+Resulting SCRIPT SHA256 `2d3f58b9e798a0e5720c72faaeb84a7c743a2ecf7e45747fbdf168be38399d85`.
+It rehashes before runpy, runs only test_artifact_valid_and_rejection_matrix, uses the
+same 10-second alarm/TestResult/owned cleanup and finite <=1KiB JSON/no traceback.
+Attempt consumes 1->0; any failure stops without retry. It qualifies only synthetic map
+behavior. All previous allowances stay zero; no full18, hosted or compiler grant follows.
+R ran only static source/hash/diff checks and constructed the wrapper hash without execution.
+
+## Final local build-map closure — accepted, no runtime budget
+
+Accept [map fixture evidence](local-artifact-build-map-record.json): one reviewed method,
+zero failures/errors/skips, cleanup passed, exit 0, 198 stdout bytes, 0.214954333 seconds.
+The consumed binding SHA256 is
+`d767420034fc36ff5e2706189601d8dfe0aa4f77f574ff0046e8ac086afc25a1`;
+its wrapper hash matches the frozen 2d3f58b9... identity, both allowances are zero, and
+static rehash confirms the three reviewed source hashes unchanged. Hosted run 38032893036
+closure remains false gate/empty inline/consumed zero; previous grants remain zero.
+
+Source instrumentation and this isolated synthetic target are complete. The actual
+platform/minimum/sdk/length mismatch in the removed hosted binary remains unknown.
+No full18 or build-map hosted/compile observation ran, and G0 is not qualified.
+The next finite observation requires a new reviewed source checkpoint, contract/five-file
+manifest, fixed matching hosted target, workflow/action/inline/archive identities and
+actual activation SHA with an independently granted once-only budget. Current revised
+full18 must pass before conditional compile, preserving existing limits/trust and finite
+four-boolean evidence. This is a prerequisite, not a grant or reuse of any old allowance.
+Any failure stops; no automatic third compile or restored budget. Engine/GUI still need
+accepted artifact plus frozen lifecycle/isolation/visible-UI qualifications; Q-NE still
+needs eligible signing/profile/consent/routing/DNS evidence. Final G0-G6/main gates remain.
+R reviewed finite evidence and static identities only; no further behavior ran here.

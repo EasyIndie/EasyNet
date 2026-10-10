@@ -207,3 +207,6 @@ provider/entitlement/signing target and actual system-consent/routing/DNS eviden
 GUI incapability blocks visible UI acceptance; headless success never substitutes for it.
 Signing/distribution stays independent and credential-bearing jobs cannot run candidates.
 Retain A/B engine/permission/signing gates, final ADR dispositions and all G0–G6/main gates.
+
+`artifact_build_mismatches` defaults null; after build-version unpack it contains only
+platform/minimum/sdk/length booleans, retained on refusal with unchanged validation.

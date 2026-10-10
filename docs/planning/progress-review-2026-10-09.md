@@ -190,3 +190,26 @@ Swift6.1.2、SDK15.5；随后artifact validator拒绝，具体谓词unknown，ar
 新入口关闭/额度consumed0。应用未启动，GUI/engine/NE未执行，完整构建与G0资格仍未通过。
 费用统计扩展到06:31:56Z，覆盖两次hosted及期限修正；更新metrics/native-capture-successor.json。
 无相同任务单会话对照，不能用缓存或不同结果工作包宣称多代理费用优势。
+
+2026-10-10 新artifact-predicate工作包：C/Luna medium按冻结小函数方案实现，
+R静态拦截了section打包/命令计数/方法名/期望编号错误；同C修正后遗漏的三个pack参数
+由root按明确R指示机械补齐。未执行错误版本，扩大testcap至445保留覆盖，不能用此返工宣称省钱。
+唯一pureartifact方法1/1PASS（0.227s、198bytes），固定字段保持所有validator条件；
+新增sectioned/zerofill及VM/file边界合成覆盖。源码41acd18、activation04a1244经集中R绑定审查。
+唯一 [hosted38032893036](https://github.com/EasyIndie/EasyNet/actions/runs/38032893036)
+18/18PASS；查询/实际compile全部exit0，artifact明确拒绝于build-fields联合谓词，
+具体platform/minos/sdk/tool-count字段仍unknown；cleanupremoved，app/GUI/engine/NE未执行。
+有限记录artifact-predicate-hosted-records.json；常规Tests38032893069PASS。
+入口false/inline空，artifact新grantconsumed0，所有旧预算0，G0和完整构建资格仍未通过。
+06:46:00（起点按分钟取整）–07:02:50Z用量251,677非缓存input/42,147output，cache97.37%，
+包含root/C/R/自动审批；截止后格式审查与关闭另计。metrics/artifact-predicate.json。
+无配对main-only/I实现样本或账单，不能认定节省；Luna限冻结字段适配，
+复杂二进制fixture交I或由R冻结完整字节结构，减少低档模型反复构造。
+
+针对build-fields，R核对Apple Mach-O定义/公开ld写入实现，未证明校验格式有误；
+真实失败field仍unknown。root按冻结机械方案新增artifact_build_mismatches四固定bool，
+保留所有require；合法n0/n1及platform/minimum/sdk/length单项拒绝合成覆盖通过，
+唯一local-artifact-build-map-v1 1/1PASS（~0.215s、198bytes），额度consumed0。
+源码/测试/合同591/455/212，精确hash经R审；未再运行hosted/compiler/full18。
+费用更新到07:09:51Z，完整用量metrics/artifact-predicate.json；后续关闭不在截止内。
+下一真实字段资格需另行冻结reviewedtarget，不能恢复旧预算；G0/GUI/engine/NE/签名仍保留。
