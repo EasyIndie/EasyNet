@@ -527,6 +527,7 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
                 return self.root if value == "/private/tmp" else Path(value)
             with patch.object(b, "Path", side_effect=owned_path), \
                  patch.object(b, "identity", return_value=({"path": "inert compiler"}, self.root)), \
+                 patch.object(b, "read_sdk_metadata", return_value={"sdkroot-qualified": True}), \
                  patch.object(b, "capture", side_effect=fake_capture) as capture, \
                  patch.object(b, "artifact") as artifact, patch.object(b.subprocess, "Popen") as spawn, \
                  patch.dict(os.environ, ImageOS=b.BASE["image_os"], ImageVersion=b.BASE["image_version"]):
@@ -550,6 +551,209 @@ os.killpg(os.getpgrp(),signal.SIGKILL)
                                                        "platform_version_present": False}])
             self.assertFalse(owned.exists())
 
+    def test_sdk_metadata_preflight(self):
+        dev = self.root / "vendor"
+        sdk = dev / "MacOSX15.5.sdk"
+        sdk.mkdir(parents=True)
+        path = sdk / "SDKSettings.json"
+        valid = {"Version": "15.5", "CanonicalName": "macosx15.5",
+                 "MaximumDeploymentTarget": "15", "VersionMap": {"macOS_iOSMac": {"15.5": "18.5"}}}
+        def write(obj):
+            path.write_bytes(json.dumps(obj).encode())
+        with patch.object(b, "DEV", dev), patch.object(b, "SDK", sdk), \
+             patch.object(b.subprocess, "Popen") as spawn:
+            write(valid)
+            observed = b.read_sdk_metadata(sdk)
+            self.assertEqual(observed, {"sha256": b.digest(path.read_bytes()), "size": path.stat().st_size,
+                "Version": "15.5.0", "MaximumDeploymentTarget": "15.0.0",
+                "CanonicalName": "macosx15.5", "sdkroot-qualified": True})
+            self.assertLess(len(json.dumps(observed)), 1024)
+            expanded = dict(valid, Version="015.005.000", MaximumDeploymentTarget="65535.65535.65535",
+                VersionMap={"macOS_iOSMac": {"0": "1.2.3"}, "iOSMac_macOS": {"18": "15"},
+                            "iOs_example": {"1": "2"}}, unknown={"harmless": [1, 2]})
+            write(expanded)
+            self.assertEqual(b.read_sdk_metadata(sdk)["Version"], "15.5.0")
+            nested = 0
+            for _ in range(15):
+                nested = [nested]
+            write(dict(valid, extra=nested))
+            self.assertTrue(b.read_sdk_metadata(sdk)["sdkroot-qualified"])
+            write(dict(valid, extra=[0] * 4089))  # Seven schema members plus these elements = 4096.
+            self.assertTrue(b.read_sdk_metadata(sdk)["sdkroot-qualified"])
+            write(valid)
+            path.write_bytes(path.read_bytes().ljust(256 * 1024, b" "))
+            self.assertEqual(b.read_sdk_metadata(sdk)["size"], 256 * 1024)
+            self.reject("sdk-metadata", b.read_sdk_metadata, Path("relative"))
+            for bad in (Path("/"), dev / "absent", self.root, path):
+                self.reject("sdk-metadata", b.read_sdk_metadata, bad)
+            bad_objects = [[], None, {}]
+            for name in ("Version", "CanonicalName", "MaximumDeploymentTarget", "VersionMap"):
+                missing = dict(valid)
+                del missing[name]
+                bad_objects.append(missing)
+                for value in (None, [], {}, 15, True):
+                    bad_objects.append(dict(valid, **{name: value}))
+            for name in ("Version", "MaximumDeploymentTarget"):
+                for value in ("", "15.-1", "15.5.0.0", "15.5beta", "15.5 ", "65536", "1e1", "+15"):
+                    bad_objects.append(dict(valid, **{name: value}))
+            bad_objects.extend([dict(valid, Version="15.0"), dict(valid, MaximumDeploymentTarget="14.9"),
+                dict(valid, CanonicalName="MacOSX15.5"), dict(valid, CanonicalName="macosx15.0")])
+            for name in ("macOS_iOSMac", "iOSMac_macOS", "iOS_bad"):
+                for value in (None, [], "bad", {}, {"15": 18}, {"bad": "18"}, {"15": "18.0.0.0"}):
+                    maps = dict(valid["VersionMap"], **{name: value})
+                    bad_objects.append(dict(valid, VersionMap=maps))
+            bad_objects.extend([dict(valid, VersionMap={}), dict(valid, extra=[0] * 4096),
+                dict(valid, extra={str(i): 0 for i in range(4096)})])
+            nested = 0
+            for _ in range(16):
+                nested = [nested]
+            bad_objects.append(dict(valid, extra=nested))
+            for obj in bad_objects:
+                with self.subTest(obj=obj):
+                    write(obj)
+                    self.reject("sdk-metadata", b.read_sdk_metadata, sdk)
+            for raw in (b'{"Version":"15.5","Version":"15.5"}', b'{"x":NaN}', b'{"x":Infinity}',
+                        b'{"x":1e999}', b'{"x":{"a":1,"a":2}}', b'\xff', b'{', b' ' * (256 * 1024 + 1)):
+                path.write_bytes(raw)
+                self.reject("sdk-metadata", b.read_sdk_metadata, sdk)
+            path.unlink()
+            self.reject("sdk-metadata", b.read_sdk_metadata, sdk)
+            path.mkdir()
+            self.reject("sdk-metadata", b.read_sdk_metadata, sdk)
+            path.rmdir()
+            outside = self.root / "outside.json"
+            outside.write_text(json.dumps(valid))
+            path.symlink_to(outside)
+            self.reject("sdk-metadata", b.read_sdk_metadata, sdk)
+            path.unlink()
+            inside = sdk / "inside.json"
+            inside.write_text(json.dumps(valid))
+            path.symlink_to(inside)
+            self.assertTrue(b.read_sdk_metadata(sdk)["sdkroot-qualified"])
+            path.unlink()
+            write(valid)
+            with patch.object(b.os, "open", side_effect=PermissionError):
+                self.reject("sdk-metadata", b.read_sdk_metadata, sdk)
+            with patch.object(b.os, "open", side_effect=PermissionError):
+                with self.assertRaises(b.Reject) as raised:
+                    b.read_sdk_metadata(sdk)
+            self.assertEqual(raised.exception.metadata_stage, "open")
+            real_open = os.open
+            def replace_with_fifo(target, flags):
+                self.assertTrue(flags & os.O_NONBLOCK)
+                path.unlink()
+                os.mkfifo(path, 0o600)
+                return real_open(target, flags)
+            with patch.object(b.os, "open", side_effect=replace_with_fifo), \
+                 patch.object(b.os, "fstat", wraps=os.fstat) as fstat:
+                with self.assertRaises(b.Reject) as raised:
+                    b.read_sdk_metadata(sdk)
+            self.assertEqual((raised.exception.code, raised.exception.metadata_stage), ("sdk-metadata", "stability"))
+            self.assertEqual(fstat.call_count, 1)  # Nonblocking open reaches the descriptor refusal.
+            path.unlink()
+            write(valid)
+            for obj, expected_stage in ((dict(valid, Version="15.0"), "version"),
+                    (dict(valid, CanonicalName="bad"), "canonical-name"),
+                    (dict(valid, MaximumDeploymentTarget="14"), "maximum"),
+                    (dict(valid, VersionMap={}), "map"), (dict(valid, extra=[0] * 4096), "limits")):
+                write(obj)
+                with self.assertRaises(b.Reject) as raised:
+                    b.read_sdk_metadata(sdk)
+                self.assertEqual(raised.exception.metadata_stage, expected_stage)
+            path.write_bytes(b'{"x":NaN}')
+            with self.assertRaises(b.Reject) as raised:
+                b.read_sdk_metadata(sdk)
+            self.assertEqual(raised.exception.metadata_stage, "json")
+            with self.assertRaises(b.Reject) as raised:
+                b.read_sdk_metadata(Path("relative"))
+            self.assertEqual(raised.exception.metadata_stage, "path")
+            write(valid)
+            actual_fstat = os.fstat
+            calls = 0
+            def changed(fd):
+                nonlocal calls
+                calls += 1
+                info = actual_fstat(fd)
+                if calls == 2:
+                    values = list(info)
+                    values[6] += 1
+                    return os.stat_result(values)
+                return info
+            with patch.object(b.os, "fstat", side_effect=changed):
+                self.reject("sdk-metadata", b.read_sdk_metadata, sdk)
+            self.reject("timeout", b.read_sdk_metadata, sdk, time.monotonic() - 1)
+            spawn.assert_not_called()
+
+    def test_sdkroot_conditional_compile(self):
+        binding = self.manifest()
+        executable, plist = self.binary()
+        binary, plist_bytes = executable.read_bytes(), plist.read_bytes()
+        inputs = b.sources(self.root, binding)
+        inputs[f"{b.P}/Info.plist"] = plist_bytes
+        binding.update(grant="one-compile-only", qualification="sdk-producer-hosted21-v1", python_verified=True)
+        dev = self.root / "vendor"
+        sdk = dev / "MacOSX15.5.sdk"
+        sdk.mkdir(parents=True)
+        settings = sdk / "SDKSettings.json"
+        metadata = {"Version": "15.5", "CanonicalName": "macosx15.5", "MaximumDeploymentTarget": "15",
+                    "VersionMap": {"macOS_iOSMac": {"15": "18"}}}
+        def owned_path(value):
+            return self.root if value == "/private/tmp" else Path(value)
+        for grant, qualification in (("one-compile-only", None), ("one-compile-only", "wrong"),
+                                     (None, "sdk-producer-hosted21-v1"),
+                                     ("one-driver-jobs-only", "sdk-producer-hosted21-v1")):
+            with patch.object(b, "capture") as capture, patch.object(b.Path, "mkdir") as mkdir:
+                out = b.build(self.root, dict(binding, grant=grant, qualification=qualification))
+            self.assertEqual((out["error"], out["cleanup"]), ("identity", "not-created"))
+            capture.assert_not_called()
+            mkdir.assert_not_called()
+        for scenario in ("metadata-refused", "sdk15.0", "sdk15.5"):
+            settings.write_text(json.dumps(dict(metadata, Version="15.0") if scenario == "metadata-refused" else metadata))
+            compiles = []
+            def fake_capture(argv, root, env, whole, budget, records, cancel):
+                records.append({"reaped": True, "drained": True, "fd_closed": True})
+                if budget == 120:
+                    compiles.append(list(argv))
+                    self.assertEqual(env["SDKROOT"], str(sdk))
+                    expected = ["inert compiler", "-parse-as-library", "-emit-executable", "-swift-version", "6", "-Onone",
+                        "-target", "arm64-apple-macosx15.0", "-sdk", str(sdk), "-module-cache-path",
+                        str(root / "module-cache"), "-module-name", "EasyNetNativeLab", "-framework", "SwiftUI",
+                        "-framework", "AppKit", "-framework", "Foundation", str(root / "src/Host.swift"),
+                        "-o", str(root / "app/EasyNetNativeLab.app/Contents/MacOS/EasyNetNativeLab")]
+                    self.assertEqual(argv, expected)
+                    data = bytearray(binary)
+                    if scenario == "sdk15.0":
+                        struct.pack_into("<I", data, 32 + 72 + 24 + 16, 0xF0000)
+                    Path(argv[-1]).write_bytes(data)
+                    return ""
+                self.assertNotIn("SDKROOT", env)
+                return {"-productVersion": b.BASE["os"], "-buildVersion": b.BASE["build"],
+                        "-m": b.BASE["arch"], "-version": b.BASE["xcode"],
+                        "--show-sdk-version": b.BASE["sdk_version"]}[argv[-1]]
+            with patch.object(b, "Path", side_effect=owned_path), patch.object(b, "DEV", dev), \
+                 patch.object(b, "SDK", sdk), patch.object(b, "sources", return_value=inputs), \
+                 patch.object(b, "identity", return_value=({"path": "inert compiler"}, sdk)), \
+                 patch.object(b, "capture", side_effect=fake_capture) as capture, \
+                 patch.object(b.subprocess, "Popen") as spawn, \
+                 patch.dict(os.environ, ImageOS=b.BASE["image_os"], ImageVersion=b.BASE["image_version"], SDKROOT="hostile"):
+                out = b.build(self.root, binding)
+            spawn.assert_not_called()
+            self.assertEqual(out["cleanup"], "removed")
+            self.assertFalse((self.root / ("easynet-qb-build-" + out["run_token"])).exists())
+            self.assertFalse(out["candidate-executed"])
+            self.assertEqual((len(compiles), capture.call_count), (0, 5) if scenario == "metadata-refused" else (1, 6))
+            if scenario == "metadata-refused":
+                self.assertEqual((out["error"], out["sdk_metadata_stage"], out["sdk_metadata"]), ("sdk-metadata", "version", None))
+            elif scenario == "sdk15.0":
+                self.assertEqual((out["error"], out["artifact_predicate"]), ("artifact", "build-fields"))
+                self.assertTrue(out["artifact_build_mismatches"]["sdk"])
+            else:
+                self.assertEqual((out["result"], out["error"], out["artifact_predicate"]), ("compiled", "none", "passed"))
+                self.assertEqual(out["artifact_sdk_version"], {"major": 15, "minor": 5, "patch": 0})
+                self.assertEqual(out["sdk_metadata_stage"], "qualified")
+            self.assertNotIn("hostile", json.dumps(out))
+            self.assertNotIn("VersionMap", json.dumps(out))
+
     def test_missing_binding_is_finite_and_no_build(self):
         with patch.object(b, "build", side_effect=AssertionError("build must not run")):
             with contextlib.redirect_stdout(io.StringIO()) as stream:
@@ -572,6 +776,7 @@ if __name__ == "__main__":
     fields = {"command", "exit", "deadline", "bytes", "drained", "fd_closed", "reaped", "cancelled",
               "group_observation", "ownership", "primary_error", "group_stage", "group_errno"}
     names = {
+        'test_sdk_metadata_preflight', 'test_sdkroot_conditional_compile',
         'test_driver_jobs_parser_and_grant', 'test_source_identity_and_tampering', 'test_unfrozen_and_extra_manifest',
         'test_links_modes_and_bounds', 'test_environment_is_constructed',
         'test_changed_baseline_rejected_without_locator', 'test_escaped_locator',

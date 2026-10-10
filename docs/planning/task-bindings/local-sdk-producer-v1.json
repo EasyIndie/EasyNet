@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-c",
+    "import contextlib, hashlib, io, json, pathlib, runpy, signal, sys, unittest\nmethods = [\"test_sdk_metadata_preflight\", \"test_sdkroot_conditional_compile\"]\nout = {\"schema\": 1, \"target\": \"local-sdk-producer-v1\", \"methods\": methods, \"result\": \"failed\", \"tests\": 0, \"failures\": 0, \"errors\": 1, \"skipped\": 0, \"fixture_cleanup\": \"unknown\"}\ndef timeout(signum, frame):\n    raise TimeoutError()\nsignal.signal(signal.SIGALRM, timeout)\nsignal.alarm(10)\ntry:\n    expected = {\"docs/planning/poc/client-framework/native-lab/build.py\": \"5c90c9f83f1ccb299f98f7046dcfe1ae09404c2f1ce2f2a55f14286df7548a83\", \"docs/planning/poc/client-framework/native-lab/Tests/test_build.py\": \"1bdd5a0942420ff5dbf4190b3e5a7d74b2826cc828c88102476170420b965313\", \"docs/planning/poc/client-framework/native-build-contract.md\": \"cd87d361f29ad214e571a510c88c276e145dcab04a1860612a61186d570f7fcd\"}\n    for path, digest in expected.items():\n        if hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest() != digest:\n            raise ValueError()\n    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):\n        module = runpy.run_path(\"docs/planning/poc/client-framework/native-lab/Tests/test_build.py\", run_name=\"artifact_predicate_target\")\n        result = unittest.TestResult()\n        unittest.TestSuite([module[\"BuildTests\"](method) for method in methods]).run(result)\n    passed = result.wasSuccessful() and result.testsRun == 2 and not result.skipped\n    out.update(result=\"passed\" if passed else \"failed\", tests=result.testsRun, failures=len(result.failures), errors=len(result.errors), skipped=len(result.skipped), fixture_cleanup=\"passed\" if passed else \"unknown\")\nexcept (Exception, KeyboardInterrupt):\n    pass\nfinally:\n    signal.alarm(0)\nencoded = json.dumps(out, sort_keys=True, separators=(\",\", \":\"))\nif len(encoded.encode()) > 1024:\n    encoded = '{\"schema\":1,\"result\":\"failed\",\"error\":\"overflow\"}'\n    out[\"result\"] = \"failed\"\nprint(encoded)\nsys.exit(0 if out[\"result\"] == \"passed\" else 1)"
+  ],
+  "cwd": "/Users/joker/Documents/EasyNet",
+  "deadline_seconds": 10,
+  "guest_remaining": 0,
+  "local_remaining": 0,
+  "max_output_bytes": 1024,
+  "schema": 1,
+  "status": "consumed",
+  "target": "local-sdk-producer-v1",
+  "reviewed_by": "sdk_producer_contract",
+  "outcome": "passed"
+}

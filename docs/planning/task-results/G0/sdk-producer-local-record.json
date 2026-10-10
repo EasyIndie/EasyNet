@@ -1,0 +1,21 @@
+{
+  "target": "local-sdk-producer-v1",
+  "exit": 0,
+  "elapsed_seconds": 0.38985091699999996,
+  "stdout_bytes": 214,
+  "stderr_bytes": 0,
+  "result": {
+    "errors": 0,
+    "failures": 0,
+    "fixture_cleanup": "passed",
+    "methods": [
+      "test_sdk_metadata_preflight",
+      "test_sdkroot_conditional_compile"
+    ],
+    "result": "passed",
+    "schema": 1,
+    "skipped": 0,
+    "target": "local-sdk-producer-v1",
+    "tests": 2
+  }
+}

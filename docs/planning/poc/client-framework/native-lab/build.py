@@ -2,6 +2,7 @@
 import errno
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import plistlib
@@ -17,7 +18,7 @@ import uuid
 
 P = "docs/planning/poc/client-framework/native-lab"
 FILES = {f"{P}/Host.swift": 8192, f"{P}/Info.plist": 4096,
-         f"{P}/build.py": 40960, f"{P}/Tests/test_build.py": 40960,
+         f"{P}/build.py": 65536, f"{P}/Tests/test_build.py": 65536,
          ".github/workflows/g0-client-native-build.yml": 8192}
 DEV = Path("/Applications/Xcode_16.4.app/Contents/Developer")
 SWIFT = DEV / "Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
@@ -88,7 +89,7 @@ def sources(repo, binding, deadline=float("inf")):
         verified[name] = data
     require(digest(verified[".github/workflows/g0-client-native-build.yml"])
             == binding["workflow"], "source-mismatch")
-    contract = regular(repo / "docs/planning/poc/client-framework/native-build-contract.md", 32768, deadline=deadline)
+    contract = regular(repo / "docs/planning/poc/client-framework/native-build-contract.md", 40960, deadline=deadline)
     require(digest(contract) == binding["contract"], "source-mismatch")
     return verified
 
@@ -100,6 +101,121 @@ def environment(root):
         if name in os.environ:
             env[name] = os.environ[name]
     return env
+
+
+def read_sdk_metadata(qualified_sdk, deadline=float("inf")):
+    """Validate a small supported SDKSettings subset without retaining raw input."""
+    stage = "sdk-metadata"
+    metadata_stage = "path"
+    def version(value):
+        require(isinstance(value, str) and len(value) <= 17
+                and re.fullmatch(r"[0-9]+(?:\.[0-9]+){0,2}", value), stage)
+        parts = tuple(int(part) for part in value.split("."))
+        require(all(part <= 65535 for part in parts), stage)
+        return parts + (0,) * (3 - len(parts))
+    def stable(info):
+        return (info.st_dev, info.st_ino, info.st_mode, info.st_size,
+                info.st_mtime_ns, info.st_ctime_ns)
+    def pairs(items):
+        obj = {}
+        for key, value in items:
+            require(key not in obj, stage)
+            obj[key] = value
+        return obj
+    def finite_float(value):
+        number = float(value)
+        require(math.isfinite(number), stage)
+        return number
+    def invalid_constant(_):
+        raise Reject(stage)
+    try:
+        checkpoint(deadline)
+        sdk = Path(qualified_sdk)
+        require(sdk.is_absolute() and sdk != Path("/"), stage)
+        canonical = sdk.resolve(strict=True)
+        require(canonical.is_dir() and canonical != Path("/")
+                and canonical.is_relative_to(DEV.resolve(strict=True))
+                and canonical == SDK.resolve(strict=True), stage)
+        logical = sdk / "SDKSettings.json"
+        target = logical.resolve(strict=True)
+        require(target.is_relative_to(canonical), stage)
+        info = target.lstat()
+        require(stat.S_ISREG(info.st_mode), stage)
+        metadata_stage = "limits"
+        require(0 < info.st_size <= 256 * 1024, stage)
+        metadata_stage = "open"
+        fd = os.open(target, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(fd, "rb") as stream:
+            metadata_stage = "stability"
+            opened = os.fstat(stream.fileno())
+            require(stat.S_ISREG(opened.st_mode) and stable(opened) == stable(info), stage)
+            data = stream.read(256 * 1024 + 1)
+            checkpoint(deadline)
+            require(len(data) == info.st_size and stable(os.fstat(stream.fileno())) == stable(info)
+                    and stable(target.lstat()) == stable(info)
+                    and logical.resolve(strict=True) == target
+                    and sdk.resolve(strict=True) == canonical, stage)
+        metadata_stage = "json"
+        text = data.decode("utf-8", errors="strict")
+        # Bound container nesting before JSON allocates recursively, ignoring string contents.
+        metadata_stage = "limits"
+        depth, quoted, escaped = 0, False, False
+        for char in text:
+            if quoted:
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == '"':
+                    quoted = False
+            elif char == '"':
+                quoted = True
+            elif char in "[{":
+                depth += 1
+                require(depth <= 16, stage)
+            elif char in "]}":
+                depth -= 1
+        metadata_stage = "json"
+        obj = json.loads(text, object_pairs_hook=pairs, parse_constant=invalid_constant, parse_float=finite_float)
+        require(isinstance(obj, dict), stage)
+        metadata_stage = "limits"
+        members, pending = 0, [obj]
+        while pending:
+            checkpoint(deadline)
+            value = pending.pop()
+            if isinstance(value, (dict, list)):
+                members += len(value)
+                require(members <= 4096, stage)
+                pending.extend(value.values() if isinstance(value, dict) else value)
+        metadata_stage = "version"
+        current = version(obj.get("Version"))
+        require(current == (15, 5, 0), stage)
+        metadata_stage = "canonical-name"
+        require(obj.get("CanonicalName") == "macosx15.5", stage)
+        metadata_stage = "maximum"
+        maximum = version(obj.get("MaximumDeploymentTarget"))
+        require(maximum >= (15, 0, 0), stage)
+        metadata_stage = "map"
+        maps = obj.get("VersionMap")
+        require(isinstance(maps, dict) and "macOS_iOSMac" in maps, stage)
+        for name, mapping in maps.items():
+            if name in ("macOS_iOSMac", "iOSMac_macOS") or name.lower().startswith("ios_"):
+                require(isinstance(mapping, dict) and bool(mapping), stage)
+                for key, value in mapping.items():
+                    version(key)
+                    version(value)
+        checkpoint(deadline)
+        return {"sha256": digest(data), "size": len(data), "Version": ".".join(map(str, current)),
+                "MaximumDeploymentTarget": ".".join(map(str, maximum)),
+                "CanonicalName": "macosx15.5", "sdkroot-qualified": True}
+    except Reject as exc:
+        if exc.code in (stage, "timeout"):
+            exc.metadata_stage = metadata_stage
+        raise
+    except (OSError, ValueError, UnicodeError, RecursionError, TypeError):
+        exc = Reject(stage)
+        exc.metadata_stage = metadata_stage
+        raise exc from None
 
 
 class Cancellation:
@@ -526,6 +642,7 @@ def result():
     return {"schema": 1, "phase": "compile", "result": "rejected", "error": "source-mismatch",
             "feature": None, "workflow": None, "contract": None, "manifest": None,
             "run_token": None, "baseline": {}, "compiler": None, "sdk": None, "sources": {},
+            "sdk_metadata": None, "sdk_metadata_stage": "not-run",
             "driver_jobs": None, "artifact": None, "artifact_predicate": "not-run", "commands": [], "generated": None, "cleanup": "not-created",
             "primary-error": "none", "artifact_build_mismatches": None, "artifact_sdk_version": None,
             "external-effects": "trusted-vendor-not-denied", "candidate-executed": False,
@@ -555,7 +672,9 @@ def build_owned(repo, binding, cancel):
     try:
         require(isinstance(binding, dict), "source-mismatch")
         diagnostic = binding.get("grant") == "one-driver-jobs-only"
-        require(diagnostic == (binding.get("qualification") == "sdk-driver-jobs-hosted19-v1"), "identity")
+        require((diagnostic and binding.get("qualification") == "sdk-driver-jobs-hosted19-v1")
+                or (binding.get("grant") == "one-compile-only"
+                    and binding.get("qualification") == "sdk-producer-hosted21-v1"), "identity")
         out["phase"] = "driver-jobs" if diagnostic else "compile"
         data = sources(Path(repo), binding, whole - 4)
         out.update({name: binding[name] for name in ("feature", "workflow", "contract", "manifest")})
@@ -607,6 +726,17 @@ def build_owned(repo, binding, cancel):
         out["baseline"] = dict(BASE)
         compiler, sdk = identity(run, observed, whole - 4)
         out["compiler"], out["sdk"] = compiler, {"path": str(sdk), "version": "15.5"}
+        out["sdk_metadata_stage"] = "preflight"
+        try:
+            out["sdk_metadata"] = read_sdk_metadata(sdk, whole - 4)
+        except Reject as exc:
+            refused_stage = getattr(exc, "metadata_stage", None)
+            if isinstance(refused_stage, str) and refused_stage in ("not-run", "preflight", "qualified",
+                    "path", "open", "stability", "json", "limits", "version", "canonical-name", "maximum", "map"):
+                out["sdk_metadata_stage"] = refused_stage
+            raise
+        out["sdk_metadata_stage"] = "qualified"
+        env["SDKROOT"] = str(sdk)
         executable = root / "app/EasyNetNativeLab.app/Contents/MacOS/EasyNetNativeLab"
         argv = [compiler["path"], "-parse-as-library", "-emit-executable", "-swift-version", "6", "-Onone",
              "-target", "arm64-apple-macosx15.0", "-sdk", str(sdk), "-module-cache-path",
