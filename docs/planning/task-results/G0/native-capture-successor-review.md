@@ -209,3 +209,34 @@ unique activation predicate and actual activation SHA for final review before pu
 the existing trusted-vendor-only scope/time/output limits; no adaptive budget or probe.
 The amendment may still time out; cause and eventual compatibility remain unknown. No runtime
 ran or executable activation was granted here; G0/app/GUI/engine/NE/full gates stay intact.
+
+## Deadline successor observation closure — artifact qualification unknown
+
+Accept [finite hosted evidence](native-metadata-deadline-hosted-records.json), run
+`38031125723`, activation `5469afd0bd29f1bb7e4d8f72f95e5aad54f264c1`: synthetic18 passed;
+metadata/identity/version/help commands 0–8 completed successfully; actual compile/link
+command 9 exited 0 within its 120s cap, emitted zero output and reports reaped/drained/closed.
+This is evidence of compiler command success, not accepted artifact/build qualification.
+The subsequent result is failed/artifact with artifact null and staging cleanup removed;
+candidate-executed false and GUI/engine/NE not-run remain explicit. The binary was not retained.
+Exact failed artifact predicate is unknown. Do not infer a linker, SDK, Mach-O or plist cause.
+
+Accept false workflow gate/empty inline binding and deadline archive consumed/remaining 0;
+older grants remain consumed. No new runtime, retry, diagnostic guest or probe is granted.
+Static review of artifact(), compile tail and the synthetic Mach-O fixture finds no independently
+demonstrated defect explaining this observation. The fixture has one zero-section segment,
+one entry command and one build command; it does not cover real compiler-produced sections.
+Keep all existing rejection checks until a specific defect is independently established.
+
+A future source-only proposal may add one closed `artifact_predicate` field to the existing
+≤16KiB result, updated immediately before each existing validator/preflight check and retained
+on failure. IDs only: not-run, file-preflight, file-mode-bounds, header-length, header-fields,
+command-header, command-length, build-length, build-fields, segment-length, segment-bounds,
+segment-overlap, section-vm, section-file, entry-command, entry-bounds, plist-read,
+plist-content, passed. Missing/truncated metadata maps to the active fixed check; no exception
+text, addresses, paths, raw header/section values, binary retention or diagnostic tool calls.
+Use the existing function/result plumbing and fixed fixture rejection matrix; no generic
+helper or separate inspection phase. This only makes a future failure actionable; it changes
+neither artifact acceptance nor isolation. After two material corrections and observations,
+stop automatic further qualification. Any future runtime needs an independently reviewed
+finite target/grant; G0/app/GUI/engine/NE/full acceptance remain unqualified.

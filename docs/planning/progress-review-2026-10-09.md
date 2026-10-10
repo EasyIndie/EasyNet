@@ -180,3 +180,13 @@ compile preparation 在固定command4（xcrun SDK版本查询）timeout，exit-1
 03:24:19.581–06:25:14Z本包545,458非缓存input/37,357output，cache94.80%，
 含root/I/R及自动审批，关闭工作未计入；metrics/native-capture-successor.json。
 未有配对main-only样本/账单，不能断言多代理更省；机械动作留root，限制重复微粒度评审。
+
+固定 metadata 期限修订为14s（10swork+4scleanup），compile120/whole180不变；
+源码6c587437，activation5469afd0经精确集中R复核；无重复local测试。
+唯一新目标 [38031125723](https://github.com/EasyIndie/EasyNet/actions/runs/38031125723)
+synthetic18/18PASS；查询0–8及实际SwiftUI编译command9全部exit0/reap/drain/FDclose。
+Swift6.1.2、SDK15.5；随后artifact validator拒绝，具体谓词unknown，artifact=null，cleanupremoved。
+有限记录 native-metadata-deadline-hosted-records.json；常规Tests38031125733PASS，
+新入口关闭/额度consumed0。应用未启动，GUI/engine/NE未执行，完整构建与G0资格仍未通过。
+费用统计扩展到06:31:56Z，覆盖两次hosted及期限修正；更新metrics/native-capture-successor.json。
+无相同任务单会话对照，不能用缓存或不同结果工作包宣称多代理费用优势。

@@ -1,0 +1,253 @@
+{
+  "activation": "5469afd0bd29f1bb7e4d8f72f95e5aad54f264c1",
+  "records": [
+    {
+      "phase": "synthetic",
+      "record": {
+        "captures": {},
+        "errors": 0,
+        "failed_cases": [],
+        "failures": 0,
+        "fixture_cleanup": "passed",
+        "result": "passed",
+        "schema": 1,
+        "skipped": 0,
+        "tests": 18
+      }
+    },
+    {
+      "phase": "compile",
+      "record": {
+        "artifact": null,
+        "baseline": {
+          "arch": "arm64",
+          "build": "24G830",
+          "image_os": "macos15",
+          "image_version": "20260907.0337.1",
+          "os": "15.7.9",
+          "sdk_version": "15.5",
+          "xcode": "Xcode 16.4\nBuild version 16F6"
+        },
+        "candidate-executed": false,
+        "cleanup": "removed",
+        "commands": [
+          {
+            "bytes": [
+              7,
+              0
+            ],
+            "cancelled": false,
+            "command": 0,
+            "deadline": 14,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              7,
+              0
+            ],
+            "cancelled": false,
+            "command": 1,
+            "deadline": 14,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              6,
+              0
+            ],
+            "cancelled": false,
+            "command": 2,
+            "deadline": 14,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              30,
+              0
+            ],
+            "cancelled": false,
+            "command": 3,
+            "deadline": 14,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              5,
+              0
+            ],
+            "cancelled": false,
+            "command": 4,
+            "deadline": 14,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              99,
+              0
+            ],
+            "cancelled": false,
+            "command": 5,
+            "deadline": 14,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              104,
+              0
+            ],
+            "cancelled": false,
+            "command": 6,
+            "deadline": 14,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              97,
+              30
+            ],
+            "cancelled": false,
+            "command": 7,
+            "deadline": 14,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              26525,
+              0
+            ],
+            "cancelled": false,
+            "command": 8,
+            "deadline": 14,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              0,
+              0
+            ],
+            "cancelled": false,
+            "command": 9,
+            "deadline": 120,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          }
+        ],
+        "compiler": {
+          "hash_path": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend",
+          "path": "/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+          "sha256": "bf77cc8826cd1a74f1a9734c5c63a182bd26b9472682b58f01e435cc064e1bc8",
+          "size": 356421520,
+          "version": "Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)\nTarget: arm64-apple-macosx15.0"
+        },
+        "contract": "252dfc5c271ce20eb6c45baaeb0e9059feccb770050db3d2f181d8eabe4f0b54",
+        "engine": "not-run",
+        "error": "artifact",
+        "external-effects": "trusted-vendor-not-denied",
+        "feature": "6c58743765408e1bd4db3b6c8c8657a45a5a8196",
+        "generated": null,
+        "gui": "not-run",
+        "manifest": "c0eea0e05c66ff67a819b22491ddd013f1460ec1a288b4a7eca792f9c887f8f4",
+        "ne": "not-run",
+        "phase": "compile",
+        "primary-error": "none",
+        "result": "failed",
+        "run_token": "13a79ea69934454db4a34e614ac16f5f",
+        "schema": 1,
+        "sdk": {
+          "path": "/Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+          "version": "15.5"
+        },
+        "sources": {
+          ".github/workflows/g0-client-native-build.yml": "81069a05a5e65e40878ad7d3a9a052b720b9bd8350d2b788ddc82660e52e2820",
+          "docs/planning/poc/client-framework/native-lab/Host.swift": "189c478947d08115be289b553f23203d6f2bcf3cbc9001c4256bcb5b857d9a32",
+          "docs/planning/poc/client-framework/native-lab/Info.plist": "54d00a6f0939fa213658c54fd1d138aa7ae1f68c1471ba3d4c35abc6b2f31aaf",
+          "docs/planning/poc/client-framework/native-lab/Tests/test_build.py": "ed9f3345cbc06cfce31215703e34f1f5f7239d080e931c27dd385438e07b70e7",
+          "docs/planning/poc/client-framework/native-lab/build.py": "3b3dc8c62cb0a1cf2f755927892dafca17be50dc496df2b9f91539b9493aba9f"
+        },
+        "workflow": "81069a05a5e65e40878ad7d3a9a052b720b9bd8350d2b788ddc82660e52e2820"
+      }
+    }
+  ],
+  "run": 38031125723,
+  "schema": 1
+}
