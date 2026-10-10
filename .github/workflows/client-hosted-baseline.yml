@@ -11,13 +11,13 @@ permissions:
   contents: read
 jobs:
   synthetic:
-    if: ${{ false && github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc' }}
+    if: ${{ github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc' && github.event.head_commit.message == 'Run one hosted synthetic fixture f051f82a497a20d490f549f26523872079060652' }}
     runs-on: macos-15
     timeout-minutes: 2
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: 'SOURCE_COMMIT_NOT_FROZEN'
+          ref: 'f051f82a497a20d490f549f26523872079060652'
           persist-credentials: false
       - name: Verify reviewed synthetic sources and run fixed suite
         shell: /bin/bash --noprofile --norc {0}
