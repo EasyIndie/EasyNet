@@ -135,3 +135,19 @@ PASS：macOS15.7.9/build24G830 arm64、Xcode16.4/build16F6、SDK15.5；五项均
 完整有限记录见 task-results/G0/hosted-metadata-record.json；synthetic skipped，入口恢复disabled，预算0。
 这只取得文本版本，不授予toolchain身份/engine/GUI/NE/签名资格。下一工作是冻结候选B的源码/构建与Q-B合同，
 不再盲目诊断个人机或旧identity tuple；完整G0依旧未完成。
+
+关闭提交 b64d08c 的 [Tests 38015240881](https://github.com/EasyIndie/EasyNet/actions/runs/38015240881)
+全部五个验证 job PASS，release skipped；baseline workflow skipped，两个入口 disabled。
+独立 R 准备的 [Q-B compile-only 合同](poc/client-framework/native-build-contract.md)由 root 接受为
+静态源码准备：三个实现文件和两个支持文件，真实 SwiftUI 骨架 + 固定直接 swiftc 构建，
+无 engine/GUI 执行、无 Apple 凭据。编译工具的 fresh-vendor 信任只限 reviewed inert source；
+完整候选隔离/真实 UI/生命周期与 NE 门槛保留。源码已派发 I Sol medium；后续实运行仍须审查精确源码和绑定。
+
+Q-B 源码集中修复后，唯一 local 合成验收 17tests/3failures/0errors（2.477s）：
+三个异常组清理用例返回 cleanup，具体失败谓词/原因 unknown；该用例内后续断言未覆盖。
+有限记录 native-build-local-observation.json，local 预算0；不运行归因/重试。
+独立 R 接受新 fresh hosted 目标方向：同一个 job 必须17tests无失败/错误/跳过且fixture清理通过，
+才允许 compile-only；任何拒绝停止，整格仅一次。有限 test 输出与受信 bootstrap 已静态准备，
+job仍disabled/checkout placeholder/binding absent，未执行编译器或生成应用。
+root 又一次将后续请求以不启动 idle turn 的 send_message 发给完成的 R，造成无效等待；
+已改用 followup_task。此为调度错误，必须计入用量，不作为多代理节省证据。

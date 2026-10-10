@@ -1,0 +1,73 @@
+name: G0 native compile preparation (disabled)
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/feature/self-hosted-byos-byoc]
+permissions:
+  contents: read
+jobs:
+  compile:
+    if: false
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - name: Checkout immutable source (unbound placeholder)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: '0000000000000000000000000000000000000000'
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: Verify immutable sources, synthetic gate, then compile only
+        env:
+          FROZEN_BINDING: ''
+        run: |
+          /usr/bin/python3 -I -B - <<'PY'
+          import hashlib, json, os, pathlib, stat, subprocess, sys
+          def main():
+            assert sys.flags.isolated and sys.flags.dont_write_bytecode
+            assert (3, 9) <= sys.version_info[:2] < (3, 14)
+            root = pathlib.Path.cwd().resolve()
+            binding = json.loads(os.environ['FROZEN_BINDING'])
+            assert binding['status'] == 'frozen' and binding['grant'] == 'one-compile-only'
+            actual = subprocess.check_output(['/usr/bin/git', 'rev-parse', 'HEAD'], timeout=5).decode().strip()
+            assert actual == binding['feature'] == binding['checkout']
+            base = 'docs/planning/poc/client-framework/native-lab/'
+            names = {base + p for p in ('Host.swift', 'Info.plist', 'build.py', 'Tests/test_build.py')}
+            names.add('.github/workflows/g0-client-native-build.yml')
+            assert set(binding['sources']) == names
+            def verified(name, expected):
+              path = root / name
+              assert all(not p.is_symlink() for p in (path, *path.parents))
+              info = path.lstat()
+              assert stat.S_ISREG(info.st_mode) and info.st_size <= 32768
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == expected
+            for name, item in binding['sources'].items():
+              verified(name, item['sha256'])
+            verified('docs/planning/poc/client-framework/native-build-contract.md', binding['contract'])
+            manifest = json.dumps(binding['sources'], sort_keys=True, separators=(',', ':')).encode()
+            assert hashlib.sha256(manifest).hexdigest() == binding['manifest']
+            suite = subprocess.run(['/usr/bin/python3', '-I', '-B', str(root / base / 'Tests/test_build.py')],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+            assert len(suite.stdout) <= 4096 and not suite.stderr
+            record = json.loads(suite.stdout)
+            print(json.dumps({'phase': 'synthetic', 'record': record}), flush=True)
+            assert suite.returncode == 0 and record == {'schema': 1, 'tests': 17, 'failures': 0,
+              'errors': 0, 'skipped': 0, 'result': 'passed', 'fixture_cleanup': 'passed'}
+            path = root / 'docs/planning/task-bindings/native-build-runtime.json'
+            fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644)
+            with os.fdopen(fd, 'w') as stream:
+              json.dump(binding, stream)
+            os.chmod(path, 0o644)
+            done = subprocess.run(['/usr/bin/python3', '-I', '-B', str(root / base / 'build.py')],
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=185)
+            assert len(done.stdout) <= 16384 and not done.stderr
+            result = json.loads(done.stdout)
+            print(json.dumps({'phase': 'compile', 'record': result}), flush=True)
+            assert done.returncode == 0 and result['result'] == 'compiled'
+          try:
+            main()
+          except BaseException:
+            print('{"schema":1,"result":"refused","error":"qualification"}', flush=True)
+            sys.exit(1)
+          PY
