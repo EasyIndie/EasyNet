@@ -1,0 +1,50 @@
+{
+  "activation_message": "Run one native artifact predicate 41acd18f7838b286acf693bf17f9a6d8c3d296ad",
+  "checkout": "41acd18f7838b286acf693bf17f9a6d8c3d296ad",
+  "consumed_binding_sha256": "bd6d2f00d50ddbbeeda696edd927b682c0faf1afaf16cc9c54ca94058633c693",
+  "contract": "ba550bc774ddc97ab43957f5f7c73b9d1c5a84f359b5ba0f4c77af9d5c47b470",
+  "feature": "41acd18f7838b286acf693bf17f9a6d8c3d296ad",
+  "grant": "one-compile-only",
+  "guest_remaining": 1,
+  "local_remaining": 0,
+  "manifest": "87d7bc0db839b702e1d782635fdeb0403a73db9b65786b6fe43ce5d0afed7121",
+  "python_trust": "fresh-vendor-system-entry-/usr/bin/python3-isolated-no-bytecode",
+  "python_verified": true,
+  "qualification": "artifact-predicate-hosted18-v1",
+  "schema": 1,
+  "sources": {
+    ".github/workflows/g0-client-native-build.yml": {
+      "mode": 420,
+      "sha256": "7e5880638cb95d1cb91950a8ca5b9d342f508cccbbe59010104b6c3d5dcea0be",
+      "size": 4259,
+      "type": "regular"
+    },
+    "docs/planning/poc/client-framework/native-lab/Host.swift": {
+      "mode": 420,
+      "sha256": "189c478947d08115be289b553f23203d6f2bcf3cbc9001c4256bcb5b857d9a32",
+      "size": 880,
+      "type": "regular"
+    },
+    "docs/planning/poc/client-framework/native-lab/Info.plist": {
+      "mode": 420,
+      "sha256": "54d00a6f0939fa213658c54fd1d138aa7ae1f68c1471ba3d4c35abc6b2f31aaf",
+      "size": 631,
+      "type": "regular"
+    },
+    "docs/planning/poc/client-framework/native-lab/Tests/test_build.py": {
+      "mode": 420,
+      "sha256": "bb4896223fe5f12caf0f91cac1016b17e51530e8247d7f4c28d8659787c8fa6c",
+      "size": 22914,
+      "type": "regular"
+    },
+    "docs/planning/poc/client-framework/native-lab/build.py": {
+      "mode": 420,
+      "sha256": "e8e4e8b101de974ce1878162a9ebec8335ddd4b1f9a977b52c2682522d903b32",
+      "size": 27565,
+      "type": "regular"
+    }
+  },
+  "status": "frozen",
+  "target": "macos-15-arm64",
+  "workflow": "7e5880638cb95d1cb91950a8ca5b9d342f508cccbbe59010104b6c3d5dcea0be"
+}
