@@ -1,4 +1,4 @@
-name: G0 native SDK producer (one shot)
+name: G0 native preparation (disabled)
 on:
   workflow_dispatch:
   push:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   compile:
-    if: ${{ github.event_name == 'push' && github.event.head_commit.message == 'Run one qualified SDK producer fc71a550a532a899e19fbe1ae4c1102bc4b94a7f' }}
+    if: ${{ false }}
     runs-on: macos-15
     timeout-minutes: 10
     steps:
@@ -20,7 +20,7 @@ jobs:
           lfs: false
       - name: Verify immutable sources, synthetic gate, then one conditional compile
         env:
-          FROZEN_BINDING: '{"activation_message":"Run one qualified SDK producer fc71a550a532a899e19fbe1ae4c1102bc4b94a7f","checkout":"fc71a550a532a899e19fbe1ae4c1102bc4b94a7f","consumed_binding_sha256":"bd6d2f00d50ddbbeeda696edd927b682c0faf1afaf16cc9c54ca94058633c693","contract":"cd87d361f29ad214e571a510c88c276e145dcab04a1860612a61186d570f7fcd","feature":"fc71a550a532a899e19fbe1ae4c1102bc4b94a7f","grant":"one-compile-only","guest_remaining":1,"local_remaining":0,"manifest":"e3c9e4fb6ed1dd81789d9a64656c7dd8aba9ef1ab293eef7a75b9bb01ed9cb3e","python_trust":"fresh-vendor-system-entry-/usr/bin/python3-isolated-no-bytecode","python_verified":true,"qualification":"sdk-producer-hosted21-v1","schema":1,"sources":{".github/workflows/g0-client-native-build.yml":{"mode":420,"sha256":"8a92d7555bbd705d88ac7de9b13351eb3ec6235b06909b9af2099ac8b2170217","size":5412,"type":"regular"},"docs/planning/poc/client-framework/native-lab/Host.swift":{"mode":420,"sha256":"189c478947d08115be289b553f23203d6f2bcf3cbc9001c4256bcb5b857d9a32","size":880,"type":"regular"},"docs/planning/poc/client-framework/native-lab/Info.plist":{"mode":420,"sha256":"54d00a6f0939fa213658c54fd1d138aa7ae1f68c1471ba3d4c35abc6b2f31aaf","size":631,"type":"regular"},"docs/planning/poc/client-framework/native-lab/Tests/test_build.py":{"mode":420,"sha256":"1bdd5a0942420ff5dbf4190b3e5a7d74b2826cc828c88102476170420b965313","size":47459,"type":"regular"},"docs/planning/poc/client-framework/native-lab/build.py":{"mode":420,"sha256":"5c90c9f83f1ccb299f98f7046dcfe1ae09404c2f1ce2f2a55f14286df7548a83","size":40288,"type":"regular"}},"status":"frozen","target":"macos-15-arm64","workflow":"8a92d7555bbd705d88ac7de9b13351eb3ec6235b06909b9af2099ac8b2170217"}'
+          FROZEN_BINDING: ''
         run: |
           /usr/bin/python3 -I -B - <<'PY'
           import hashlib, json, os, pathlib, stat, subprocess, sys

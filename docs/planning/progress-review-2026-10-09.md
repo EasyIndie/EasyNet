@@ -307,3 +307,18 @@ hosted已通过。SDKparser源码工作包到此收敛，不继续逐参数guest
 截止后本段收尾/提交另计。仍未形成配对对照，不宣称主会话或多代理费用胜出。
 G0最终剩余仍为：准确构建资格、候选A/B真实UI/engine、各自权限/签名、NE profile
 与系统同意/路由DNS实证、客户端ADR与G0汇合；当前完整G0没有通过。
+
+2026-10-10 SDK producer 工作包关闭：source `fc71a550`、activation `37edaab`，
+[runner 38052833576](https://github.com/EasyIndie/EasyNet/actions/runs/38052833576) SUCCESS。
+full21 PASS 后唯一真实 compile exit0，原 artifact predicate passed；
+产物 SDK15.5.0、minimum15.0.0、四 mismatch 均 false，cleanup removed。
+SDKSettings 有效指纹冻结为6953B / SHA256
+`58a133735f0a55a624a1703067059f6e78925e51725ec6e1f966072e142c9c42`，
+Version15.5.0 / CanonicalName macosx15.5 / MaximumDeploymentTarget15.5.99。
+有限结果见 task-results/G0/sdk-producer-hosted-records.json；独立R接受仅 unsigned build资格。
+未执行app/GUI/engine/NE/signing；grant consumed0，workflow禁用/inline空。
+常规Tests38052833579也PASS。不据此声称证明了历史SDK15.0全部安装层因果链。
+后继仅独立native GUI/engine合同准备，旧window实验不得自动复活。
+完整G0仍未通过；A/B真实UI/engine、权限/签名、NE profile及系统VPN、最终ADR汇合保留。
+成本窗口11:51:06–12:42:00Z含前窗收尾及本包实现/审查/运行，截止后关闭另计；
+见metrics/sdk-producer-package-usage.json，无配对胜出结论。

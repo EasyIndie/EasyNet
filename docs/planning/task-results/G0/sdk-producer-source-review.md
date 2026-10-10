@@ -81,3 +81,14 @@ Full21 exact synthetic PASS is required before one driver invocation; baseline e
 R permits exactly one activation commit/push with message `Run one qualified SDK producer fc71a550a532a899e19fbe1ae4c1102bc4b94a7f`, then one hosted attempt under root's frozen budget.
 Dispatch/retry/rerun is not authorized; consume the grant and disable activation after the attempt regardless of result. GitHub's message guard is not a durable replay-prevention claim.
 This review ran only static hashes/Git reads/diff/AST; no push/runtime/test. Old grants stay zero; GUI/engine/NE/signing/fullG0 gates remain.
+
+## Final hosted evidence and closure — limited build qualification accepted
+
+[Hosted records](sdk-producer-hosted-records.json): run38052833576, source`fc71a550a532a899e19fbe1ae4c1102bc4b94a7f`, activation`37edaab19a44942e97f9fae67b2d412c2f2cf50b`; exactly full21 PASS then compiled.
+R accepts this macos-15 arm64/Xcode16.4 unsigned build qualification: qualified metadata, ten exit0 commands with drained/closed/reaped/released state, original artifact predicates all pass and cleanup removed.
+Freeze first SDKSettings fingerprint for successor reproducibility:6953B/SHA256 `58a133735f0a55a624a1703067059f6e78925e51725ec6e1f966072e142c9c42`, Version15.5.0/CanonicalName macosx15.5/MaximumDeploymentTarget15.5.99.
+Artifact90192B/SHA256 `26d20033507942294ceddbdb19e00a37347e312bf760356816d43100fe502a60`; decodedSDK15.5.0, all four build mismatches false. Retain minimum15.0 and every original structural check.
+Records8762B/SHA256 `55a6d39370c6dfee9960507e5d49b6b425d7cef2e0aabbfbeba6e1868c77c982`; exact source/contract/manifest/workflow/activation identities match reviewed binding.
+Closing diff verified: workflow if:false/FROZEN_BINDING empty, unchanged bootstrap; producer grant consumed guest0/local0. No retry/regrant/activation is authorized.
+Candidate was not executed; GUI/engine/NE not-run, signing/system-consent/fullG0 unresolved. Success does not prove the old run's installed root cause.
+Only independent GUI/engine contract preparation is now permitted; no runtime. This R performed record/closure static checks and git diff--check only.

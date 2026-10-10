@@ -5,7 +5,7 @@
   "contract": "cd87d361f29ad214e571a510c88c276e145dcab04a1860612a61186d570f7fcd",
   "feature": "fc71a550a532a899e19fbe1ae4c1102bc4b94a7f",
   "grant": "one-compile-only",
-  "guest_remaining": 1,
+  "guest_remaining": 0,
   "local_remaining": 0,
   "manifest": "e3c9e4fb6ed1dd81789d9a64656c7dd8aba9ef1ab293eef7a75b9bb01ed9cb3e",
   "python_trust": "fresh-vendor-system-entry-/usr/bin/python3-isolated-no-bytecode",
@@ -44,7 +44,10 @@
       "type": "regular"
     }
   },
-  "status": "frozen",
+  "status": "consumed",
   "target": "macos-15-arm64",
-  "workflow": "8a92d7555bbd705d88ac7de9b13351eb3ec6235b06909b9af2099ac8b2170217"
+  "workflow": "8a92d7555bbd705d88ac7de9b13351eb3ec6235b06909b9af2099ac8b2170217",
+  "observed_run": 38052833576,
+  "activation": "37edaab19a44942e97f9fae67b2d412c2f2cf50b",
+  "outcome": "full21-pass-compile-artifact-qualified"
 }
