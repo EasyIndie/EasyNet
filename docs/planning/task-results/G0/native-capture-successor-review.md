@@ -178,3 +178,23 @@ Root must first supply the actual activation commit SHA for final static identit
 this acceptance does not yet authorize push of an unidentified commit. After observation,
 disable the gate and archive the successor's consumed outcome/remaining 0, even on failure.
 No tests/toolchain/candidate ran in this review. App/GUI/engine/NE/G0/final gates remain intact.
+
+## Hosted observation closure — accepted
+
+[Finite hosted evidence](native-capture-successor-hosted-records.json), run `38030751354`,
+passes synthetic18, then fails preparation with timeout at command 4. Frozen source maps
+that command to xcrun --sdk macosx --show-sdk-version. It emitted zero bytes, exited -15,
+and reports drained/reaped/FD closed, signals-issued-unproven, root cleanup removed.
+Compiler/SDK/artifact are null; no native compiler/candidate/GUI/engine/NE success occurred.
+Root reports separate normal Tests `38030751360` passed; that does not qualify this package.
+Accept disabled false gate/empty inline binding and successor consumed/remaining 0 closure;
+original consumed binding remains unchanged. No rerun, probe or restored grant is authorized.
+
+Actionable static successor: metadata currently permits only 1s work inside 5s total.
+Propose one fixed 14s metadata budget (10s work + existing 2s TERM + 2s KILL/drain/reap),
+preserving compile 120s and whole-driver 180s absolute cap; whole-cap exhaustion fails closed.
+This changes an observed limiting work window; why xcrun exceeded it and whether 10s suffices
+remain unknown. Amend source/contract and extend one existing synthetic case with bounded
+delayed metadata before new hashes/review. No adaptive timeout, retries, extra instrumentation or
+research sweep. Any materially corrected successor requires its own exact finite grant;
+all existing grants remain consumed. G0 and app/GUI/engine/NE/full acceptance remain blocked.

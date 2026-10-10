@@ -1,0 +1,146 @@
+{
+  "activation": "ffb3c4b7f93744447fe37c09585bd91ab07ce5c6",
+  "records": [
+    {
+      "phase": "synthetic",
+      "record": {
+        "captures": {},
+        "errors": 0,
+        "failed_cases": [],
+        "failures": 0,
+        "fixture_cleanup": "passed",
+        "result": "passed",
+        "schema": 1,
+        "skipped": 0,
+        "tests": 18
+      }
+    },
+    {
+      "phase": "compile",
+      "record": {
+        "artifact": null,
+        "baseline": {},
+        "candidate-executed": false,
+        "cleanup": "removed",
+        "commands": [
+          {
+            "bytes": [
+              7,
+              0
+            ],
+            "cancelled": false,
+            "command": 0,
+            "deadline": 5,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              7,
+              0
+            ],
+            "cancelled": false,
+            "command": 1,
+            "deadline": 5,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              6,
+              0
+            ],
+            "cancelled": false,
+            "command": 2,
+            "deadline": 5,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              30,
+              0
+            ],
+            "cancelled": false,
+            "command": 3,
+            "deadline": 5,
+            "drained": true,
+            "exit": 0,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "not-requested",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "none",
+            "reaped": true
+          },
+          {
+            "bytes": [
+              0,
+              0
+            ],
+            "cancelled": false,
+            "command": 4,
+            "deadline": 5,
+            "drained": true,
+            "exit": -15,
+            "fd_closed": true,
+            "group_errno": "none",
+            "group_observation": "signals-issued-unproven",
+            "group_stage": "none",
+            "ownership": "released",
+            "primary_error": "timeout",
+            "reaped": true
+          }
+        ],
+        "compiler": null,
+        "contract": "065ac98fdc9a952fc3365da64053c8eccfcdbe68288ecb0d948a56b6cd683919",
+        "engine": "not-run",
+        "error": "timeout",
+        "external-effects": "trusted-vendor-not-denied",
+        "feature": "b7c21bc0059fb7fa2a845f359e987cbf06514bb2",
+        "generated": null,
+        "gui": "not-run",
+        "manifest": "70d428f04502861f2e34c11c6632107d3bdeb9902c4dbe03f7e25d2ad0d0ea92",
+        "ne": "not-run",
+        "phase": "compile",
+        "primary-error": "none",
+        "result": "failed",
+        "run_token": "5cf966c195cd446eb6944da9c9ac9aa3",
+        "schema": 1,
+        "sdk": null,
+        "sources": {
+          ".github/workflows/g0-client-native-build.yml": "3942cbfcec6042440508fea828bbbb86c6d40eeff964c735b64449a91a1f6ff9",
+          "docs/planning/poc/client-framework/native-lab/Host.swift": "189c478947d08115be289b553f23203d6f2bcf3cbc9001c4256bcb5b857d9a32",
+          "docs/planning/poc/client-framework/native-lab/Info.plist": "54d00a6f0939fa213658c54fd1d138aa7ae1f68c1471ba3d4c35abc6b2f31aaf",
+          "docs/planning/poc/client-framework/native-lab/Tests/test_build.py": "ed9f3345cbc06cfce31215703e34f1f5f7239d080e931c27dd385438e07b70e7",
+          "docs/planning/poc/client-framework/native-lab/build.py": "5db8e29126fb97fcd3dc14721ec4895c3f4cbd222e9ffbf4dd9f98a4f136fb50"
+        },
+        "workflow": "3942cbfcec6042440508fea828bbbb86c6d40eeff964c735b64449a91a1f6ff9"
+      }
+    }
+  ],
+  "run": 38030751354,
+  "schema": 1
+}

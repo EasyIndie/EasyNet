@@ -1,0 +1,79 @@
+{
+  "billing_cost": null,
+  "comparison_kind": "observational-unpaired",
+  "conclusion": "No matched main-only sample or invoice; cannot claim multi-agent savings. Noncached input higher than earlier failed package, output lower; packages differ in scope and outcome. Keep mechanical edits in root and one bounded implementation/review pair; reduce repeated binding micro-reviews.",
+  "groups": [
+    {
+      "cache_read_fraction": 0.8011903434540723,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 208384,
+      "calls": 10,
+      "effort": "low",
+      "input_tokens": 260093,
+      "model": "codex-auto-review",
+      "noncached_input_tokens": 51709,
+      "output_tokens": 1232,
+      "reasoning_output_tokens": 549,
+      "role": "automatic_review",
+      "total_tokens": 261325
+    },
+    {
+      "cache_read_fraction": 0.9699771078567309,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 7034112,
+      "calls": 62,
+      "effort": "medium",
+      "input_tokens": 7251833,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 217721,
+      "output_tokens": 18907,
+      "reasoning_output_tokens": 8631,
+      "role": "main",
+      "total_tokens": 7270740
+    },
+    {
+      "cache_read_fraction": 0.9341637416777229,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 2169344,
+      "calls": 31,
+      "effort": "high",
+      "input_tokens": 2322231,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 152887,
+      "output_tokens": 11318,
+      "reasoning_output_tokens": 2550,
+      "role": "subagent",
+      "total_tokens": 2333549
+    },
+    {
+      "cache_read_fraction": 0.8124328844492984,
+      "cache_write_input_tokens": 0,
+      "cached_input_tokens": 533376,
+      "calls": 12,
+      "effort": "medium",
+      "input_tokens": 656517,
+      "model": "gpt-6.1-sol",
+      "noncached_input_tokens": 123141,
+      "output_tokens": 5900,
+      "reasoning_output_tokens": 1486,
+      "role": "subagent",
+      "total_tokens": 662417
+    }
+  ],
+  "interruptions": "One implementation usage-limit interruption, resumed same worker after ordinary usage availability confirmed; no model escalation/reset. Closure after cutoff excluded.",
+  "outcome": "Local18 and hosted18 pass; compile preparation timeout at metadata command4; compiler/app/GUI/engine/NE not qualified.",
+  "since": "2026-10-10T03:24:19.581000+00:00",
+  "totals": {
+    "cache_read_fraction": 0.9480054379728128,
+    "cache_write_input_tokens": 0,
+    "cached_input_tokens": 9945216,
+    "calls": 115,
+    "input_tokens": 10490674,
+    "noncached_input_tokens": 545458,
+    "output_tokens": 37357,
+    "reasoning_output_tokens": 13216,
+    "total_tokens": 10528031
+  },
+  "until_exclusive": "2026-10-10T06:25:14+00:00",
+  "work_package": "native-capture-successor"
+}
