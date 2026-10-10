@@ -322,3 +322,13 @@ Version15.5.0 / CanonicalName macosx15.5 / MaximumDeploymentTarget15.5.99。
 完整G0仍未通过；A/B真实UI/engine、权限/签名、NE profile及系统VPN、最终ADR汇合保留。
 成本窗口11:51:06–12:42:00Z含前窗收尾及本包实现/审查/运行，截止后关闭另计；
 见metrics/sdk-producer-package-usage.json，无配对胜出结论。
+
+后继native GUI/engine准备合同见 `native-gui-engine-contract.md`（135行），
+明确复用build helper、三Swift/两测试接口及完整真实UI/nonce/生命周期门槛；状态planned。
+`native-engine-source-facts.md` 保存固定tag字段依据，仍缺SOCKS具体类型、DNS默认、
+路由实际优先级/未匹配行为与CLI进程语义；不足以冻结配置。
+该事实卡检索超限（4→7文件，52232B），root派发背景与最终字段范围不一致造成重选，
+C又未维护累计计数；已停止，全部7份byte/SHA/Git blob核对，未运行源码，不记verified。
+后继必须先统一补齐精确源清单与工具计数，再集中审查配置/GUI效果/guardian隔离包；
+不得复活旧guest额度或用headless替代真实UI。常规关闭提交Tests38053098239 PASS，
+native工作流38053098259 SKIPPED。12:42–12:57准备成本窗口与失败数据另存，截止后收尾另计。
