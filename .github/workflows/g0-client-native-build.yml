@@ -7,20 +7,20 @@ permissions:
   contents: read
 jobs:
   compile:
-    if: false
+    if: ${{ github.repository == 'EasyIndie/EasyNet' && github.ref == 'refs/heads/codex/feature/self-hosted-byos-byoc' && github.event_name == 'push' && github.event.head_commit.message == 'Run one native compile qualification 6d783478932e8818c67f7f3cfb204a84c275ef41' }}
     runs-on: macos-15
     timeout-minutes: 10
     steps:
       - name: Checkout immutable source (unbound placeholder)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: '0000000000000000000000000000000000000000'
+          ref: '6d783478932e8818c67f7f3cfb204a84c275ef41'
           persist-credentials: false
           submodules: false
           lfs: false
       - name: Verify immutable sources, synthetic gate, then compile only
         env:
-          FROZEN_BINDING: ''
+          FROZEN_BINDING: '{"activation_message":"Run one native compile qualification 6d783478932e8818c67f7f3cfb204a84c275ef41","checkout":"6d783478932e8818c67f7f3cfb204a84c275ef41","contract":"6db69f2c08a7ef729aac87b1b3948632792a303c7c37c1c3736e4b7732bd1b33","feature":"6d783478932e8818c67f7f3cfb204a84c275ef41","grant":"one-compile-only","guest_remaining":1,"local_remaining":0,"manifest":"8962fed3050bc27baaca7a3dc9c1f99269b8ac6a0dcecfd854b8a4badc710798","python_trust":"fresh-vendor-system-entry-/usr/bin/python3-isolated-no-bytecode","python_verified":true,"schema":1,"sources":{".github/workflows/g0-client-native-build.yml":{"mode":420,"sha256":"789c40cf336bf316594442d69b907f906d1a3587458c2f37af1f89b4d86175da","size":3881,"type":"regular"},"docs/planning/poc/client-framework/native-lab/Host.swift":{"mode":420,"sha256":"189c478947d08115be289b553f23203d6f2bcf3cbc9001c4256bcb5b857d9a32","size":880,"type":"regular"},"docs/planning/poc/client-framework/native-lab/Info.plist":{"mode":420,"sha256":"54d00a6f0939fa213658c54fd1d138aa7ae1f68c1471ba3d4c35abc6b2f31aaf","size":631,"type":"regular"},"docs/planning/poc/client-framework/native-lab/Tests/test_build.py":{"mode":420,"sha256":"ccaca6f95bede58d54f77205a3cb9a74c6621fb42c59a5608ddf4f2af0bae1df","size":14645,"type":"regular"},"docs/planning/poc/client-framework/native-lab/build.py":{"mode":420,"sha256":"15a8d3053d430be4e33d311372d68addf74f63dc6aecaf3686d8812fbe78f35b","size":23585,"type":"regular"}},"status":"frozen","target":"macos-15-arm64","workflow":"789c40cf336bf316594442d69b907f906d1a3587458c2f37af1f89b4d86175da"}'
         run: |
           /usr/bin/python3 -I -B - <<'PY'
           import hashlib, json, os, pathlib, stat, subprocess, sys
